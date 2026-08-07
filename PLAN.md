@@ -16,7 +16,7 @@ production code but no test is a defect — reopen the box.
 
 ## Phase 0 — Environment
 
-- [ ] **T01 — Build toolchain (no emulator).** Install Temurin **JDK 17** (system Java is
+- [x] **T01 — Build toolchain (no emulator).** Install Temurin **JDK 17** (system Java is
       8 — `JAVA_HOME` must point at 17 for Gradle) and Android cmdline-tools to
       `~/Android/Sdk`. `yes | sdkmanager --licenses`. Install
       `platform-tools`, `platforms;android-35`, `build-tools;35.0.0`, `emulator`.

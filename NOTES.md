@@ -38,13 +38,15 @@ screenshots via Robolectric on the JVM, and T01–T28 + T31 never touch a device
 - Windows 10 Pro 19045.6466 · WSL 2.7.11 · kernel 6.18.33.2 · Ubuntu userland.
 - Host: Intel i7-4790K (4c/8t, VT-x + EPT ✔), 15.9 GB RAM, 65 GB free on `C:`.
 - WSL VM: 4 CPUs, 9 GB RAM, 899 GB free on `/`.
-- System `java` = **OpenJDK 8** → T01 installs Temurin 17; Gradle must use 17.
+- System `java` = **OpenJDK 8**; Temurin **17.0.20** now at `~/.jdks/temurin-17`.
 - `/dev/kvm` absent and will stay absent (see above).
-- No Android SDK yet, in WSL or on Windows. No physical device.
+- WSL SDK installed at `~/Android/Sdk` (T01). No Windows SDK yet (that is T03).
+  No physical device.
 - Windows gateway from WSL: `172.18.144.1` (only needed if the interop bridge fails
   and adb has to go over TCP instead).
 
 ## Log
 
 - 2026-08-07 — bootstrap: SPEC/DESIGN/PLAN/CLAUDE/loop.sh/device.sh/fixtures created.
-  Nothing built yet. Next: T01.
+- 2026-08-07 — T01 done: JDK 17.0.20, SDK (platform-tools 37.0.1, android-35,
+  build-tools 35.0.0, emulator 37.1.11), Maestro 2.8.0. Next: T02.

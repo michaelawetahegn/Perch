@@ -47,8 +47,14 @@ Do not skip ahead, do not do two tasks, do not refactor code the task doesn't to
 ## Environment (WSL2 on Windows, Ubuntu userland)
 
 - **System `java` is 8.** Gradle needs 17 — always export
-  `JAVA_HOME=$HOME/.jdks/temurin-17` (or wherever T01 put it) and put `$JAVA_HOME/bin`
-  first on `PATH`. Also set `org.gradle.java.home` in `gradle.properties`.
+  `JAVA_HOME=$HOME/.jdks/temurin-17` (T01 put Temurin 17.0.20 there) and put
+  `$JAVA_HOME/bin` first on `PATH`. Also set `org.gradle.java.home` in
+  `gradle.properties`. The exports also live at the end of `~/.bashrc`, but Ubuntu's
+  `.bashrc` returns early for non-interactive shells — **every session must export them
+  itself**; do not assume they are inherited.
+- Installed by T01: cmdline-tools `latest`, platform-tools 37.0.1, platforms;android-35,
+  build-tools;35.0.0, emulator 37.1.11 (Linux emulator is unusable here — see below).
+  Maestro 2.8.0 at `$HOME/.maestro/bin/maestro`.
 - `ANDROID_HOME=$HOME/Android/Sdk`, also `ANDROID_SDK_ROOT`. `local.properties` must
   contain `sdk.dir=/home/michael/Android/Sdk` (it is gitignored — recreate it if a
   build complains about a missing SDK).
