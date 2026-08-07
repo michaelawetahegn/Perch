@@ -19,12 +19,9 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
 - Windows gateway from WSL: `172.18.144.1` (only needed if the interop bridge fails
   and adb has to go over TCP instead).
 - **2026-08-07 — host froze (session #11). Cause: host memory, not any task's code.**
-  WSL2 balloons `vmmem` to its `.wslconfig` cap and never releases it, and sessions left
-  Gradle+Kotlin daemons resident; with the Windows emulator too, the whole desktop
-  stalled. Fixed in `.wslconfig` (7 GB + `autoMemoryReclaim=gradual`), `gradle.properties`
-  (caps — see CLAUDE.md) and `loop.sh` (`reclaim()` between sessions, refuses to start
-  below 1200 MB headroom). **The `.wslconfig` half needs a `wsl --shutdown` to take
-  effect** — until then the loop-side reclaim is doing all the work.
+  Fixed in `.wslconfig` (7 GB + `autoMemoryReclaim=gradual`), `gradle.properties` (caps —
+  see CLAUDE.md) and `loop.sh` (`reclaim()` between sessions). **The `.wslconfig` half needs
+  a `wsl --shutdown` that has not happened yet** — until then loop-side reclaim is all of it.
 
 ## Log
 
@@ -34,9 +31,8 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
   · `danluu.com` (11.1 MB) and `googleprojectzero.blogspot.com` → `projectzero.google`
     (13.2 MB) — both exceed SPEC.md §6's 8 MiB body cap, so the app would reject them
     live; the corpus must not contain feeds T09 requires to parse but T14 must refuse.
-  · `research.nccgroup.com` — no longer publishes a feed anywhere. Homepage has zero
-    `<link rel=alternate>` and /feed /feed/ /rss.xml /atom.xml /index.xml /feed.xml /rss/
-    all soft-404 to the same 116 KB HTML page (HTTP 200). Kept as T11's negative case.
+  · `research.nccgroup.com` — no longer publishes a feed anywhere (no `<link rel=alternate>`,
+    every path guess soft-404s to HTML). T11's negative case; T32 must record it as dead.
 - 2026-08-07 — T05–T08 done: `DateParser` (29), `RssParser` (19), `AtomParser` (24),
   `RdfParser` (21) + `FeedParser` dispatch (20). Everything they learned is now pinned by
   those tests; what a *future* task still needs to know: shared plumbing lives in
@@ -48,11 +44,10 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
   `FeedParser` decides the format from an **8 KiB prefix scan**, not a parse tree, which
   is what makes the 5 MB-of-noise case ~ms. Charset: XML declaration → HTTP `charset` →
   UTF-8, and an unknown charset name falls through to UTF-8 rather than failing the feed.
-- 2026-08-07 — T09 done: `FeedCorpusTest` (78 tests = 39 snapshots × 2), green with no
-  production change; its parameter list `check`s ≥35 snapshots so it cannot go vacuous.
-- 2026-08-07 — T10 done: `HtmlSanitizer` (16 tests). jsoup `Cleaner` + a from-scratch
-  `Safelist`; **`addProtocols` is also what resolves relative URLs** (jsoup absolutizes a
-  protocol-restricted attribute), so no manual `resolveUrl` pass is needed.
+- 2026-08-07 — T09 done: `FeedCorpusTest` = 39 snapshots × 2; it `check`s ≥35 exist, so it
+  cannot go vacuous.
+- 2026-08-07 — T10 done: `HtmlSanitizer` (16 tests). jsoup `Cleaner` + a from-scratch `Safelist`;
+  **`addProtocols` is also what resolves relative URLs**, so no manual `resolveUrl` pass exists.
 - 2026-08-07 — T11 done: `FeedDiscovery` (13 tests; suite now 221, 0 failures). Attribute
   order, `rel` token lists and `type` parameters all vary between sites, and xania.org even
   splits its `<link>` across two lines — hence jsoup, never a regex. Why declared URLs are
@@ -95,6 +90,11 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
   DESIGN.md §5's confirm-before-commit, and it is also why adding a source costs **one**
   fetch, not two: `Resolved` carries the parsed feed, so `add` writes those entries without
   refetching. Duplicates are caught twice — on the pasted URL before any fetch, and on the
-  post-redirect final URL — and `add` is idempotent on `feedUrl`, which is what T17's OPML
-  import should lean on rather than re-checking. **Paste normalization is deliberately not
-  here**: a scheme-less `example.com` is rejected as unreachable, and T23's sheet owns it.
+  post-redirect final URL — and `add` is idempotent on `feedUrl`. **Paste normalization is
+  deliberately not here**: `example.com` is rejected as unreachable, and T23's sheet owns it.
+- 2026-08-07 — T17 done: `data/opml/Opml.kt` + `data/repo/OpmlRepository.kt` (22 tests; suite
+  now 308, 0 failures). Import **fetches nothing**: rows land with null validators and null
+  `lastFetchedAt` — the "never polled" state T18's worker collects, and T27 owns the single
+  refresh afterwards. Identity is `feedUrl` (same feed under two folders → one add, one
+  duplicate). An outline counts as `invalid` only if it claims to be a source (`xmlUrl`
+  present, or `type=rss|atom|feed`); anything else is a folder, even an empty one.

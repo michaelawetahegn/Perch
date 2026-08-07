@@ -168,7 +168,7 @@ production code but no test is a defect — reopen the box.
         remove cascades entries, rename does not touch parsed `title`.
       - Rung: unit
 
-- [ ] **T17 — OPML import/export. TDD.** Per SPEC.md §9.
+- [x] **T17 — OPML import/export. TDD.** Per SPEC.md §9.
       - Done: round-trip test (export 42 sources → import → identical set) green;
         importing a real nested OPML flattens correctly; duplicates counted not
         duplicated; malformed OPML returns a typed error, never throws.
