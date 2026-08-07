@@ -117,7 +117,7 @@ production code but no test is a defect — reopen the box.
         and a real `content:encoded` blob from the corpus.
       - Rung: unit
 
-- [ ] **T11 — `FeedDiscovery`. TDD.** Homepage HTML → feed URL, priority order and
+- [x] **T11 — `FeedDiscovery`. TDD.** Homepage HTML → feed URL, priority order and
       path-guess fallback per SPEC.md §5.
       - Done: unit tests over the saved homepage HTML in `fixtures/homepages/` for
         **xania.org, hillelwayne.com, gwern.net** each resolve to the URL recorded in

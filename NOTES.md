@@ -24,32 +24,20 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
   `JAVA_HOME`+`ANDROID_HOME` live at `C:\perch-stage\sdk.bat` and `avd.bat`.
 - Windows gateway from WSL: `172.18.144.1` (only needed if the interop bridge fails
   and adb has to go over TCP instead).
-- **2026-08-07 — host froze during session #11 (T11). Diagnosis: host memory, not a
-  bug in any task.** `.wslconfig` gave WSL 10 GB of the host's 15.9 GB; WSL2 balloons
-  `vmmem` to that cap and never releases it, and each session left a Gradle daemon +
-  Kotlin daemon resident. Add the Windows-side emulator (~1 GB) and Windows itself and
-  the host ran out — the desktop, not just WSL, stopped responding. Fixed in three
-  places: `.wslconfig` → `memory=7GB` + `[experimental] autoMemoryReclaim=gradual`;
-  `gradle.properties` → `-Xmx2g`, `kotlin.daemon.jvmargs=-Xmx1280m`, `parallel=false`,
-  `workers.max=2`; `loop.sh` → `reclaim()` stops the daemons between every session and
-  logs WSL+Windows headroom, refusing to start below 1200 MB. **The `.wslconfig` half
-  only takes effect after a `wsl --shutdown`** — until then WSL still has the 10 GB cap,
-  so the loop-side reclaim is doing the work.
+- **2026-08-07 — host froze (session #11). Cause: host memory, not any task's code.**
+  WSL2 balloons `vmmem` to its `.wslconfig` cap and never releases it, and sessions left
+  Gradle+Kotlin daemons resident; with the Windows emulator too, the whole desktop
+  stalled. Fixed in `.wslconfig` (7 GB + `autoMemoryReclaim=gradual`), `gradle.properties`
+  (caps — see CLAUDE.md) and `loop.sh` (`reclaim()` between sessions, refuses to start
+  below 1200 MB headroom). **The `.wslconfig` half needs a `wsl --shutdown` to take
+  effect** — until then the loop-side reclaim is doing all the work.
 
 ## Log
 
-- 2026-08-07 — bootstrap: SPEC/DESIGN/PLAN/CLAUDE/loop.sh/device.sh/fixtures created.
-- 2026-08-07 — T01 done: JDK 17.0.20, SDK (platform-tools 37.0.1, android-35,
-  build-tools 35.0.0, emulator 37.1.11), Maestro 2.8.0.
-- 2026-08-07 — T02 done: skeleton builds clean (`test assembleDebug` exit 0, 1 test).
-  Truth's package is `com.google.common.truth`, **not** `com.google.truth`.
-  Room/KSP are wired (deps + `room.schemaLocation`) but no
+- 2026-08-07 — T01–T03 done (toolchain, skeleton, Windows emulator; everything durable
+  about them is in CLAUDE.md §Environment). Two gotchas worth keeping: Truth's package is
+  `com.google.common.truth`, **not** `com.google.truth`; Room/KSP are wired but no
   `@Database` exists yet, so KSP is unexercised until T12.
-- 2026-08-07 — T03 done: Windows SDK (cmdline-tools 15859902, platform-tools, emulator,
-  `system-images;android-35;google_apis;x86_64`), AVD `perch`, booted headless.
-  Cold first boot ≈ 11 min; budget 15 min (`BOOT_TIMEOUT=900`). The AVD has no `-d`
-  profile (320x640), so `device.sh` forces `wm size 1080x1920` + `wm density 420` on
-  every boot — below that a screenshot is ~5 KB and trips the blank-guard.
 - 2026-08-07 — T04 done: `scripts/harvest.sh` (re-runnable) → 42 manifest rows,
   **39 snapshots** (19 MB); homepage HTML for the four auto-discovery cases is in
   `fixtures/homepages/` — T11 needs it. **3 exclusions:**
@@ -109,3 +97,13 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
   Tracking pixels must go **before** cleaning — `width`/`height` are not allowlisted.
   `sanitize` → null when nothing renderable survives. Parsers still hand out raw
   `contentHtml`; sanitizing is T15/T25's call.
+- 2026-08-07 — T11 done: `FeedDiscovery` (13 tests; suite now 221, 0 failures). xania.org
+  **does** declare its feed — the `<link>` is split across two lines, which is why
+  `harvest.sh`'s line-based grep missed it and fell through to `/feed` → redirect to
+  `/feed.atom`. Hence jsoup, not a regex: attribute order, `rel` token lists and `type`
+  parameters all vary. Discovery **trusts a declared feed URL without fetching it** (T16
+  fetches it to add the source, and that is where a broken declaration should be reported)
+  but **verifies every path guess by parsing it** — nccgroup answers 200-with-HTML to all
+  six guesses, so an unverified guess would hand back an address that never parses.
+  Ports `PageFetcher`/`FetchedPage` (bytes + contentType + post-redirect finalUrl) are
+  minimal on purpose; T14's `FeedFetcher` should adapt to them, not the reverse.
