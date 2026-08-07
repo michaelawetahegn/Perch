@@ -45,8 +45,10 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
 | `titleMedium` | 16/24, w500 | Entry title in list rows (max **3 lines**, ellipsis) |
 | `bodyMedium` | 14/20 | Entry snippet in list rows (max **2 lines**) |
 | `labelMedium` | 12/16 | Source name · relative time metadata line |
-| `bodyLarge` **+ 1.55 line height** | 16/25 | **Article body only** |
 | `titleLarge` | 22/28 | Top app bar title (`LargeTopAppBar` on home) |
+
+**The article surface has its own serif type scale — see §8.** App furniture is sans
+(Roboto); editorial content is serif (`FontFamily.Serif`). That split is deliberate.
 
 - Article body max width **`72.dp * fontScale`-independent measure**: cap the text
   column at 680dp and centre it, so a tablet/landscape read isn't a 100-character line.
@@ -55,7 +57,9 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
   code never wraps.**
 - Respect the system font scale everywhere. Nothing may clip at 1.3× — that's a
   polish-pass check.
-- No custom fonts bundled. Platform default (Roboto) only.
+- No custom fonts **bundled**. Platform families only: `FontFamily.Default` (Roboto)
+  for app furniture, `FontFamily.Serif` (Noto Serif, on-device) for the article
+  surface. Zero APK cost, no licensing, no download.
 
 ## 4. Spacing, density, shape
 
@@ -129,18 +133,80 @@ Restrained and standard. Material 3 defaults; do not hand-roll easing.
 
 Snackbars for undoable actions (mark-all-read, remove source). Toasts: never.
 
-## 8. Article rendering
+## 8. The reading surface — one standardized, editorial article view
 
-Rendered natively from sanitized HTML into Compose (`RichText.kt`) — **no WebView**.
+This is the heart of the app and the thing most RSS readers get wrong. Forty-two
+sources ship forty-two different HTML dialects — WordPress soup, Hugo output,
+Blogspot templates, hand-written XHTML. **The reader's job is to erase that.** Every
+article, whatever its origin, is normalized into the same canonical block model
+(SPEC.md §5, `ArticleBlock`) and rendered by exactly one renderer. A post from
+`nullprogram.com` and a post from `krebsonsecurity.com` must be typographically
+indistinguishable in structure — same measure, same rhythm, same code and image
+treatment. Source identity belongs in the byline, never in the layout.
 
-- Paragraph spacing 12dp; `h2/h3` get 24dp top / 8dp bottom.
-- Links: `primary`, no underline, 48dp-tall tap slop, open in a Custom Tab.
-- `blockquote`: 3dp `outlineVariant` left rule, 12dp inset, `onSurfaceVariant` italic.
-- Images: full-bleed to the text column, `RoundedCornerShape(8dp)`, aspect ratio held
-  from intrinsic size to prevent reflow jank, Coil with a `surfaceContainer` placeholder
-  and a graceful failure box (never a broken-image glyph).
-- Lists: 8dp marker gutter, hanging indent — wrapped lines align to the text, not the bullet.
-- A stripped/empty body falls back to the summary plus a prominent "Read on the web" button.
+**Direction: New York Times.** The app *furniture* (list, drawer, sheets, settings)
+stays Material 3 sans — that's the platform. The *article surface* is editorial:
+serif, generous, quiet, print-derived. Rendered natively into Compose
+(`RichText.kt`) — **no WebView**, so theming, selection, and dark mode are ours.
+
+### Type on the article surface
+
+Serif is `FontFamily.Serif` (Noto Serif, on-device — still no bundled fonts).
+
+| Element | Spec |
+|---|---|
+| Headline | **Serif**, 30sp/36, w700, `onSurface`, left-aligned, never centred |
+| Standfirst (summary, when it adds anything) | Serif, 18sp/26, `onSurfaceVariant`, italic |
+| Byline | **Sans**, 12sp, w500, letterSpacing 0.06em, uppercase: `SOURCE · AUTHOR · 12 MAR 2026` |
+| Body | **Serif**, 18sp / **29sp line height** (1.6), `onSurface` at 0.92 alpha |
+| Section head (`h2`) | Serif, 22sp/28, w700 · (`h3`) 19sp/26, w600 |
+| Caption | Sans, 13sp/18, `onSurfaceVariant`, above-the-fold hairline rule |
+| Pull-quote (`blockquote`) | Serif, 21sp/30, italic, no quotation marks |
+
+- **Measure caps at 680dp** and centres. 30–36 characters per line on a phone.
+- Paragraph rhythm: 0 top margin, **16dp** bottom. No first-line indent (web idiom, not print).
+- Section heads: **32dp** above, 10dp below. Whitespace does the separating, not rules.
+- Text is **selectable**. Long-press → copy.
+
+### The block treatments — identical across every source
+
+- **Code** (`pre`/`code`): the one place sans wins — `FontFamily.Monospace` 13sp/20 on
+  `surfaceContainer`, 8dp corners, 14dp padding, full text-column width,
+  **horizontal scroll, never wrapped, never reflowed**. A hairline `outlineVariant`
+  border in light mode. Inline `code` gets a subtle `surfaceContainerHigh` chip with
+  2dp horizontal padding — no border, no colour. **No syntax highlighting**: the feed
+  gives us no reliable language, and half-right highlighting looks worse than none.
+- **Images**: full text-column width, 4dp corners (editorial, not app-y), intrinsic
+  aspect ratio reserved *before* load so nothing reflows. `figcaption` → Caption style
+  directly beneath, 8dp gap. A failed load collapses to nothing — never a broken glyph,
+  never a grey box mid-sentence. 24dp above and below.
+- **Pull-quotes**: 24dp vertical margin, 20dp left inset, 2dp `primary` left rule at
+  0.4 alpha. Attribution line in Caption style.
+- **Lists**: 20dp marker gutter, hanging indent so wrapped lines align to the text.
+  8dp between items. `ol` markers in sans tabular figures.
+- **Rules** (`hr`): not a full-width line — a centred 32dp `outlineVariant` hairline
+  with 32dp of air, the way a print section break reads.
+- **Tables**: horizontally scrollable, hairline row separators, sans 14sp, header row
+  w600. Tables from feeds are rare and usually broken; never let one widen the page.
+- **Links**: `onSurface` with a 1dp `primary`-at-0.5 underline offset 3dp — an editorial
+  underline, not a blue hyperlink. Custom Tab on tap.
+- **Anything unmapped** (iframes, embeds, video): a single tasteful inline card —
+  "Embedded content · open on the web" — never an empty hole, never raw markup.
+
+### Normalization rules the renderer must enforce
+
+These are what make heterogeneous sources look like one publication:
+
+- Strip leading/trailing decoration many feeds append: share widgets, "Read more"
+  stubs, "The post X appeared first on Y", subscribe CTAs, comment counts.
+- Collapse `<div>`/`<span>` wrapper soup — structure comes from the block model, never
+  from the source's nesting.
+- **Drop all inline styles, colours, font sizes, and alignment** from source HTML. The
+  source does not get a vote on typography. This is non-negotiable and is the single
+  rule that makes 42 sources look like one app.
+- Consecutive empty paragraphs and `<br><br>` become one paragraph break.
+- A stripped or empty body falls back to the summary plus a prominent
+  "Read on the web" button — an honest empty state, not a blank page.
 
 ## 9. "Feels like a real app" checklist
 

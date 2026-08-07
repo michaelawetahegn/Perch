@@ -24,6 +24,17 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
   `JAVA_HOME`+`ANDROID_HOME` live at `C:\perch-stage\sdk.bat` and `avd.bat`.
 - Windows gateway from WSL: `172.18.144.1` (only needed if the interop bridge fails
   and adb has to go over TCP instead).
+- **2026-08-07 — host froze during session #11 (T11). Diagnosis: host memory, not a
+  bug in any task.** `.wslconfig` gave WSL 10 GB of the host's 15.9 GB; WSL2 balloons
+  `vmmem` to that cap and never releases it, and each session left a Gradle daemon +
+  Kotlin daemon resident. Add the Windows-side emulator (~1 GB) and Windows itself and
+  the host ran out — the desktop, not just WSL, stopped responding. Fixed in three
+  places: `.wslconfig` → `memory=7GB` + `[experimental] autoMemoryReclaim=gradual`;
+  `gradle.properties` → `-Xmx2g`, `kotlin.daemon.jvmargs=-Xmx1280m`, `parallel=false`,
+  `workers.max=2`; `loop.sh` → `reclaim()` stops the daemons between every session and
+  logs WSL+Windows headroom, refusing to start below 1200 MB. **The `.wslconfig` half
+  only takes effect after a `wsl --shutdown`** — until then WSL still has the 10 GB cap,
+  so the loop-side reclaim is doing the work.
 
 ## Log
 

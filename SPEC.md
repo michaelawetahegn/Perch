@@ -171,6 +171,39 @@ figure figcaption hr table thead tbody tr th td sub sup` + `a[href]` `img[src|al
 Everything else stripped. Relative URLs resolved against the entry link. No scripts,
 no iframes, no styles, no tracking pixels (`img` ≤ 1px dropped).
 
+**`ArticleBlock` — the canonical block model.** Forty-two sources ship forty-two
+HTML dialects. Sanitized HTML is *not* the rendering input; it is lowered one more
+step into a flat `List<ArticleBlock>`, and the article renderer knows only this
+type. No source-specific branches anywhere in the UI. Defined in
+`data/parse/ArticleBlock.kt`:
+
+```kotlin
+sealed interface ArticleBlock {
+  data class Paragraph(val text: RichSpan) : ArticleBlock
+  data class Heading(val level: Int, val text: RichSpan) : ArticleBlock   // 2..3; h1→2, h4-6→3
+  data class Code(val text: String) : ArticleBlock                        // pre/code, verbatim
+  data class Image(val url: String, val alt: String?, val caption: RichSpan?) : ArticleBlock
+  data class Quote(val blocks: List<ArticleBlock>) : ArticleBlock         // blockquote
+  data class ListBlock(val ordered: Boolean, val items: List<RichSpan>) : ArticleBlock
+  data class Table(val header: List<RichSpan>, val rows: List<List<RichSpan>>) : ArticleBlock
+  object Rule : ArticleBlock                                              // hr
+  data class Unsupported(val label: String) : ArticleBlock                // renders "open on the web"
+}
+```
+
+`RichSpan` is the inline layer: text plus non-overlapping ranges of
+`Em`/`Strong`/`InlineCode`/`Sub`/`Sup`/`Link(url)`. **Inline styling from the
+source is discarded entirely** — colours, sizes, fonts and alignment do not
+survive lowering (DESIGN.md §8). Nesting collapses: a block inside a `<p>` ends
+the paragraph rather than nesting.
+
+The lowering is total: every sanitized document produces a block list, and any
+element the mapper does not recognise becomes `Unsupported`, never a silent drop.
+`toBlocks` never throws. Chrome removed during lowering: share/subscribe widgets,
+"Read more" stubs, `The post X appeared first on Y`, comment counts, consecutive
+empty paragraphs. An empty result means the renderer shows summary + "Read on
+the web".
+
 **Auto-discovery:** given a homepage, prefer
 `link[rel=alternate][type=application/atom+xml]`, then `application/rss+xml`, then
 `application/rdf+xml`, then common paths (`/feed`, `/rss.xml`, `/atom.xml`,

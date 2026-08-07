@@ -58,6 +58,37 @@ hit_limit() {                       # $1 = session output file, $2 = session exi
   return 1
 }
 
+# ── memory guard ─────────────────────────────────────────────────────────────
+# This is what killed the first run. Gradle leaves a daemon behind, Kotlin leaves
+# another, and WSL2's vmmem balloons to the .wslconfig cap and never hands memory
+# back to Windows. After ~11 sessions the host (15.9 GB, also running the WHPX
+# emulator) had nothing left and the entire desktop stopped responding.
+# So: every session ends by putting the JVMs down, and we log the headroom on both
+# sides of the boundary so a slow leak is visible in loop.log instead of fatal.
+MEM_FLOOR_MB=${MEM_FLOOR_MB:-1200}          # WSL available RAM below which we refuse to start
+
+wsl_free_mb() { awk '/MemAvailable/ {print int($2/1024)}' /proc/meminfo; }
+win_free_mb() {
+  powershell.exe -NoProfile -Command \
+    '[int]((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1KB)' 2>/dev/null \
+    | tr -d '\0\r\n'
+}
+
+reclaim() {
+  [ -x ./gradlew ] && ./gradlew --stop >/dev/null 2>&1
+  pkill -f KotlinCompileDaemon >/dev/null 2>&1
+  sleep 2
+  local w h
+  w=$(wsl_free_mb); h=$(win_free_mb)
+  say "memory after reclaim: WSL ${w}MB available · Windows ${h:-?}MB free"
+  # A host that is this tight is minutes away from freezing again. Back off and let
+  # Windows reclaim rather than starting another Gradle run on top of it.
+  if [ -n "$h" ] && [ "$h" -lt 1500 ]; then
+    say "⚠ Windows is under 1.5 GB free — pausing 120s to let the host recover"
+    sleep 120
+  fi
+}
+
 # The emulator lives on the Windows side (no nested virt on Windows 10 → no /dev/kvm
 # in WSL). scripts/device.sh owns every detail of that bridge; the loop just asks.
 DEV=./scripts/device.sh
@@ -97,6 +128,7 @@ command -v claude >/dev/null 2>&1 || { echo "FATAL: 'claude' CLI not on PATH"; e
 
 rule
 say "Ralph loop starting — $(remaining) task(s) pending in PLAN.md"
+reclaim
 boot_emulator
 
 session=0
@@ -114,6 +146,12 @@ while :; do
   fi
 
   maybe_nightly_reboot
+
+  avail=$(wsl_free_mb)
+  if [ "$avail" -lt "$MEM_FLOOR_MB" ]; then
+    say "⚠ only ${avail}MB available in WSL — reclaiming before starting a session"
+    reclaim
+  fi
 
   session=$((session + 1))
   before=$(head_sha)
@@ -141,6 +179,7 @@ while :; do
     continue
   fi
   rm -f "$out"
+  reclaim
 
   after=$(head_sha)
   if [ "$after" = "$before" ]; then

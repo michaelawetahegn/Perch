@@ -221,11 +221,32 @@ production code but no test is a defect — reopen the box.
         removes the source and its entries; rename updates the drawer label only.
       - Rung: unit
 
-- [ ] **T25 — Article screen + `RichText` renderer. TDD.** Sanitized HTML → Compose per
-      DESIGN.md §8; open-in-browser (Custom Tab); mark-read on open; 680dp measure cap.
-      - Done: `RichText` unit tests cover p/h2/h3/ul/ol/blockquote/pre/code/a/img/hr;
-        Robolectric test asserts opening an entry flips `isRead` in the DB and that the
-        overflow "Open in browser" fires an `ACTION_VIEW` intent with the entry link.
+- [ ] **T25a — `ArticleBlock` lowering. TDD. Pure JVM, no Compose.** Sanitized HTML →
+      `List<ArticleBlock>` per SPEC.md §5, in `data/parse/ArticleLowering.kt`. This is
+      the normalization layer: it is what makes 42 sources render identically, so it
+      carries the burden, not the renderer. Implements the "normalization rules the
+      renderer must enforce" in DESIGN.md §8 — drop every inline style/colour/size/
+      alignment, collapse wrapper soup, strip share widgets / "Read more" stubs /
+      "The post X appeared first on Y" / subscribe CTAs / comment counts, fold runs of
+      empty paragraphs and `<br><br>` into one break, unwrap `<figure>` into
+      `Image(caption=…)`, map h1→2 and h4–h6→3.
+      - Done: `ArticleLoweringTest` covers each `ArticleBlock` variant including
+        `Unsupported` and the chrome-stripping rules; and a corpus test lowers **one
+        entry from every T04 snapshot** asserting `toBlocks` never throws, every
+        non-empty body yields ≥1 block, and no block is a bare empty `Paragraph`.
+      - Rung: unit
+
+- [ ] **T25 — Article screen + block renderer. TDD.** `List<ArticleBlock>` → Compose,
+      one renderer, no source-specific branches. Implements the DESIGN.md §8 type scale
+      (serif editorial body, sans furniture) and block treatments literally: 680dp
+      measure cap, monospace code on `surfaceContainer` that scrolls horizontally and
+      never wraps, images at text-column width with reserved aspect ratio and a caption
+      beneath, blockquote with the 2dp primary rule, hanging-indent lists, scrollable
+      tables, underlined links. Open-in-browser (Custom Tab); mark-read on open; empty
+      body → summary + "Read on the web".
+      - Done: renderer unit tests cover every `ArticleBlock` variant; Robolectric test
+        asserts opening an entry flips `isRead` in the DB and that "Open in browser"
+        fires an `ACTION_VIEW` intent with the entry link.
       - Rung: unit
 
 - [ ] **T26 — Refresh UX + error/offline surfacing.** Pull-to-refresh, mark-all-read
@@ -283,6 +304,39 @@ production code but no test is a defect — reopen the box.
       baseline. `./gradlew clean test assembleDebug`. Write the absolute APK path, its
       size, the build timestamp, and install instructions to NOTES.md. Final
       `git log --oneline` sanity check.
-      - Done: clean build green, `app-debug.apk` exists, APK path in NOTES.md,
-        `grep -c '^- \[ \]' PLAN.md` returns 0.
+      - Done: clean build green, `app-debug.apk` exists, APK path in NOTES.md.
       - Rung: build
+
+- [ ] **T32 — Live acceptance: the daily-driver gate.** The last task. Everything before
+      this proves the code works against *fixtures*; this proves the app works against
+      *the real internet*, and that all 42 sources come out looking like one publication.
+      Lives in `app/src/test/.../acceptance/LiveAcceptanceTest.kt` but is **network-gated
+      and excluded from the default build** — `Assume.assumeTrue(project property
+      `perch.live`)`, wired as `./gradlew :app:testDebugUnitTest -Pperch.live=true
+      --tests '*LiveAcceptance*'`. `./gradlew test` must stay offline and deterministic.
+      Three gates, all three must pass:
+      1. **Pull.** Fetch every URL in `fixtures/feeds.txt` over the real network through
+         the real stack (`HttpClient` → `FeedParser`), honouring SPEC.md §6 limits.
+         ≥38 of 42 resolve to a feed with ≥1 entry. Any source that fails is named in
+         the failure message and logged to NOTES.md with its reason — a source that is
+         genuinely dead (see the T04 exclusions) is recorded there, not silently passed.
+      2. **Standardize.** Lower every fetched entry through `HtmlSanitizer` →
+         `ArticleBlock` (T25a). Assert: no lowering throws; no entry with a non-empty
+         body produces zero blocks; the `Unsupported` block count is ≤2% of all blocks
+         across the corpus, and every distinct `Unsupported` label is listed in the
+         failure message so the mapper can be extended rather than the threshold raised.
+      3. **Look like one publication.** Robolectric `@GraphicsMode(NATIVE)` screenshots
+         of the article screen for a deliberately hostile sample — code-heavy
+         (`nullprogram.com`, `regehr.org`), image-heavy (`ciechanow.ski`), a table or
+         list-heavy post, and the longest headline in the corpus — each in **light and
+         dark**. Critique against DESIGN.md §8 and fix what deviates: the headline,
+         measure, body leading, code block, and image treatment must be pixel-identical
+         in structure across sources. Max 2 critique-fix iterations, then log residual
+         polish to NOTES.md.
+      Then re-run `./gradlew clean test assembleDebug` and refresh the APK path in
+      NOTES.md if it changed.
+      - Done: the `-Pperch.live=true` run is green with the pass counts pasted into the
+        commit message; the screenshots exist under `build/perch-screenshots/`; the
+        default `./gradlew test` is still green **with no network**; and
+        `grep -c '^- \[ \]' PLAN.md` returns 0.
+      - Rung: screenshot

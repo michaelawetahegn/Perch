@@ -81,8 +81,17 @@ Do not skip ahead, do not do two tasks, do not refactor code the task doesn't to
 - **Screenshots do not need the emulator.** Prefer Robolectric native graphics
   (`@GraphicsMode(NATIVE)` + `captureToImage()`) — seconds, deterministic, JVM-only.
   The device is only genuinely required for Maestro (T30).
-- 4 cores / 9 GB RAM. Gradle: `org.gradle.jvmargs=-Xmx3g`, `org.gradle.parallel=true`,
-  `org.gradle.caching=true`. Do not run Gradle and an emulator boot concurrently.
+- 4 cores / **7 GB RAM** (lowered from 10 GB after the 2026-08-07 host freeze — see
+  NOTES.md). **The memory settings in `gradle.properties` are a host-stability
+  constraint, not a tuning knob: do not raise `-Xmx`, do not re-enable
+  `org.gradle.parallel`.** The host has 15.9 GB and also runs the WHPX emulator; WSL2
+  never gives ballooned memory back, so an over-provisioned build freezes the whole
+  desktop, not just the build. If a task genuinely OOMs, mark it `[BLOCKED: …]` and log
+  it — do not buy headroom by raising the caps.
+- Run `./gradlew --stop` when you are done with Gradle for the session. The loop also
+  reclaims between sessions, but a session that leaves three JVMs resident is the
+  failure mode we are guarding against.
+- Do not run Gradle and an emulator boot concurrently.
 - Never run an interactive command. Everything must be non-interactive
   (`yes | sdkmanager --licenses`, `--no-daemon` if a daemon wedges).
 
