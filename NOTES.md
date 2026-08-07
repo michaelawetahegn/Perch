@@ -48,4 +48,13 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
     `y` into `sdkmanager.bat --licenses` through interop does not work.
   · One bad package name makes `sdkmanager` install **nothing** — quote
     `system-images;...` inside a `.bat`, not on the interop command line.
-  Next: T04 (fixture harvest).
+- 2026-08-07 — T04 done: `scripts/harvest.sh` (re-runnable) → 42 manifest rows,
+  **39 snapshots** in `fixtures/snapshots/`, 19 MB total. Homepage HTML for the four
+  auto-discovery cases is kept in `fixtures/homepages/` — T11 needs it.
+  **3 exclusions:**
+  · `danluu.com` (11.1 MB) and `googleprojectzero.blogspot.com` → `projectzero.google`
+    (13.2 MB) — both exceed SPEC.md §6's 8 MiB body cap, so the app would reject them
+    live; the corpus must not contain feeds T09 requires to parse but T14 must refuse.
+  · `research.nccgroup.com` — no longer publishes a feed anywhere. Homepage has zero
+    `<link rel=alternate>` and /feed /feed/ /rss.xml /atom.xml /index.xml /feed.xml /rss/
+    all soft-404 to the same 116 KB HTML page (HTTP 200). Kept as T11's negative case.

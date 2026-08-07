@@ -1,0 +1,1732 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- SSI: CSS+JS inline for speed -->
+  <!-- INLINED-HEAD-BEGIN -->
+  <style id="inlined-styles-colors">
+:root {
+    /*  General.
+     */
+    --GW-body-background-color: #fff;
+    --GW-body-text-color: #000;
+
+    /*  Selection.
+     */
+    --GW-text-selection-background-color: #333;
+    --GW-text-selection-color: #fff;
+
+	/*	Links.
+	 */
+    --GW-body-link-color: #333;
+    --GW-body-link-hover-color: #888;
+    --GW-body-link-visited-color: #666;
+    --GW-body-link-inverted-color: #eee;
+    --GW-body-link-inverted-hover-color: #ccc;
+    --GW-body-link-inverted-visited-color: #ddd;
+
+    /*  Blockquotes.
+     */
+    --GW-blockquote-border-color-level-one: #ccc;
+    --GW-blockquote-border-color-level-two: #c4c4c4;
+    --GW-blockquote-border-color-level-three: #b3b3b3;
+    --GW-blockquote-border-color-level-four: #a6a6a6;
+    --GW-blockquote-background-color-level-one: #f8f8f8;
+    --GW-blockquote-background-color-level-two: #e6e6e6;
+    --GW-blockquote-background-color-level-three: #d8d8d8;
+
+    /*  Abstracts.
+     */
+    --GW-abstract-border-color: #bbb;
+
+	/*	Block context highlighting.
+	 */
+	--GW-block-context-span-highlight-color: #ddd;
+
+    /*  Table of contents.
+     */
+    --GW-TOC-border-color: #ccc;
+    --GW-TOC-background-color: #f8f8f8;
+    --GW-TOC-collapse-button-text-color: #ccc;
+    --GW-TOC-collapse-button-text-hover-color: #fff;
+    --GW-TOC-collapse-button-color: rgba(248, 248, 248, 0.8);
+    --GW-TOC-collapse-button-hover-color: #ddd;
+    --GW-TOC-collapse-button-border-hover-color: #000;
+    --GW-TOC-link-hover-background-color: #ececec;
+    --GW-TOC-link-hover-color: #000;
+    --GW-TOC-link-hover-indicator-bar-color: #ccc;
+    --GW-TOC-number-color: #909090;
+    --GW-TOC-number-hover-color: #313131;
+
+    /*  Collapse blocks.
+        */
+	--GW-collapse-abstract-blockquote-hover-color: #eee;
+	--GW-collapse-disclosure-button-color: #eee;
+	--GW-collapse-disclosure-button-hover-color: #ddd;
+	--GW-collapse-in-blockquote-disclosure-button-color: #ddd;
+	--GW-collapse-in-blockquote-disclosure-button-hover-color: #ccc;
+	--GW-collapse-disclosure-button-text-color: #bbb;
+	--GW-collapse-disclosure-button-text-hover-color: #fff;
+	--GW-collapse-in-blockquote-disclosure-button-text-color: #999;
+	--GW-collapse-in-blockquote-disclosure-button-text-hover-color: #888;
+
+	/*	Inline collapses.
+	 */
+	--GW-collapse-inline-disclosure-button-text-color: #555;
+	--GW-collapse-inline-disclosure-button-text-hover-color: #999;
+
+	/*	Aux-links collapse blocks.
+	 */
+	--GW-aux-links-collapse-border-color: #c4c4c4;
+
+    /*  Headings.
+     */
+    --GW-H1-border-color: #888;
+    --GW-H2-border-color: #888;
+
+    /*  Comments.
+     */
+    --GW-comment-section-top-border-color: #999;
+
+    /*  Lists.
+     */
+    --GW-bulleted-list-marker-color: #808080;
+
+    /*  Figures.
+     */
+    --GW-figure-outline-color: #888;
+    --GW-figure-caption-outline-color: #888;
+
+	/*	Embeds.
+	 */
+	--GW-embed-border-color: #ddd;
+
+    /*  Epigraphs.
+     */
+    --GW-epigraph-quotation-mark-color: #808080;
+
+    /*  Footnotes.
+     */
+    --GW-footnote-border-color: #aaa;
+    --GW-footnote-highlighted-border-color: #aaa;
+    --GW-footnotes-section-top-rule-color: #ccc;
+    --GW-footnote-backlink-border-color: #000;
+    --GW-footnote-backlink-border-hover-color: #999;
+
+    /*  Footnote references.
+     */
+    --GW-highlighted-link-outline-color: #999;
+
+    /*  Sidenotes.
+     */
+    --GW-sidenote-highlight-box-shadow-color: #aaa;
+    --GW-sidenote-border-color: #aaa;
+    --GW-sidenote-scrollbar-thumb-color: #aaa;
+    --GW-sidenote-scrollbar-thumb-hover-color: #999;
+    --GW-sidenote-self-link-border-color: #aaa;
+
+	/*	Annotations.
+	 */
+	--GW-section-highlighted-border-color: #666;
+
+    /*  Tables.
+     */
+    --GW-table-border-color: #000;
+    --GW-table-caption-border-color: #000;
+    --GW-table-row-horizontal-border-color: #000;
+    --GW-table-scrollbar-thumb-color: #aaa;
+    --GW-table-scrollbar-thumb-hover-color: #999;
+    --GW-table-scrollbar-border-color: #000;
+    --GW-table-column-heading-hover-background-color: #e2f0f2;
+    --GW-table-sorted-column-heading-background-color: #8bd0ed;
+    --GW-table-sorted-column-heading-text-color: #fff;
+    --GW-table-sorted-column-heading-text-shadow-color: #000;
+    --GW-table-zebra-stripe-alternate-row-background-color: #f6f6f6;
+    --GW-table-row-hover-outline-color: #000;
+
+    /*  Code blocks.
+     */
+    --GW-code-element-border-color: #c8c8c8;
+    --GW-code-element-background-color: #fafafa;
+    --GW-pre-element-border-color: #c8c8c8;
+    --GW-pre-element-background-color: #fafafa;
+    --GW-pre-element-scrollbar-track-color: #fafafa;
+    --GW-pre-element-scrollbar-thumb-color: #ccc;
+    --GW-pre-element-scrollbar-thumb-hover-color: #999;
+    --GW-code-block-line-highlight-background-color: #ffd;
+    --GW-code-block-line-highlight-border-color: #ddd;
+    --GW-code-block-line-number-color: #aaa;
+    --GW-code-block-line-number-divider-color: #ccc;
+
+
+    /*  Syntax highlight theme.
+     */
+    --GW-syntax-highlight-color-normal: #1f1c1b;
+    --GW-syntax-highlight-color-attribute: #002561;
+    --GW-syntax-highlight-color-data-type: inherit;
+    --GW-syntax-highlight-color-variable: #666666;
+    --GW-syntax-highlight-color-other: inherit;
+    --GW-syntax-highlight-color-preprocessor: inherit;
+    --GW-syntax-highlight-color-extension: #777;
+    --GW-syntax-highlight-color-comment: #77947b;
+    --GW-syntax-highlight-color-control-flow: #003900;
+    --GW-syntax-highlight-color-keyword: #002561;
+    --GW-syntax-highlight-color-operator: #002561;
+    --GW-syntax-highlight-color-special-char: #607880;
+    --GW-syntax-highlight-color-built-in: #002561;
+    --GW-syntax-highlight-color-function: #002561;
+    --GW-syntax-highlight-color-constant: inherit;
+    --GW-syntax-highlight-color-base-n: inherit;
+    --GW-syntax-highlight-color-dec-val: inherit;
+    --GW-syntax-highlight-color-float: inherit;
+    --GW-syntax-highlight-color-information: inherit;
+    --GW-syntax-highlight-color-char: inherit;
+    --GW-syntax-highlight-color-string: inherit;
+    --GW-syntax-highlight-color-verbatim-string: inherit;
+    --GW-syntax-highlight-color-alert: #bf0303;
+    --GW-syntax-highlight-color-error: #ff0000;
+    --GW-syntax-highlight-color-import: #777777;
+    --GW-syntax-highlight-color-special-string: #666666;
+
+    /*  Math.
+     */
+    --GW-math-block-background-color: #f6f6f6;
+    --GW-math-block-background-color-flash: #fff;
+    --GW-math-block-scrollbar-border-color: #ccc;
+    --GW-math-block-scrollbar-thumb-color: #ccc;
+    --GW-math-block-scrollbar-thumb-hover-color: #999;
+
+    /*  Dropcaps.
+     */
+    --GW-dropcaps-goudy-color: #000;
+    --GW-dropcaps-yinit-color: #0d0d0d;
+    --GW-dropcaps-yinit-text-shadow-color: #777;
+    --GW-dropcaps-de-zs-color: #1b1b1b;
+    --GW-dropcaps-cheshire-color: #191919;
+    --GW-dropcaps-kanzlei-color: #191919;
+
+    /*  Admonitions.
+     */
+    --GW-admonition-note-left-border-color: #909090;
+    --GW-admonition-note-background-color: #d8d8d8;
+    --GW-admonition-tip-left-border-color: #d8d8d8;
+    --GW-admonition-tip-background-color: #f0f0f0;
+    --GW-admonition-warning-left-border-color: #5a5a5a;
+    --GW-admonition-warning-background-color: #9a9a9a;
+    --GW-admonition-warning-text-color: #fff;
+    --GW-admonition-error-left-border-color: #2d2d2d;
+    --GW-admonition-error-background-color: #5a5a5a;
+    --GW-admonition-error-text-color: #fff;
+    --GW-admonition-reversed-link-color: #ddd;
+    --GW-admonition-reversed-link-color-hover: #ccc;
+    --GW-admonition-reversed-link-underline-gradient-line-color: #ccc;
+    --GW-admonition-reversed-link-underline-gradient-line-color-hover: #bbb;
+
+	/*	Footer.
+	 */
+    --GW-bottom-ornament-line-color: #000;
+
+	/*	Pop-frames (popups or popovers).
+	 */
+    --GW-popframes-object-popframe-background-color: #fff;
+
+    --GW-extracts-options-dialog-backdrop-background-color: rgba(255, 255, 255, 0.95);
+    --GW-extracts-options-dialog-background-color: var(--GW-body-background-color);
+    --GW-extracts-options-dialog-border-color: #aaa;
+    --GW-extracts-options-dialog-box-shadow-color: #444;
+    --GW-extracts-options-dialog-horizontal-rule-color: #ccc;
+    --GW-extracts-options-dialog-button-background-color: var(--GW-body-background-color);
+    --GW-extracts-options-dialog-button-text-color: #000;
+    --GW-extracts-options-dialog-button-border-color: #000;
+    --GW-extracts-options-dialog-button-hover-box-shadow-color: #000;
+    --GW-extracts-options-dialog-option-button-explanation-text-color: #777;
+    --GW-extracts-options-dialog-option-button-hover-text-color: #777;
+    --GW-extracts-options-dialog-radio-button-border-color: #000;
+
+    /*  Popups.
+     */
+    --GW-popups-popup-background-color: var(--GW-body-background-color);
+
+    --GW-popups-popup-border-color: #ccc;
+    --GW-popups-popup-box-shadow-color: #ccc;
+    --GW-popups-popup-border-focused-color: #aaa;
+    --GW-popups-popup-box-shadow-focused-color: #aaa;
+
+    --GW-popups-popup-title-bar-background-color: #fff;
+    --GW-popups-popup-title-bar-button-color: #bbb;
+    --GW-popups-popup-title-bar-button-color-hover: #000;
+    --GW-popups-popup-title-bar-button-color-disabled: #eee;
+	--GW-popups-popup-title-color: #aaa;
+    --GW-popups-popup-title-link-hover-color: var(--GW-body-link-hover-color);
+    --GW-popups-popup-title-bar-button-focused-color: #777;
+    --GW-popups-popup-title-bar-button-focused-color-hover: #000;
+    --GW-popups-popup-title-bar-button-focused-color-disabled: #ddd;
+    --GW-popups-popup-title-bar-submenu-box-shadow-color: #ddd;
+	--GW-popups-popup-title-focused-color: #000;
+    --GW-popups-popup-title-link-hover-focused-color: var(--GW-body-link-hover-color);
+
+    --GW-popups-popup-scrollbar-thumb-color: #ddd;
+    --GW-popups-popup-scrollbar-thumb-hover-color: #bbb;
+    --GW-popups-popup-scrollbar-thumb-focused-color: #ccc;
+    --GW-popups-popup-scrollbar-thumb-hover-focused-color: #999;
+
+    /*  Popovers.
+     */
+    --GW-popovers-popover-background-color: var(--GW-body-background-color);
+
+    --GW-popovers-popover-border-color: #aaa;
+    --GW-popovers-popover-backdrop-color: rgba(0, 0, 0, 0.4);
+    --GW-popovers-popover-box-shadow-color: #aaa;
+
+    --GW-popovers-popover-title-bar-background-color: #fff;
+    --GW-popovers-popover-title-bar-button-color: #777;
+
+    --GW-popovers-popover-scrollbar-thumb-color: #ccc;
+    --GW-popovers-popover-scrollbar-thumb-hover-color: #999;
+
+    --GW-popovers-popover-stack-counter-text-color: #fff;
+    --GW-popovers-popover-stack-counter-background-color: #bbb;
+
+    /*  Image focus.
+     */
+    --GW-image-focus-image-hover-drop-shadow-color: #777;
+
+	/*	Page toolbar.
+	 */
+    --GW-page-toolbar-border-color: #aaa;
+	--GW-page-toolbar-control-button-color: #aaa;
+	--GW-page-toolbar-control-button-active-color: #000;
+
+	/*	Page toolbar widgets.
+	 */
+	--GW-page-toolbar-button-icon-color: #aaa;
+	--GW-page-toolbar-button-selectable-icon-color: #e4e4e4;
+	--GW-page-toolbar-button-selected-icon-color: #777;
+    --GW-page-toolbar-button-text-color: #666;
+    --GW-page-toolbar-button-disabled-text-color: #ccc;
+    --GW-page-toolbar-button-highlighted-text-color: #000;
+
+	/*	Reader mode.
+	 */
+	--GW-reader-mode-masked-links-key-toggle-info-alert-panel-background-color: rgba(0, 0, 0, 0.8);
+	--GW-reader-mode-masked-links-key-toggle-info-alert-panel-text-color: #fff;
+	--GW-reader-mode-masked-links-key-toggle-info-alert-panel-text-shadow-color: #000;
+	--GW-reader-mode-masked-links-key-toggle-info-alert-panel-key-icon-border-color: #bbb;
+	--GW-reader-mode-masked-links-key-toggle-info-alert-panel-key-icon-background-color: #444;
+
+	/*	Mobile floating header.
+	 */
+	--GW-floating-header-box-shadow-color: #ccc;
+	--GW-floating-header-scroll-indicator-color: #999;
+
+	/*	“Skip to content” accessibility link.
+	 */
+	--GW-skip-to-content-text-color: #fff;
+	--GW-skip-to-content-border-color: #fff;
+	--GW-skip-to-content-background-color: #bf1722;
+
+	/*	Nav header.
+	 */
+	--GW-nav-header-link-color: #888;
+	--GW-nav-header-link-hover-color: #000;
+
+	/*	X of the day.
+	 */
+	--GW-x-of-the-day-border-color: #ccc;
+}
+:root {
+    --GW-popups-popup-title-bar-pattern: var(--GW-image-pattern-dotted-e6e6e6-on-fff-2x-gif);
+    --GW-popups-popup-title-bar-pattern-focused: var(--GW-image-pattern-dotted-fff-on-e6e6e6-2x-gif);
+
+	--GW-checkerboard-scrollbar-background-image: var(--GW-image-checkerboard-777-fff-2x-gif);
+	--GW-checkerboard-scrollbar-hover-background-image: var(--GW-image-checkerboard-000-fff-2x-gif);
+}
+
+@media all and (max-width: 649px) {
+	.poem,
+	.editorial {
+		text-shadow: 0 0 0 currentColor;
+	}
+}
+</style>
+<style id="inlined-styles-colors-dark" media="all and (prefers-color-scheme: dark)">
+:root {
+    /*  General.
+     */
+    --GW-body-background-color: #000;
+    --GW-body-text-color: #fff;
+
+    /*  Selection.
+     */
+    --GW-text-selection-background-color: #dcdcdc;
+    --GW-text-selection-color: #000;
+
+	/*	Links.
+	 */
+    --GW-body-link-color: #dcdcdc;
+    --GW-body-link-hover-color: #999;
+    --GW-body-link-visited-color: #b4b4b4;
+    --GW-body-link-inverted-color: #333;
+    --GW-body-link-inverted-hover-color: #5c5c5c;
+    --GW-body-link-inverted-visited-color: #494949;
+
+    /*  Blockquotes.
+     */
+    --GW-blockquote-border-color-level-one: #5c5c5c;
+    --GW-blockquote-border-color-level-two: #646464;
+    --GW-blockquote-border-color-level-three: #747474;
+    --GW-blockquote-border-color-level-four: #7f7f7f;
+    --GW-blockquote-background-color-level-one: #212121;
+    --GW-blockquote-background-color-level-two: #3e3e3e;
+    --GW-blockquote-background-color-level-three: #4f4f4f;
+
+    /*  Abstracts.
+     */
+    --GW-abstract-border-color: #6c6c6c;
+
+	/*	Block context highlighting.
+	 */
+	--GW-block-context-span-highlight-color: #494949;
+
+    /*  Table of contents.
+     */
+    --GW-TOC-border-color: #5c5c5c;
+    --GW-TOC-background-color: #212121;
+    --GW-TOC-collapse-button-text-color: #5c5c5c;
+    --GW-TOC-collapse-button-text-hover-color: #000;
+    --GW-TOC-collapse-button-color: rgba(33, 33, 33, 0.8);
+    --GW-TOC-collapse-button-hover-color: #494949;
+    --GW-TOC-collapse-button-border-hover-color: #fff;
+    --GW-TOC-link-hover-background-color: #363636;
+    --GW-TOC-link-hover-color: #fff;
+    --GW-TOC-link-hover-indicator-bar-color: #5c5c5c;
+    --GW-TOC-number-color: #929292;
+    --GW-TOC-number-hover-color: #ddd;
+
+    /*  Collapse blocks.
+        */
+	--GW-collapse-abstract-blockquote-hover-color: #333;
+	--GW-collapse-disclosure-button-color: #333;
+	--GW-collapse-disclosure-button-hover-color: #494949;
+	--GW-collapse-in-blockquote-disclosure-button-color: #494949;
+	--GW-collapse-in-blockquote-disclosure-button-hover-color: #5c5c5c;
+	--GW-collapse-disclosure-button-text-color: #6c6c6c;
+	--GW-collapse-disclosure-button-text-hover-color: #000;
+	--GW-collapse-in-blockquote-disclosure-button-text-color: #8b8b8b;
+	--GW-collapse-in-blockquote-disclosure-button-text-hover-color: #999;
+
+	/*	Inline collapses.
+	 */
+	--GW-collapse-inline-disclosure-button-text-color: #c1c1c1;
+	--GW-collapse-inline-disclosure-button-text-hover-color: #8b8b8b;
+
+	/*	Aux-links collapse blocks.
+	 */
+	--GW-aux-links-collapse-border-color: #646464;
+
+    /*  Headings.
+     */
+    --GW-H1-border-color: #999;
+    --GW-H2-border-color: #999;
+
+    /*  Comments.
+     */
+    --GW-comment-section-top-border-color: #8b8b8b;
+
+    /*  Lists.
+     */
+    --GW-bulleted-list-marker-color: #9f9f9f;
+
+    /*  Figures.
+     */
+    --GW-figure-outline-color: #999;
+    --GW-figure-caption-outline-color: #999;
+
+	/*	Embeds.
+	 */
+	--GW-embed-border-color: #494949;
+
+    /*  Epigraphs.
+     */
+    --GW-epigraph-quotation-mark-color: #9f9f9f;
+
+    /*  Footnotes.
+     */
+    --GW-footnote-border-color: #7c7c7c;
+    --GW-footnote-highlighted-border-color: #7c7c7c;
+    --GW-footnotes-section-top-rule-color: #5c5c5c;
+    --GW-footnote-backlink-border-color: #fff;
+    --GW-footnote-backlink-border-hover-color: #8b8b8b;
+
+    /*  Footnote references.
+     */
+    --GW-highlighted-link-outline-color: #8b8b8b;
+
+    /*  Sidenotes.
+     */
+    --GW-sidenote-highlight-box-shadow-color: #7c7c7c;
+    --GW-sidenote-border-color: #7c7c7c;
+    --GW-sidenote-scrollbar-thumb-color: #7c7c7c;
+    --GW-sidenote-scrollbar-thumb-hover-color: #8b8b8b;
+    --GW-sidenote-self-link-border-color: #7c7c7c;
+
+	/*	Annotations.
+	 */
+	--GW-section-highlighted-border-color: #b4b4b4;
+
+    /*  Tables.
+     */
+    --GW-table-border-color: #fff;
+    --GW-table-caption-border-color: #fff;
+    --GW-table-row-horizontal-border-color: #fff;
+    --GW-table-scrollbar-thumb-color: #7c7c7c;
+    --GW-table-scrollbar-thumb-hover-color: #8b8b8b;
+    --GW-table-scrollbar-border-color: #fff;
+    --GW-table-column-heading-hover-background-color: #2b3637;
+    --GW-table-sorted-column-heading-background-color: #216983;
+    --GW-table-sorted-column-heading-text-color: #000;
+    --GW-table-sorted-column-heading-text-shadow-color: #fff;
+    --GW-table-zebra-stripe-alternate-row-background-color: #252525;
+    --GW-table-row-hover-outline-color: #fff;
+
+    /*  Code blocks.
+     */
+    --GW-code-element-border-color: #606060;
+    --GW-code-element-background-color: #1d1d1d;
+    --GW-pre-element-border-color: #606060;
+    --GW-pre-element-background-color: #1d1d1d;
+    --GW-pre-element-scrollbar-track-color: #1d1d1d;
+    --GW-pre-element-scrollbar-thumb-color: #5c5c5c;
+    --GW-pre-element-scrollbar-thumb-hover-color: #8b8b8b;
+    --GW-code-block-line-highlight-background-color: #171600;
+    --GW-code-block-line-highlight-border-color: #494949;
+    --GW-code-block-line-number-color: #7c7c7c;
+    --GW-code-block-line-number-divider-color: #5c5c5c;
+
+
+    /*  Syntax highlight theme.
+     */
+    --GW-syntax-highlight-color-normal: #f1edec;
+    --GW-syntax-highlight-color-attribute: #b9e8ff;
+    --GW-syntax-highlight-color-data-type: inherit;
+    --GW-syntax-highlight-color-variable: #b4b4b4;
+    --GW-syntax-highlight-color-other: inherit;
+    --GW-syntax-highlight-color-preprocessor: inherit;
+    --GW-syntax-highlight-color-extension: #a6a6a6;
+    --GW-syntax-highlight-color-comment: #7f9c83;
+    --GW-syntax-highlight-color-control-flow: #b4edaf;
+    --GW-syntax-highlight-color-keyword: #b9e8ff;
+    --GW-syntax-highlight-color-operator: #b9e8ff;
+    --GW-syntax-highlight-color-special-char: #94adb6;
+    --GW-syntax-highlight-color-built-in: #b9e8ff;
+    --GW-syntax-highlight-color-function: #b9e8ff;
+    --GW-syntax-highlight-color-constant: inherit;
+    --GW-syntax-highlight-color-base-n: inherit;
+    --GW-syntax-highlight-color-dec-val: inherit;
+    --GW-syntax-highlight-color-float: inherit;
+    --GW-syntax-highlight-color-information: inherit;
+    --GW-syntax-highlight-color-char: inherit;
+    --GW-syntax-highlight-color-string: inherit;
+    --GW-syntax-highlight-color-verbatim-string: inherit;
+    --GW-syntax-highlight-color-alert: #ff8470;
+    --GW-syntax-highlight-color-error: #ff4a39;
+    --GW-syntax-highlight-color-import: #a6a6a6;
+    --GW-syntax-highlight-color-special-string: #b4b4b4;
+
+    /*  Math.
+     */
+    --GW-math-block-background-color: #252525;
+    --GW-math-block-background-color-flash: #000;
+    --GW-math-block-scrollbar-border-color: #5c5c5c;
+    --GW-math-block-scrollbar-thumb-color: #5c5c5c;
+    --GW-math-block-scrollbar-thumb-hover-color: #8b8b8b;
+
+    /*  Dropcaps.
+     */
+    --GW-dropcaps-goudy-color: #fff;
+    --GW-dropcaps-yinit-color: #f9f9f9;
+    --GW-dropcaps-yinit-text-shadow-color: #a6a6a6;
+    --GW-dropcaps-de-zs-color: #efefef;
+    --GW-dropcaps-cheshire-color: #f1f1f1;
+    --GW-dropcaps-kanzlei-color: #f1f1f1;
+
+    /*  Admonitions.
+     */
+    --GW-admonition-note-left-border-color: #929292;
+    --GW-admonition-note-background-color: #4f4f4f;
+    --GW-admonition-tip-left-border-color: #4f4f4f;
+    --GW-admonition-tip-background-color: #303030;
+    --GW-admonition-warning-left-border-color: #bdbdbd;
+    --GW-admonition-warning-background-color: #8a8a8a;
+    --GW-admonition-warning-text-color: #000;
+    --GW-admonition-error-left-border-color: #e1e1e1;
+    --GW-admonition-error-background-color: #bdbdbd;
+    --GW-admonition-error-text-color: #000;
+    --GW-admonition-reversed-link-color: #494949;
+    --GW-admonition-reversed-link-color-hover: #5c5c5c;
+    --GW-admonition-reversed-link-underline-gradient-line-color: #5c5c5c;
+    --GW-admonition-reversed-link-underline-gradient-line-color-hover: #6c6c6c;
+
+	/*	Footer.
+	 */
+    --GW-bottom-ornament-line-color: #fff;
+
+	/*	Pop-frames (popups or popovers).
+	 */
+    --GW-popframes-object-popframe-background-color: #000;
+
+    --GW-extracts-options-dialog-backdrop-background-color: rgba(0, 0, 0, 0.95);
+    --GW-extracts-options-dialog-background-color: var(--GW-body-background-color);
+    --GW-extracts-options-dialog-border-color: #7c7c7c;
+    --GW-extracts-options-dialog-box-shadow-color: #cecece;
+    --GW-extracts-options-dialog-horizontal-rule-color: #5c5c5c;
+    --GW-extracts-options-dialog-button-background-color: var(--GW-body-background-color);
+    --GW-extracts-options-dialog-button-text-color: #fff;
+    --GW-extracts-options-dialog-button-border-color: #fff;
+    --GW-extracts-options-dialog-button-hover-box-shadow-color: #fff;
+    --GW-extracts-options-dialog-option-button-explanation-text-color: #a6a6a6;
+    --GW-extracts-options-dialog-option-button-hover-text-color: #a6a6a6;
+    --GW-extracts-options-dialog-radio-button-border-color: #fff;
+
+    /*  Popups.
+     */
+    --GW-popups-popup-background-color: var(--GW-body-background-color);
+
+    --GW-popups-popup-border-color: #5c5c5c;
+    --GW-popups-popup-box-shadow-color: #5c5c5c;
+    --GW-popups-popup-border-focused-color: #7c7c7c;
+    --GW-popups-popup-box-shadow-focused-color: #7c7c7c;
+
+    --GW-popups-popup-title-bar-background-color: #000;
+    --GW-popups-popup-title-bar-button-color: #6c6c6c;
+    --GW-popups-popup-title-bar-button-color-hover: #fff;
+    --GW-popups-popup-title-bar-button-color-disabled: #333;
+	--GW-popups-popup-title-color: #7c7c7c;
+    --GW-popups-popup-title-link-hover-color: var(--GW-body-link-hover-color);
+    --GW-popups-popup-title-bar-button-focused-color: #a6a6a6;
+    --GW-popups-popup-title-bar-button-focused-color-hover: #fff;
+    --GW-popups-popup-title-bar-button-focused-color-disabled: #494949;
+    --GW-popups-popup-title-bar-submenu-box-shadow-color: #494949;
+	--GW-popups-popup-title-focused-color: #fff;
+    --GW-popups-popup-title-link-hover-focused-color: var(--GW-body-link-hover-color);
+
+    --GW-popups-popup-scrollbar-thumb-color: #494949;
+    --GW-popups-popup-scrollbar-thumb-hover-color: #6c6c6c;
+    --GW-popups-popup-scrollbar-thumb-focused-color: #5c5c5c;
+    --GW-popups-popup-scrollbar-thumb-hover-focused-color: #8b8b8b;
+
+    /*  Popovers.
+     */
+    --GW-popovers-popover-background-color: var(--GW-body-background-color);
+
+    --GW-popovers-popover-border-color: #7c7c7c;
+    --GW-popovers-popover-backdrop-color: rgba(255, 255, 255, 0.4);
+    --GW-popovers-popover-box-shadow-color: #7c7c7c;
+
+    --GW-popovers-popover-title-bar-background-color: #000;
+    --GW-popovers-popover-title-bar-button-color: #a6a6a6;
+
+    --GW-popovers-popover-scrollbar-thumb-color: #5c5c5c;
+    --GW-popovers-popover-scrollbar-thumb-hover-color: #8b8b8b;
+
+    --GW-popovers-popover-stack-counter-text-color: #000;
+    --GW-popovers-popover-stack-counter-background-color: #6c6c6c;
+
+    /*  Image focus.
+     */
+    --GW-image-focus-image-hover-drop-shadow-color: #a6a6a6;
+
+	/*	Page toolbar.
+	 */
+    --GW-page-toolbar-border-color: #7c7c7c;
+	--GW-page-toolbar-control-button-color: #7c7c7c;
+	--GW-page-toolbar-control-button-active-color: #fff;
+
+	/*	Page toolbar widgets.
+	 */
+	--GW-page-toolbar-button-icon-color: #7c7c7c;
+	--GW-page-toolbar-button-selectable-icon-color: #404040;
+	--GW-page-toolbar-button-selected-icon-color: #a6a6a6;
+    --GW-page-toolbar-button-text-color: #b4b4b4;
+    --GW-page-toolbar-button-disabled-text-color: #5c5c5c;
+    --GW-page-toolbar-button-highlighted-text-color: #fff;
+
+	/*	Reader mode.
+	 */
+	--GW-reader-mode-masked-links-key-toggle-info-alert-panel-background-color: rgba(255, 255, 255, 0.8);
+	--GW-reader-mode-masked-links-key-toggle-info-alert-panel-text-color: #000;
+	--GW-reader-mode-masked-links-key-toggle-info-alert-panel-text-shadow-color: #fff;
+	--GW-reader-mode-masked-links-key-toggle-info-alert-panel-key-icon-border-color: #6c6c6c;
+	--GW-reader-mode-masked-links-key-toggle-info-alert-panel-key-icon-background-color: #cecece;
+
+	/*	Mobile floating header.
+	 */
+	--GW-floating-header-box-shadow-color: #5c5c5c;
+	--GW-floating-header-scroll-indicator-color: #8b8b8b;
+
+	/*	“Skip to content” accessibility link.
+	 */
+	--GW-skip-to-content-text-color: #000;
+	--GW-skip-to-content-border-color: #000;
+	--GW-skip-to-content-background-color: #ff847b;
+
+	/*	Nav header.
+	 */
+	--GW-nav-header-link-color: #999;
+	--GW-nav-header-link-hover-color: #fff;
+
+	/*	X of the day.
+	 */
+	--GW-x-of-the-day-border-color: #5c5c5c;
+}
+:root {
+    /*  Adjust background color to prevent pixels from turning off (contrary to 
+    	popular belief, pixels turning off saves trivial energy, like <1% in 
+    	measurements, and causes nasty scrolling/update jank due to delay in 
+    	pixels turning back on), and improve contrast with the white.
+     */
+    --GW-body-background-color: #161616;
+
+    /*  Dial back from pure white to keep contrast from being *too* high & 
+    	‘stark’ (#fff bg / #000 text seems to work in light mode, but not in 
+    	dark mode, perhaps because of differences in lighting environment?)
+     */
+    --GW-body-text-color: #f1f1f1;
+
+    --GW-popups-popup-title-bar-pattern: var(--GW-image-pattern-dotted-161616-on-252525-2x-gif);
+    --GW-popups-popup-title-bar-pattern-focused: var(--GW-image-pattern-dotted-161616-on-3e3e3e-2x-gif);
+
+    --GW-popovers-popover-backdrop-color: rgba(0, 0, 0, 0.6);
+
+    --GW-popovers-popover-title-bar-button-color: #bbb;
+
+    --GW-checkerboard-scrollbar-background-image: var(--GW-image-checkerboard-888-000-2x-gif);
+    --GW-checkerboard-scrollbar-hover-background-image: var(--GW-image-checkerboard-bfbfbf-000-2x-gif);
+}
+
+.dark-mode-invert,
+.dark-mode-invert::before,
+.dark-mode-invert::after {
+	filter: var(--dark-mode-invert-filter, none);
+}
+
+/*  Admonition icons.
+ */
+div.admonition.tip::before {
+    filter: invert(1);
+}
+div.admonition.note::before {
+    filter: none;
+}
+div.admonition.warning::before {
+    filter: none;
+}
+div.admonition.error::before {
+    filter: none;
+}
+
+/*  SVG icons in the two darker styles of admonitions.
+ */
+div.admonition.warning a[data-link-icon-type='svg'] .link-icon-hook::after,
+div.admonition.error a[data-link-icon-type='svg'] .link-icon-hook::after {
+    filter: none;
+}
+
+/*  For sortable table column headings, we use dark versions of the up/down/both
+    arrow icons.
+ */
+table th.tablesorter-header {
+    background-image: url('/static/img/tablesorter/tablesorter-bg-dark.gif');
+}
+table th.tablesorter-headerAsc {
+    background-image: url('/static/img/tablesorter/tablesorter-asc-dark.gif');
+}
+table th.tablesorter-headerDesc {
+    background-image: url('/static/img/tablesorter/tablesorter-desc-dark.gif');
+}
+
+/*  Images that are marked as '.invert' by the server are inverted,
+    hue-rotated, and desaturated. Other (non-invertible) images are merely
+    desaturated. Hovering over an image restores it to its original state.
+    Hierarchy: ‘.invert-not’/‘.invert-not-auto’: no inversion or grayscale;
+    ‘.invert’/‘.invert-auto’: inverted (uninverted upon mouse hover);
+    none: grayscaled (ungrayscaled on hover).
+ */
+figure img.invert,
+figure img.invert-auto {
+    filter: grayscale(50%) invert(100%) brightness(95%) hue-rotate(180deg);
+}
+figure img:not(.invert):not(.invert-auto) {
+    filter: grayscale(50%);
+}
+figure img,
+figure img.invert,
+figure img.invert-auto {
+    transition: filter 0.25s ease;
+}
+figure img:not(.drop-filter-on-hover-not):hover,
+figure img:not(.drop-filter-on-hover-not).invert:hover,
+figure img:not(.drop-filter-on-hover-not).invert-auto:hover,
+figure img:not(.drop-filter-on-hover-not):not(.invert):not(.invert-auto):hover {
+    filter: none;
+    transition: filter 0s ease 0.25s;
+}
+
+figure img[src$=".svg"].invert:hover,
+figure img[src$=".svg"].invert-auto:hover {
+    filter: grayscale(50%) invert(100%) brightness(95%) hue-rotate(180deg);
+}
+
+/*  Image alt-text.
+ */
+figure img.invert::before,
+figure img.invert-auto::before {
+    filter: invert(1);
+}
+figure img.invert:hover::before,
+figure img.invert-auto:hover::before {
+    filter: none;
+}
+/*  Styling the image alt-text interferes with the transitions in dark mode.
+    (We include non-class’d `img` in this selector for consistency.)
+
+    TEMPORARY until we transition to a color-based instead of filter-based
+    scheme for this. —SA 2022-07-29
+ */
+figure img,
+figure img:hover,
+figure img.invert,
+figure img.invert:hover,
+figure img.invert-auto,
+figure img.invert-auto:hover {
+    transition: none;
+}
+
+/*  For images which have been marked up (manually or automatically) with 
+	‘.invert-not’, we avoid any filtering at all. If they are manually marked up
+	(artwork, diagrams with multiple subtly-different colors matched to a 
+	legend/caption), the color is important and shouldn’t be faded out by 
+	default. (Or invertOrNot has judged the image to be non-invertible, which
+	presumably means something like the above also.)
+ */
+#markdownBody figure img.invert-not,
+#markdownBody figure img.invert-not-auto {
+    filter: none;
+}
+
+/*  The loading spinner for object popups (image, iframe, object) is inverted
+    and made more visible in dark mode.
+ */
+.popframe.loading::before {
+    filter: invert(1);
+    opacity: 0.4;
+}
+
+/*  “Loading failed” messages for object popups.
+ */
+.popframe.loading-failed::after {
+    opacity: 0.4;
+}
+
+/*  Masked links key toggle info alert panel.
+ */
+div#masked-links-key-toggle-info-alert img {
+    filter: drop-shadow(0 0 3px var(--GW-reader-mode-masked-links-key-toggle-info-alert-panel-text-shadow-color));
+}
+
+/*  Recently-modified icon, manicule.
+ */
+.has-recently-modified-icon .recently-modified-icon-hook::before,
+.manicule svg {
+    filter: invert(1);
+}
+
+/*	Poem caesura marks.
+ */
+.poem span.caesura-mark {
+	opacity: 0.30;
+}
+@media all and (max-width: 649px) {
+	.poem span.caesura-mark {
+		opacity: 0.35;
+	}
+}
+
+</style>
+<link rel="stylesheet" href="/static/css/head.css?v=1784843634">
+<script src="/static/js/head.js?v=1784843634"></script>
+<link rel="preload" href="/static/img/icon/icons.svg?v=1784843634" as="image">
+
+  <!-- INLINED-HEAD-END -->
+
+  
+  <!-- Google Webmaster requires this tag, but only on the index/homepage -->
+  <meta name="google-site-verification" content="BOhOQI1uMfsqu_DopVApovk1mJD5ZBLfan0s9go3phk">
+  
+  <!-- Hint at necessary third-party domains -->
+  <link rel="preconnect" href="https://www.googletagmanager.com">
+
+  <meta name="title" content="Essays">
+  <meta name="citation_title" content="Essays">
+  <meta name="og:title" content="Essays">
+  <meta name="twitter:title" content="Essays">
+  <meta name="generator" content="Hakyll">
+  <link rel="repository" href="https://github.com/gwern/gwern.net/">
+  <link rel="bug-tracker" href="https://github.com/gwern/gwern.net/issues">
+  <meta name="creator" content="gwern.net">
+  
+  <meta name="author" content="Gwern">
+  <meta name="citation_author" content="Gwern">
+  
+  <meta name="contact" content="https://gwern.net/me#contact">
+  <link rel="index" title="Gwern.net homepage" href="https://gwern.net/index">
+  <link href="https://gwern.substack.com/feed" type="application/rss+xml" rel="alternate" title="ATOM/RSS feed of Gwern.net newsletters with additions and links.">
+
+  <meta name="twitter:creator" content="gwern">
+  <meta name="twitter:site" content="gwern.net">
+  <meta name="og:site" content="gwern.net">
+  <meta name="og:type" content="article">
+  <meta name="description" content="Personal website of Gwern Branwen (writer, self-experimenter, and programmer): topics: psychology, statistics, technology, deep learning, anime. This index page is a categorized list of Gwern.net pages.">
+  <meta name="og:description" content="Personal website of Gwern Branwen (writer, self-experimenter, and programmer): topics: psychology, statistics, technology, deep learning, anime. This index page is a categorized list of Gwern.net pages.">
+  <!-- <meta name="description-raw" content="Personal website of Gwern Branwen (writer, self-experimenter, and programmer): topics: psychology, statistics, technology, deep learning, anime. This index page is a categorized list of Gwern.net pages."> -->
+  <meta property="og:image" content="https://gwern.net/static/img/logo/logo-whitebg-large-border.png">
+  <meta property="og:image:alt" content="Default thumbnail text: the Gwern.net site logo, a logotype of a large blackletter fraktur capital letter 'G' on a white background.">
+  <meta property="og:image:height" content="530">
+  <meta property="og:image:width" content="441">
+  <meta property="gwern:thumbnail:css-classes" content="">
+  <meta name="keywords" content="meta">
+  <meta name="dc.date.issued" content="2009-01-27">
+  
+  <meta name="citation_publication_date" content="2009-01-27">
+  <meta name="dcterms.modified" content="2026-07-10">
+  <link rel="schema.dcterms" href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/">
+  <meta name="dcterms.rights" content="CC PD-0">
+  <meta name="dc.rights" content="https://creativecommons.org/publicdomain/zero/1.0/">
+  <link rel="canonical" href="https://gwern.net/index">
+  <meta name="citation_fulltext_html_url" content="https://gwern.net/index">
+  <meta name="og:url" content="https://gwern.net/index">
+  <link rel="alternate" type="text/markdown" href="https://gwern.net/index.md" title="Markdown source of ‘Essays’ page"> <!-- Also available via Accept header -->
+  <meta name="page-body-classes" content="page-index dropcaps-not">
+  <meta name="citation_fulltext_world_readable" content="">
+  <meta name="color-scheme" content="light dark">
+
+  
+  <title>Essays · Gwern.net</title>
+  
+
+  <link id="favicon" rel="icon" type="image/png" href="/static/img/logo/logo-favicon-small.png">
+  <link id="favicon-dark" rel="icon" type="image/png" href="/static/img/logo/logo-favicon-small-dark.png" media="all and (prefers-color-scheme: dark)">
+  <link id="favicon-apple-touch" rel="apple-touch-icon" type="image/png" href="/static/img/logo/logo-favicon-appletouch.png">
+  <link id="favicon-apple-touch-dark" rel="apple-touch-icon" type="image/png" href="/static/img/logo/logo-favicon-appletouch-dark.png" media="all and (prefers-color-scheme: dark)">
+</head>
+
+<body class="page-index dropcaps-not">
+  <!-- SSI: Inlined asset links -->
+  <!-- INLINED-ASSET-LINKS-BEGIN-->
+  <link rel="stylesheet" href="/static/css/style.css?v=1785907319">
+<script src="/static/js/script.js?v=1785907319" defer></script>
+
+  <!-- INLINED-ASSET-LINKS-END -->
+
+  <main>
+    <a id="skip-to-content-link" href="#markdownBody">Skip to main content</a>
+
+    <noscript>
+    <style>
+      #navbar { margin-top: 7em; }
+      @media all and (max-width: 649px) { #navbar { margin-top: 10em; } }
+    </style>
+    <div id="noscript-warning-header" class="markdownBody noscript-container">
+      <details open>
+        <summary><wbr></summary>
+        <div class="admonition error colors-invert">
+          <div class="admonition-title">
+            <p><strong>Warning:</strong> JavaScript Disabled!</p>
+          </div>
+          <p>For support of key <a href="/design" title="About: Gwern.net Design: principles, features, links, tricks">website features</a> (link annotation popups/popovers & transclusions, collapsible sections, backlinks, tablesorting, image zooming, <a href="/sidenote">sidenotes</a> etc.), you must enable JavaScript.</p>
+        </div>
+      </details>
+    </div>
+    </noscript>
+
+    <!-- SSI: Navbar -->
+    <!-- NAVBAR-BEGIN-->
+        <nav id="navbar">
+      <a class="logo" rel="home me contents" href="/index" accesskey="\" title="Homepage: categorized list of articles index"><svg class="logo-image" viewbox="0 0 64 75">
+      <use href="/static/img/logo/logo-smooth.svg#logo"></use></svg></a>
+      <div class="navbar-links">
+        <a class="site link-page link-annotated" href="/about" title="Site ideals, source, content, traffic, examples, license" rel="author">Site</a>
+        <a class="me link-page link-annotated" href="/me" title="Who am I online, what have I done, what am I like? Contact information; sites I use; things I've worked on" rel="author">Me</a>
+        <a class="new link-page link-annotated" href="/changelog" title="Changelog of what’s new or updated">New</a>
+        <a class="blog link-page" href="/blog/index" title="Shortform Gwern writings">Blog</a>
+        <a class="links link-page" href="/doc/newest/index" title="Most recent link annotations">Links</a>
+        <a class="patreon" href="https://www.patreon.com/gwern" title="Link to Patreon donation profile to support my writing" rel="me">Patreon</a>
+        <a class="mail" href="https://gwern.substack.com/" title="Monthly mailing list: newsletter signup form" rel="me">Substack</a>
+      </div>
+    </nav>
+
+    <!-- NAVBAR-END -->
+
+    <article>
+
+      <header>
+        <h1>Essays</h1>
+      </header>
+
+       
+
+      <div id="TOC" class="TOC"><ul>
+<li><a href="#newest" id="toc-newest">Newest</a></li>
+<li><a href="#popular" id="toc-popular">Popular</a></li>
+<li><a href="#notable" id="toc-notable">Notable</a></li>
+<li><a href="#newest-blog" id="toc-newest-blog">Newest: Blog</a></li>
+<li><a href="#statistics" id="toc-statistics">Statistics</a></li>
+<li><a href="#meta-science" id="toc-meta-science">Meta-Science</a></li>
+<li><a href="#decision-theory" id="toc-decision-theory">Decision Theory</a></li>
+<li><a href="#order-statistics" id="toc-order-statistics">Order Statistics</a></li>
+<li><a href="#cryptobitcoin" id="toc-cryptobitcoin">Crypto/Bitcoin</a></li>
+<li><a href="#ai-safety" id="toc-ai-safety">AI: Safety</a></li>
+<li><a href="#generative-ai-image" id="toc-generative-ai-image">Generative AI: Image</a></li>
+<li><a href="#generative-ai-fiction" id="toc-generative-ai-fiction">Generative AI: Fiction</a></li>
+<li><a href="#generative-ai-poetry" id="toc-generative-ai-poetry">Generative AI: Poetry</a></li>
+<li><a href="#deep-learning" id="toc-deep-learning">Deep Learning</a></li>
+<li><a href="#computer-science" id="toc-computer-science">Computer Science</a></li>
+<li><a href="#haskell" id="toc-haskell">Haskell</a></li>
+<li><a href="#cognition" id="toc-cognition">Cognition</a></li>
+<li><a href="#psychology" id="toc-psychology">Psychology</a></li>
+<li><a href="#behavior-genetics" id="toc-behavior-genetics">Behavior Genetics</a></li>
+<li><a href="#economics" id="toc-economics">Economics</a></li>
+<li><a href="#economics-tech" id="toc-economics-tech">Economics: Tech</a></li>
+<li><a href="#domestic-cats" id="toc-domestic-cats">Domestic Cats</a></li>
+<li><a href="#practical" id="toc-practical">Practical</a></li>
+<li><a href="#design" id="toc-design">Design</a></li>
+<li><a href="#qs-sleep" id="toc-qs-sleep">QS: Sleep</a></li>
+<li><a href="#qs" id="toc-qs">QS</a></li>
+<li><a href="#politics" id="toc-politics">Politics</a></li>
+<li><a href="#epistemology" id="toc-epistemology">Epistemology</a></li>
+<li><a href="#philosophy" id="toc-philosophy">Philosophy</a></li>
+<li><a href="#literary-criticism" id="toc-literary-criticism">Literary Criticism</a></li>
+<li><a href="#anime" id="toc-anime">Anime</a></li>
+<li><a href="#fiction-prose" id="toc-fiction-prose">Fiction: Prose</a></li>
+<li><a href="#fiction-verse" id="toc-fiction-verse">Fiction: Verse</a></li>
+<li><a href="#docs" id="toc-docs">Docs</a></li>
+<li><a href="#docs-science" id="toc-docs-science">Docs: Science</a></li>
+<li><a href="#docs-crypto" id="toc-docs-crypto">Docs: Crypto</a></li>
+<li><a href="#docs-anime" id="toc-docs-anime">Docs: Anime</a></li>
+<li><a href="#docs-nge" id="toc-docs-nge">Docs: NGE</a></li>
+<li><a href="#wikipedia" id="toc-wikipedia">Wikipedia</a></li>
+<li><a href="#reviews" id="toc-reviews">Reviews</a></li>
+<li><a href="#reviews-books" id="toc-reviews-books">Reviews: Books</a></li>
+<li><a href="#personal" id="toc-personal">Personal</a></li>
+</ul></div> <div id="markdownBody" class="markdownBody"><div id="abstract" class="abstract-small smallcaps-not">
+<p>This is the website of <strong>Gwern Branwen</strong>. I write about AI, psychology, &amp; statistics. I am best known for my writings about AI scaling, poetry &amp; <a href="#generative-ai-image">anime neural networks</a>; <a href="#dark-net-markets">darknet markets</a> and <a href="#cryptobitcoin">Bitcoin</a>; blinded <a href="#qs-sleep">self-experiments</a>; and <a href="#cognition">dual <em>n</em>-back</a> &amp; <a href="/spaced-repetition" id="gwern-spaced-repetition" class="prefetch-not link-annotated link-page" title="&#39;Spaced Repetition for Efficient Learning&#39;, Gwern 2009">spaced repetition</a>.</p>
+<p><span class="smallcaps">Navigation</span>: For information about my site’s philosophy &amp; method, see the <em><a href="/about" id="gwern-about" class="prefetch-not link-annotated link-page" title="&#39;About This Website&#39;, Gwern 2010">About page</a></em>; for the website features &amp; implementation, see the <em><a href="/design" id="gwern-design" class="prefetch-not link-annotated link-page" title="&#39;Design Of This Website&#39;, Gwern 2010">Design page</a></em>; for information about myself, my use of other websites, and contact information, see the <em><a href="/me" id="gwern-me" class="prefetch-not link-annotated link-page" title="&#39;About Gwern&#39;, Gwern 2009">about-me page</a></em>; for new pages, see the <em><a href="/changelog" id="gwern-changelog" class="prefetch-not link-annotated link-page" title="&#39;Changelog&#39;, Gwern 2013">Changelog</a></em> (<span id="black-star-demo" class="icon-single-white-star-on-black-circle"></span> = new), short <a href="/blog/index" class="prefetch-not link-page link-annotated-not"><em>blog posts</em></a>, or <a href="/doc/newest/index" id="_Pmf8zSbL" class="prefetch-not link-annotated link-page" title="‘newest links’ directory"><em>new links</em></a>; or <a href="https://gwern.substack.com/" id="gwern-2013-substack" class="link-annotated" data-link-icon="substack" data-link-icon-type="svg" data-link-icon-color="#ff6719" title="&#39;Gwern.net newsletter (Substack subscription page)&#39;, Gwern 2013"><em>subscribe</em></a> to the newsletter (<a href="/doc/newsletter/index" id="_Si8unX4J" class="prefetch-not link-annotated link-page" title="‘newsletter’ directory">archives</a>).</p>
+<p><span class="smallcaps">Features</span>: To use <em>dark-mode</em> (<span class="dark-mode-selector-inline">​</span>) or <em>reader-mode</em> (<span class="reader-mode-selector-inline">​</span>), or <em>disable popups</em> (<span class="extracts-mode-selector-inline">​</span>), or <em>search</em> the site (<span class="search-mode-selector-inline">​</span>), use the floating toggle bar in the <span class="desktop-not">lower-right</span><span class="mobile-not">upper-right</span> corner (<span class="toolbar-mode-selector-inline">​</span>); for more, see the <a href="/help" class="prefetch-not link-page link-annotated-not"><em>help</em> (<span class="help-mode-selector-inline">​</span>)</a> page. <!-- NOTE: this </index> page rewrites titles to condense them and make them shorter, for more uniform solid blocks of text and to improve the layout of multi-column rendering. All the titles in a section should be similar lengths, and not be long enough to trigger wrapping! We want to put our best and most elegant foot forward to readers arriving at Gwern.net for the first time... --></p>
+</div>
+<section id="newest" class="level1">
+<h1><a href="#newest" title="Link to section: § &#39;Newest&#39;">Newest</a></h1>
+<ul>
+<li><p><a href="/lean-scaling" id="lean-scaling-newest" class="prefetch-not link-annotated link-page link-modified-recently" title="&#39;Lean Software Scaling Laws&#39;, Gwern 2025">Idea: Lean scaling laws</a></p></li>
+<li><p><a href="/fiction/walking" id="walking-newest" class="prefetch-not link-annotated link-page link-modified-recently" title="&#39;Sand, Rain, Wood&#39;, Gemini-3.1-pro-preview et al 2026">“Sand, Rain, Wood”</a></p></li>
+<li><p><a href="/fiction/molting" id="molting-newest" class="prefetch-not link-annotated link-page link-modified-recently" title="&#39;Chapter 6, Mime Molting: What to Expect&#39;, Claude-4.8-opus et al 2026">“Chapter 6, Mime Molting: What to Expect”</a></p></li>
+<li><p><a href="/guardian-angel" id="guardian-angel-newest" class="prefetch-not link-annotated link-page link-modified-recently" title="&#39;Guardian Angels: LLM Personalization for Productivity and Security&#39;, Gwern 2025">“Guardian Angels: Deep LLM Personalization”</a></p></li>
+<li><p><a href="/llm-catapult" id="llm-catapulting-newest" class="prefetch-not link-annotated link-page link-modified-recently" title="&#39;Human-like Neural Nets by Catapulting&#39;, Gwern 2024">“Human-like Neural Nets by Catapulting”</a></p></li>
+<li><p><a href="/generating-style" id="generating-style-newest" class="prefetch-not link-annotated link-page link-modified-recently" title="&#39;Style-Aware Generative Models&#39;, Gwern 2025">“Style-Aware Generative Models”</a></p></li>
+<li><p><a href="/vaping" id="vaping-newest" class="prefetch-not link-annotated link-page link-modified-recently" title="&#39;NYT and Vaping: How to Lie By Saying Only True Things&#39;, Gwern 2022">“NYT &amp; Vaping: How To Lie With The Truth”</a></p></li>
+<li><p><a href="/polish" id="polish-newest" class="prefetch-not link-annotated link-page link-modified-recently" title="&#39;Top-𝑘 Reading: Against Polishing the Median Essay&#39;, Gwern 2026">“Top-<em>k</em> Reading: Don’t Polish Median Essays”</a></p></li>
+<li><p><a href="/rl-children" id="rl-children-newest" class="prefetch-not link-annotated link-page link-modified-recently" title="&#39;‘Try, Score, Change’: Reinforcement Learning for Children&#39;, Pro et al 2026">“‘Try, Score, Change’: RL for Children”</a></p></li>
+<li><p><a href="/fiction/astrology" id="stars-newest" class="prefetch-not link-annotated link-page link-modified-recently" title="&#39;The City of Counted Stars&#39;, Gwern et al 2026">“The City of Counted Stars”</a></p></li>
+<li><p><a href="/fiction/craneyard" id="crane-newest" class="prefetch-not link-annotated link-page link-modified-recently" title="&#39;Elegy in a Craneyard&#39;, Gwern et al 2026">“Elegy in a Craneyard”</a></p></li>
+<li><p><a href="/fiction/alice" id="alice-newest" class="prefetch-not link-annotated-partial link-page link-modified-recently" title="&#39;Apollonian #2: The River That Forgets&#39;, Gwern et al 2026">“Apollonian #2: The River That Forgets”</a></p></li>
+<li><p><a href="/fiction/spoilage" id="spoilage-newest" class="prefetch-not link-annotated link-page link-modified-recently" title="&#39;Spoilage&#39;, Pro et al 2026">“Spoilage”</a></p></li>
+</ul>
+</section>
+<section id="popular" class="level1">
+<h1><a href="#popular" title="Link to section: § &#39;Popular&#39;">Popular</a></h1>
+<ul>
+<li><p><a href="/scaling-hypothesis" id="gwern-scaling-hypothesis-2" class="prefetch-not link-annotated link-page" title="&#39;The Scaling Hypothesis&#39;, Gwern 2020">The NN Scaling Hypothesis</a></p></li>
+<li><p><a href="/death-note-anonymity" id="dna-2" class="prefetch-not link-annotated link-page" title="&#39;Death Note: L, Anonymity &amp; Eluding Entropy&#39;, Gwern 2011"><em>Death Note</em> Anonymity</a></p></li>
+<li><p><a href="/silk-road" id="sr-2" class="prefetch-not link-annotated link-page" title="&#39;Silk Road 1: Theory &amp; Practice&#39;, Gwern 2011">Silk Road 1 Tutorial</a></p></li>
+<li><p><a href="/dnm-archive" id="dnm-archives-2" class="prefetch-not link-annotated link-page" title="&#39;Darknet Market Archives (2013–2015)&#39;, Gwern 2013">DNM Archives (201​3–201​5)</a></p></li>
+<li><p><a href="/spaced-repetition" id="spaced-repetition-2" class="prefetch-not link-annotated link-page" title="&#39;Spaced Repetition for Efficient Learning&#39;, Gwern 2009">Spaced Repetition Learning</a></p></li>
+<li><p><a href="/complement" id="complement-2" class="prefetch-not link-annotated link-page" title="&#39;Laws of Tech: Commoditize Your Complement&#39;, Gwern 2018">Commoditize Your Complement</a></p></li>
+<li><p><a href="/banner" id="gwern-banner" class="prefetch-not link-annotated link-page" title="&#39;Banner Ads Considered Harmful&#39;, Gwern 2017">Banner Ads Considered Harmful</a></p></li>
+<li><p><a href="/face" id="faces-2" class="prefetch-not link-annotated link-page" title="&#39;Making Anime Faces With StyleGAN&#39;, Gwern 2019">Generating Anime Faces</a></p></li>
+<li><p><a href="/subculture" id="gwern-subculture" class="prefetch-not link-annotated link-page" title="&#39;The Melancholy of Subculture Society&#39;, Gwern 2009">Melancholy of Subculture Society</a></p></li>
+<li><p><a href="/improvement" id="improvements-popular" class="prefetch-not link-annotated link-page" title="&#39;My Ordinary Life: Improvements Since the 1990s&#39;, Gwern 2018">Ordinary Life Improvements</a></p></li>
+</ul>
+</section>
+<section id="notable" class="level1">
+<h1><a href="#notable" title="Link to section: § &#39;Notable&#39;">Notable</a></h1>
+<p><!-- Has no effect on /index because we just hide #Notable, but useful when transcluded to /404 --></p>
+<div class="columns">
+<ul>
+<li><p><a href="/guardian-angel" id="guardian-angel-notable" class="prefetch-not link-modified-recently link-annotated link-page" title="&#39;Guardian Angels: LLM Personalization for Productivity and Security&#39;, Gwern 2025">“Guardian Angels: Deep LLM Personalization”</a></p></li>
+<li><p><a href="/math-error" id="math-error-notable" class="prefetch-not link-annotated link-page" title="&#39;The Existential Risk of Math Errors&#39;, Gwern 2012">Existential Risks &amp; Math Errors</a></p></li>
+<li><p><span id="danbooru2017">​</span><span id="danbooru2018">​</span><span id="danbooru2019">​</span><span id="danbooru2020">​</span> <a href="/danbooru2021" id="danbooru2021-notable" class="prefetch-not link-annotated link-page" title="&#39;Danbooru2021: A Large-Scale Crowdsourced &amp; Tagged Anime Illustration Dataset&#39;, Gwern 2015">Danbooru2021: Anime Dataset</a></p></li>
+<li><p><a href="/dnm-archive" id="dnm-archives-notable" class="prefetch-not link-annotated link-page" title="&#39;Darknet Market Archives (2013–2015)&#39;, Gwern 2013">DNM Archives (201​3–201​5)</a></p></li>
+<li><p><a href="/correlation" id="correlation-notable" class="prefetch-not link-annotated link-page" title="&#39;How Often Does Correlation=Causality?&#39;, Gwern 2014">Correlation ≠ Causality</a></p></li>
+<li><p><a href="/embryo-selection" id="embryo-selection-notable" class="prefetch-not link-annotated link-page" title="&#39;Embryo Selection For Intelligence&#39;, Gwern 2016">Embryo Selection For Traits</a></p></li>
+<li><p><a href="/longevity" id="longevity-notable" class="prefetch-not link-annotated link-page" title="&#39;Life Extension Cost-Benefits&#39;, Gwern 2015">Longevity Meta-Analyses</a></p></li>
+<li><p><a href="/tool-ai" id="tool-ai-notable" class="prefetch-not link-annotated link-page" title="&#39;Why Tool AIs Want to Be Agent AIs&#39;, Gwern 2016">Tool AIs Want To Be Agent AIs</a></p></li>
+<li><p><a href="/search" id="search-notable" class="prefetch-not link-annotated link-page" title="&#39;Internet Search Tips&#39;, Gwern 2018">Internet Research Tips</a></p></li>
+<li><p><a href="/inclusionism" id="inclusionism-notable" class="prefetch-not link-annotated link-page" title="&#39;In Defense of Inclusionism&#39;, Gwern 2009">In Defense Of Inclusionism</a></p></li>
+</ul>
+</div>
+<p><!-- Implicit '- - -'/<hr> inserted here by sed in </static/build/sync.sh> as a post-compilation rewrite; necessary to put the <hr> 'outside' the Pandoc-generated <section> tags so the sets of columns 'flow' on desktop. NOTE: it matches the section ID; if you change the section headers or add/remove sections, the sed calls may have to be rewritten. --></p>
+</section>
+<hr class="horizontal-rule-nth-1"> <section id="newest-blog" class="level1">
+<h1><a href="#newest-blog" title="Link to section: § &#39;Newest: Blog&#39;">Newest: Blog</a></h1>
+<p><a href="/blog/newest#newest-list" class="prefetch-not link-page include-strict include-spinner-not">[Most recent 29 blog posts.]</a></p>
+<p><!-- Implicit '- - -'/<hr> inserted here by sed in sync.sh; necessary to put the <hr> 'outside' the Pandoc-generated <section> tags so the two sets of columns flow on desktop. --></p>
+</section>
+<hr class="horizontal-rule-nth-1"> <section id="statistics" class="level1">
+<h1><a href="#statistics" title="Link to section: § &#39;Statistics&#39;">Statistics</a></h1>
+<p><!-- WARNING: /404 assumes that 'Statistics' is the first section after the triplet sections; if it is renamed or another section prompted, update the range-include in /404. --></p>
+<ul>
+<li><p><a href="/google-shutdown" id="shutdowns-2" class="prefetch-not link-annotated link-page" data-link-icon="alphabet" data-link-icon-type="svg" data-link-icon-color="#4285f4" title="&#39;Predicting Google closures&#39;, Gwern 2013">Predicting Google Closures</a></p></li>
+<li><p><a href="/2012-election" id="gwern-2012-election" class="prefetch-not link-annotated link-page" title="&#39;2012 election predictions&#39;, Gwern 2012">Judging <span class="date-range">2012<sub><span title="2012 was 14 years ago.">14ya</span></sub></span> Election Forecasts</a></p></li>
+<li><p><a href="/google-alerts" id="gwern-google-alerts" class="prefetch-not link-annotated link-page" data-link-icon="alphabet" data-link-icon-type="svg" data-link-icon-color="#4285f4" title="&#39;Alerts Over Time&#39;, Gwern 2013">Google Alerts Over Time</a></p></li>
+<li><p><a href="/hpmor" id="gwern-hpmor" class="prefetch-not link-annotated link-page" title="‘‘HP: Methods of Rationality’ review statistics’, Gwern 2012">Modeling Fiction Review Rates</a></p></li>
+<li><p><a href="/ea-donation" id="gwern-ea-donation" class="prefetch-not link-annotated link-page" title="&#39;LWer Effective Altruism donations, 2013–2014&#39;, Gwern 2015">LW EA Donations, <span class="date-range" title="The date range 2013–2014 lasted 1 year, ending 12 years ago.">2013–2014<sub><span title="2014 was 12 years ago.">12ya</span></sub></span></a></p></li>
+<li><p><a href="/note/statistic" id="gwern-note-statistic" class="prefetch-not link-annotated link-page" title="&#39;Statistical Notes&#39;, Gwern 2014">Miscellaneous Stats Notes</a></p></li>
+<li><p><a href="/doc/statistics/bayes/regression-to-mean/index" id="_8LEzTTCn" class="prefetch-not link-annotated link-page" title="&#39;Regression To A Mean Fallacies&#39;, Gwern 2021">Regression-To-Mean Fallacy</a></p></li>
+<li><p><a href="/doc/science/fermi-problem/index" id="_xvtBac3W" class="prefetch-not link-annotated link-page" title="&#39;Fermi Calculation Examples&#39;, Gwern 2019">Fermi Problem Examples</a></p></li>
+<li><p><a href="/doc/math/humor/lion-hunting/index" id="_v0R5jWz7" class="prefetch-not link-annotated link-page" title="‘lion-hunting math’ directory">The Math Of Hunting Lions</a></p></li>
+<li><p><a href="/tla" id="gwern-tla" class="prefetch-not link-annotated link-page" title="&#39;CQK Is The First Unused TLA&#39;, Gwern 2023">‘CQK’ Is The First Unused TLA</a></p></li>
+<li><p><a href="/shower-controls" id="gwern-pro-2023" class="prefetch-not link-annotated link-page" title="&#39;How Many Shower Controls Are There?&#39;, Gwern &amp; Pro 2023">How many shower controls are there?</a></p></li>
+</ul>
+</section>
+<section id="meta-science" class="level1">
+<h1><a href="#meta-science" title="Link to section: § &#39;Meta-Science&#39;">Meta-Science</a></h1>
+<ul>
+<li><p><a href="/causality" id="causality-2" class="prefetch-not link-annotated link-page" title="&#39;Why Correlation Usually ≠ Causation&#39;, Gwern 2014">Why Correlation ≠ Causation</a> (<a href="/correlation" id="gwern-correlation" class="prefetch-not link-annotated link-page" title="&#39;How Often Does Correlation=Causality?&#39;, Gwern 2014">eg</a>)</p></li>
+<li><p><a href="/everything" id="gwern-everything" class="prefetch-not link-annotated link-page" title="&#39;Everything Is Correlated&#39;, Gwern 2014">Everything Is Correlated</a></p></li>
+<li><p><a href="/research-criticism" id="gwern-research-criticism" class="prefetch-not link-annotated link-page" title="&#39;How Should We Critique Research?&#39;, Gwern 2019">How To Critique Research?</a></p></li>
+<li><p><a href="/replication" id="gwern-replication" class="prefetch-not link-annotated link-page" title="&#39;The Replication Crisis: Flaws in Mainstream Science&#39;, Gwern 2010">The Replication Crisis</a></p></li>
+<li><p><a href="/leprechaun" id="gwern-leprechaun" class="prefetch-not link-annotated link-page" title="&#39;Leprechaun Hunting &amp; Citogenesis&#39;, Gwern 2014">Citation Leprechaun Hunting</a></p>
+<ul>
+<li><p><a href="/littlewood-origin" id="gwern-littlewood-origin" class="prefetch-not link-annotated link-page" title="&#39;Origin of ‘Littlewood’s Law of Miracles’&#39;, Gwern 2019">Origin of Littlewood’s Law</a></p></li>
+</ul></li>
+<li><p><a href="/mouse-utopia" id="gwern-mouse-utopia" class="prefetch-not link-annotated link-page" title="&#39;Does Mouse Utopia Exist?&#39;, Gwern 2019">Does Mouse Utopia Exist?</a></p></li>
+<li><p><a href="/hydrocephalus" id="gwern-hydrocephalus" class="prefetch-not link-annotated link-page" title="&#39;Hydrocephalus and Intelligence: The Hollow Men&#39;, Gwern 2015">Hydrocephalus &amp; IQ</a></p></li>
+<li><p><a href="/question" id="gwern-question" class="prefetch-not link-annotated link-page" title="&#39;Open Questions&#39;, Gwern 2018">Open Questions &amp; Topics</a></p></li>
+<li><p><a href="/fake-journal-club" id="fake-2" class="prefetch-not link-annotated link-page" title="‘Fake Journal Club: Teaching Critical Reading’, Gwern 2022">Fake Journal Club</a></p></li>
+</ul>
+</section>
+<section id="decision-theory" class="level1">
+<h1><a href="#decision-theory" title="Link to section: § &#39;Decision Theory&#39;">Decision Theory</a></h1>
+<ul>
+<li><p><a href="/banner" id="ads-2" class="prefetch-not link-annotated link-page" title="&#39;Banner Ads Considered Harmful&#39;, Gwern 2017">Banner Ads Considered Harmful</a></p></li>
+<li><p><a href="/mail-delivery" id="mail-2" class="prefetch-not link-annotated link-page" title="&#39;When Should I Check The Mail?&#39;, Gwern 2015">When Should I Check The Mail?</a></p></li>
+<li><p><a href="/prediction-market" id="gwern-prediction-market" class="prefetch-not link-annotated link-page" title="&#39;Prediction Markets&#39;, Gwern 2009">My Prediction Market Trades</a></p></li>
+<li><p><a href="/milk" id="gwern-milk" class="prefetch-not link-annotated link-page" title="&#39;The Power of Twins: The Scottish Milk Experiment&#39;, Gwern 2016">Twin Power: Milk Experiment</a></p></li>
+<li><p><a href="/traffic-lights" id="gwern-traffic-lights" class="prefetch-not link-annotated link-page" title="&#39;Running Traffic Lights as Complex Disasters&#39;, Gwern 2025">Running Lights as Complex Disaster</a></p></li>
+<li><p><a href="/rl-children" id="pro-et-al-2026" class="prefetch-not link-annotated link-page" title="&#39;‘Try, Score, Change’: Reinforcement Learning for Children&#39;, Pro et al 2026">‘Try, Score, Change’: RL for Children</a></p></li>
+<li><p><a href="/candy-japan" id="gwern-candy-japan" class="prefetch-not link-annotated link-page" title="&#39;Candy Japan’s new box A/B test&#39;, Gwern 2016">Candy Japan’s Box A/B Test</a></p></li>
+<li><p><a href="/ab-test" id="gwern-ab-test" class="prefetch-not link-annotated link-page" title="&#39;A/B testing long-form readability on Gwern.net&#39;, Gwern 2012">A/B Testing CSS &amp; HTML</a></p></li>
+<li><p><a href="/doc/philosophy/frank-ramsey/index" id="_WUAo_-sT" class="prefetch-not link-annotated link-page" title="&#39;Frank P. Ramsey bibliography&#39;, Gwern 2019">Frank P. Ramsey Papers</a></p></li>
+</ul>
+</section>
+<section id="order-statistics" class="level1">
+<h1><a href="#order-statistics" title="Link to section: § &#39;Order Statistics&#39;">Order Statistics</a></h1>
+<ul>
+<li><p><a href="/order-statistic" id="gwern-order-statistic" class="prefetch-not link-annotated link-page" title="&#39;Calculating The Gaussian Expected Maximum&#39;, Gwern 2016">Gaussian Expected Maximums</a></p></li>
+<li><p><a href="/resorter" id="gwern-resorter" class="prefetch-not link-annotated link-page" title="&#39;Resorting Media Ratings&#39;, Gwern 2015">Interactive List Sorting</a></p></li>
+<li><p><a href="/doc/statistics/order/beanmachine-multistage/index.html" id="kennedy-gwern-2018" class="link-annotated" data-link-icon="internet-archive" data-link-icon-type="svg" title="&#39;Multi-Stage Bean Machine Visualization: Advantages of Repeated Optimization&#39;, Kennedy &amp; Gwern 2018">Multi-Stage Selection Demo</a></p></li>
+<li><p><a href="/goodreads" id="gwern-goodreads" class="prefetch-not link-annotated link-page" title="&#39;The Most ‘Abandoned’ Books on GoodReads&#39;, Gwern 2019">GoodReads Abandoned Books</a></p></li>
+<li><p><a href="/hunter" id="gwern-hunter" class="prefetch-not link-annotated link-page" title="&#39;&lt;em&gt;Genius Revisited&lt;/em&gt; Revisited&#39;, Gwern 2016"><em>Genius Revisited</em> School Flaws</a></p></li>
+<li><p><a href="/doc/statistics/order/selection/pipeline/index" id="_6BufwKlV" class="prefetch-not link-annotated link-page" title="&#39;Leaky Pipelines&#39;, Gwern 2014">Leaky Pipeline/Log-normals</a></p></li>
+<li><p><a href="/selection" id="gwern-selection" class="prefetch-not link-annotated link-page" title="&#39;Common Selection Scenarios&#39;, Gwern 2021">Selection Scenarios</a></p></li>
+<li><p><a href="/best-student-ever" id="gwern-best-student-ever" class="prefetch-not link-annotated link-page" title="&#39;Best Student Ever!&#39;, Gwern 2023">Best Student Ever!</a></p></li>
+<li><p><a href="/speedrunning" id="gwern-speedrunning" class="prefetch-not link-annotated link-page" title="&#39;Speedrunning Is Not Such A Waste Of Talent&#39;, Gwern 2025">Speedrunning Is Not Such A Waste</a></p></li>
+</ul>
+</section>
+<section id="cryptobitcoin" class="level1">
+<h1><a href="#cryptobitcoin" title="Link to section: § &#39;Crypto/Bitcoin&#39;">Crypto/Bitcoin</a></h1>
+<ul>
+<li><p><a href="/bitcoin-is-worse-is-better" id="worse-is-better-2" class="prefetch-not link-annotated link-page" title="&#39;Bitcoin Is Worse Is Better&#39;, Gwern 2011">Bitcoin Is “Worse Is Better”</a></p></li>
+<li><p><a href="/self-decrypting" id="self-decrypting-files-2" class="prefetch-not link-annotated link-page" title="&#39;Time-lock encryption&#39;, Gwern 2011">Time-Lock Crypto</a>; <a href="/timestamping" id="gwern-timestamping" class="prefetch-not link-annotated link-page" title="&#39;Easy Cryptographic Timestamping of Files&#39;, Gwern 2015">Timestamp</a></p></li>
+<li><p><a href="/co2-coin" id="gwern-co2-coin" class="prefetch-not link-annotated link-page" title="&#39;CO₂ Coin: Decentralized Carbon Capture Blockchains&#39;, Gwern 2021">CO<sub>2</sub> Coin: Carbon Blockchain</a></p></li>
+<li><p><a href="/doc/bitcoin/nashx/index" id="_5ETUhs3D" class="prefetch-not link-annotated link-page" title="‘Nash eXchange’ directory">Trustless Trade: 2-Of-2 NashX</a></p></li>
+<li><p><span id="dark-net-markets">​</span> <strong>Dark Net Markets</strong>:</p>
+<ul>
+<li><p><a href="/silk-road" id="sr-3" class="prefetch-not link-annotated link-page" title="&#39;Silk Road 1: Theory &amp; Practice&#39;, Gwern 2011">Silk Road 1 Buyers’ Guide</a></p></li>
+<li><p><a href="/dnm-archive" id="gwern-dnm-archive" class="prefetch-not link-annotated link-page" title="&#39;Darknet Market Archives (2013–2015)&#39;, Gwern 2013">DNM Archive: 201​3–201​5</a></p></li>
+<li><p><a href="/dnm-arrest" id="gwern-dnm-arrest" class="prefetch-not link-annotated link-page" title="&#39;DNM-related arrests, 2011–2015&#39;, Gwern 2012">DNM Arrests: 201​1–201​5</a></p></li>
+<li><p><a href="/dnm-survival" id="gwern-dnm-survival" class="prefetch-not link-annotated link-page" title="&#39;Darknet Market mortality risks&#39;, Gwern 2013">DNM Lifetime Census</a></p></li>
+</ul></li>
+</ul>
+</section>
+<section id="ai-safety" class="level1">
+<h1><a href="#ai-safety" title="Link to section: § &#39;AI: Safety&#39;">AI: Safety</a></h1>
+<ul>
+<li><p><a href="/scaling-hypothesis" id="on-gpt3-2" class="prefetch-not link-annotated link-page" title="&#39;The Scaling Hypothesis&#39;, Gwern 2020">GPT-3 &amp; The Scaling Hypothesis</a></p></li>
+<li><p><a href="/backstop" id="gwern-backstop" class="prefetch-not link-annotated link-page" title="&#39;Evolution as Backstop for Reinforcement Learning&#39;, Gwern 2018">Evolution As Learning Backstop</a></p></li>
+<li><p><a href="/guardian-angel" id="gwern-guardian-angel" class="prefetch-not link-modified-recently link-annotated link-page" title="&#39;Guardian Angels: LLM Personalization for Productivity and Security&#39;, Gwern 2025">“Guardian Angels: Deep LLM Personalization”</a></p></li>
+<li><p><a href="/llm-catapult" id="gwern-llm-catapult" class="prefetch-not link-modified-recently link-annotated link-page" title="&#39;Human-like Neural Nets by Catapulting&#39;, Gwern 2024">“Human-like Neural Nets by Catapulting”</a></p></li>
+<li><p><a href="/tool-ai" id="gwern-tool-ai" class="prefetch-not link-annotated link-page" title="&#39;Why Tool AIs Want to Be Agent AIs&#39;, Gwern 2016">Tool AIs Want To Be Agent AIs</a></p></li>
+<li><p><a href="/complexity" id="gwern-complexity" class="prefetch-not link-annotated link-page" title="&#39;Complexity no Bar to AI&#39;, Gwern 2014">Complexity Is No Bar To AGI</a></p></li>
+<li><p><a href="/fiction/clippy" id="gwern-fiction-clippy" class="prefetch-not link-annotated link-page" title="‘It Looks Like You’re Trying To Take Over The World’, Gwern 2022">Looks Like You’re Taking Over The World</a></p></li>
+<li><p><a href="/tank" id="gwern-tank" class="prefetch-not link-annotated link-page" title="&#39;The Neural Net Tank Urban Legend&#39;, Gwern 2011">The NN Tank/Photo Urban Legend</a></p></li>
+<li><p><a href="/hyperbolic-time-chamber" id="gwern-hyperbolic-time-chamber" class="prefetch-not link-annotated link-page" title="&#39;The Hyperbolic Time Chamber &amp; Brain Emulation&#39;, Gwern 2012">Hyperbolic Time Chambers &amp; AI</a></p></li>
+</ul>
+</section>
+<section id="generative-ai-image" class="level1">
+<h1><a href="#generative-ai-image" title="Link to section: § &#39;Generative AI: Image&#39;">Generative AI: Image</a></h1>
+<p><span id="generative-ai-anime">​</span></p>
+<ul>
+<li><p><a href="/danbooru2021" id="danbooru2021-2" class="prefetch-not link-annotated link-page" title="&#39;Danbooru2021: A Large-Scale Crowdsourced &amp; Tagged Anime Illustration Dataset&#39;, Gwern 2015"><strong>Danbooru2021</strong> Anime Dataset</a></p>
+<ul>
+<li><p><a href="/crop#hands" id="crops-hands-2" class="prefetch-not link-annotated link-page" title="&#39;Anime Crop Datasets: Faces, Figures, &amp; Hands § Hands&#39;, Branwen et al 2020">PALM: Hand Detection+Crops</a></p></li>
+<li><p><a href="/crop#danbooru2019-figures" id="figures-2" class="prefetch-not link-annotated link-page" title="&#39;Anime Crop Datasets: Faces, Figures, &amp; Hands § Danbooru2019 Figures&#39;, Branwen et al 2020">Danbooru2019 Figures</a></p></li>
+<li><p><a href="/crop#danbooru2019-portraits" id="gwern-et-al-2020" class="prefetch-not link-annotated link-page" title="&#39;Anime Crop Datasets: Faces, Figures, &amp; Hands § Danbooru2019 Portraits&#39;, Branwen et al 2020">Danbooru2019 Portraits</a></p></li>
+</ul></li>
+<li><p><a href="/face" id="faces-3" class="prefetch-not link-annotated link-page" title="&#39;Making Anime Faces With StyleGAN&#39;, Gwern 2019">Anime Faces</a>: <a href="/biggan" id="gwern-biggan" class="prefetch-not link-annotated link-page" title="&#39;Making Anime With BigGAN&#39;, Gwern 2019">BigGAN</a>, <a href="/face-graveyard" id="gwern-face-graveyard" class="prefetch-not link-annotated link-page" title="&#39;Anime Neural Net Graveyard&#39;, Gwern 2019">Failures</a></p></li>
+<li><p><a href="/dropcap" id="gwern-dropcap" class="prefetch-not link-annotated link-page" title="&#39;Dropcap Generation With AI&#39;, Gwern 2023">Dropcap Generation With AI</a></p></li>
+<li><p><a href="https://www.thiswaifudoesnotexist.net/" id="gwern-twdne-website-1" class="link-live link-annotated" data-link-icon="TWDE" data-link-icon-type="text,quad,sans" title="&#39;ThisWaifuDoesNotExist.net&#39;, Gwern 2019">This Waifu Does Not Exist</a> (<a href="/twdne" id="gwern-twdne-2" class="prefetch-not link-annotated link-page" title="&#39;This Waifu Does Not Exist&#39;, Gwern 2019">details</a>)</p></li>
+</ul>
+</section>
+<section id="generative-ai-fiction" class="level1">
+<h1><a href="#generative-ai-fiction" title="Link to section: § &#39;Generative AI: Fiction&#39;">Generative AI: Fiction</a></h1>
+<ul>
+<li><p><a href="/gpt-3-nonfiction" id="gwern-gpt-3-nonfiction-2" class="prefetch-not link-annotated link-page" title="&#39;GPT-3 Nonfiction&#39;, Gwern 2020">GPT-3 Creative Nonfiction</a></p></li>
+<li><p><a href="/creative-benchmark" id="gwern-creative-benchmark" class="prefetch-not link-annotated link-page" title="&#39;Towards Benchmarking LLM Diversity &amp; Creativity&#39;, Gwern 2024">Benchmarking LLM Creativity?</a></p></li>
+<li><p><a href="/cyoa" id="gwern-cyoa" class="prefetch-not link-annotated link-page" title="&#39;Choose-Your-Own-Adventure &lt;em&gt;AI Dungeon&lt;/em&gt; Games&#39;, Gwern 2021">CYOA AI Dungeons</a></p></li>
+<li><p><a href="/gpt-2-music" id="gwern-presser-2019" class="prefetch-not link-annotated link-page" title="&#39;GPT-2 Folk Music&#39;, Gwern &amp; Presser 2019">GPT-2 Folk Music</a></p></li>
+<li><p><a href="/gpt-2-preference-learning" id="gwern-gpt-2-preference-learning" class="prefetch-not link-annotated link-page" title="&#39;GPT-2 Preference Learning for Music Generation&#39;, Gwern 2019">Preference Learning Music</a></p></li>
+<li><p><a href="/rubiks-cube" id="gwern-et-al-2023" class="prefetch-not link-annotated link-page" title="&#39;On the Impossibility of Superintelligent Rubik’s Cube Solvers&#39;, Gwern et al 2023">“Superhuman Rubik’s Cube Solving”</a></p></li>
+<li><p><a href="/non-biblical-sentences" id="gwern-non-biblical-sentences" class="prefetch-not link-annotated link-page" title="&#39;LLM Challenge: Write Non-Biblical Sentences&#39;, Gwern 2024">Writing Non-Biblical Sentences</a></p></li>
+<li><p><a href="/system-prompts-2025" id="gwern-et-al-2025" class="prefetch-not link-annotated link-page" title="&#39;My 2025 LLM System Prompts&#39;, Gwern et al 2025">My 2025 LLM System Prompts</a></p></li>
+<li><p><a href="/fiction/spoilage" id="pro-et-al-2026" class="prefetch-not link-annotated link-page" title="&#39;Spoilage&#39;, Pro et al 2026">“Spoilage”</a></p></li>
+<li><p><a href="/fiction/astrology" id="gwern-et-al-2026" class="prefetch-not link-annotated link-page" title="&#39;The City of Counted Stars&#39;, Gwern et al 2026">“The City of Counted Stars”</a></p></li>
+<li><p><a href="/fiction/molting" id="claude-48-opus-et-al-2026" class="prefetch-not link-modified-recently link-annotated link-page" title="&#39;Chapter 6, Mime Molting: What to Expect&#39;, Claude-4.8-opus et al 2026">“Chapter 6, Mime Molting: What to Expect”</a></p></li>
+<li><p><a href="/claude-2" id="claude-2-et-al-2023" class="prefetch-not link-annotated link-page" title="&#39;Claude-2: Bats With Baby Faces&#39;, Claude-2 et al 2023">Claude-2: “Bats With Baby Faces”</a></p></li>
+</ul>
+</section>
+<section id="generative-ai-poetry" class="level1">
+<h1><a href="#generative-ai-poetry" title="Link to section: § &#39;Generative AI: Poetry&#39;">Generative AI: Poetry</a></h1>
+<ul>
+<li><p><a href="/fiction/lab-animals" id="gwern-et-al-2025" class="prefetch-not link-annotated link-page" title="&#39;Apollonian #1: The Counted &amp; the Crowned&#39;, Gwern et al 2025">“Apollonian 1: Counted &amp; Crowned”</a>; <a href="/fiction/alice" id="gwern-et-al-2026" class="prefetch-not link-annotated-partial link-page" title="&#39;Apollonian #2: The River That Forgets&#39;, Gwern et al 2026">2: “The River That Forgets”</a></p></li>
+<li><p><a href="/fiction/your-hands-and-mine" id="gwern-et-al-2025" class="prefetch-not link-annotated-partial link-page" title="&#39;Your Hands And Mine&#39;, Gwern et al 2025">“Your Hands And Mine”</a></p></li>
+<li><p><a href="/fiction/tilakkhana" id="gwern-et-al-2025" class="prefetch-not link-modified-recently link-annotated link-page" title="&#39;𝑇𝑖𝑙𝑎𝑘𝑘𝘩𝑎𝑛𝑎: The 3 Scars of Existence&#39;, Gwern et al 2025">“<em>Tilakkhana</em>”</a></p></li>
+<li><p><a href="/fiction/silver-bird" id="gwern-et-al-2025" class="prefetch-not link-annotated link-page" title="&#39;Silver Bird Above San Francisco&#39;, Gwern et al 2025">“Silver Bird Above SF”</a>; <a href="/fiction/craneyard" id="gwern-et-al-2026" class="prefetch-not link-annotated link-page" title="&#39;Elegy in a Craneyard&#39;, Gwern et al 2026">“Elegy in a Craneyard”</a></p></li>
+<li><p><a href="/fiction/this-last-pain" id="gwern-et-al-2022" class="prefetch-not link-annotated-partial link-page" title="&#39;The Fourth Truth Of Pain&#39;, Gwern et al 2022">“The Fourth Truth Of Pain”</a> (<a href="/fiction/this-last-pain-graveyard" id="gwern-et-al-2022" class="prefetch-not link-annotated link-page" title="&#39;‘The Fourth Truth Of Pain’ Graveyard&#39;, Gwern et al 2022">Failures</a>)</p></li>
+<li><p><a href="/fiction/christmas" id="gwern-et-al-2024" class="prefetch-not link-annotated link-page" title="&#39;A Christmas Protestation&#39;, Gwern et al 2024">“A Christmas Protestation”</a></p></li>
+<li><p><a href="/fiction/walking" id="gemini-31-pro-preview-et-al-2026" class="prefetch-not link-modified-recently link-annotated link-page" title="&#39;Sand, Rain, Wood&#39;, Gemini-3.1-pro-preview et al 2026">“Sand, Rain, Wood”</a></p></li>
+<li><p><a href="/blog/2025/bell-crow-moon" class="prefetch-not link-page">“Bell, Crow, Moon: Poetic Variations”</a></p></li>
+<li><p><a href="/fiction/pindaric-strict" id="gwern-et-al-2026" class="prefetch-not link-annotated link-page" title="&#39;A Strict Pindaric Meter&#39;, Gwern et al 2026">A Strict Pindaric Meter</a></p></li>
+<li><p><a href="/fiction/hays" id="gwern-pro-2026" class="prefetch-not link-annotated link-page" title="&#39;Human Perception at a Red Light&#39;, Gwern &amp; Pro 2026">“Human Perception at a Red Light” writing experiment</a></p></li>
+<li><p><strong>Old</strong>:</p>
+<ul>
+<li><p><a href="/gpt-3" id="gwern-gpt-3" class="prefetch-not link-annotated link-page" title="&#39;GPT-3 Creative Fiction&#39;, Gwern 2020"><strong>GPT-3</strong> Poems &amp; Fiction</a></p></li>
+<li><p><a href="/gpt-2" id="gwern-presser-2019" class="prefetch-not link-annotated link-page" title="&#39;GPT-2 Neural Network Poetry&#39;, Branwen &amp; Presser 2019">GPT-2</a></p></li>
+<li><p><a href="/rnn-metadata" id="gwern-rnn-metadata" class="prefetch-not link-annotated link-page" title="&#39;RNN Metadata for Mimicking Author Style&#39;, Gwern 2015">RNN</a></p></li>
+</ul></li>
+</ul>
+</section>
+<section id="deep-learning" class="level1">
+<h1><a href="#deep-learning" title="Link to section: § &#39;Deep Learning&#39;">Deep Learning</a></h1>
+<ul>
+<li><p><a href="/coin-flip" id="gwern-et-al-2017" class="prefetch-not link-annotated link-page" title="&#39;The Kelly Coin-Flipping Game: Exact Solutions&#39;, Branwen et al 2017">Kelly Coin-Flip Game</a></p></li>
+<li><p><a href="/doc/ai/scaling/index" id="_bEPR9TH8" class="prefetch-not link-annotated link-page" title="‘AI scaling’ directory">Machine Learning Scaling</a></p></li>
+<li><p><a href="/doc/ai/nn/transformer/attention/index" id="_5XTITqOw" class="prefetch-not link-annotated link-page" title="&#39;Efficient Attention: Breaking The Quadratic Transformer Bottleneck&#39;, Gwern 2020">Efficient Transformer Attention</a></p></li>
+<li><p><a href="/doc/ai/nn/fully-connected/index" id="_PV3GzkZY" class="prefetch-not link-annotated link-page" title="&#39;Fully-Connected Neural Nets&#39;, Gwern 2021">The MLP/FC NN Rebirth</a></p></li>
+<li><p><a href="/doc/ai/nn/sparsity/index" id="_FBGJ03Sa" class="prefetch-not link-annotated link-page" title="‘NN sparsity’ directory">Neural Nets Are Oversized</a></p></li>
+<li><p><a href="/doc/cs/end-to-end-principle/index" id="_Kgb3KanZ" class="prefetch-not link-annotated link-page" title="‘end-to-end’ directory">The End-To-End Principle</a></p></li>
+<li><p><a href="/aunn" id="gwern-aunn" class="prefetch-not link-annotated link-page" title="‘Absolute Unit NNs: Regression-Based MLPs for Everything’, Gwern 2023">Absolute Unit NNs: MLP Everything</a></p></li>
+<li><p><a href="/llm-writing" id="gwern-llm-writing" class="prefetch-not link-annotated link-page" title="&#39;Writing for LLMs So They Listen&#39;, Gwern 2024">How to Write for LLMs</a></p></li>
+<li><p><a href="/idea" id="gwern-idea" class="prefetch-not link-annotated link-page" title="‘Research Ideas’, Gwern 2017">Project Ideas</a></p>
+<ul>
+<li><p><a href="/lean-scaling" id="gwern-lean-scaling" class="prefetch-not link-modified-recently link-annotated link-page" title="&#39;Lean Software Scaling Laws&#39;, Gwern 2025">Lean scaling laws</a></p></li>
+<li><p><a href="/generating-style" id="gwern-generating-style" class="prefetch-not link-annotated link-page" title="&#39;Style-Aware Generative Models&#39;, Gwern 2025">Style-aware generative models</a></p></li>
+<li><p><a href="/oen" id="gwern-oen" class="prefetch-not link-annotated link-page" title="&#39;Number Search Engine via NN Embeddings&#39;, Gwern 2024">number search engine</a></p></li>
+<li><p><a href="/novelty-net" id="gwern-novelty-net" class="prefetch-not link-annotated link-page" title="&#39;Novelty Nets: Classifier Anti-Guidance&#39;, Gwern 2024">novelty-net sampling</a> <span class=separator-inline>•</span> <a href="/free-play" id="gwern-free-play" class="prefetch-not link-annotated link-page" title="&#39;Free-Play Periods for RL Agents&#39;, Gwern 2023">free-play period</a> <span class=separator-inline>•</span> <a href="/ai-daydreaming" id="gwern-ai-daydreaming" class="prefetch-not link-annotated link-page" title="&#39;LLM Daydreaming&#39;, Gwern 2025">daydreaming</a></p></li>
+<li><p><a href="/spfn" id="gwern-spfn" class="prefetch-not link-annotated link-page" title="&#39;Symbolic PFNs (SPFNs): Training LLMs for Symbolic Bayesian Inference by Reversing Stan&#39;, Gwern 2026">SPFN: Bayesian LLM by Reversing Stan</a></p></li>
+<li><p><a href="/hutter-prize" id="gwern-hutter-prize" class="prefetch-not link-annotated link-page" title="&#39;Towards a Better Hutter Prize&#39;, Gwern 2026">Towards a Better Hutter Prize</a></p></li>
+</ul></li>
+</ul>
+</section>
+<section id="computer-science" class="level1">
+<h1><a href="#computer-science" title="Link to section: § &#39;Computer Science&#39;">Computer Science</a></h1>
+<ul>
+<li><p><a href="/turing-complete" id="gwern-turing-complete" class="prefetch-not link-annotated link-page" title="&#39;Surprisingly Turing-Complete&#39;, Gwern 2012">Surprisingly Turing-Complete</a></p></li>
+<li><p><a href="/archiving" id="archiving-urls-2" class="prefetch-not link-annotated link-page" title="&#39;Archiving URLs&#39;, Gwern 2011">Archiving URLs</a></p></li>
+<li><p><a href="/gwtar" id="gwern-gwtar" class="prefetch-not link-annotated link-page" title="&#39;Gwtar: a static efficient single-file HTML format&#39;, Gwern 2026">Gwtar: static efficient single-file HTML</a></p></li>
+<li><p><a href="/sort" id="gwern-sort" class="prefetch-not link-annotated link-page" title="&#39;The 𝚜𝚘𝚛𝚝 –𝚔𝚎𝚢 Trick&#39;, Gwern 2014">The <code>sort --key</code> Trick</a></p></li>
+<li><p><a href="/wifi" id="gwern-wifi" class="prefetch-not link-annotated link-page" title="&#39;Internet WiFi improvement&#39;, Gwern 2016">Internet WiFi Improvement</a></p></li>
+<li><p><a href="/3-grenades" id="gwern-3-grenades" class="prefetch-not link-annotated link-page" title="&#39;The Three Grenades and the Four Noble Truths&#39;, Gwern 2008">The 3 Grenades</a></p></li>
+<li><p><a href="/computers" id="gwern-computers" class="prefetch-not link-annotated link-page" title="&#39;How Many Computers Are In Your Computer?&#39;, Gwern 2010">Computers In Computers</a></p></li>
+<li><p><a href="/note/faster" id="gwern-note-faster" class="prefetch-not link-annotated-partial link-page" title="&#39;Computer Optimization: Your Computer Is Faster Than You Think&#39;, Gwern 2021">Computers Are Fast</a></p></li>
+<li><p><a href="/utext" id="gwern-utext" class="prefetch-not link-annotated link-page" title="&#39;Utext: Rich Unicode Documents&#39;, Gwern 2023">Utext: Rich Unicode Documents</a></p></li>
+<li><p><a href="/unsort" id="gwern-unsort" class="prefetch-not link-annotated link-page" title="&#39;Can You Unsort Lists for Diversity?&#39;, Gwern 2019">Unsorting Lists for Diversity</a></p></li>
+<li><p><a href="/rock-paper-scissors" id="gwern-rock-paper-scissors" class="prefetch-not link-annotated-partial link-page" title="&#39;Rock-Paper-Scissors Optimality&#39;, Gwern 2024">Rock-Paper-Scissors as game mechanic</a></p></li>
+</ul>
+</section>
+<section id="haskell" class="level1">
+<h1><a href="#haskell" title="Link to section: § &#39;Haskell&#39;">Haskell</a></h1>
+<ul>
+<li><p><a href="/haskell/summer-of-code" id="gwern-haskell-summer-of-code" class="prefetch-not link-annotated link-page" title="&#39;Summers of Code, 2006–2013&#39;, Gwern 2009">Haskell Summer Of Code</a></p></li>
+<li><p><a href="/problem-14" id="gwern-et-al-2022" class="prefetch-not link-annotated link-page" title="‘Problem 14 Dynamic Programming Solutions’, Branwen et al 2022">Gambling Problem #14</a></p></li>
+<li><p><a href="/haskell/archiving-github" id="gwern-haskell-archiving-github" class="prefetch-not link-annotated link-page" title="&#39;Archiving GitHub&#39;, Gwern 2011">Archiving GitHub</a></p></li>
+<li><p><a href="/haskell/wikipedia-archive-bot" id="gwern-haskell-wikipedia-archive-bot" class="prefetch-not link-annotated link-page" title="&#39;Writing a Wikipedia Link Archive Bot&#39;, Gwern 2008">Wikipedia Archive Bot</a></p></li>
+<li><p><a href="/haskell/wikipedia-rss-archive-bot" id="gwern-haskell-wikipedia-rss-archive-bot" class="prefetch-not link-annotated link-page" title="&#39;Writing a Wikipedia RSS Link Archive Bot&#39;, Gwern 2009">WP RSS Archive Bot</a></p></li>
+<li><p><a href="/resilient-software" id="gwern-resilient-software" class="prefetch-not link-annotated-partial link-page" title="&#39;Resilient Haskell Software&#39;, Gwern 2008">Resilient Haskell Software</a></p></li>
+<li><p><a href="/evolutionary-license" id="gwern-evolutionary-license" class="prefetch-not link-annotated link-page" title="&#39;Evolutionary Software Licenses&#39;, Gwern 2009">Evolutionary Licenses</a></p></li>
+<li><p><a href="/haskell/run-length-encoding" id="gwern-haskell-run-length-encoding" class="prefetch-not link-annotated link-page" title="&#39;Golfing Run Length Encoding in Haskell&#39;, Gwern 2008">Elegant Run Length Coding</a></p></li>
+<li><p><a href="/choosing-software" id="gwern-choosing-software" class="prefetch-not link-annotated link-page" title="&#39;Choosing Software&#39;, Gwern 2008">Choosing Software</a></p></li>
+</ul>
+<p><!-- NOTE: the horizontal rulers (after the first one) are suppressed on desktop, as they aren't particularly necessary and don't necessarily work with the reflowing we prefer. See initial.css l.2347 for detailed discussion. --></p>
+<div class="horizontal-rule-nth-1">
+<hr>
+</div>
+</section>
+<section id="cognition" class="level1">
+<h1><a href="#cognition" title="Link to section: § &#39;Cognition&#39;">Cognition</a></h1>
+<ul>
+<li><p><a href="/spaced-repetition" id="spaced-repetition-3" class="prefetch-not link-annotated link-page" title="&#39;Spaced Repetition for Efficient Learning&#39;, Gwern 2009">Spaced Repetition &amp; Learning</a></p></li>
+<li><p><a href="/dnb-faq" id="gwern-dnb-faq" class="prefetch-not link-annotated link-page" title="&#39;Dual 𝑛-Back FAQ&#39;, Gwern 2009">Dual <em>n</em>-Back FAQ</a></p></li>
+<li><p><a href="/dnb-meta-analysis" id="gwern-dnb-meta-analysis" class="prefetch-not link-annotated link-page" title="&#39;Dual _n_-Back Meta-Analysis&#39;, Gwern 2012">Dual <em>n</em>-Back Meta-Analysis</a></p></li>
+<li><p><a href="/iodine" id="iodine-2" class="prefetch-not link-annotated link-page" title="&#39;Iodine and Adult IQ meta-analysis&#39;, Gwern 2012">Iodine Adult-IQ Meta-Analysis</a></p></li>
+<li><p><a href="/conscientiousness" id="gwern-conscientiousness" class="prefetch-not link-annotated link-page" title="&#39;Conscientiousness &amp; Online Education&#39;, Gwern 2012">Conscientiousness &amp; Online Ed</a></p></li>
+<li><p><a href="/smpy" id="gwern-smpy" class="prefetch-not link-annotated link-page" title="&#39;SMPY Bibliography&#39;, Gwern 2018">SMPY G&amp;T Bibliography</a></p></li>
+<li><p><a href="/creatine" id="gwern-creatine" class="prefetch-not link-annotated link-page" title="&#39;Creatine Cognition Meta-analysis&#39;, Gwern 2013">Creatine Cognition Meta-Analysis</a></p></li>
+<li><p><a href="/difference" id="gwern-difference" class="prefetch-not link-annotated link-page" title="&#39;How Complex Are Individual Differences?&#39;, Gwern 2010">How Complex Human Differences?</a></p></li>
+<li><p><a href="/doc/iq/high/anne-roe/index" id="_yEhS60Q8" class="prefetch-not link-annotated link-page" title="‘Anne Roe’s Scientists’ directory">Anne Roe’s Elite Scientists</a></p></li>
+<li><p><a href="/doc/biology/portia/index" id="_Czl_djKh" class="prefetch-not link-annotated link-page" title="‘𝑃𝑜𝑟𝑡𝑖𝑎 spider’ directory">Intelligence Of <em>Portia</em> Spiders</a></p></li>
+<li><p><a href="/anti-spaced-repetition" id="gwern-anti-spaced-repetition" class="prefetch-not link-annotated link-page" title="&#39;Anti-Spaced Repetition for Serendipity&#39;, Gwern 2017">Anti-spaced-repetition</a></p></li>
+<li><p><a href="/anchoring" id="gwern-anchoring" class="prefetch-not link-annotated link-page" title="&#39;LW anchoring experiment&#39;, Gwern 2012">LW Anchoring Experiment</a></p></li>
+</ul>
+</section>
+<section id="psychology" class="level1">
+<h1><a href="#psychology" title="Link to section: § &#39;Psychology&#39;">Psychology</a></h1>
+<ul>
+<li><p><a href="/sunk-cost" id="sunk-cost-2" class="prefetch-not link-annotated link-page" title="&#39;Are Sunk Costs Fallacies?&#39;, Gwern 2012">Are Sunk Costs Fallacies?</a></p></li>
+<li><p><a href="/lithium" id="gwern-lithium" class="prefetch-not link-annotated link-page" title="&#39;Lithium in ground-water and well-being&#39;, Gwern 2010">Lithium In Drinking Water</a></p></li>
+<li><p><a href="/morning-writing" id="gwern-morning-writing" class="prefetch-not link-annotated link-page" title="&#39;What Is The Morning Writing Effect?&#39;, Gwern 2011">Morning-Writing Effect</a></p></li>
+<li><p><a href="/collecting" id="gwern-collecting" class="prefetch-not link-annotated link-page" title="&#39;What Is The Collecting Mindset?&#39;, Gwern 2021">The Collecting Mindset</a></p></li>
+<li><p><a href="/larping" id="gwern-larping" class="prefetch-not link-annotated link-page" title="&#39;Why Do Hipsters Steal Stuff?&#39;, Gwern 2022">Why Do Hipsters Steal Stuff?</a></p></li>
+<li><p><a href="/beauty" id="gwern-beauty" class="prefetch-not link-annotated link-page" title="&#39;Progress In Beauty&#39;, Gwern 2016">Progress In Beauty</a></p></li>
+<li><p><a href="/note/competence" id="gwern-note-competence" class="prefetch-not link-annotated-partial link-page" title="&#39;Ordinary Incompetence&#39;, Gwern 2021">Ordinary Incompetence</a></p></li>
+<li><p><a href="/maze" id="gwern-maze" class="prefetch-not link-annotated link-page" title="‘Feynman’s Maze-Running Story’, Gwern 2014">Finding Feynman’s Maze Story</a></p></li>
+<li><p><a href="/doc/psychiatry/bipolar/elon-musk/index" id="_0nY185P4" class="prefetch-not link-annotated link-page" title="‘Elon Musk’ directory">Elon Musk</a></p></li>
+<li><p><a href="/rtx" id="gwern-rtx" class="prefetch-not link-annotated link-page" title="&#39;Highly Potent Drugs As Psychological Warfare Weapons&#39;, Gwern 2020">Potent Drugs As Psychological Warfare</a></p></li>
+<li><p><a href="/book-writing" id="gwern-book-writing" class="prefetch-not link-annotated link-page" title="&#39;Why To Not Write A Book&#39;, Gwern 2024">Why To Not Write A Book</a></p></li>
+<li><p><a href="/matt-levine" id="gwern-matt-levine" class="prefetch-not link-annotated-partial link-page" title="&#39;Why So Few Matt Levines?&#39;, Gwern 2024">Why So Few Matt Levines?</a></p></li>
+</ul>
+</section>
+<section id="behavior-genetics" class="level1">
+<h1><a href="#behavior-genetics" title="Link to section: § &#39;Behavior Genetics&#39;">Behavior Genetics</a></h1>
+<ul>
+<li><p><a href="/embryo-selection" id="gwern-embryo-selection" class="prefetch-not link-annotated link-page" title="&#39;Embryo Selection For Intelligence&#39;, Gwern 2016">Embryo Selection For Traits</a></p></li>
+<li><p><a href="/review/bakewell" id="gwern-review-bakewell" class="prefetch-not link-annotated link-page" title="&#39;Origins of Innovation: Bakewell &amp; Breeding&#39;, Gwern 2018">Bakewell’s Invention: Breeding</a></p></li>
+<li><p><a href="/clone" id="gwern-clone" class="prefetch-not link-annotated link-page" title="&#39;Dog Cloning For Special Forces: Breed All You Can Breed&#39;, Gwern 2018">Dog Cloning For Special Forces</a></p></li>
+<li><p><a href="/ies-history" id="gwern-ies-history" class="prefetch-not link-annotated link-page" title="&#39;History of Iterated Embryo Selection&#39;, Gwern 2019">History of IES</a></p></li>
+<li><p><a href="/drug-heuristic" id="gwern-drug-heuristic" class="prefetch-not link-annotated link-page" title="&#39;The Algernon Argument&#39;, Gwern 2010">Drug Evolutionary Heuristics</a></p></li>
+<li><p><a href="/dune-genetics" id="gwern-dune-genetics" class="prefetch-not link-annotated link-page" title="&#39;Genetics and Eugenics in Frank Herbert’s Dune-verse&#39;, Gwern 2018">Genetics In Herbert’s <em>Dune</em></a></p></li>
+<li><p><a href="/mlp-genetics" id="gwern-mlp-genetics" class="prefetch-not link-annotated link-page" title="&#39;Race in My Little Pony&#39;, Gwern 2018">Genetics In <em>My Little Pony</em></a></p></li>
+<li><p><a href="/amuse" id="gwern-amuse" class="prefetch-not link-annotated link-page" title="&#39;Amusing Ourselves to Death?&#39;, Gwern 2018">Amusing Ourselves To Death?</a></p></li>
+<li><p><a href="/doc/genetics/heritable/emergenesis/index" id="_NUhADmRH" class="prefetch-not link-annotated link-page" title="‘emergenesis’ directory">Emergenesis: Genius’ Genetics?</a></p></li>
+<li><p><a href="/doc/statistics/variance-component/index" id="_7RVDIZ0c" class="prefetch-not link-annotated link-page" title="&#39;Variance Components Beyond Genetics&#39;, Gwern 2019">Non-Gene Variance Components</a></p></li>
+<li><p><a href="/deer-evolution" id="gwern-deer-evolution" class="prefetch-not link-annotated link-page" title="&#39;Oh Deer: Could Deer Evolve to Avoid Car Accidents?&#39;, Gwern 2018">Could Deer Evolve Away Accidents?</a></p></li>
+</ul>
+</section>
+<section id="economics" class="level1">
+<h1><a href="#economics" title="Link to section: § &#39;Economics&#39;">Economics</a></h1>
+<ul>
+<li><p><a href="/improvement" id="gwern-improvement" class="prefetch-not link-annotated link-page" title="&#39;My Ordinary Life: Improvements Since the 1990s&#39;, Gwern 2018">Ordinary Life Improvements</a></p></li>
+<li><p><a href="/girl-scouts" id="gwern-girl-scouts" class="prefetch-not link-annotated link-page" title="&#39;Girl Scouts &amp; Good Corporate Governance&#39;, Gwern 2011">Girl Scouts &amp; Good Governance</a></p></li>
+<li><p><a href="/console-insurance" id="gwern-console-insurance" class="prefetch-not link-annotated link-page" title="&#39;Console Insurance Is A Ripoff&#39;, Gwern 2009">Console Insurance</a></p></li>
+<li><p><a href="/greenland" id="gwern-greenland" class="prefetch-not link-annotated link-page" title="&#39;Reasons of State: Why Didn’t Denmark Sell Greenland?&#39;, Gwern 2011">Buying Greenland</a></p></li>
+<li><p><a href="/long-bets" id="gwern-long-bets" class="prefetch-not link-annotated link-page" title="&#39;Long Bets as Charitable Giving Opportunity&#39;, Gwern 2017">Long Bets’s Design Problems</a></p></li>
+<li><p><a href="/doc/economics/copyright/index" id="_LzV-JJ4d" class="prefetch-not link-annotated link-page" title="‘copyright’ directory">Copyright Deadweight Loss</a></p></li>
+<li><p><a href="/note/local-optima" id="gwern-note-local-optima" class="prefetch-not link-annotated-partial link-page" title="&#39;Local Optima &amp; Greedy Choices&#39;, Gwern 2021">Local Optima &amp; Greedy Choice</a></p></li>
+<li><p><a href="/doc/iq/ses/index" id="_vJR062Gj" class="prefetch-not link-annotated link-page" title="‘IQ &amp; SES’ directory">IQ/Income</a></p></li>
+<li><p><a href="/harberger" id="gwern-harberger" class="prefetch-not link-annotated link-page" title="&#39;Self-Funding Harberger Taxes&#39;, Gwern 2024">Self-funding Harberger copyright tax</a></p></li>
+<li><p><a href="/copyright" id="gwern-copyright" class="prefetch-not link-annotated link-page" title="&#39;Against Copyright&#39;, Gwern 2008">Copyright</a></p></li>
+</ul>
+</section>
+<section id="economics-tech" class="level1">
+<h1><a href="#economics-tech" title="Link to section: § &#39;Economics: Tech&#39;">Economics: Tech</a></h1>
+<ul>
+<li><p><a href="/complement" id="gwern-complement" class="prefetch-not link-annotated link-page" title="&#39;Laws of Tech: Commoditize Your Complement&#39;, Gwern 2018">Commoditize Your Complement</a></p></li>
+<li><p><a href="/timing" id="gwern-timing" class="prefetch-not link-annotated link-page" title="&#39;Timing Technology: Lessons From The Media Lab&#39;, Gwern 2012">Timing Tech: Media Lab Lessons</a></p>
+<ul>
+<li><p><a href="/review/arpa" id="gwern-review-arpa" class="prefetch-not link-annotated link-page" title="&#39;ARPA and SCI: Surfing AI&#39;, Gwern 2018">DARPA &amp; The SCI VC Program</a></p></li>
+<li><p><a href="/forking-path" id="gwern-forking-path" class="prefetch-not link-annotated link-page" title="&#39;Technology Forecasting: The Garden of Forking Paths&#39;, Gwern 2014">The Garden Of Forking Paths</a></p></li>
+</ul></li>
+<li><p><a href="/slowing-moores-law" id="gwern-slowing-moores-law" class="prefetch-not link-annotated link-page" title="&#39;Slowing Moore’s Law: How It Could Happen&#39;, Gwern 2012">Moore’s Law &amp; Chip Fabs</a></p></li>
+<li><p><a href="/holy-war" id="gwern-holy-war" class="prefetch-not link-annotated link-page" title="&#39;Technology Holy Wars are Coordination Problems&#39;, Gwern 2020">‘Holy Wars’ Coordination Problem</a></p></li>
+<li><p><a href="/startup-idea" id="gwern-startup-idea" class="prefetch-not link-annotated link-page" title="&#39;Startup Ideas&#39;, Gwern 2017">Startup Ideas</a></p></li>
+<li><p><a href="/doc/economics/automation/index" id="_SPcUZ49z" class="prefetch-not link-annotated link-page" title="‘tech economics’ directory">Automation/Colonization Wave</a></p></li>
+</ul>
+</section>
+<section id="domestic-cats" class="level1">
+<h1><a href="#domestic-cats" title="Link to section: § &#39;Domestic Cats&#39;">Domestic Cats</a></h1>
+<ul>
+<li><p><a href="/review/cat" id="gwern-review-cat" class="prefetch-not link-annotated link-page" title="&#39;Cat Psychology &amp; Domestication: Are We Good Owners?&#39;, Gwern 2018">Cat Psychology/Domestication</a></p></li>
+<li><p><a href="/catnip" id="gwern-catnip" class="prefetch-not link-annotated link-page" title="&#39;Catnip immunity and alternatives&#39;, Gwern 2015">Catnip Rate Meta-Analysis</a></p>
+<ul>
+<li><p><a href="/catnip#optimal-catnip-alternative-selection-solving-the-mdp" id="gwern-catnip--optimal-catnip-alternative-selection-solving-the-mdp" class="prefetch-not link-annotated link-page" title="&#39;Catnip immunity and alternatives § Optimal catnip alternative selection: solving the MDP&#39;, Gwern 2015">Solving Catnip POMDPs</a></p></li>
+<li><p><a href="/catnip#breeding-cats-to-increase-frequency-of-catnip-response" id="gwern-catnip--breeding-cats-to-increase-frequency-of-catnip-response" class="prefetch-not link-annotated link-page" title="&#39;Catnip immunity and alternatives § Breeding cats to increase frequency of catnip response&#39;, Gwern 2015">Catnip Breeding</a></p></li>
+</ul></li>
+<li><p><a href="/catnip-survey" id="gwern-catnip-survey" class="prefetch-not link-annotated link-page" title="&#39;World Catnip Surveys&#39;, Gwern 2015">Catnip Surveys</a></p></li>
+<li><p><a href="/fuzz-testing" id="gwern-fuzz-testing" class="prefetch-not link-annotated link-page" title="&#39;Fuzz Testing&#39;, Gwern 2018">Cat-Caused Accidents</a></p></li>
+<li><p><a href="/earwax" id="gwern-earwax" class="prefetch-not link-annotated link-page" title="&#39;Why Cats Love Earwax&#39;, Gwern 2019">Why Cats Like Earwax</a></p></li>
+<li><p><a href="/cat-horror" id="gwern-cat-horror" class="prefetch-not link-annotated link-page" title="&#39;Cats As Horror Movie Villains&#39;, Gwern 2025">Cats As Horror Movie Villains</a></p></li>
+<li><p><a href="/catitecture" id="gwern-catitecture" class="prefetch-not link-annotated link-page" title="&#39;𝐶𝑎𝑡 itecture: Better Cat Window Boxes&#39;, Gwern 2023"><em>Cat</em>itecture: Better Cat Window Boxes</a></p></li>
+<li><p><a href="/blog/2021/cat-tail" class="prefetch-not link-page">What is it Like to be a Cat Tail?</a></p></li>
+</ul>
+</section>
+<section id="practical" class="level1">
+<h1><a href="#practical" title="Link to section: § &#39;Practical&#39;">Practical</a></h1>
+<ul>
+<li><p><a href="/search" id="gwern-search" class="prefetch-not link-annotated link-page" title="&#39;Internet Search Tips&#39;, Gwern 2018">Internet Search Tips</a></p></li>
+<li><p><a href="/socks" id="gwern-socks" class="prefetch-not link-annotated link-page" title="&#39;On Having Enough Socks&#39;, Gwern 2017">On Having Enough Socks</a></p></li>
+<li><p><a href="/plastination" id="gwern-plastination" class="prefetch-not link-annotated link-page" title="&#39;Plastination versus Cryonics&#39;, Gwern 2011">Plastination Vs Cryonics</a></p></li>
+<li><p><a href="/longevity" id="gwern-longevity" class="prefetch-not link-annotated link-page" title="&#39;Life Extension Cost-Benefits&#39;, Gwern 2015">Vitamin D Longevity</a></p></li>
+<li><p><a href="/doc/psychiatry/traumatic-brain-injury/index" id="_I6XbCF9K" class="prefetch-not link-annotated link-page" title="‘TBI’ directory">Falling &amp; Head Injuries</a></p></li>
+<li><p><a href="/doc/longevity/johan-bjorksten/index" id="_nzJfYSzm" class="prefetch-not link-annotated link-page" title="‘Johan Bjorksten (aging)’ directory">Bjorksten Aging Papers</a></p></li>
+<li><p><a href="/oldest-food" id="gwern-oldest-food" class="prefetch-not link-annotated link-page" title="&#39;Oldest possible food: 20ₘyₐ?&#39;, Gwern 2021">Oldest possible food</a></p></li>
+<li><p><a href="/rocky-road" id="gwern-et-al-2026" class="prefetch-not link-annotated link-page" title="&#39;How Long Would ‘Weird Al’ Survive In An Ice Cream Freezer?&#39;, Gwern et al 2026">How Long Would “Weird Al” Survive In A Freezer?</a></p></li>
+</ul>
+</section>
+<section id="design" class="level1">
+<h1><a href="#design" title="Link to section: § &#39;Design&#39;">Design</a></h1>
+<ul>
+<li><p><a href="/design" id="design-2" class="prefetch-not link-annotated link-page" title="&#39;Design Of This Website&#39;, Gwern 2010">Gwern.net Design</a>, <a href="/design-graveyard" id="gwern-design-graveyard" class="prefetch-not link-annotated link-page" title="‘Design Graveyard’, Gwern 2010">Lessons</a>, <a href="/traffic" id="gwern-traffic" class="prefetch-not link-annotated link-page" title="&#39;Gwern.net Website Traffic&#39;, Gwern 2011">Traffic</a></p>
+<ul>
+<li><p><a href="/lorem" id="gwern-lorem" class="prefetch-not link-annotated link-page" title="&#39;Lorem Ipsum&#39;, Gwern 2020">Feature test page</a></p></li>
+<li><p><a href="/style-guide" id="gwern-et-al-2025" class="prefetch-not link-modified-recently link-annotated link-page" title="&#39;Manual of Style&#39;, Gwern et al 2025">Manual of Style</a></p></li>
+<li><p><a href="/invertornot" id="gwern-invertornot" class="prefetch-not link-annotated link-page" title="&#39;InvertOrNot.com Proposal&#39;, Gwern 2021">InvertOrNot.com</a></p></li>
+</ul></li>
+<li><p><a href="/sidenote" id="sidenotes-2" class="prefetch-not link-annotated link-page" title="&#39;Sidenotes In Web Design&#39;, Gwern 2020">Sidenotes In Web Design</a></p></li>
+<li><p><a href="/red" id="gwern-red" class="prefetch-not link-annotated link-page" title="&#39;Rubrication Design Examples&#39;, Gwern 2019">Rubrication Design Examples</a></p></li>
+<li><p><a href="/poetry-html" id="gwern-poetry-html" class="prefetch-not link-annotated link-page" title="&#39;Poetry HTML Typesetting&#39;, Gwern 2026">Poetry HTML Typesetting</a></p></li>
+<li><p><a href="/polish" id="gwern-polish" class="prefetch-not link-annotated link-page" title="&#39;Top-𝑘 Reading: Against Polishing the Median Essay&#39;, Gwern 2026">“Top-<em>k</em> Reading: Against Polishing Median Essays”</a></p></li>
+<li><p><a href="/font" id="gwern-font" class="prefetch-not link-annotated link-page" title="&#39;Who Buys Fonts?&#39;, Gwern 2021">Who Buys Fonts?</a></p></li>
+<li><p><a href="/subscript" id="gwern-subscript" class="prefetch-not link-annotated link-page" title="&#39;Subscripts For Citations&#39;, Gwern 2020">On Subscripting Citations</a></p></li>
+<li><p><a href="/variable" id="gwern-variables-2" class="prefetch-not link-annotated link-page" title="&#39;Rare Greek Variables&#39;, Gwern 2021">Use Rarer Greek Variables</a></p></li>
+<li><p><a href="/twitter" id="gwern-twitter" class="prefetch-not link-annotated link-page" title="&#39;Twitter Follow-Request UX Problems&#39;, Gwern 2023">Twitter Follow-UX Problems</a></p></li>
+<li><p><a href="/web-color" id="gwern-web-color" class="prefetch-not link-annotated link-page" title="&#39;Website Colors: Red vs Blue&#39;, Gwern 2024">Website Colors: Red vs Blue</a></p></li>
+<li><p><a href="/grow-speech" id="gwern-et-al-2026" class="prefetch-not link-annotated link-page" title="&#39;Grow-Speech Specification&#39;, Gwern et al 2026">Grow-Speech Specification</a>; <a href="/go-speech" id="pro-et-al-2026" class="prefetch-not link-annotated link-page" title="&#39;Go-Speech Specification&#39;, Pro et al 2026">Go-Speech</a></p></li>
+</ul>
+</section>
+<section id="qs-sleep" class="level1">
+<h1><a href="#qs-sleep" title="Link to section: § &#39;QS: Sleep&#39;">QS: Sleep</a></h1>
+<p><span id="supplements">​</span></p>
+<ul>
+<li><p><a href="/melatonin" id="gwern-melatonin" class="prefetch-not link-annotated link-page" title="&#39;Melatonin&#39;, Gwern 2008">Melatonin For Sleep</a></p></li>
+<li><p><a href="/modafinil" id="gwern-modafinil" class="prefetch-not link-annotated link-page" title="&#39;Modafinil&#39;, Gwern 2009">Modafinil As Stimulant</a></p></li>
+<li><p><a href="/modafinil-survey" id="gwern-modafinil-survey" class="prefetch-not link-annotated link-page" title="&#39;Modafinil community survey&#39;, Gwern 2015">Modafinil Use Survey</a></p></li>
+<li><p><a href="/zeo/zeo" id="gwern-zeo-zeo" class="prefetch-not link-annotated link-page" title="&#39;Zeo sleep self-experiments&#39;, Gwern 2010">Self-Experiments</a>:</p>
+<ul>
+<li><p><a href="/zeo/caffeine" id="gwern-zeo-caffeine" class="prefetch-not link-annotated link-page" title="&#39;Caffeine wakeup experiment&#39;, Gwern 2013">Caffeine</a></p></li>
+<li><p><a href="/zeo/potassium" id="gwern-zeo-potassium" class="prefetch-not link-annotated link-page" title="&#39;Potassium sleep experiments&#39;, Gwern 2012">Potassium</a></p></li>
+<li><p><a href="/zeo/redshift" id="gwern-zeo-redshift" class="prefetch-not link-annotated link-page" title="&#39;Redshift sleep experiment&#39;, Gwern 2012">Redshift</a></p></li>
+<li><p><a href="/zeo/vitamin-d" id="gwern-zeo-vitamin-d" class="prefetch-not link-annotated link-page" title="&#39;Vitamin D sleep experiments&#39;, Gwern 2012">Vitamin D</a></p></li>
+<li><p><a href="/zeo/zma" id="gwern-zeo-zma" class="prefetch-not link-annotated link-page" title="&#39;ZMA Sleep Experiment&#39;, Gwern 2017">ZMA Mix</a></p></li>
+</ul></li>
+<li><p><a href="/wood-pillow" id="gwern-wood-pillow" class="prefetch-not link-annotated link-page" title="&#39;Wooden Pillow&#39;, Gwern 2008">Wooden Pillows</a></p></li>
+<li><p><a href="/lunar" id="gwern-lunar" class="prefetch-not link-annotated link-page" title="&#39;Lunar circadian rhythms&#39;, Gwern 2013">Lunar Sleep Rhythms</a></p></li>
+</ul>
+</section>
+<section id="qs" class="level1">
+<h1><a href="#qs" title="Link to section: § &#39;QS&#39;">QS</a></h1>
+<ul>
+<li><p><a href="/nootropic/nootropics" id="gwern-nootropic-nootropics" class="prefetch-not link-annotated link-page" title="&#39;Nootropics&#39;, Gwern 2010">Nootropics Experiments</a></p></li>
+<li><p><a href="/lsd-microdosing" id="gwern-lsd-microdosing" class="prefetch-not link-annotated link-page" title="&#39;LSD microdosing RCT&#39;, Gwern 2012">LSD Microdosing</a></p></li>
+<li><p><a href="/water" id="gwern-water" class="prefetch-not link-annotated link-page" title="&#39;Self-Blinded Mineral Water Taste Test&#39;, Gwern 2017">Blind Mineral Water Taste Test</a></p></li>
+<li><p><a href="/2014-spirulina" id="gwern-2014-spirulina" class="prefetch-not link-annotated link-page" title="&#39;2014 Spirulina randomized self-experiment&#39;, Gwern 2014">Spirulina Allergy Experiment</a></p></li>
+<li><p><a href="/melon" id="gwern-melon" class="prefetch-not link-annotated link-page" title="&#39;Bitter Melon for blood glucose&#39;, Gwern 2015">Bitter Melon Blood-Glucose</a></p></li>
+<li><p><a href="/lewis-meditation" id="gwern-lewis-meditation" class="prefetch-not link-annotated link-page" title="&#39;2013 Lewis meditation results&#39;, Gwern 2013">Meditation &amp; Math Errors</a></p></li>
+<li><p><a href="/weather" id="gwern-weather" class="prefetch-not link-annotated link-page" title="&#39;Weather and My Productivity&#39;, Gwern 2013">Weather &amp; My Mood</a></p></li>
+<li><p><a href="/treadmill" id="gwern-treadmill" class="prefetch-not link-annotated link-page" title="&#39;Treadmill desk observations&#39;, Gwern 2012">Treadmill Memory &amp; Typing</a></p></li>
+<li><p><a href="/bacopa" id="gwern-bacopa" class="prefetch-not link-annotated link-page" title="&#39;𝐵𝑎𝑐𝑜𝑝𝑎 Quasi-Experiment&#39;, Gwern 2014">Bacopa Quasi-Experiment</a></p></li>
+<li><p><a href="/lllt" id="gwern-lllt" class="prefetch-not link-annotated link-page" title="&#39;2013 LLLT self-experiment&#39;, Gwern 2013">2013 LLLT Self-Experiment</a></p></li>
+<li><p><a href="/acne" id="gwern-acne" class="prefetch-not link-annotated link-page" title="&#39;Acne: a good Quantified Self topic&#39;, Gwern 2019">Acne: a good QS topic</a></p></li>
+</ul>
+<div class="horizontal-rule-nth-2">
+<hr>
+</div>
+</section>
+<section id="politics" class="level1">
+<h1><a href="#politics" title="Link to section: § &#39;Politics&#39;">Politics</a></h1>
+<ul>
+<li><p><a href="/subculture" id="subculture-2" class="prefetch-not link-annotated link-page" title="&#39;The Melancholy of Subculture Society&#39;, Gwern 2009">Melancholy Of Subculture Society</a></p></li>
+<li><p><a href="/terrorism-is-not-about-terror" id="gwern-terrorism-is-not-about-terror" class="prefetch-not link-annotated link-page" title="&#39;Terrorism Is Not About Terror&#39;, Gwern 2009">Terrorism Is Not About Terror</a></p></li>
+<li><p><a href="/terrorism-is-not-effective" id="gwern-terrorism-is-not-effective" class="prefetch-not link-annotated link-page" title="&#39;Terrorism Is Not Effective&#39;, Gwern 2009">Terrorism Is Not Effective</a></p></li>
+<li><p><a href="/colder-war" id="gwern-colder-war" class="prefetch-not link-annotated link-page" title="&#39;Colder Wars&#39;, Gwern 2009">Colder Wars In Space</a></p></li>
+<li><p><a href="/doc/sociology/technology/parasocial/index" id="_IFLMcIgs" class="prefetch-not link-annotated link-page" title="‘parasociality’ directory">Parasocial Relationships Online</a></p></li>
+<li><p><a href="/doc/sociology/small-groups/index" id="_4i-XcMw4" class="prefetch-not link-annotated link-page" title="&#39;The Effectiveness of Unreasonable Small Groups&#39;, Gwern 2021">Unreasonable Small Groups’ Efficacy</a></p></li>
+<li><p><a href="/note/fashion" id="gwern-note-fashion" class="prefetch-not link-annotated-partial link-page" title="&#39;Fashion Cycles&#39;, Gwern 2021">Political Fashions</a></p></li>
+<li><p><a href="/doc/sociology/abandoned-footnotes/index" id="_vdFUFou8" class="prefetch-not link-annotated link-page" title="‘𝐴𝑏𝑎𝑛𝑑𝑜𝑛𝑒𝑑 𝐹𝑜𝑜𝑡𝑛𝑜𝑡𝑒𝑠’ directory">Best Of <em>Abandoned Footnotes</em></a></p></li>
+</ul>
+</section>
+<section id="epistemology" class="level1">
+<h1><a href="#epistemology" title="Link to section: § &#39;Epistemology&#39;">Epistemology</a></h1>
+<ul>
+<li><p><a href="/math-error" id="math-error-2" class="prefetch-not link-annotated link-page" title="&#39;The Existential Risk of Math Errors&#39;, Gwern 2012">Existential Risks &amp; Math Errors</a></p></li>
+<li><p><a href="/unseeing" id="gwern-unseeing" class="prefetch-not link-annotated link-page" title="&#39;On Seeing Through and Unseeing: The Hacker Mindset&#39;, Gwern 2012">Hacker Mindset: Seeing Through</a></p></li>
+<li><p><a href="/language" id="gwern-language" class="prefetch-not link-annotated link-page" title="&#39;On the Existence of Powerful Natural Languages&#39;, Gwern 2016">On Powerful Natural Languages</a></p></li>
+<li><p><a href="/littlewood" id="gwern-littlewood" class="prefetch-not link-annotated link-page" title="&#39;Littlewood’s Law and the Global Media&#39;, Gwern 2018">Littlewood’s Law &amp; The Global Media</a></p>
+<ul>
+<li><p><a href="/doc/sociology/survey/lizardman/index" id="_aSDAgurb" class="prefetch-not link-annotated link-page" title="&#39;Lizardman Constant in Surveys&#39;, Gwern 2013">The Lizardman Constant</a></p></li>
+</ul></li>
+<li><p><a href="/internet-community-design" id="gwern-internet-community-design" class="prefetch-not link-annotated-partial link-page" title="&#39;Internet Community Design: Slow To Fast&#39;, Gwern 2021">Internet Community Design</a></p></li>
+<li><p><a href="/modus" id="gwern-modus" class="prefetch-not link-annotated link-page" title="&#39;One Man’s 𝑀𝑜𝑑𝑢𝑠 𝑃𝑜𝑛𝑒𝑛𝑠&#39;, Gwern 2012">One Man’s <em>Modus Ponens</em>…</a></p></li>
+<li><p><a href="/newton" id="gwern-newton" class="prefetch-not link-annotated link-page" title="&#39;Newton’s System of the World and Comets&#39;, Gwern 2016">Newton’s Cosmology &amp; Comets</a></p></li>
+<li><p><a href="/simulation-inference" id="gwern-simulation-inference" class="prefetch-not link-annotated link-page" title="&#39;Simulation Inferences&#39;, Gwern 2009">Simulation Inferences</a></p></li>
+<li><p><a href="/esp-hacking" id="gwern-esp-hacking" class="prefetch-not link-annotated link-page" title="&#39;Hacking Smartphone ESP Apps&#39;, Gwern 2026">Hacking Smartphone ESP Apps</a></p></li>
+</ul>
+</section>
+<section id="philosophy" class="level1">
+<h1><a href="#philosophy" title="Link to section: § &#39;Philosophy&#39;">Philosophy</a></h1>
+<ul>
+<li><p><a href="/culture-is-not-about-esthetics" id="gwern-culture-is-not-about-esthetics" class="prefetch-not link-annotated link-page" title="&#39;Culture Is Not About Esthetics&#39;, Gwern 2009">Culture Is Not About Esthetics</a></p></li>
+<li><p><a href="/video-game-art" id="gwern-video-game-art" class="prefetch-not link-annotated link-page" title="&#39;Video Games as Art&#39;, Gwern 2025">Video Games as Art</a></p></li>
+<li><p><a href="/retrocognition" id="gwern-retrocognition" class="prefetch-not link-annotated link-page" title="‘The Impossibility of Knowledge of Retrocognitive Knowledge’, gwern 2023">Impossibility of Retrocognition</a></p></li>
+<li><p><a href="/ontological-pantheism" id="gwern-ontological-pantheism" class="prefetch-not link-annotated link-page" title="&#39;Ontological Pantheism&#39;, Gwern 2009">Ontological Pantheism</a></p></li>
+<li><p><a href="/on-disrespect" id="gwern-on-disrespect" class="prefetch-not link-annotated link-page" title="&#39;On Disrespect&#39;, Gwern 2009">On Disrespect</a></p></li>
+<li><p><a href="/miletian" id="gwern-miletian" class="prefetch-not link-annotated link-page" title="&#39;Against the Miletians and the One True Element&#39;, Gwern 2008">Against The Miletians</a></p></li>
+<li><p><a href="/vaping" id="gwern-vaping" class="prefetch-not link-annotated link-page" title="&#39;NYT and Vaping: How to Lie By Saying Only True Things&#39;, Gwern 2022">“NYT &amp; Vaping: How To Lie With The Truth”</a></p></li>
+<li><p><span id="ethics">​</span> <strong>Ethics</strong></p>
+<ul>
+<li><p><a href="/narrowing-circle" id="gwern-narrowing-circle" class="prefetch-not link-annotated link-page" title="&#39;The Narrowing Circle&#39;, Gwern 2012">The Narrowing Circle</a></p></li>
+<li><p><a href="/abortion" id="gwern-abortion" class="prefetch-not link-annotated link-page" title="&#39;An Abortion Dialogue&#39;, Gwern 2008">An Abortion Dialogue</a></p></li>
+<li><p><a href="/immoral-book" id="gwern-immoral-book" class="prefetch-not link-annotated-partial link-page" title="&#39;Immoral Books&#39;, Gwern 2010">Immoral Books</a></p></li>
+<li><p><a href="/justification" id="gwern-justification" class="prefetch-not link-annotated-partial link-page" title="&#39;On Justifications&#39;, Gwern 2008">Justifications</a></p></li>
+<li><p><a href="/doc/philosophy/ethics/ethicists/index" id="_3aDVArFN" class="prefetch-not link-annotated link-page" title="‘ethicists’ directory">Ethicists’ Ethics</a></p></li>
+<li><p><a href="/organ-donation-survey" id="gwern-organ-donation-survey" class="prefetch-not link-annotated link-page" title="&#39;Anencephaly Infant Organ Donation Survey&#39;, Gwern 2025">Anencephaly Infant Organ Donation Survey</a></p></li>
+</ul></li>
+</ul>
+<div class="horizontal-rule-nth-3">
+<hr>
+</div>
+</section>
+<section id="literary-criticism" class="level1">
+<h1><a href="#literary-criticism" title="Link to section: § &#39;Literary Criticism&#39;">Literary Criticism</a></h1>
+<ul>
+<li><p><strong>Time travel</strong>:</p>
+<ul>
+<li><p><a href="/story-of-your-life" id="gwern-story-of-your-life" class="prefetch-not link-annotated link-page" title="&#39;‘Story Of Your Life’ Is Not A Time-Travel Story&#39;, Gwern 2012">“Story Of Your Life” ≠ Time Travel</a></p></li>
+<li><p><a href="/review/bakker" id="gwern-review-bakker" class="prefetch-not link-annotated link-page" title="&#39;&lt;em&gt;The Second Apocalypse&lt;/em&gt;: Freedom In An Unfree Universe&#39;, Gwern 2017">R. Scott Bakker’s <em>Second Apocalypse</em></a></p></li>
+<li><p><a href="/review/timecrimes" id="gwern-review-timecrimes" class="prefetch-not link-annotated link-page" title="&#39;𝑇𝑖𝑚𝑒𝑐𝑟𝑖𝑚𝑒𝑠: Time Travel In Hell&#39;, Gwern 2023"><em>Timecrimes</em>: Time Travel In Hell</a></p></li>
+</ul></li>
+<li><p><a href="/review/mlp" id="gwern-review-mlp" class="prefetch-not link-annotated link-page" title="&#39;𝑀𝐿𝑃: Immanetizing The Equestrian&#39;, Gwern 2018"><em>MLP</em>: Immanetizing the Equestrian</a></p></li>
+<li><p><a href="/suzanne-delage" id="gwern-suzanne-delage" class="prefetch-not link-annotated link-page" title="&#39;Interpreting ‘Suzanne Delage’&#39;, Gwern 2009">Wolfe’s “Suzanne Delage” is <em>Dracula</em></a></p></li>
+<li><p><a href="/scanners" id="gwern-scanners" class="prefetch-not link-annotated link-page" title="&#39;‘Scanners Live in Vain’ as realistic SF&#39;, Gwern 2013">“Scanners Live In Vain” Realism</a></p></li>
+<li><p><a href="/screwfly" id="gwern-screwfly" class="prefetch-not link-annotated link-page" title="&#39;The ‘Screwfly Solution’ Solution: Bi-Sexuality&#39;, Gwern 2021">‘Screwfly Solution’ Solution</a></p></li>
+<li><p><a href="/thrawn" id="gwern-thrawn" class="prefetch-not link-annotated-partial link-page" title="&#39;The Tragedy of Grand Admiral Thrawn&#39;, Gwern 2019">Tragedy of Grand Admiral Thrawn</a></p></li>
+</ul>
+</section>
+<section id="anime" class="level1">
+<h1><a href="#anime" title="Link to section: § &#39;Anime&#39;">Anime</a></h1>
+<ul>
+<li><p><a href="/kyon" id="kyon-2" class="prefetch-not link-annotated link-page" title="&#39;The Melancholy of Kyon&#39;, Gwern 2009">The Melancholy Of Kyon</a></p></li>
+<li><p><strong><em>Death Note</em></strong> <a href="/death-note-anonymity" id="gwern-death-note-anonymity" class="prefetch-not link-annotated link-page" title="&#39;Death Note: L, Anonymity &amp; Eluding Entropy&#39;, Gwern 2011">Anonymity</a>, <a href="/death-note-ending" id="gwern-death-note-ending" class="prefetch-not link-annotated link-page" title="&#39;Death Note’s Ending&#39;, Gwern 2008">Ending</a></p>
+<ul>
+<li><p><a href="/death-note-script" id="gwern-death-note-script" class="prefetch-not link-annotated link-page" title="&#39;Who Wrote The ‘Death Note’ Script?&#39;, Gwern 2009">Movie Script Authors</a></p></li>
+</ul></li>
+<li><p><a href="/hafu" id="gwern-hafu" class="prefetch-not link-annotated link-page" title="&#39;Hafu Gender Ratios in Anime&#39;, Gwern 2011">Hafu Gender Ratios In Anime</a></p></li>
+<li><p><a href="/aria" id="gwern-aria" class="prefetch-not link-annotated-partial link-page" title="&#39;Aria’s Past, Present, and Future&#39;, Gwern 2011"><em>Aria</em>’s Past, Present, &amp; Future</a></p></li>
+<li><p><a href="/fmp-parody" id="gwern-fmp-parody" class="prefetch-not link-annotated link-page" title="&#39;Parody in Full Metal Panic!&#39;, Gwern 2008"><em>FMP</em> Parodies</a></p></li>
+<li><p><a href="/development-hell" id="gwern-development-hell" class="prefetch-not link-annotated link-page" title="&#39;On Development Hell&#39;, Gwern 2020">On Development Hell</a></p></li>
+<li><p><a href="/ova" id="gwern-ova" class="prefetch-not link-annotated link-page" title="&#39;How OVAs Worked&#39;, Gwern 2023">Why OVAs?</a></p></li>
+<li><p><a href="/ugly-anime" id="gwern-ugly-anime" class="prefetch-not link-annotated link-page" title="&#39;Why is Western Animation Ugly?&#39;, Gwern 2024">Why ugly Western animation?</a></p></li>
+<li><p><a href="/review/space-battleship-yamato" id="gwern-review-space-battleship-yamato" class="prefetch-not link-annotated-partial link-page" title="&#39;Review of 𝑆𝑝𝑎𝑐𝑒 𝐵𝑎𝑡𝑡𝑙𝑒𝑠𝘩𝑖𝑝 𝑌𝑎𝑚𝑎𝑡𝑜&#39;, Gwern 2021">Why <em>Space Battleship Yamato</em>?</a></p></li>
+</ul>
+</section>
+<section id="fiction-prose" class="level1">
+<h1><a href="#fiction-prose" title="Link to section: § &#39;Fiction: Prose&#39;">Fiction: Prose</a></h1>
+<ul>
+<li><p><a href="/fiction/october" id="gwern-fiction-october" class="prefetch-not link-annotated-partial link-page" title="&#39;October The First Is Too Late&#39;, Gwern 2025">October The First Is Too Late</a></p></li>
+<li><p><a href="/fiction/batman" id="gwern-fiction-batman" class="prefetch-not link-annotated link-page" title="&#39;The Gift of the Amygdali&#39;, Gwern 2017">The Gift Of The Amygdali</a></p></li>
+<li><p><a href="/second-life-sentence" id="gwern-second-life-sentence" class="prefetch-not link-annotated-partial link-page" title="&#39;Second Life Sentences&#39;, Gwern 2024">Second life sentences</a></p></li>
+<li><p><a href="/fiction/acre" id="gwern-fiction-acre" class="prefetch-not link-annotated link-page" title="&#39;The Ones Who Walk Towards Acre&#39;, Gwern 2010">The Ones Who Walk Towards Acre</a></p></li>
+<li><p><a href="/fiction/missing-cities" id="gwern-fiction-missing-cities" class="prefetch-not link-annotated-partial link-page" title="&#39;Missing Cities&#39;, Gwern 2009">Three Missing Cities</a></p></li>
+<li><p><a href="/fiction/erl-king" id="gwern-fiction-erl-king" class="prefetch-not link-annotated link-page" title="&#39;The Erl King&#39;, Gwern 2008">The Erl King</a></p></li>
+<li><p><a href="/fiction/men-of-iron" id="gwern-fiction-men-of-iron" class="prefetch-not link-annotated-partial link-page" title="&#39;Men of Iron&#39;, Gwern 2012">Men Of Iron</a></p></li>
+<li><p><a href="/fiction/menard" id="gwern-fiction-menard" class="prefetch-not link-annotated-partial link-page" title="&#39;Gilles Goullet, Author of the Blindsight&#39;, Gwern 2010">Gilles Goullet, <em>Blindsight</em> Author</a></p></li>
+<li><p><a href="/fiction/how-the-panther-got-black" id="gwern-fiction-how-the-panther-got-black" class="prefetch-not link-annotated-partial link-page" title="&#39;How the Panther Got Black&#39;, Gwern 2009">How The Panther Got Black</a></p></li>
+<li><p><a href="/fiction/palace" id="gwern-fiction-palace" class="prefetch-not link-annotated link-page" title="&#39;The Palace of Wonders&#39;, Gwern 2011">The Palace Of Wonders</a> <!-- - [_Cloud Nine_](/fiction/cloud-nine) --></p></li>
+<li><p><a href="/fiction/dinosaur-comics" id="gwern-fiction-dinosaur-comics" class="prefetch-not link-annotated link-page" title="&#39;𝐷𝑖𝑛𝑜𝑠𝑎𝑢𝑟 𝐶𝑜𝑚𝑖𝑐𝑠 comics&#39;, Gwern 2011"><em>Dinosaur Comics</em> Comics</a></p></li>
+<li><p><a href="/epigram" id="gwern-epigram" class="prefetch-not link-annotated link-page" title="&#39;Epigrams&#39;, Gwern 2014">Epigrams &amp; Humor</a></p></li>
+</ul>
+</section>
+<section id="fiction-verse" class="level1">
+<h1><a href="#fiction-verse" title="Link to section: § &#39;Fiction: Verse&#39;">Fiction: Verse</a></h1>
+<ul>
+<li><p><a href="/fiction/poem" id="gwern-fiction-poem" class="prefetch-not link-annotated link-page" title="&#39;Poems&#39;, Gwern 2011">Miscellaneous Poems</a></p></li>
+<li><p><a href="/fiction/brave-poem" id="gwern-fiction-brave-poem" class="prefetch-not link-annotated-partial link-page" title="&#39;Brave Poem&#39;, Gwern 2010">Brave Poem</a></p></li>
+<li><p><a href="/fiction/dying-outside" id="gwern-fiction-dying-outside" class="prefetch-not link-annotated-partial link-page" title="&#39;Dying Outside&#39;, Gwern 2009">Dying Outside</a></p></li>
+<li><p><a href="/fiction/genshiken" id="gwern-fiction-genshiken" class="prefetch-not link-annotated-partial link-page" title="&#39;Poems on the theme of Genshiken&#39;, Gwern 2011">Poems On <em>Genshiken</em> Theme</a></p></li>
+<li><p><a href="/fiction/safecracker" id="gwern-fiction-safecracker" class="prefetch-not link-annotated-partial link-page" title="&#39;The Safecracker of Hearts&#39;, Gwern 2009">Safecracker</a></p></li>
+<li><p><a href="/fiction/hybrid-rainbow" id="gwern-fiction-hybrid-rainbow" class="prefetch-not link-annotated-partial link-page" title="&#39;Hybrid Rainbow&#39;, Gwern 2009">Hybrid Rainbow</a></p></li>
+<li><p><a href="/fiction/mulberry" id="gwern-fiction-mulberry" class="prefetch-not link-annotated-partial link-page" title="&#39;The Mulberry Tree&#39;, Gwern 2010">The Mulberry Tree</a></p></li>
+<li><p><a href="/fiction/snowbank" id="gwern-fiction-snowbank" class="prefetch-not link-annotated-partial link-page" title="&#39;The Snowbanks of Time&#39;, Gwern 2011">The Snowbanks Of Time</a></p></li>
+</ul>
+<div class="horizontal-rule-nth-1">
+<hr>
+</div>
+</section>
+<section id="docs" class="level1">
+<h1><a href="#docs" title="Link to section: § &#39;Docs&#39;">Docs</a></h1>
+<ul>
+<li><p><a href="/doc/index" id="_GveJgTkm" class="prefetch-not link-annotated link-page" title="&#39;doc tag&#39;, N/A 2026">Browse By Tag</a> (<a href="/doc/newest/index" id="newest-2" class="prefetch-not link-annotated link-page" title="‘newest links’ directory">newest</a>), <a href="/fulltext" id="gwern-fulltext" class="prefetch-not link-annotated link-page" title="&#39;Research Bounties On Fulltexts&#39;, Gwern 2018">Bounties</a></p></li>
+<li><p><a href="/doc/rotten.com/library/index.html" id="rottencom-2019" class="link-annotated" data-link-icon="internet-archive" data-link-icon-type="svg" title="&#39;The Rotten Library archives&#39;, Rotten.com 2019">Rotten.com Library Archives</a></p></li>
+<li><p><a href="/doc/psychology/okcupid/index" id="_XhDdKdcx" class="prefetch-not link-annotated link-page" title="‘OKCupid’ directory">OKCupid Statistics Blog Archives</a></p></li>
+<li><p><a href="/doc/japan/art/2002-gibson" id="gibson-2012" class="prefetch-not link-annotated link-page" title="&#39;Shiny balls of Mud: William Gibson Looks at Japanese Pursuits of Perfection&#39;, Gibson 2012">“Shiny Balls Of Mud”</a> (Gibson)</p></li>
+<li><p><a href="/doc/philosophy/2010-richardson-bythenumbers-vectors30" id="richardson-2018" class="prefetch-not link-annotated link-page" title="&#39;Vectors 3.0: Even More Aphorisms and Ten-Second Essays&#39;, Richardson 2018">“Even More Aphorisms &amp; 10s Essays”</a></p></li>
+<li><p><a href="/doc/culture/2007-wolfe" id="wolfe-2012" class="prefetch-not link-annotated link-page" title="&#39;Nor the Summers as Golden: Writing Multivolume Works&#39;, Wolfe 2012">“Nor The Summers As Golden”</a> (Wolfe)</p></li>
+<li><p><a href="/doc/culture/1983-wolfe-thecitadeloftheautarch-thejustman" id="wolfe-2018" class="prefetch-not link-annotated link-page" title="&#39;Loyal to the Group of Seventeen’s Story—The Just Man&#39;, Wolfe 2018">“Loyal To The Group Of 17’s Story”</a></p></li>
+</ul>
+</section>
+<section id="docs-science" class="level1">
+<h1><a href="#docs-science" title="Link to section: § &#39;Docs: Science&#39;">Docs: Science</a></h1>
+<ul>
+<li><p><a href="/doc/radiance/2002-scholz-radiance" id="scholz-et-al-2013" class="prefetch-not link-annotated link-page" title="&#39;Radiance: A Novel&#39;, Scholz et al 2013"><em>Radiance</em></a> (Carter Scholz)</p></li>
+<li><p><a href="/doc/sociology/1987-rossi" id="rossi-2012" class="prefetch-not link-annotated link-page" title="&#39;The Iron Law Of Evaluation And Other Metallic Rules&#39;, Rossi 2012">“The Iron Law Of Evaluation”</a></p></li>
+<li><p><a href="/doc/science/1986-hamming" id="hamming-2023" class="prefetch-not link-annotated link-page" title="&#39;You And Your Research&#39;, Hamming 2023">“You And Your Research”</a> (Hamming)</p></li>
+<li><p><a href="/doc/existential-risk/1985-hofstadter" id="hofstadter-2012" class="prefetch-not link-annotated link-page" title="&#39;Metamagical Themas: Sanity and Survival&#39;, Hofstadter 2012">“Sanity &amp; Survival”</a> (Hofstadter)</p></li>
+<li><p><a href="/doc/statistics/bayes/hope-function/1994-falk" id="falk-et-al-2012" class="prefetch-not link-annotated link-page" title="&#39;The Ups and Downs of the Hope Function In a Fruitless Search&#39;, Falk et al 2012">“Hope Function In Fruitless Search”</a></p></li>
+<li><p><a href="/doc/genetics/selection/www.mountimprobable.com/index.html" id="_mzOsUxFx" class="link-annotated-partial" data-link-icon="internet-archive" data-link-icon-type="svg">“Climb Mount Improbable”</a> (Dawkins)</p></li>
+<li><p><a href="/doc/culture/1963-asimov" id="asimov-2011" class="prefetch-not link-annotated link-page" title="&#39;The Sword of Achilles&#39;, Asimov 2011">“The Sword Of Achilles”</a> (Asimov)</p></li>
+<li><p><a href="/doc/biology/2000-iapac-norvir/description.html" id="care-2000" class="link-annotated" data-link-icon="internet-archive" data-link-icon-type="svg" title="&#39;Norvir Advisory&#39;, Care 2000">Norvir’s Vanishing Polymorphs</a></p></li>
+</ul>
+</section>
+<section id="docs-crypto" class="level1">
+<h1><a href="#docs-crypto" title="Link to section: § &#39;Docs: Crypto&#39;">Docs: Crypto</a></h1>
+<ul>
+<li><p><a href="/doc/cs/cryptography/nash/1955-nash" id="nash-2012" class="prefetch-not link-annotated link-page" title="&#39;John Nash on cryptography&#39;, Nash 2012">Cryptography &amp; P=NP, Nash 1955</a></p></li>
+<li><p><a href="/doc/bitcoin/2008-nakamoto" id="nakamoto-dai-2014" class="prefetch-not link-annotated link-page" title="&#39;Wei Dai/Satoshi Nakamoto 2009 Bitcoin emails&#39;, Nakamoto &amp; Dai 2014">Wei Dai/Satoshi Nakamoto Emails</a></p></li>
+<li><p><a href="/doc/bitcoin/2011-davis" id="davis-2013" class="prefetch-not link-annotated link-page" title="&#39;The Crypto-Currency: Bitcoin and its mysterious inventor&#39;, Davis 2013">“Bitcoin’s Mysterious Inventor”</a></p></li>
+<li><p><a href="/doc/darknet-market/silk-road/1/2013-power" id="power-2013" class="prefetch-not link-annotated link-page" title="&#39;Drugs 2.0: Your Crack’s in the Post&#39;, Power 2013"><em>Drugs 2.0</em>: “Crack’s In The Post”</a></p></li>
+<li><p><a href="/doc/bitcoin/2014-mccaleb" id="mccaleb-2014" class="prefetch-not link-annotated link-page" title="&#39;2014 Jed McCaleb MtGox interview&#39;, McCaleb 2014">Jed McCaleb/MtGox Interview</a></p></li>
+</ul>
+</section>
+<section id="docs-anime" class="level1">
+<h1><a href="#docs-anime" title="Link to section: § &#39;Docs: Anime&#39;">Docs: Anime</a></h1>
+<ul>
+<li><p><a href="/doc/anime/eva/2003-oshii-izubuchi" id="oshii-izubuchi-2012" class="prefetch-not link-annotated link-page" title="&#39;Talk About RahXephon: In Search of Fantasy and Details&#39;, Oshii &amp; Izubuchi 2012">“Talk About <em>RahXephon</em>”</a></p></li>
+<li><p><a href="/doc/anime/eva/2003-rahxephoncomplete-anno-izubuchi" id="anno-izubuchi-2012" class="prefetch-not link-annotated link-page" title="&#39;Special Talk: Yutaka Izubuchi × Hideaki Anno&#39;, Anno &amp; Izubuchi 2012">“Yutaka Izubuchi × Anno”</a></p></li>
+<li><p><a href="/doc/anime/eva/little-boy/2004-okada" id="okada-et-al-2012" class="prefetch-not link-annotated link-page" title="&#39;Otaku Talk&#39;, Okada et al 2012">“Otaku Talk”</a> (Okada et al)</p></li>
+<li><p><a href="/doc/anime/eva/little-boy/2005-murakami" id="murakami-hoaglund-2012" class="prefetch-not link-annotated link-page" title="&#39;Earth in My Window&#39;, Murakami &amp; Hoaglund 2012">“Earth In My Window”</a>, <a href="/doc/anime/eva/little-boy/2005-little-boy" id="murakami-2013" class="prefetch-not link-annotated link-page" title="&#39;Excerpts from Little Boy&#39;, Murakami 2013">“Little Boy”</a></p></li>
+<li><p><a href="/doc/anime/1997-utena" id="ikuhara-et-al-2013" class="prefetch-not link-annotated link-page" title="&#39;Utena 2011 Boxset Booklet Commentary&#39;, Ikuhara et al 2013"><em>Utena</em> <span class="date-range">2011<sub><span title="2011 was 15 years ago.">15ya</span></sub></span> Boxset Commentary</a></p></li>
+<li><p><a href="/doc/anime/eva/little-boy/2005-sawaragi" id="sawaragi-2012" class="prefetch-not link-annotated link-page" title="&#39;On The Battlefield of ‘Superflat’&#39;, Sawaragi 2012">“On The Battlefield Of ‘Superflat’ ”</a></p></li>
+<li><p><a href="/doc/anime/2010-sarrazin" id="sarrazin-2011" class="prefetch-not link-annotated-partial link-page" title="&#39;Ero-Anime: Manga Comes Alive&#39;, Sarrazin 2011">“Ero-Anime: Manga Comes Alive”</a></p></li>
+</ul>
+</section>
+<section id="docs-nge" class="level1">
+<h1><a href="#docs-nge" title="Link to section: § &#39;Docs: NGE&#39;">Docs: NGE</a></h1>
+<ul>
+<li><p><a href="/otaku" id="gwern-otaku" class="prefetch-not link-annotated link-page" title="&#39;Neon Genesis Evangelion source anthology&#39;, Gwern 2009"><em>Evangelion</em> Source Anthology</a></p></li>
+<li><p><a href="/doc/anime/eva/notenki-memoirs/2002-takeda-notenkimemoirs" id="takeda-2010" class="prefetch-not link-annotated link-page" title="&#39;The Notenki Memoirs: Studio Gainax And The Men Who Created Evangelion&#39;, Takeda 2010"><em>The Notenki Memoirs</em></a> (Takeda)</p></li>
+<li><p><a href="/doc/anime/eva/2010-crc" id="hikawa-et-al-2011" class="prefetch-not link-annotated link-page" title="&#39;Evangelion 2.0 Complete Records Collection&#39;, Hikawa et al 2011"><em>Rebuild 2.0 CRC</em></a></p></li>
+<li><p><a href="/doc/anime/eva/1996-animerica-conscience" id="okada-2011" class="prefetch-not link-annotated link-page" title="&#39;The Conscience of the Otaking: The Studio Gainax Saga in Four Parts&#39;, Okada 2011">“Conscience Of The Otaking”</a></p></li>
+<li><p><a href="/doc/anime/eva/2011-house" id="house-2011" class="prefetch-not link-annotated link-page" title="‘Interviewing translator Michael House’, House 2011">Michael House On Gainax</a></p></li>
+<li><p><a href="/doc/anime/eva/1996-newtype-anno-interview" id="anno-inoue-2012" class="prefetch-not link-annotated link-page" title="&#39;June 1996 NewType Interview with Hideaki Anno&#39;, Anno &amp; Inoue 2012">1996</a>, <a href="/doc/anime/eva/1997-anno-english" id="anno-2012" class="prefetch-not link-annotated link-page" title="&#39;May 1997 AnimeLand Interview with Hideaki Anno (English)&#39;, Anno 2012">1997 Anno Interview</a></p></li>
+</ul>
+<div class="horizontal-rule-nth-2">
+<hr>
+</div>
+</section>
+<section id="wikipedia" class="level1">
+<h1><a href="#wikipedia" title="Link to section: § &#39;Wikipedia&#39;">Wikipedia</a></h1>
+<ul>
+<li><p><a href="/inclusionism" id="gwern-inclusionism" class="prefetch-not link-annotated link-page" title="&#39;In Defense of Inclusionism&#39;, Gwern 2009">In Defense Of Inclusionism</a></p></li>
+<li><p><a href="/wikipedia-and-knol" id="gwern-wikipedia-and-knol" class="prefetch-not link-annotated link-page" title="&#39;Wikipedia &amp; Knol: Why Knol Already Failed&#39;, Gwern 2009">WP &amp; Google Knol</a></p></li>
+<li><p><a href="/wikipedia-and-youtube" id="gwern-wikipedia-and-youtube" class="prefetch-not link-annotated link-page" title="&#39;Wikipedia &amp; YouTube&#39;, Gwern 2009">WP &amp; Google YouTube</a></p></li>
+<li><p><a href="/wikipedia-and-dark-side-editing" id="gwern-wikipedia-and-dark-side-editing" class="prefetch-not link-annotated link-page" title="&#39;Wikipedia and Dark Side Editing&#39;, Gwern 2009">WP &amp; Darkside Editing</a></p></li>
+<li><p><a href="/wikipedia-and-other-wikis" id="gwern-wikipedia-and-other-wikis" class="prefetch-not link-annotated link-page" title="&#39;Wikipedia and Other Wikis&#39;, Gwern 2009">WP &amp; Other Wikis</a></p></li>
+<li><p><a href="/wikipedia-resume" id="gwern-wikipedia-resume" class="prefetch-not link-annotated link-page" title="&#39;Wikipedia Résumé&#39;, Gwern 2010">My Old WP Edits</a></p></li>
+</ul>
+</section>
+<section id="reviews" class="level1">
+<h1><a href="#reviews" title="Link to section: § &#39;Reviews&#39;">Reviews</a></h1>
+<ul>
+<li><p><a href="/review/anime" id="gwern-review-anime" class="prefetch-not link-annotated link-page" title="&#39;Anime Reviews&#39;, Gwern 2010">Anime</a>:</p>
+<ul>
+<li><p><a href="/review/princess-kaguya" id="gwern-review-princess-kaguya" class="prefetch-not link-annotated link-page" title="&#39;Review of 𝑇𝘩𝑒 𝑇𝑎𝑙𝑒 𝑜𝑓 𝑡𝘩𝑒 𝑃𝑟𝑖𝑛𝑐𝑒𝑠𝑠 𝐾𝑎𝑔𝑢𝑦𝑎&#39;, Gwern 2016"><em>Princess Kaguya</em></a></p></li>
+<li><p><a href="/review/the-last-unicorn" id="gwern-review-the-last-unicorn" class="prefetch-not link-annotated link-page" title="&#39;Review Of 𝑇𝘩𝑒 𝐿𝑎𝑠𝑡 𝑈𝑛𝑖𝑐𝑜𝑟𝑛&#39;, Gwern 2024"><em>Last Unicorn</em></a></p></li>
+</ul></li>
+<li><p><a href="/review/movie" id="gwern-review-movie" class="prefetch-not link-annotated link-page" title="&#39;Movie Reviews&#39;, Gwern 2014">Movies</a>: <a href="/review/crumb" id="gwern-review-crumb" class="prefetch-not link-annotated link-page" title="&#39;Review Of 𝐶𝑟𝑢𝑚𝑏&#39;, Gwern 2024"><em>Crumb</em></a> <span class=separator-inline>•</span> <a href="/review/the-bridge" id="gwern-review-the-bridge" class="prefetch-not link-annotated-partial link-page" title="&#39;Review of 𝑇𝘩𝑒 𝐵𝑟𝑖𝑑𝑔𝑒&#39;, Gwern 2024"><em>The Bridge</em></a></p></li>
+<li><p><a href="/review/opera" id="gwern-review-opera" class="prefetch-not link-annotated link-page" title="‘Opera Reviews’, Gwern 2019">Operas</a></p></li>
+<li><p><a href="/review/tea" id="gwern-review-tea" class="prefetch-not link-annotated link-page" title="&#39;Tea Reviews&#39;, Gwern 2011">Teas</a></p>
+<ul>
+<li><p><a href="/microwave-tea" id="gwern-microwave-tea" class="prefetch-not link-annotated link-page" title="&#39;Why Is Microwave Tea Bad?&#39;, Gwern 2022">Why is microwaving bad?</a></p></li>
+</ul></li>
+</ul>
+</section>
+<section id="reviews-books" class="level1">
+<h1><a href="#reviews-books" title="Link to section: § &#39;Reviews: Books&#39;">Reviews: Books</a></h1>
+<p><a href="/review/book" id="book-reviews-2" class="prefetch-not link-annotated link-page" title="&#39;Book Reviews&#39;, Gwern 2013">Book reviews</a>:</p>
+<ul>
+<li><p><a href="/review/mcnamara" id="gwern-review-mcnamara" class="prefetch-not link-annotated-partial link-page" title="&#39;McNamara’s Folly: The Denial of Individual Differences&#39;, Gwern 2018"><em>McNamara’s Folly</em></a></p></li>
+<li><p><a href="/review/cultural-revolution" id="gwern-review-cultural-revolution" class="prefetch-not link-annotated link-page" title="&#39;Review Of The Cultural Revolution, Dikötter 2016&#39;, Gwern 2019"><em>The Cultural Revolution</em></a></p></li>
+<li><p><a href="/review/umineko" id="gwern-review-umineko" class="prefetch-not link-annotated link-page" title="&#39;Umineko: The Hopium Of The Magics&#39;, Gwern 2018"><em>Umineko no Naku Koro Ni</em></a></p></li>
+<li><p><a href="/review/quantum-thief" id="gwern-review-quantum-thief" class="prefetch-not link-annotated link-page" title="&#39;Review Of 𝑇𝘩𝑒 𝑄𝑢𝑎𝑛𝑡𝑢𝑚 𝑇𝘩𝑖𝑒𝑓 Trilogy&#39;, Gwern 2022"><em>The Quantum Thief</em></a></p></li>
+<li><p><a href="/review/lemuria" id="gwern-review-lemuria" class="prefetch-not link-annotated link-page" title="&#39;Review of 𝐼 𝑅𝑒𝑚𝑒𝑚𝑏𝑒𝑟 𝐿𝑒𝑚𝑢𝑟𝑖𝑎!&#39;, Gwern 2025"><em>I Remember Lemuria!</em></a></p></li>
+</ul>
+</section>
+<section id="personal" class="level1">
+<h1><a href="#personal" title="Link to section: § &#39;Personal&#39;">Personal</a></h1>
+<ul>
+<li><p><a href="/about" id="about-2" class="prefetch-not link-annotated link-page" title="&#39;About This Website&#39;, Gwern 2010">About Website</a></p></li>
+<li><p><a href="/me" id="links-2" class="prefetch-not link-annotated link-page" title="&#39;About Gwern&#39;, Gwern 2009">Links/About Me</a></p></li>
+<li><p><a href="/interview-dwarkesh" id="gwern-patel-2024" class="prefetch-not link-annotated link-page" title="‘Gwern Branwen—How an Anonymous Researcher Predicted AI’s Trajectory’, Gwern &amp; Patel 2024">Interview with Dwarkesh Patel</a></p></li>
+<li><p><a href="/interview-inkhaven" id="gwern-mastroianni-2025" class="prefetch-not link-annotated link-page" title="&#39;2025 Inkhaven Writing Interview&#39;, Gwern &amp; Mastroianni 2025">Inkhaven interview on ideas</a></p></li>
+<li><p><a href="/interview-risk" id="nostrand-gwern-2026" class="prefetch-not link-annotated link-page" title="&#39;Self-experiment risk-taking interview&#39;, Nostrand &amp; Gwern 2026">Interview on risk-taking &amp; self-experiment</a></p></li>
+<li><p><a href="/doc/newsletter/index" id="newsletter-archives-2" class="prefetch-not link-annotated link-page" title="‘newsletter’ directory">Old Newsletters</a></p></li>
+<li><p><a href="/note/note" id="gwern-note-note" class="prefetch-not link-annotated link-page" title="&#39;Miscellaneous&#39;, Gwern 2009">Misc Notes</a></p></li>
+</ul>
+<p><!-- <div class="columns"> - disable the Columns.hs check, we do use multi-columns because of the skinny lists on this page, but using different CSS. --></p>
+</section>
+
+       
+      </div> <!-- NOTE: unmatched, because it closes the opening div from the hakyll.hs $body$ Pandoc template -->
+
+    </article>
+
+    
+    <!-- SSI: Footer -->
+    <!-- FOOTER-BEGIN-->
+        <nav id="navigation">
+      <svg id="navigation-left"><use href="/static/img/ornament/sequential-nav-icons-arabesque.svg#direction" /></svg>
+      <a id="navigation-center" class="link-page-not" title="Return to top of current page" href="#top"
+        ><svg><use href="/static/img/ornament/sequential-nav-icons-arabesque.svg#center" /></svg></a>
+      <svg id="navigation-right"><use href="/static/img/ornament/sequential-nav-icons-arabesque.svg#direction" /></svg>
+    </nav>
+    <div class="markdownBody" id="footer">
+      <p id="footer-anonymous-feedback">
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSd7uqL7B_l1HFIfXc8D_nZyumaOv58msK7jhl4XzQjWODWKdA/viewform" rel="nofollow" title="Google Docs web form for submitting anonymized feedback to Gwern Branwen">[&hairsp;Send Anonymous Feedback&hairsp;]</a>
+      </p>
+      <div id="x-of-the-day" class="dark-mode-invert">
+        <p><a id="qotd" class="include include-spinner-not" href="/metadata/today-quote.html">[Quote Of The Day]</a></p>
+        <p><a id="sotd" class="include include-spinner-not" href="/metadata/today-site.html">[Site Of The Day]</a></p>
+        <p><a id="atod" class="include include-spinner-not" href="/metadata/today-annotation.html">[Annotation Of The Day]</a></p>
+      </div>
+      <p><a id="psa-adblock" class="include adsense include-spinner-not" href="/metadata/psa-adblock.html">[adblock public service announcement]</a></p>
+    </div>
+
+    <!-- FOOTER-END -->
+    
+    <div id="footer-decoration-container"> <!-- Mandatory element for layout -->
+      <a rel="home me contents" title="Gwern.net homepage" class="footer-logo dark-mode-invert" href="/index">​</a>
+    </div>
+
+  </main>
+
+  <script defer src="https://www.googletagmanager.com/gtag/js?id=UA-18912926-1" onload="GW.googleAnalyticsLoaded = true;"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-18912926-1');
+  </script>
+  
+  
+</body>
+</html>

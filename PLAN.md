@@ -64,7 +64,7 @@ production code but no test is a defect — reopen the box.
         session re-runs `check` and unblocks it.
       - Rung: screenshot
 
-- [ ] **T04 — Fixture harvest.** For each URL in `fixtures/feeds.txt`: `curl -L`
+- [x] **T04 — Fixture harvest.** For each URL in `fixtures/feeds.txt`: `curl -L`
       with a browser-ish UA, auto-discover `<link rel="alternate">` for homepage URLs,
       save resolved raw bytes to `fixtures/snapshots/<slug>.xml`, and record
       `<slug> <resolved-url> <http-status> <bytes>` in `fixtures/manifest.tsv`.
@@ -119,10 +119,14 @@ production code but no test is a defect — reopen the box.
 
 - [ ] **T11 — `FeedDiscovery`. TDD.** Homepage HTML → feed URL, priority order and
       path-guess fallback per SPEC.md §5.
-      - Done: unit tests over saved homepage HTML for **xania.org, hillelwayne.com,
-        nccgroup.com, gwern.net** (the four §7 auto-discovery cases) each resolve to the
-        URL recorded in `fixtures/manifest.tsv`; a feed URL passed directly is returned
-        unchanged without a network call.
+      - Done: unit tests over the saved homepage HTML in `fixtures/homepages/` for
+        **xania.org, hillelwayne.com, gwern.net** each resolve to the URL recorded in
+        `fixtures/manifest.tsv` (all three use a different `<link>` attribute order —
+        that is the point); **research.nccgroup.com** is the negative case — its homepage
+        has no `<link rel=alternate>` and every path guess soft-404s to HTML, so
+        discovery must return null rather than a bogus URL (T04 confirmed the site no
+        longer publishes a feed); a feed URL passed directly is returned unchanged
+        without a network call.
       - Rung: unit
 
 ## Phase 2 — Storage & sync (Robolectric, TDD, still no emulator)

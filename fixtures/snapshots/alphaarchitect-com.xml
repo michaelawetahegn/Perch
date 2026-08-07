@@ -1,0 +1,765 @@
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"
+	xmlns:content="http://purl.org/rss/1.0/modules/content/"
+	xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:atom="http://www.w3.org/2005/Atom"
+	xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+	xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+	>
+
+<channel>
+	<title>Alpha Architect</title>
+	<atom:link href="https://alphaarchitect.com/feed/" rel="self" type="application/rss+xml" />
+	<link>https://alphaarchitect.com/</link>
+	<description>We Empower Investors Through Education</description>
+	<lastBuildDate>Tue, 04 Aug 2026 19:37:26 +0000</lastBuildDate>
+	<language>en-US</language>
+	<sy:updatePeriod>
+	hourly	</sy:updatePeriod>
+	<sy:updateFrequency>
+	1	</sy:updateFrequency>
+	<generator>https://wordpress.org/?v=7.0.3</generator>
+
+<image>
+	<url>https://alphaarchitect.com/wp-content/uploads/2021/11/cropped-Alpha-Architect_Final_300-e1636719957636-32x32.jpg</url>
+	<title>Alpha Architect</title>
+	<link>https://alphaarchitect.com/</link>
+	<width>32</width>
+	<height>32</height>
+</image> 
+	<item>
+		<title>Skewness as a Hidden Driver of Anomaly Returns</title>
+		<link>https://alphaarchitect.com/anomaly-returns/</link>
+		
+		<dc:creator><![CDATA[Larry Swedroe]]></dc:creator>
+		<pubDate>Fri, 07 Aug 2026 15:54:42 +0000</pubDate>
+				<category><![CDATA[Skewness]]></category>
+		<category><![CDATA[Larry Swedroe]]></category>
+		<category><![CDATA[Factor Investing]]></category>
+		<category><![CDATA[Research Insights]]></category>
+		<category><![CDATA[Other Insights]]></category>
+		<guid isPermaLink="false">https://alphaarchitect.com/?p=97721</guid>
+
+					<description><![CDATA[<p>Behavioral finance research has established that investors dislike negative skewness because it exposes them to rare but severe losses, while they embrace positive skewness because it offers the chance of occasional outsized gains — the lottery-like appeal that persists even when expected payoffs are modest. In behavioral models, this preference for positively skewed assets bids  [...]</p>
+<p><a href="https://alphaarchitect.com/anomaly-returns/">Skewness as a Hidden Driver of Anomaly Returns</a> was originally published at <a href="https://alphaarchitect.com">Alpha Architect</a>. Please read the Alpha Architect <a href="https://alphaarchitect.com/disclosures">disclosures</a> at your convenience.</p>
+]]></description>
+										<content:encoded><![CDATA[
+<p class="wp-block-paragraph">Behavioral finance research has established that investors dislike negative skewness because it exposes them to rare but severe losses, while they embrace positive skewness because it offers the chance of occasional outsized gains — the lottery-like appeal that persists even when expected payoffs are modest. In behavioral models, this preference for positively skewed assets bids up their prices, depressing future expected returns. Conversely, negatively skewed assets must offer higher expected returns to attract capital.</p>
+
+
+
+<p class="wp-block-paragraph">Rui Gong, John Lynch, and Richard Ogden, authors of the June 2026 study, “<a href="https://protect.checkpoint.com/v2/r01/___https:/papers.ssrn.com/sol3/papers.cfm?abstract_id=6913978___.YXAzOnNhcmFncmlsbG86Yzpnb29nbGVfbWFpbF9hdHRhY2htZW50OmRiMjFjOGY4MmY2ZTA4MDAyNTFmOTRjZjhmNTljMzE0Ojc6YzlkZDpiZDNhZTMyNTc5ODA2ZGY3MDE3MDNmYzQ2NWVlZjQ3YTBmYmZjMTk2OGE1ZTc3OWQzNWQzNTYyYzY1M2I3OTFkOnA6VDpO" target="_blank" rel="noreferrer noopener">Skewness Managed Portfolios</a>,” make a simple but powerful point: many well-known stock-market anomalies owe a surprising amount of their performance to a small set of stocks with extreme positive returns. The authors ask two questions. First, do these outlier stocks materially shape the returns of popular long-short strategies? Second, can investors improve those strategies by explicitly managing for skewness rather than ignoring it?</p>
+
+
+
+<p class="wp-block-paragraph">Their answer is yes on both counts. The paper shows that many anomaly portfolios are not just exposed to familiar factors like value, profitability, or investment; they are also implicitly exposed to return asymmetry — especially the kind created by rare but very large upside moves in individual stocks.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>What They Examined</strong></p>
+
+
+
+<p class="wp-block-paragraph">The authors studied 18 well-known anomalies, including value, size, momentum, profitability, investment, accruals, issuance, and distress-related signals. They first asked whether extreme right-tail returns matter by <a href="https://protect.checkpoint.com/v2/r01/___https:/en.wikipedia.org/wiki/Winsorizing___.YXAzOnNhcmFncmlsbG86Yzpnb29nbGVfbWFpbF9hdHRhY2htZW50OmRiMjFjOGY4MmY2ZTA4MDAyNTFmOTRjZjhmNTljMzE0Ojc6OTA5OTo3ZDk4ODQ1OTk2YzI3ZjIwN2FmM2FmN2NkYmVjOTk4YjUxZDRkODAzZDY5NzBjNzk4NmUzYzI2MjIxNDMxZWI3OnA6VDpO" target="_blank" rel="noreferrer noopener">winsorizing</a> stock returns — capping extreme values to limit outlier influence — and measuring how much the anomaly portfolios changed as a result. They applied three caps after portfolio formation, using historical thresholds for the 99th, 95th, and 90th percentile. Capping even the largest upside observations frequently produced a substantial reduction in returns and Sharpe ratios — a clear signal that a small number of outliers were doing most of the heavy lifting.</p>
+
+
+
+<p class="wp-block-paragraph">They then built what they call a skewness-managed strategy. In plain English, they forecast which stocks are likely to have highly skewed returns in the next month, then “tilt” the long leg of each anomaly toward stocks with high expected skewness and the short leg toward stocks with low <em>expected</em> skewness.</p>
+
+
+
+<p class="wp-block-paragraph">The forecast is based on firm characteristics and recent return behavior, not hindsight. Specifically, the skewness forecast is driven primarily by low profitability, poor recent returns, and small market capitalization — the same characteristics that tend to identify stocks with high idiosyncratic upside potential.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>How the Tilt Worked</strong></p>
+
+
+
+<p class="wp-block-paragraph">They first formed each anomaly as usual using the characteristic sort, then split both the long and short legs into terciles based on predicted skewness—taking the long leg from the high-expected-skewness tercile and the short leg from the low-expected-skewness tercile. In other words, they did not just buy the anomaly winner and sell the loser; they biased the long side toward stocks with more upside-skewed return distributions and biased the short side away from them. The skewness forecast was built from monthly cross-sectional regressions of realized skewness on lagged firm characteristics such as volatility, momentum, prior return, size, industry, and exchange indicators. Stocks with the highest forecast skewness were favored on the long side, while stocks with the lowest forecast skewness were favored on the short side.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Intuition</strong></p>
+
+
+
+<p class="wp-block-paragraph">This tilt was meant to capture the upside from stocks with a greater chance of extreme positive returns in the long book, while avoiding shorting stocks that could unexpectedly jump higher. The authors say this is especially useful because many anomalies have skewness concentrated in only one leg, so the value of the tilt depends on where those positively skewed stocks sit.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Practical Example</strong></p>
+
+
+
+<p class="wp-block-paragraph">For a value-style anomaly, they would still go long value stocks and short growth stocks, but within those legs they would choose the high-skewness names for the long side and the low-skewness names for the short side. That is the core implementation of the “skewness-managed” portfolio.</p>
+
+
+
+<p class="wp-block-paragraph">Their data sample covered the period July 1963 to December 2024.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>What They Found</strong></p>
+
+
+
+<ul class="wp-block-list">
+<li>The most important result is that skewness management improved every anomaly they tested. On average, annual returns rose by 5.45 percentage points, and Sharpe ratios improved by 0.12. The results remain directionally robust after incorporating transaction costs, though the magnitude of the improvement shrinks to 1.58 percentage points.</li>
+
+
+
+<li>The skewed stocks driving these effects tend to be those with low profitability, poor past returns, and small market capitalizations—firm characteristics that are associated with high idiosyncratic upside potential.</li>
+
+
+
+<li>The biggest gains came from value and investment (both showed improvement of more than 9 percentage points), with particularly strong improvements in profitability-based strategies (both operating profitability and gross profitability) as well.</li>
+
+
+
+<li>Spanning tests and factor regressions on the skewness-managed portfolios still produced large and statistically significant alphas relative to the original anomaly portfolios and to major factor models, including models built from many of the same underlying characteristics.</li>
+
+
+
+<li>Although positive in only 54% of months, the strategy nonetheless generated large cumulative outperformance.</li>
+
+
+
+<li>The strategy’s payoff is highly state-dependent. The excess return from skewness management was much larger during recessions (20.4% per year versus 3.7% in expansions) and periods of market stress, such as when volatility and credit spreads were elevated. That pattern is notable because it suggests skewness exposure is not a random artifact — it becomes especially valuable when markets are under pressure.</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">Their findings led the authors to conclude: “Skewness represents a dimension of returns that is not captured by standard linear factor models, and that incorporating expected skewness into portfolio construction systematically enhances anomaly performance.”</p>
+<p><a href="https://alphaarchitect.com/anomaly-returns/">Skewness as a Hidden Driver of Anomaly Returns</a> was originally published at <a href="https://alphaarchitect.com">Alpha Architect</a>. Please read the Alpha Architect <a href="https://alphaarchitect.com/disclosures">disclosures</a> at your convenience.</p>
+]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>Family and friends: The most important source of financial advice?</title>
+		<link>https://alphaarchitect.com/personal-financial-advice/</link>
+		
+		<dc:creator><![CDATA[Elisabetta Basilico, PhD, CFA]]></dc:creator>
+		<pubDate>Tue, 04 Aug 2026 17:27:00 +0000</pubDate>
+				<category><![CDATA[Financial Planning]]></category>
+		<category><![CDATA[Elisabetta Basilico]]></category>
+		<category><![CDATA[Research Insights]]></category>
+		<category><![CDATA[Other Insights]]></category>
+		<category><![CDATA[Behavioral Finance]]></category>
+		<guid isPermaLink="false">https://alphaarchitect.com/?p=97475</guid>
+
+					<description><![CDATA[<p>Survey evidence shows that investors rely on family and friends for investment guidance almost as much as they rely on professional financial advisors.</p>
+<p><a href="https://alphaarchitect.com/personal-financial-advice/">Family and friends: The most important source of financial advice?</a> was originally published at <a href="https://alphaarchitect.com">Alpha Architect</a>. Please read the Alpha Architect <a href="https://alphaarchitect.com/disclosures">disclosures</a> at your convenience.</p>
+]]></description>
+										<content:encoded><![CDATA[
+<p class="wp-block-paragraph">Family and friends are among the most important sources of financial advice for retail investors. That may sound surprising in a world dominated by TikTok influencers, Reddit forums, and algorithmic recommendations. But survey evidence shows that investors rely on family and friends for investment guidance almost as much as they rely on professional financial advisors. The important question is whether this kind of advice actually helps investors make better decisions. This paper paints a very different picture when the advice comes from close personal relationships rather than pseudonymous online networks.</p>
+
+
+
+<h2 id="h-personal-financial-advice-and-portfolio-quality" class="wp-block-heading">Personal financial advice and portfolio quality</h2>
+
+
+
+<ul class="wp-block-list">
+<li>Olga Balakina&nbsp;,&nbsp;Claes Bäckman&nbsp;,&nbsp;Andreas Hackethal&nbsp;,&nbsp;Tobin Hanspal&nbsp;,&nbsp;Dominique M Lammer</li>
+
+
+
+<li>Review of Finance, 2026</li>
+
+
+
+<li>A version of this paper can be found <a href="https://academic.oup.com/rof/article/30/3/1029/8380181" target="_blank" rel="noreferrer noopener">here</a></li>
+
+
+
+<li>Want to read our summaries of academic finance papers? Check out our&nbsp;<a href="https://alphaarchitect.com/category/architect-academic-insights/academic-research-insight/" target="_blank" rel="noreferrer noopener">Academic Research Insight</a>&nbsp;category</li>
+</ul>
+
+
+
+<h2 id="h-key-academic-insights" class="wp-block-heading">Key Academic Insights</h2>
+
+
+
+<p class="wp-block-paragraph"><strong>Personal financial advice is extremely common</strong><br />Survey evidence shows that family and friends are among the most frequently used sources of investment advice. Fifty-one percent of investors who receive financial advice report frequently consulting family and friends, compared to only 13 percent who rely heavily on social media.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Personal advice differs fundamentally from online advice</strong><br />Previous research on social investing often focuses on anonymous online interactions, where investors share speculative ideas, chase high returns, and promote risky assets. This paper argues that personal relationships create very different incentives. Recommenders internalize the consequences of bad advice because they care about preserving trust and relationships.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Investors seek trust and expertise, not excitement</strong><br />Followers report valuing competence, experience, and trustworthiness far more than past returns when choosing whose advice to follow. Only 7 percent of respondents mention <a href="https://alphaarchitect.com/academic-research-insight-past-performance-matter-investment-manager-selection/" target="_blank" rel="noreferrer noopener">past performance</a> as an important characteristic in an advisor.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Recommenders tend to be more experienced investors</strong><br />The individuals who provide advice generally have larger portfolios, more investing experience, higher financial aptitude, and stronger diversification than average investors. Recommenders also tend to avoid lottery-like and attention-driven stocks.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Portfolio overlap provides evidence of real advice transmission</strong><br />Using brokerage-level referral data from a large German online bank, the authors observe that Followers and Recommenders share approximately 18 percent of their portfolio holdings on average. Comparable placebo matches show overlap close to zero, suggesting the similarity is unlikely to occur randomly.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Advice strongly promotes fund investing</strong><br />If a Recommender invests in funds, the Follower becomes significantly more likely to invest in funds as well. The effect is particularly strong for ETFs and passive funds.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Personal advice does not appear driven by recent returns</strong><br />Contrary to theories of “return-biased transmission,” the paper finds little evidence that investors provide advice primarily after experiencing strong returns. Most Recommenders report always sharing performance information rather than selectively highlighting only good outcomes.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Followers end up with better portfolios</strong><br />Investors who follow personal financial advice tend to hold more diversified portfolios, higher risky-share allocations, and better risk-adjusted returns compared to other new investors. Importantly, these benefits do not appear to come from excessive trading or higher fees.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Personal advice often resembles professional financial planning</strong><br />The recommendations documented in the study focus heavily on diversification, low-cost funds, and long-term investing rather than speculation. In many ways, trusted personal advice resembles high-quality financial planning more than social-media stock promotion.</p>
+
+
+
+<h2 id="h-practical-applications-for-investment-advisors" class="wp-block-heading">Practical Applications for Investment Advisors</h2>
+
+
+
+<p class="wp-block-paragraph"><strong>Trust remains a central advantage for human advisors</strong></p>
+
+
+
+<p class="wp-block-paragraph">The study highlights how much investors value trust, expertise, and long-term relationships when receiving financial advice. These are areas where human advisors maintain a significant edge over anonymous online sources.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Good advice spreads through networks</strong><br />High-quality financial behaviors can propagate socially. Investors who understand diversification and long-term investing may indirectly improve the financial outcomes of friends and family.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>The quality of the source matters enormously</strong><br />Not all peer advice is beneficial. The paper shows that the outcomes depend heavily on who provides the advice. Investors connected to financially sophisticated peers benefit substantially more than those exposed primarily to speculative online communities.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>ETFs and diversified funds dominate high-quality advice</strong><br />The study provides additional evidence that diversified funds naturally emerge as preferred recommendations in trusted relationships. Investors appear reluctant to recommend speculative single-stock ideas to close friends and family.</p>
+
+
+
+<h2 id="h-how-to-explain-this-to-clients" class="wp-block-heading">How to Explain This to Clients</h2>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph">“Many people worry that investment advice from friends and family automatically leads to poor decisions or speculation.But this paper shows something important. Personal financial advice often looks very different from social-media investing culture. When advice comes from trusted relationships, people tend to recommend diversified funds, long-term investing, and lower-risk strategies rather than speculative trades. Investors also seem to carefully evaluate whether the person giving advice is knowledgeable and trustworthy. The key takeaway is that incentives matter. Anonymous online influencers may benefit from attention and excitement. Trusted personal relationships create stronger incentives to give thoughtful advice”</p>
+</blockquote>
+
+
+
+<h2 id="h-the-most-important-chart-from-the-paper" class="wp-block-heading">The Most Important Chart from the Paper</h2>
+
+
+
+<p class="wp-block-paragraph">Figure 5: Who do you turn to for financial advice?</p>
+
+
+<div class="wp-block-image">
+<figure class="aligncenter size-fusion-800"><img fetchpriority="high" decoding="async" width="800" height="485" src="https://alphaarchitect.com/wp-content/uploads/2026/05/2026-05-25-14_48_05-rfaf077.pdf-800x485.png" alt="" class="wp-image-97477" srcset="https://alphaarchitect.com/wp-content/uploads/2026/05/2026-05-25-14_48_05-rfaf077.pdf-80x49.png 80w, https://alphaarchitect.com/wp-content/uploads/2026/05/2026-05-25-14_48_05-rfaf077.pdf-200x121.png 200w, https://alphaarchitect.com/wp-content/uploads/2026/05/2026-05-25-14_48_05-rfaf077.pdf-400x243.png 400w, https://alphaarchitect.com/wp-content/uploads/2026/05/2026-05-25-14_48_05-rfaf077.pdf-600x364.png 600w, https://alphaarchitect.com/wp-content/uploads/2026/05/2026-05-25-14_48_05-rfaf077.pdf-800x485.png 800w, https://alphaarchitect.com/wp-content/uploads/2026/05/2026-05-25-14_48_05-rfaf077.pdf.png 903w" sizes="(max-width: 800px) 100vw, 800px" /></figure>
+</div>
+
+
+<p class="has-text-align-center wp-block-paragraph"><em>The results are hypothetical results and are NOT an indicator of future results and do NOT represent returns that any investor actually attained.&nbsp;Indexes are unmanaged and do not reflect management or trading fees, and one cannot invest directly in an index</em>.</p>
+
+
+
+<h2 id="h-abstract" class="wp-block-heading">Abstract</h2>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<h3 id="h-" class="wp-block-heading"></h3>
+
+
+
+<p class="wp-block-paragraph">We document widespread use of personal financial advice among retail investors. Individuals seek competent and trusted sources for financial advice among their family and friends. Investors who provide advice to family and friends are positively selected and emphasize the reputational costs of giving risky financial advice. While previous studies have shown that advice shared on social media promotes active trading, we show that personal financial advice encourages investing in funds over single stocks. Our evidence complements the existing literature on financial advice in online social networks by highlighting differences in incentives and outcomes of advice to close personal connections.</p>
+
+
+
+<p class="wp-block-paragraph"></p>
+</blockquote>
+<p><a href="https://alphaarchitect.com/personal-financial-advice/">Family and friends: The most important source of financial advice?</a> was originally published at <a href="https://alphaarchitect.com">Alpha Architect</a>. Please read the Alpha Architect <a href="https://alphaarchitect.com/disclosures">disclosures</a> at your convenience.</p>
+]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>Flying below the radar: Insider trading by executives below the top</title>
+		<link>https://alphaarchitect.com/insider-trading-by-executives-below-the-top/</link>
+		
+		<dc:creator><![CDATA[Elisabetta Basilico, PhD, CFA]]></dc:creator>
+		<pubDate>Mon, 27 Jul 2026 15:04:00 +0000</pubDate>
+				<category><![CDATA[Elisabetta Basilico]]></category>
+		<category><![CDATA[Insider and Smart Money]]></category>
+		<category><![CDATA[Research Insights]]></category>
+		<category><![CDATA[Factor Investing]]></category>
+		<category><![CDATA[Other Insights]]></category>
+		<guid isPermaLink="false">https://alphaarchitect.com/?p=97282</guid>
+
+					<description><![CDATA[<p>Insider trading is usually framed around CEOs, board members, and officially designated insiders. These are the people regulators monitor closely.  But modern corporations contain many other employees with access to valuable information. This paper studies whether these “below-the-top” executives trade profitably on material non-public information.</p>
+<p><a href="https://alphaarchitect.com/insider-trading-by-executives-below-the-top/">Flying below the radar: Insider trading by executives below the top</a> was originally published at <a href="https://alphaarchitect.com">Alpha Architect</a>. Please read the Alpha Architect <a href="https://alphaarchitect.com/disclosures">disclosures</a> at your convenience.</p>
+]]></description>
+										<content:encoded><![CDATA[
+<p class="wp-block-paragraph">Insider trading is usually framed around CEOs, board members, and officially designated insiders. These are the people regulators monitor closely. Their trades must be disclosed. Their transactions are scrutinized by investors, journalists, and compliance departments. But modern corporations contain many other employees with access to valuable information. This paper studies whether these “below-the-top” executives trade profitably on material non-public information.</p>
+
+
+
+<h2 id="h-flying-below-the-radar-insider-trading-by-executives-below-the-top" class="wp-block-heading">Flying below the radar: Insider trading by executives below the top</h2>
+
+
+
+<ul class="wp-block-list">
+<li>Hans K.&nbsp;Hvide&nbsp;,&nbsp;Kasper Meisner&nbsp;Nielsen</li>
+
+
+
+<li>Journal of Financial Economics, 2026</li>
+
+
+
+<li>A version of this paper can be found <a href="https://www.sciencedirect.com/science/article/pii/S0304405X2600053X" target="_blank" rel="noreferrer noopener">here</a></li>
+
+
+
+<li>Want to read our summaries of academic finance papers? Check out our&nbsp;<a href="https://alphaarchitect.com/category/architect-academic-insights/academic-research-insight/" target="_blank" rel="noreferrer noopener">Academic Research Insight</a>&nbsp;category</li>
+</ul>
+
+
+
+<h2 id="h-key-academic-insights" class="wp-block-heading">Key Academic Insights</h2>
+
+
+
+<p class="wp-block-paragraph"><strong>Executives below the top earn abnormal returns on own-company trades</strong><br />The paper shows that executives below the top generate economically large abnormal returns when purchasing their employer’s stock. Depending on the methodology, abnormal returns reach roughly 68 to 101 basis points over one month and approximately 250 basis points over six months.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>The abnormal returns do not appear in unrelated stocks</strong><br />The same individuals fail to outperform when trading stocks unrelated to their employer. In fact, non-inside purchases generate negative abnormal returns. This strongly suggests the results are driven by informational advantages rather than general investing skill.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Industry expertise does not explain the results</strong><br />Executives also fail to outperform when trading other firms in the same industry. Same-industry trades generally produce negative abnormal returns. This rules out the idea that sector knowledge alone explains the profits.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Top executives perform worse than below-the-top executives</strong><br />Interestingly, top executives generate smaller and often statistically insignificant <a href="https://alphaarchitect.com/fascinating-research-alert-earning-calls-cliches-and-negative-abnormal-returns/" target="_blank" rel="noreferrer noopener">abnormal returns</a>. The paper suggests that higher visibility and regulatory scrutiny may discourage top executives from exploiting informational advantages as aggressively.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Employees also appear to benefit from inside information</strong><br />The study extends beyond executives and finds positive abnormal returns among non-executive employees as well. Abnormal returns appear across the wage distribution, although higher-paid employees trade more frequently.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>The abnormal returns persist over time</strong><br />The profits from inside purchases continue to accumulate over several months. This pattern suggests executives are not merely reacting faster to public information, but may instead possess valuable information that markets incorporate gradually.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Trading through family members or LLCs does not appear important</strong><br />The researchers examine whether executives hide trades through family accounts or privately owned companies. They find little evidence of abnormal returns from these indirect channels, suggesting most informed trading occurs through personal brokerage accounts.</p>
+
+
+
+<h2 id="h-practical-applications-for-investment-advisors" class="wp-block-heading">Practical Applications for Investment Advisors</h2>
+
+
+
+<p class="wp-block-paragraph"><strong>Recognize that insider activity may extend beyond reported filings</strong></p>
+
+
+
+<p class="wp-block-paragraph">Public insider filings may capture only part of the informational trading occurring inside corporations. Important information may diffuse well below the CEO and board level.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Avoid overinterpreting executive purchases in isolation</strong><br />Not all insider-related activity comes from the executives investors typically monitor. Significant informational advantages may exist among operational managers and senior employees who are invisible in traditional disclosure systems.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Understand the limits of market efficiency</strong><br />The persistence of abnormal returns over multi-month horizons suggests that markets may incorporate firm-specific information more slowly than many investors assume.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Separate informational advantages from investment skill</strong><br />The paper demonstrates the importance of distinguishing between genuine stock-picking ability and informational advantages tied to organizational proximity.</p>
+
+
+
+<h2 id="h-how-to-explain-this-to-clients" class="wp-block-heading">How to Explain This to Clients</h2>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph">“This paper examines whether executives below the top level of management trade on material non-public information. Using comprehensive Norwegian administrative data covering all stock trades from 1997 to 2014, the authors analyze the abnormal returns earned by executives purchasing their employer’s stock. They find economically large and statistically significant abnormal returns on inside purchases, while the same individuals do not outperform in unrelated stocks or same-industry stocks. The evidence suggests that insider trading activity extends beyond officially designated insiders and may occur broadly among executives and employees operating below traditional disclosure thresholds.&#8221;</p>
+</blockquote>
+
+
+
+<h2 id="h-the-most-important-chart-from-the-paper" class="wp-block-heading">The Most Important Chart from the Paper</h2>
+
+
+
+<p class="wp-block-paragraph">This Figure. reports the average return to trading by executives below the top. We report the average buy-and-hold return following inside buys, inside sells, non-inside buys, and non-inside sells over horizons from 1 week to 6 months.</p>
+
+
+<div class="wp-block-image">
+<figure class="aligncenter size-fusion-600"><img decoding="async" width="600" height="370" src="https://alphaarchitect.com/wp-content/uploads/2026/05/2026-05-12-14_16_36-Flying-below-the-radar_-Insider-trading-by-executives-below-the-top-ScienceDir-600x370.png" alt="" class="wp-image-97284" srcset="https://alphaarchitect.com/wp-content/uploads/2026/05/2026-05-12-14_16_36-Flying-below-the-radar_-Insider-trading-by-executives-below-the-top-ScienceDir-80x49.png 80w, https://alphaarchitect.com/wp-content/uploads/2026/05/2026-05-12-14_16_36-Flying-below-the-radar_-Insider-trading-by-executives-below-the-top-ScienceDir-200x123.png 200w, https://alphaarchitect.com/wp-content/uploads/2026/05/2026-05-12-14_16_36-Flying-below-the-radar_-Insider-trading-by-executives-below-the-top-ScienceDir-400x247.png 400w, https://alphaarchitect.com/wp-content/uploads/2026/05/2026-05-12-14_16_36-Flying-below-the-radar_-Insider-trading-by-executives-below-the-top-ScienceDir-600x370.png 600w, https://alphaarchitect.com/wp-content/uploads/2026/05/2026-05-12-14_16_36-Flying-below-the-radar_-Insider-trading-by-executives-below-the-top-ScienceDir-800x493.png 800w, https://alphaarchitect.com/wp-content/uploads/2026/05/2026-05-12-14_16_36-Flying-below-the-radar_-Insider-trading-by-executives-below-the-top-ScienceDir.png 806w" sizes="(max-width: 600px) 100vw, 600px" /></figure>
+</div>
+
+
+<p class="has-text-align-center wp-block-paragraph"><em>The results are hypothetical results and are NOT an indicator of future results and do NOT represent returns that any investor actually attained.&nbsp;Indexes are unmanaged and do not reflect management or trading fees, and one cannot invest directly in an index</em>.</p>
+
+
+
+<h2 id="h-abstract" class="wp-block-heading">Abstract</h2>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<h3 id="h-" class="wp-block-heading"></h3>
+
+
+
+<p class="wp-block-paragraph">To enforce insider trading laws, financial regulators require top executives to make their own-company trades public. One implication of this regulatory focus is that executives below the top fly under the radar. We use administrative register data from Norway to examine whether executives below the top in listed companies earn abnormal returns on purchases in own-company stock. We find evidence of abnormal returns on such trades, about 50 to 100 basis points at the 1-month horizon. The abnormal returns on purchases in other stocks are negative, making high investor ability an unlikely explanation.</p>
+
+
+
+<p class="wp-block-paragraph"></p>
+</blockquote>
+
+
+
+<p class="wp-block-paragraph"></p>
+<p><a href="https://alphaarchitect.com/insider-trading-by-executives-below-the-top/">Flying below the radar: Insider trading by executives below the top</a> was originally published at <a href="https://alphaarchitect.com">Alpha Architect</a>. Please read the Alpha Architect <a href="https://alphaarchitect.com/disclosures">disclosures</a> at your convenience.</p>
+]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>Cashless payment and financial inclusion</title>
+		<link>https://alphaarchitect.com/cashless-payment/</link>
+		
+		<dc:creator><![CDATA[Elisabetta Basilico, PhD, CFA]]></dc:creator>
+		<pubDate>Tue, 21 Jul 2026 03:48:47 +0000</pubDate>
+				<category><![CDATA[Elisabetta Basilico]]></category>
+		<category><![CDATA[Research Insights]]></category>
+		<category><![CDATA[Other Insights]]></category>
+		<category><![CDATA[Behavioral Finance]]></category>
+		<guid isPermaLink="false">https://alphaarchitect.com/?p=97468</guid>
+
+					<description><![CDATA[<p>Digital payment systems are not just transaction infrastructure. They are information systems that can reshape credit markets.</p>
+<p><a href="https://alphaarchitect.com/cashless-payment/">Cashless payment and financial inclusion</a> was originally published at <a href="https://alphaarchitect.com">Alpha Architect</a>. Please read the Alpha Architect <a href="https://alphaarchitect.com/disclosures">disclosures</a> at your convenience.</p>
+]]></description>
+										<content:encoded><![CDATA[
+<p class="wp-block-paragraph">Digital payments are often viewed as simple payment technology: faster transactions, lower friction, and more convenience. But in reality, cashless payments generate something much more valuable: data. Every purchase reveals information about income stability, spending habits, liquidity, and financial behavior. This paper introduces a deeper perspective: digital payment systems are not just transaction infrastructure. They are information systems that can reshape credit markets.</p>
+
+
+
+<h2 id="h-cashless-payment-and-financial-inclusion" class="wp-block-heading">Cashless payment and financial inclusion</h2>
+
+
+
+<ul class="wp-block-list">
+<li>Shumiao&nbsp;Ouyang</li>
+
+
+
+<li>Journal of Financial Economics, 2026</li>
+
+
+
+<li>A version of this paper can be found <a href="https://www.sciencedirect.com/science/article/pii/S0304405X26000486" target="_blank" rel="noreferrer noopener">here</a></li>
+
+
+
+<li>Want to read our summaries of academic finance papers? Check out our&nbsp;<a href="https://alphaarchitect.com/category/architect-academic-insights/academic-research-insight/" target="_blank" rel="noreferrer noopener">Academic Research Insight</a>&nbsp;category</li>
+</ul>
+
+
+
+<h2 id="h-key-academic-insights" class="wp-block-heading">Key Academic Insights</h2>
+
+
+
+<p class="wp-block-paragraph"><strong>Digital payment data expands credit access</strong><br />The paper studies whether cashless payment activity causally increases consumer credit access. Using proprietary Alipay data and a novel instrumental variable strategy, the author shows that higher in-person digital payment activity significantly increases both the probability of receiving credit and the size of credit lines. The results suggest that payment flow data contains valuable information for credit evaluation.</p>
+
+
+
+<p class="wp-block-paragraph">T<strong>he study identifies a causal effect</strong><br />One challenge is that consumers who use digital payments more frequently may already differ from non-users in important ways. To address this, the paper exploits the staggered rollout of Alipay-integrated shared bikes across Chinese cities. Shared bike usage encouraged consumers to adopt Alipay for in-person payments through QR-code scanning. This created plausibly exogenous variation in payment activity that allowed the author to isolate the causal effect of cashless payments on credit provision.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Credit access rises substantially after payment adoption</strong><br />The results are economically meaningful. Using in-person digital payments increases the probability of receiving credit access by roughly 56%. Among consumers who already have credit access, a 1% increase in payment flow increases credit lines by approximately 0.41%. The findings suggest that payment behavior itself becomes an important input into lending decisions.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Payment information matters beyond repayment history</strong><br />Traditional consumer lending relies heavily on repayment histories and formal credit records. This paper shows that ordinary payment activity also matters. Even after excluding repayment-related transactions, the positive relationship between payment flow and credit provision remains strong. The evidence suggests that lenders learn about borrower quality directly from payment behavior.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Financial inclusion effects are strongest for underserved groups</strong><br />The paper finds that older and less educated consumers benefit the most from digital payment adoption. These groups traditionally engage in fewer financial activities and often have weaker access to formal <a href="https://alphaarchitect.com/who-bears-the-cost-of-machine-learning-in-credit-markets/">credit markets</a>. When they begin using digital payments, lenders gain more information about their financial behavior, leading to greater increases in credit access.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>The mechanism reflects information, not simply collateral</strong><br />One possible explanation is that consumers with larger balances on the platform receive more credit because those balances act like collateral. The paper tests this directly by controlling for assets held on Alipay. The effects remain strong. This suggests that the informational value of payment data itself is the key mechanism driving expanded credit access.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Easier credit access does not appear to increase compulsive spending</strong><br />The paper also studies whether increased access to digital credit leads to harmful consumer behavior. Using detailed transaction-level data, the author finds little evidence that consumers increase compulsive spending categories after receiving additional credit access. Spending rises overall, but not disproportionately in categories associated with impulsive behavior.</p>
+
+
+
+<h2 id="h-practical-applications-for-investment-advisors" class="wp-block-heading">Practical Applications for Investment Advisors</h2>
+
+
+
+<p class="wp-block-paragraph"><strong>Understand the growing role of payment data</strong></p>
+
+
+
+<p class="wp-block-paragraph">Digital payments are becoming an important source of financial information. Payment activity may increasingly serve as an alternative form of credit scoring, especially for consumers with limited traditional credit histories.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>BigTech firms may possess durable informational advantages</strong><br />Firms that control large payment ecosystems may have significant advantages in consumer lending because they observe real-time behavioral data. This creates potential competitive advantages relative to traditional financial institutions.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Financial inclusion may create new growth opportunities</strong><br />As underserved populations gain access to digital payments, they may also gain access to broader financial products such as credit, savings, insurance, and wealth management services. This could expand long-term financial participation in emerging economies.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Be aware of regulatory and privacy risks</strong><br />The same payment data that improves credit access also raises concerns about privacy, market power, and algorithmic discrimination. Policymakers may increasingly scrutinize how financial data is collected and used.</p>
+
+
+
+<h2 id="h-how-to-explain-this-to-clients" class="wp-block-heading">How to Explain This to Clients</h2>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph">“Cashless payments do more than make transactions easier. Every digital payment creates information about spending behavior, income patterns, and financial habits.This paper shows that lenders can use that information to evaluate borrowers who may not have traditional credit histories.As more people adopt digital payments, especially in developing economies, payment platforms may help expand financial access to consumers who were previously underserved by traditional banks.The key insight is that digital payments are not just payment tools. They are information systems that can change how credit markets work.&#8221;</p>
+</blockquote>
+
+
+
+<h2 id="h-the-most-important-chart-from-the-paper" class="wp-block-heading">The Most Important Chart from the Paper</h2>
+
+
+
+<p class="wp-block-paragraph">Fig. 1.&nbsp;Mobile Payment Penetration across Countries. These figures show the GDP-adjusted mobile payment transaction volume per user and the mobile payment penetration rate for selected countries in 2019 and 2023. Data sources are the Statista Digital Market Outlook and the World Bank.</p>
+
+
+<div class="wp-block-image">
+<figure class="aligncenter size-fusion-600"><img decoding="async" width="600" height="304" src="https://alphaarchitect.com/wp-content/uploads/2026/05/2026-05-25-14_30_02-Cashless-payment-and-financial-inclusion-ScienceDirect-600x304.png" alt="" class="wp-image-97472" srcset="https://alphaarchitect.com/wp-content/uploads/2026/05/2026-05-25-14_30_02-Cashless-payment-and-financial-inclusion-ScienceDirect-80x40.png 80w, https://alphaarchitect.com/wp-content/uploads/2026/05/2026-05-25-14_30_02-Cashless-payment-and-financial-inclusion-ScienceDirect-200x101.png 200w, https://alphaarchitect.com/wp-content/uploads/2026/05/2026-05-25-14_30_02-Cashless-payment-and-financial-inclusion-ScienceDirect-400x202.png 400w, https://alphaarchitect.com/wp-content/uploads/2026/05/2026-05-25-14_30_02-Cashless-payment-and-financial-inclusion-ScienceDirect-600x304.png 600w, https://alphaarchitect.com/wp-content/uploads/2026/05/2026-05-25-14_30_02-Cashless-payment-and-financial-inclusion-ScienceDirect-800x405.png 800w, https://alphaarchitect.com/wp-content/uploads/2026/05/2026-05-25-14_30_02-Cashless-payment-and-financial-inclusion-ScienceDirect.png 842w" sizes="(max-width: 600px) 100vw, 600px" /></figure>
+</div>
+
+
+<p class="has-text-align-center wp-block-paragraph"><em>The results are hypothetical results and are NOT an indicator of future results and do NOT represent returns that any investor actually attained.&nbsp;Indexes are unmanaged and do not reflect management or trading fees, and one cannot invest directly in an index</em>.</p>
+
+
+
+<h2 id="h-abstract" class="wp-block-heading">Abstract</h2>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<h3 id="h-" class="wp-block-heading"></h3>
+
+
+
+<p class="wp-block-paragraph">This paper investigates how cashless payment affects credit access for underserved populations using data from Alipay, a leading Chinese BigTech platform with over 1 billion users that offers a wide range of financial services. By exploiting the staggered rollout of Alipay-bundled shared bikes across cities as a natural experiment and analyzing a representative Alipay user sample, I find that cashless payment adoption increases credit access by 56.3% and that a 1% rise in payment flow increases credit lines by 0.41%. These effects are stronger for less educated and older individuals, who have traditionally faced greater barriers to accessing financial services.</p>
+
+
+
+<p class="wp-block-paragraph"></p>
+</blockquote>
+<p><a href="https://alphaarchitect.com/cashless-payment/">Cashless payment and financial inclusion</a> was originally published at <a href="https://alphaarchitect.com">Alpha Architect</a>. Please read the Alpha Architect <a href="https://alphaarchitect.com/disclosures">disclosures</a> at your convenience.</p>
+]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>Two Accounting Anomalies: One May Be Risk, the Other Is Mispricing</title>
+		<link>https://alphaarchitect.com/accounting-anomalies/</link>
+		
+		<dc:creator><![CDATA[Larry Swedroe]]></dc:creator>
+		<pubDate>Fri, 17 Jul 2026 15:24:00 +0000</pubDate>
+				<category><![CDATA[Accruals]]></category>
+		<category><![CDATA[Asset Growth]]></category>
+		<category><![CDATA[Research Insights]]></category>
+		<category><![CDATA[Factor Investing]]></category>
+		<category><![CDATA[Larry Swedroe]]></category>
+		<category><![CDATA[Other Insights]]></category>
+		<guid isPermaLink="false">https://alphaarchitect.com/?p=97623</guid>
+
+					<description><![CDATA[<p>Accounting anomalies are dynamic, and the ultimate interpretation depends on sample period, market structure, and the pricing model used.</p>
+<p><a href="https://alphaarchitect.com/accounting-anomalies/">Two Accounting Anomalies: One May Be Risk, the Other Is Mispricing</a> was originally published at <a href="https://alphaarchitect.com">Alpha Architect</a>. Please read the Alpha Architect <a href="https://alphaarchitect.com/disclosures">disclosures</a> at your convenience.</p>
+]]></description>
+										<content:encoded><![CDATA[
+<p class="wp-block-paragraph">Two of the longest-running puzzles in accounting and asset pricing research are the accrual anomaly and the post-earnings-announcement drift, or PEAD. Both describe return patterns that standard one-period asset pricing models struggle to explain, and both have generated a huge literature. The recurring question has been the same: is the market mispricing the information, or is it rationally pricing risk that one-period models may miss?&nbsp;</p>
+
+
+
+<p class="wp-block-paragraph">Stephen Penman and Julie Lei Zhu, authors of the June 2026 paper “Explaining Two Prominent Accounting Pricing <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6963000" target="_blank" rel="noreferrer noopener">Anomalies</a>: The Accrual Anomaly and the Post-Earnings-Announcement Drift,” revisit both anomalies and reach two different conclusions. Their sample runs from April 1982 through March 2022.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Why the benchmark matters</strong></p>
+
+
+
+<p class="wp-block-paragraph">Most prior research has evaluated these return patterns using one-period models such as CAPM or the Fama–French factor models. Penman and Zhu argue that those benchmarks can be misleading for investors who operate across multiple periods. Under Merton’s intertemporal asset pricing framework, investors care not only about current returns but also about protecting future wealth and preserving future investment opportunities.</p>
+
+
+
+<p class="wp-block-paragraph">That matters because accounting information is inherently forward-looking. Accruals, by design, link current earnings to future earnings and thus speak to risk in future cash flows, dividends, and consumption. In the authors’ framework, the market may price those multiperiod risks in ways that one-period models do not capture&nbsp;<a href="https://protect.checkpoint.com/v2/r01/___https:/papers.ssrn.com/sol3/papers.cfm?abstract_id=6963000___.YXAzOnNhcmFncmlsbG86Yzpnb29nbGVfbWFpbF9hdHRhY2htZW50OmUwZjJmZThlZDQ2MjYyOWQ4YmFmNDQwYWU5MzA2YTQxOjc6ZGIwZDo5MjJlYWZhOWQ3ODA1MDM4N2ZjZWM5N2RiMmU5ZjQyNGY4YTVjZTkxZjM0YmNhNzRlYzg5NGEwOTZhNTkyMmJhOnA6VDpO" target="_blank" rel="noreferrer noopener">Penman &amp; Zhu (2026)</a>.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>The two-factor model</strong></p>
+
+
+
+<p class="wp-block-paragraph">The paper implements a two-factor model: the market portfolio plus a fundamental hedge factor constructed from accounting information. The hedge factor is an annually rebalanced long–short portfolio that is long firms with the highest implied risk to future earnings and short firms with the lowest. The short side behaves like insurance in bad markets; the long side provides the reverse exposure, performing relatively better in up markets but offering less protection during downturns.</p>
+
+
+
+<p class="wp-block-paragraph">The authors test whether returns on portfolios sorted by earnings-to-price, accruals, momentum, PEAD (standardized unexpected earnings), revenue surprises, and analyst forecast revisions can be explained by exposure to these two factors. If the model is appropriate, portfolios should show market betas near 1.0, systematic variation in hedge exposure, and little or no alpha.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>What the paper found on accruals</strong></p>
+
+
+
+<p class="wp-block-paragraph">The accrual results are the cleanest. Across multiple data sources, sample windows, and accrual definitions, accrual-sorted portfolios behave in a manner consistent with rational pricing rather than clear mispricing. Market betas are close to 1.0, hedge-factor exposure varies systematically across deciles, and alphas are generally near zero once exposures are accounted for.</p>
+
+
+
+<p class="wp-block-paragraph">Put plainly, the return spread associated with accruals is largely explained by differences in exposure to the hedge factor rather than unexplained <a href="https://alphaarchitect.com/fascinating-research-alert-earning-calls-cliches-and-negative-abnormal-returns/" target="_blank" rel="noreferrer noopener">abnormal returns</a> in this model. The authors therefore argue that accruals appear consistent with a priced risk characteristic when assessed within their intertemporal framework.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Why high accruals can still have lower returns</strong></p>
+
+
+
+<p class="wp-block-paragraph">This point often causes confusion. High accruals imply more uncertainty about future earnings before those earnings are realized, but greater uncertainty alone does not mechanically imply higher expected stock returns. In a multiperiod framework, what matters is the nature of the risk: whether it provides exposure investors want to hold or whether it offers hedge-like protection that investors value. In the authors’ interpretation, accruals help reveal how a stock loads on the hedge factor; high-accrual portfolios may provide more of the hedge-like exposure that multiperiod investors value, which in this framework can be associated with lower expected returns..</p>
+
+
+
+<p class="wp-block-paragraph">Table 2 shows that the low-accrual decile earned a higher raw excess return than the high-accrual decile over the sample period. However, once returns are adjusted for exposure to the market and hedge factor, alphas are essentially zero. The authors’ central point is that the return difference is explained by risk exposures rather than leftover abnormal performance in their sample and model.</p>
+
+
+
+<figure class="wp-block-image size-fusion-1200"><img decoding="async" width="1200" height="1266" src="https://alphaarchitect.com/wp-content/uploads/2026/07/Table-2-1200x1266.webp" alt="" class="wp-image-97629" srcset="https://alphaarchitect.com/wp-content/uploads/2026/07/Table-2-76x80.webp 76w, https://alphaarchitect.com/wp-content/uploads/2026/07/Table-2-200x211.webp 200w, https://alphaarchitect.com/wp-content/uploads/2026/07/Table-2-400x422.webp 400w, https://alphaarchitect.com/wp-content/uploads/2026/07/Table-2-600x633.webp 600w, https://alphaarchitect.com/wp-content/uploads/2026/07/Table-2-800x844.webp 800w, https://alphaarchitect.com/wp-content/uploads/2026/07/Table-2-1200x1266.webp 1200w, https://alphaarchitect.com/wp-content/uploads/2026/07/Table-2-1455x1536.webp 1455w, https://alphaarchitect.com/wp-content/uploads/2026/07/Table-2.webp 1499w" sizes="(max-width: 1200px) 100vw, 1200px" /></figure>
+
+
+
+<p class="has-text-align-center wp-block-paragraph"><em>The results are hypothetical results and are NOT an indicator of future results and do NOT represent returns that any investor actually attained. Indexes are unmanaged and do not reflect management or trading fees, and one cannot invest directly in an index</em>.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>What the paper found on PEAD</strong></p>
+
+
+
+<p class="wp-block-paragraph">The story for PEAD is different. Post-earnings-announcement drift—the tendency for prices to continue moving in the direction of an earnings surprise after the announcement—is the classic underreaction pattern. Using portfolios formed on standardized unexpected earnings (SUE), the paper finds significant alphas that the two-factor model cannot fully explain. High-SUE portfolios earn positive alpha, low-SUE portfolios earn negative alpha, and hedge-factor exposures do not align with the pattern a pure risk-based story would predict. In this model, PEAD therefore looks more like mispricing than compensation for risk.</p>
+
+
+
+<p class="wp-block-paragraph">Penman and Zhu also document that PEAD has diminished over time, consistent with the hypothesis that once a behavioral-based return pattern becomes widely known, arbitrage reduces its profitability. Still, PEAD did not completely disappear in their sample, suggesting that limits to arbitrage and market frictions can allow some residual drift to persist. This pattern is consistent with adaptive-efficiency ideas such as Andrew Lo’s <a href="https://protect.checkpoint.com/v2/r01/___https:/en.wikipedia.org/wiki/Adaptive_market_hypothesis___.YXAzOnNhcmFncmlsbG86Yzpnb29nbGVfbWFpbF9hdHRhY2htZW50OmUwZjJmZThlZDQ2MjYyOWQ4YmFmNDQwYWU5MzA2YTQxOjc6MTgwMDphMDMwZGQwYjlkODlhMTE3N2RjOTRhOTIxNmExNGU1NzNhY2E5YjRhZjI0NTdmOGUzYjhkMjE4ODFkYjdhOTdjOnA6VDpO" target="_blank" rel="noreferrer noopener">Adaptive Markets Hypothesis</a>.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Broader evidence</strong></p>
+
+
+
+<p class="wp-block-paragraph">The paper extends the analysis to momentum, revenue surprises, and analyst-forecast revisions. Momentum produces non-zero alpha in this framework, which is consistent with a mispricing interpretation; similarly, drifts following revenue surprises and forecast revisions behave like PEAD and are not fully explained by the hedge factor. The result is a useful split: accounting-related return patterns are not homogeneous—some (accruals) are consistent with priced risk in this model, while others (PEAD, momentum, certain forecast- and revenue-related drifts) are better characterized as mispricing.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Implications for market efficiency</strong></p>
+
+
+
+<p class="wp-block-paragraph">The implications are nuanced. The paper suggests markets can price some accounting information as risk while underreacting to other signals in ways that produce persistent return drift. In other words, efficiency appears to be signal-specific. For investors, the takeaway is that a historically profitable strategy is not necessarily a clean, risk-free arbitrage: some premiums can reflect compensation for priced multiperiod risk, while others reflect behavioral mispricing that arbitrageurs may erode over time.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Conflicting evidence</strong></p>
+
+
+
+<p class="wp-block-paragraph">A complication for interpreting PEAD (and, to a lesser extent, accruals) is that other studies document sizeable changes in the anomalies over time. For example, Charles Martineau’s study “<a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3111607" target="_blank" rel="noreferrer noopener">Rest in Peace Post-Earnings Announcement Drift”</a> finds that, in modern markets, prices often fully reflect earnings surprises on the announcement date, leading to the disappearance of PEAD for many large stocks by 2006, and later for even microcaps. That finding is consistent with the idea that arbitrage can eliminate behavioral anomalies, and it highlights how anomaly strength can weaken or vanish as markets, trading technology, and information dissemination change.</p>
+
+
+
+<p class="wp-block-paragraph">Other recent work finds that the accrual anomaly can persist in some settings but disappear in others. For example, one <a href="https://protect.checkpoint.com/v2/r01/___https:/papers.ssrn.com/sol3/papers.cfm?abstract_id=4803248___.YXAzOnNhcmFncmlsbG86Yzpnb29nbGVfbWFpbF9hdHRhY2htZW50OmUwZjJmZThlZDQ2MjYyOWQ4YmFmNDQwYWU5MzA2YTQxOjc6MTViMDo3MzNlOTNhZTFhNGJlYTVmZDhlN2U4ZjhjZjAyMTU2ZjRhNGVmZThlOTU0NTk2MzNjMGFlOGU4ZmFiOTg0NmNmOnA6VDpO" target="_blank" rel="noreferrer noopener">paper</a> reports that the anomaly “lives on” in neglected firms and where investors are less familiar with the accrual calculation, while <a href="https://protect.checkpoint.com/v2/r01/___https:/dl.acm.org/doi/abs/10.1287/mnsc.1110.1320___.YXAzOnNhcmFncmlsbG86Yzpnb29nbGVfbWFpbF9hdHRhY2htZW50OmUwZjJmZThlZDQ2MjYyOWQ4YmFmNDQwYWU5MzA2YTQxOjc6NWU5ZjoyZGYzMGQ2YTQ1ODVmNTBkMzdlNTJiYjU0YmM2ODM4MjE4ZTEzZjliZmIzMDUyNzkwNzIyNjM1OThmMTNhMDQzOnA6VDpO" target="_blank" rel="noreferrer noopener">another</a> finds that the anomaly has decayed in U.S. markets as hedge-fund capital increased. A separate Canadian <a href="https://protect.checkpoint.com/v2/r01/___https:/papers.ssrn.com/sol3/papers.cfm?abstract_id=4560364___.YXAzOnNhcmFncmlsbG86Yzpnb29nbGVfbWFpbF9hdHRhY2htZW50OmUwZjJmZThlZDQ2MjYyOWQ4YmFmNDQwYWU5MzA2YTQxOjc6OTIyMDpkYWEzMjhjZmQ1MGE1MWFhZDc0NGVkM2M2ZDAyMjY4ZTRlNDljMTkzYmMyMDZkNGUxM2RlYmY3NWRlMThlZmMwOnA6VDpO" target="_blank" rel="noreferrer noopener">study</a> also reports strong abnormal returns for larger TSX firms, but mixed findings once smaller firms are included. These mixed findings suggest that the final verdict on whether accruals represent a durable priced risk premium rather than time-varying mispricing remains unsettled.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Conflicting evidence</strong></p>
+
+
+
+<p class="wp-block-paragraph">A complication for interpreting PEAD (and, to a lesser extent, accruals) is that other studies document sizeable changes in the anomalies over time. For example, Charles Martineau’s study “<a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3111607" target="_blank" rel="noreferrer noopener">Rest in Peace Post-Earnings Announcement Drift”</a> finds that, in modern markets, prices often fully reflect earnings surprises on the announcement date, leading to the disappearance of PEAD for many large stocks by 2006, and later for even microcaps. That finding is consistent with the idea that arbitrage can eliminate behavioral anomalies, and it highlights how anomaly strength can weaken or vanish as markets, trading technology, and information dissemination change.</p>
+
+
+
+<p class="wp-block-paragraph">Other recent work finds that the accrual anomaly can persist in some settings but disappear in others. For example, one <a href="https://protect.checkpoint.com/v2/r01/___https:/papers.ssrn.com/sol3/papers.cfm?abstract_id=4803248___.YXAzOnNhcmFncmlsbG86Yzpnb29nbGVfbWFpbF9hdHRhY2htZW50OmUwZjJmZThlZDQ2MjYyOWQ4YmFmNDQwYWU5MzA2YTQxOjc6MTViMDo3MzNlOTNhZTFhNGJlYTVmZDhlN2U4ZjhjZjAyMTU2ZjRhNGVmZThlOTU0NTk2MzNjMGFlOGU4ZmFiOTg0NmNmOnA6VDpO" target="_blank" rel="noreferrer noopener">paper</a> reports that the anomaly “lives on” in neglected firms and where investors are less familiar with the accrual calculation, while <a href="https://protect.checkpoint.com/v2/r01/___https:/dl.acm.org/doi/abs/10.1287/mnsc.1110.1320___.YXAzOnNhcmFncmlsbG86Yzpnb29nbGVfbWFpbF9hdHRhY2htZW50OmUwZjJmZThlZDQ2MjYyOWQ4YmFmNDQwYWU5MzA2YTQxOjc6NWU5ZjoyZGYzMGQ2YTQ1ODVmNTBkMzdlNTJiYjU0YmM2ODM4MjE4ZTEzZjliZmIzMDUyNzkwNzIyNjM1OThmMTNhMDQzOnA6VDpO" target="_blank" rel="noreferrer noopener">another</a> finds that the anomaly has decayed in U.S. markets as hedge-fund capital increased. A separate Canadian <a href="https://protect.checkpoint.com/v2/r01/___https:/papers.ssrn.com/sol3/papers.cfm?abstract_id=4560364___.YXAzOnNhcmFncmlsbG86Yzpnb29nbGVfbWFpbF9hdHRhY2htZW50OmUwZjJmZThlZDQ2MjYyOWQ4YmFmNDQwYWU5MzA2YTQxOjc6OTIyMDpkYWEzMjhjZmQ1MGE1MWFhZDc0NGVkM2M2ZDAyMjY4ZTRlNDljMTkzYmMyMDZkNGUxM2RlYmY3NWRlMThlZmMwOnA6VDpO" target="_blank" rel="noreferrer noopener">study</a> also reports strong abnormal returns for larger TSX firms, but mixed findings once smaller firms are included. These mixed findings suggest that the final verdict on whether accruals represent a durable priced risk premium rather than time-varying mispricing remains unsettled.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Key takeaways</strong></p>
+
+
+
+<ul class="wp-block-list">
+<li>The accrual anomaly looks less anomalous using the Penman–Zhu intertemporal asset-pricing framework, but later evidence suggests the effect has weakened or disappeared in some settings, so the result is not definitive.</li>
+
+
+
+<li>PEAD still looks more like mispricing in the Penman–Zhu framework because the model leaves significant alpha, although PEAD’s magnitude has diminished over time.</li>
+
+
+
+<li>Momentum, revenue-surprise drift, and analyst-forecast drift behave more like PEAD than accruals in this analysis.</li>
+
+
+
+<li>The benchmark matters: a one-period model can sometimes make priced multiperiod risk appear as mispricing.</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph"><strong>Conclusion</strong></p>
+
+
+
+<p class="wp-block-paragraph">Penman and Zhu argue that two famous accounting-based return patterns do not have the same economic source. In their model, accruals are consistent with priced multiperiod risk once investor horizons and hedging demands are considered, while PEAD still leaves residual alpha and therefore looks more like mispricing within that framework. At the same time, the broader literature – including evidence that PEAD has largely disappeared in many segments of the market and mixed evidence on accrual persistence – suggests these anomalies are dynamic, and that the ultimate interpretation depends on sample period, market structure, and the pricing model used.</p>
+
+
+
+<p class="wp-block-paragraph"><em>Larry Swedroe is the author or co-author of 18 books on investing, including his latest&nbsp;</em><a href="https://protect.checkpoint.com/v2/r01/___https:/www.amazon.com/Enrich-Your-Future-Successful-Investing/dp/1394245440/___.YXAzOnNhcmFncmlsbG86Yzpnb29nbGVfbWFpbF9hdHRhY2htZW50OmUwZjJmZThlZDQ2MjYyOWQ4YmFmNDQwYWU5MzA2YTQxOjc6NGZjNDphYWFhM2JkNTFkMjZmN2RlYjhkZDRmMzY0Y2I0YTgyOTE1MWEzYmYzNjU2NTQwYzA2MDJiYjZlYmE2OTdlMDFkOnA6VDpO" target="_blank" rel="noreferrer noopener"><em>Enrich Your Future</em></a><em>. He is also a consultant to RIAs as an educator on investment strategies. For informational and educational purposes only and should not be construed as specific investment, accounting, legal, or tax advice.</em></p>
+
+
+
+<p class="wp-block-paragraph"></p>
+<p><a href="https://alphaarchitect.com/accounting-anomalies/">Two Accounting Anomalies: One May Be Risk, the Other Is Mispricing</a> was originally published at <a href="https://alphaarchitect.com">Alpha Architect</a>. Please read the Alpha Architect <a href="https://alphaarchitect.com/disclosures">disclosures</a> at your convenience.</p>
+]]></content:encoded>
+					
+		
+		
+			</item>
+	</channel>
+</rss>

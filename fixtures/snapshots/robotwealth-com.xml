@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"
+	xmlns:content="http://purl.org/rss/1.0/modules/content/"
+	xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:atom="http://www.w3.org/2005/Atom"
+	xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+	xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+	>
+
+<channel>
+	<title>Robot Wealth</title>
+	<atom:link href="https://robotwealth.com/feed/" rel="self" type="application/rss+xml" />
+	<link>https://robotwealth.com/</link>
+	<description>We teach systematic trading</description>
+	<lastBuildDate>Mon, 08 Jun 2026 04:11:01 +0000</lastBuildDate>
+	<language>en-US</language>
+	<sy:updatePeriod>
+	hourly	</sy:updatePeriod>
+	<sy:updateFrequency>
+	1	</sy:updateFrequency>
+	
+
+<image>
+	<url>https://media.robotwealth.com/wp-content/uploads/2022/01/21160008/cropped-RW-icon-reverse%404x-32x32.png</url>
+	<title>Robot Wealth</title>
+	<link>https://robotwealth.com/</link>
+	<width>32</width>
+	<height>32</height>
+</image> 
+	<item>
+		<title>Resourcing a Triangulated Stat Arb Operation as a Solo Trader</title>
+		<link>https://robotwealth.com/resourcing-a-triangulated-stat-arb-operation-as-a-solo-trader/</link>
+					<comments>https://robotwealth.com/resourcing-a-triangulated-stat-arb-operation-as-a-solo-trader/#respond</comments>
+		
+		<dc:creator><![CDATA[Kris Longmore]]></dc:creator>
+		<pubDate>Mon, 08 Jun 2026 04:10:59 +0000</pubDate>
+				<category><![CDATA[Quant trading]]></category>
+		<category><![CDATA[pair trading]]></category>
+		<category><![CDATA[stat-arb]]></category>
+		<category><![CDATA[triangulated stat arb]]></category>
+		<guid isPermaLink="false">https://robotwealth.com/?p=136178</guid>
+
+					<description><![CDATA[<p>Part 6 of 6: Statistical Arbitrage for Independent Traders Previously: At its simplest, stat arb is a bet on convergence: two related stocks drift apart, and you bet on them coming back together. Pairs trading is the canonical version of that bet, but it’s wasteful for a solo operator. Triangulated Stat Arb builds a clean ... <a title="Resourcing a Triangulated Stat Arb Operation as a Solo Trader" class="read-more" href="https://robotwealth.com/resourcing-a-triangulated-stat-arb-operation-as-a-solo-trader/" aria-label="Read more about Resourcing a Triangulated Stat Arb Operation as a Solo Trader">Read more</a></p>
+<p>The post <a href="https://robotwealth.com/resourcing-a-triangulated-stat-arb-operation-as-a-solo-trader/">Resourcing a Triangulated Stat Arb Operation as a Solo Trader</a> appeared first on <a href="https://robotwealth.com">Robot Wealth</a>.</p>
+]]></description>
+		
+					<wfw:commentRss>https://robotwealth.com/resourcing-a-triangulated-stat-arb-operation-as-a-solo-trader/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>When Is a Mispricing Not a Mispricing?</title>
+		<link>https://robotwealth.com/when-is-a-mispricing-not-a-mispricing/</link>
+					<comments>https://robotwealth.com/when-is-a-mispricing-not-a-mispricing/#respond</comments>
+		
+		<dc:creator><![CDATA[Kris Longmore]]></dc:creator>
+		<pubDate>Mon, 01 Jun 2026 07:20:07 +0000</pubDate>
+				<category><![CDATA[Quant trading]]></category>
+		<category><![CDATA[stat arb]]></category>
+		<category><![CDATA[trading strategies]]></category>
+		<category><![CDATA[triangulated stat arb]]></category>
+		<guid isPermaLink="false">https://robotwealth.com/?p=135949</guid>
+
+					<description><![CDATA[<p>Part 5 of 6: Statistical Arbitrage for Independent Traders Previously: Last time, I showed you a pattern in energy spreads and asked what it meant. The answer seemed obvious: XOM is the outlier. Every spread involving XOM is stretched. The spreads not involving XOM are near zero. But on this seemingly obvious map of mispricings, ... <a title="When Is a Mispricing Not a Mispricing?" class="read-more" href="https://robotwealth.com/when-is-a-mispricing-not-a-mispricing/" aria-label="Read more about When Is a Mispricing Not a Mispricing?">Read more</a></p>
+<p>The post <a href="https://robotwealth.com/when-is-a-mispricing-not-a-mispricing/">When Is a Mispricing Not a Mispricing?</a> appeared first on <a href="https://robotwealth.com">Robot Wealth</a>.</p>
+]]></description>
+		
+					<wfw:commentRss>https://robotwealth.com/when-is-a-mispricing-not-a-mispricing/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>The Metamorphosis</title>
+		<link>https://robotwealth.com/the-metamorphosis/</link>
+					<comments>https://robotwealth.com/the-metamorphosis/#respond</comments>
+		
+		<dc:creator><![CDATA[Kris Longmore]]></dc:creator>
+		<pubDate>Fri, 22 May 2026 06:21:37 +0000</pubDate>
+				<category><![CDATA[Quant trading]]></category>
+		<category><![CDATA[quantitative trading]]></category>
+		<category><![CDATA[stat arb]]></category>
+		<category><![CDATA[trading strategies]]></category>
+		<guid isPermaLink="false">https://robotwealth.com/?p=134094</guid>
+
+					<description><![CDATA[<p>From Pairs to Portfolio Part 4 of 6: Statistical Arbitrage for Independent Traders Previously: Pairs trading remains a feasible approach for the indie trader. But, as we saw last time, there are inherent limitations. Trading both legs eats a lot of buying power and limits the number of pairs you can trade. Trading only the ... <a title="The Metamorphosis" class="read-more" href="https://robotwealth.com/the-metamorphosis/" aria-label="Read more about The Metamorphosis">Read more</a></p>
+<p>The post <a href="https://robotwealth.com/the-metamorphosis/">The Metamorphosis</a> appeared first on <a href="https://robotwealth.com">Robot Wealth</a>.</p>
+]]></description>
+		
+					<wfw:commentRss>https://robotwealth.com/the-metamorphosis/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>For The Love of The Game</title>
+		<link>https://robotwealth.com/for-the-love-of-the-game/</link>
+					<comments>https://robotwealth.com/for-the-love-of-the-game/#respond</comments>
+		
+		<dc:creator><![CDATA[Kris Longmore]]></dc:creator>
+		<pubDate>Wed, 29 Apr 2026 13:01:28 +0000</pubDate>
+				<category><![CDATA[Think like a trader]]></category>
+		<category><![CDATA[AI]]></category>
+		<category><![CDATA[data mining]]></category>
+		<category><![CDATA[LLMs]]></category>
+		<guid isPermaLink="false">https://robotwealth.com/?p=133234</guid>
+
+					<description><![CDATA[<p>Why the path to making money in trading runs through work you&#8217;d better find interesting Data mining and vibe quanting are essentially the same thing. Both fundamentally and philosophically. Fundamentally, data mining says: “I’ll try enough rules until something sticks.” Vibe quanting says: “I’ll get AI to try enough rules until something sticks.” Same thing, ... <a title="For The Love of The Game" class="read-more" href="https://robotwealth.com/for-the-love-of-the-game/" aria-label="Read more about For The Love of The Game">Read more</a></p>
+<p>The post <a href="https://robotwealth.com/for-the-love-of-the-game/">For The Love of The Game</a> appeared first on <a href="https://robotwealth.com">Robot Wealth</a>.</p>
+]]></description>
+		
+					<wfw:commentRss>https://robotwealth.com/for-the-love-of-the-game/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>To Trend or Not To Trend? (Wrong question)</title>
+		<link>https://robotwealth.com/to-trend-or-not-to-trend-wrong-question/</link>
+					<comments>https://robotwealth.com/to-trend-or-not-to-trend-wrong-question/#respond</comments>
+		
+		<dc:creator><![CDATA[Kris Longmore]]></dc:creator>
+		<pubDate>Fri, 10 Apr 2026 14:21:46 +0000</pubDate>
+				<category><![CDATA[Think like a trader]]></category>
+		<guid isPermaLink="false">https://robotwealth.com/?p=132449</guid>
+
+					<description><![CDATA[<p>Someone asked me recently whether strategies based on mean reversion, trend following, and momentum are “good” or just data mining. It’s a reasonable question, but it reveals some confusion that arises from mixing up two things that sound similar but are very different. Mean reversion, trend, momentum: these aren’t edges. They’re labels for how prices ... <a title="To Trend or Not To Trend? (Wrong question)" class="read-more" href="https://robotwealth.com/to-trend-or-not-to-trend-wrong-question/" aria-label="Read more about To Trend or Not To Trend? (Wrong question)">Read more</a></p>
+<p>The post <a href="https://robotwealth.com/to-trend-or-not-to-trend-wrong-question/">To Trend or Not To Trend? (Wrong question)</a> appeared first on <a href="https://robotwealth.com">Robot Wealth</a>.</p>
+]]></description>
+		
+					<wfw:commentRss>https://robotwealth.com/to-trend-or-not-to-trend-wrong-question/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Brave New Backtest</title>
+		<link>https://robotwealth.com/brave-new-backtest/</link>
+					<comments>https://robotwealth.com/brave-new-backtest/#respond</comments>
+		
+		<dc:creator><![CDATA[Kris Longmore]]></dc:creator>
+		<pubDate>Sun, 29 Mar 2026 04:37:57 +0000</pubDate>
+				<category><![CDATA[Think like a trader]]></category>
+		<category><![CDATA[AI]]></category>
+		<guid isPermaLink="false">https://robotwealth.com/?p=131547</guid>
+
+					<description><![CDATA[<p>My last two articles on AI and trading research got more engagement than almost anything I’ve written. “More of the Disease, Faster” argued that LLMs can’t answer the critical question: who pays you and why? “AI Will Create Millions of Quants” went deeper on the why: AI makes beautiful backtests trivially easy to produce, which means ... <a title="Brave New Backtest" class="read-more" href="https://robotwealth.com/brave-new-backtest/" aria-label="Read more about Brave New Backtest">Read more</a></p>
+<p>The post <a href="https://robotwealth.com/brave-new-backtest/">Brave New Backtest</a> appeared first on <a href="https://robotwealth.com">Robot Wealth</a>.</p>
+]]></description>
+		
+					<wfw:commentRss>https://robotwealth.com/brave-new-backtest/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>AI Will Create Millions of Quants</title>
+		<link>https://robotwealth.com/ai-will-create-millions-of-quants/</link>
+					<comments>https://robotwealth.com/ai-will-create-millions-of-quants/#respond</comments>
+		
+		<dc:creator><![CDATA[Kris Longmore]]></dc:creator>
+		<pubDate>Mon, 23 Mar 2026 04:24:54 +0000</pubDate>
+				<category><![CDATA[Think like a trader]]></category>
+		<category><![CDATA[AI]]></category>
+		<guid isPermaLink="false">https://robotwealth.com/?p=131545</guid>
+
+					<description><![CDATA[<p>(Most of Them Will Lose Money) AI makes it easier than ever to build trading strategies. Prompt a model, run a backtest, optimise some parameters, and suddenly you’ve got a beautiful equity curve staring back at you. It feels like progress. It feels like research. I wrote recently about how AI coding assistants tend to ... <a title="AI Will Create Millions of Quants" class="read-more" href="https://robotwealth.com/ai-will-create-millions-of-quants/" aria-label="Read more about AI Will Create Millions of Quants">Read more</a></p>
+<p>The post <a href="https://robotwealth.com/ai-will-create-millions-of-quants/">AI Will Create Millions of Quants</a> appeared first on <a href="https://robotwealth.com">Robot Wealth</a>.</p>
+]]></description>
+		
+					<wfw:commentRss>https://robotwealth.com/ai-will-create-millions-of-quants/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>More of the Disease, Faster (What happens when you ask an LLM to find you an edge)</title>
+		<link>https://robotwealth.com/more-of-the-disease-faster-what-happens-when-you-ask-an-llm-to-find-you-an-edge/</link>
+					<comments>https://robotwealth.com/more-of-the-disease-faster-what-happens-when-you-ask-an-llm-to-find-you-an-edge/#respond</comments>
+		
+		<dc:creator><![CDATA[Kris Longmore]]></dc:creator>
+		<pubDate>Thu, 19 Mar 2026 04:16:00 +0000</pubDate>
+				<category><![CDATA[Think like a trader]]></category>
+		<category><![CDATA[AI]]></category>
+		<guid isPermaLink="false">https://robotwealth.com/?p=130943</guid>
+
+					<description><![CDATA[<p>This week I discovered the &#8220;vibe quant&#8221; movement (or rather, it discovered me). People using LLMs to find trading strategies, validate them, and put them into production. The pitch is seductive: the LLM reads the literature, implements the ideas, backtests them, and you just supervise. I think this approach is going to cost people a ... <a title="More of the Disease, Faster (What happens when you ask an LLM to find you an edge)" class="read-more" href="https://robotwealth.com/more-of-the-disease-faster-what-happens-when-you-ask-an-llm-to-find-you-an-edge/" aria-label="Read more about More of the Disease, Faster (What happens when you ask an LLM to find you an edge)">Read more</a></p>
+<p>The post <a href="https://robotwealth.com/more-of-the-disease-faster-what-happens-when-you-ask-an-llm-to-find-you-an-edge/">More of the Disease, Faster (What happens when you ask an LLM to find you an edge)</a> appeared first on <a href="https://robotwealth.com">Robot Wealth</a>.</p>
+]]></description>
+		
+					<wfw:commentRss>https://robotwealth.com/more-of-the-disease-faster-what-happens-when-you-ask-an-llm-to-find-you-an-edge/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Everything Everywhere All at Once</title>
+		<link>https://robotwealth.com/everything-everywhere-all-at-once/</link>
+					<comments>https://robotwealth.com/everything-everywhere-all-at-once/#respond</comments>
+		
+		<dc:creator><![CDATA[Kris Longmore]]></dc:creator>
+		<pubDate>Sun, 08 Mar 2026 05:26:42 +0000</pubDate>
+				<category><![CDATA[Think like a trader]]></category>
+		<guid isPermaLink="false">https://robotwealth.com/?p=130945</guid>
+
+					<description><![CDATA[<p>The four hats of the solo trader At a trading firm or fund, the researcher doesn&#8217;t run the execution desk. The portfolio manager doesn&#8217;t build the tech and infrastructure. These are different jobs, done by different people, with different skill sets. When you&#8217;re trading solo, you&#8217;re all of those people (and more). And the thing ... <a title="Everything Everywhere All at Once" class="read-more" href="https://robotwealth.com/everything-everywhere-all-at-once/" aria-label="Read more about Everything Everywhere All at Once">Read more</a></p>
+<p>The post <a href="https://robotwealth.com/everything-everywhere-all-at-once/">Everything Everywhere All at Once</a> appeared first on <a href="https://robotwealth.com">Robot Wealth</a>.</p>
+]]></description>
+		
+					<wfw:commentRss>https://robotwealth.com/everything-everywhere-all-at-once/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>The Winter of our Pairs Trading Discontent: Problems, limitations, frustrations</title>
+		<link>https://robotwealth.com/the-winter-of-our-pairs-trading-discontent-problems-limitations-frustrations/</link>
+					<comments>https://robotwealth.com/the-winter-of-our-pairs-trading-discontent-problems-limitations-frustrations/#comments</comments>
+		
+		<dc:creator><![CDATA[Kris Longmore]]></dc:creator>
+		<pubDate>Mon, 02 Mar 2026 02:13:39 +0000</pubDate>
+				<category><![CDATA[Trading strategies]]></category>
+		<category><![CDATA[stat-arb]]></category>
+		<guid isPermaLink="false">https://robotwealth.com/?p=130666</guid>
+
+					<description><![CDATA[<p>Part 3 of a series on Statistical Arbitrage for Independent Traders Previously: In the last article, we built up a conceptual understanding of universe selection: how to find pairs that diverge and converge in a tradeable way. We talked about measuring the thing you actually care about directly, rather than reaching for statistical tests like ... <a title="The Winter of our Pairs Trading Discontent: Problems, limitations, frustrations" class="read-more" href="https://robotwealth.com/the-winter-of-our-pairs-trading-discontent-problems-limitations-frustrations/" aria-label="Read more about The Winter of our Pairs Trading Discontent: Problems, limitations, frustrations">Read more</a></p>
+<p>The post <a href="https://robotwealth.com/the-winter-of-our-pairs-trading-discontent-problems-limitations-frustrations/">The Winter of our Pairs Trading Discontent: Problems, limitations, frustrations</a> appeared first on <a href="https://robotwealth.com">Robot Wealth</a>.</p>
+]]></description>
+		
+					<wfw:commentRss>https://robotwealth.com/the-winter-of-our-pairs-trading-discontent-problems-limitations-frustrations/feed/</wfw:commentRss>
+			<slash:comments>1</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Moneyball: Finding Undervalued Pairs Using Unconventional Metrics</title>
+		<link>https://robotwealth.com/moneyball-finding-undervalued-pairs-using-unconventional-metrics/</link>
+					<comments>https://robotwealth.com/moneyball-finding-undervalued-pairs-using-unconventional-metrics/#comments</comments>
+		
+		<dc:creator><![CDATA[Kris Longmore]]></dc:creator>
+		<pubDate>Fri, 20 Feb 2026 07:23:51 +0000</pubDate>
+				<category><![CDATA[Trading strategies]]></category>
+		<category><![CDATA[pairs trading]]></category>
+		<category><![CDATA[stat-arb]]></category>
+		<guid isPermaLink="false">https://robotwealth.com/?p=130276</guid>
+
+					<description><![CDATA[<p>Previously: ​A Tale of Two Prices (the core idea of stat arb)​ Last time we established that stat arb is really about betting on divergence/convergence behaviour continuing. Two things that have historically moved together come apart, and you bet on them coming back together. Remember the forced flows example, some fund or whatever having to ... <a title="Moneyball: Finding Undervalued Pairs Using Unconventional Metrics" class="read-more" href="https://robotwealth.com/moneyball-finding-undervalued-pairs-using-unconventional-metrics/" aria-label="Read more about Moneyball: Finding Undervalued Pairs Using Unconventional Metrics">Read more</a></p>
+<p>The post <a href="https://robotwealth.com/moneyball-finding-undervalued-pairs-using-unconventional-metrics/">Moneyball: Finding Undervalued Pairs Using Unconventional Metrics</a> appeared first on <a href="https://robotwealth.com">Robot Wealth</a>.</p>
+]]></description>
+		
+					<wfw:commentRss>https://robotwealth.com/moneyball-finding-undervalued-pairs-using-unconventional-metrics/feed/</wfw:commentRss>
+			<slash:comments>1</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>A Tale of Two Prices</title>
+		<link>https://robotwealth.com/a-tale-of-two-prices/</link>
+					<comments>https://robotwealth.com/a-tale-of-two-prices/#comments</comments>
+		
+		<dc:creator><![CDATA[Kris Longmore]]></dc:creator>
+		<pubDate>Fri, 20 Feb 2026 07:13:24 +0000</pubDate>
+				<category><![CDATA[Trading strategies]]></category>
+		<category><![CDATA[pairs trading]]></category>
+		<category><![CDATA[stat arb]]></category>
+		<guid isPermaLink="false">https://robotwealth.com/?p=130275</guid>
+
+					<description><![CDATA[<p>Part 1 of a series on Statistical Arbitrage for Independent Traders. It was the age of wisdom, it was the age of foolishness&#8230; I’ve seen heaps of stuff published online about stat arb lately. Some genuinely good takes. And some other material that, while academically interesting, isn’t particularly useful for people like me and the ... <a title="A Tale of Two Prices" class="read-more" href="https://robotwealth.com/a-tale-of-two-prices/" aria-label="Read more about A Tale of Two Prices">Read more</a></p>
+<p>The post <a href="https://robotwealth.com/a-tale-of-two-prices/">A Tale of Two Prices</a> appeared first on <a href="https://robotwealth.com">Robot Wealth</a>.</p>
+]]></description>
+		
+					<wfw:commentRss>https://robotwealth.com/a-tale-of-two-prices/feed/</wfw:commentRss>
+			<slash:comments>3</slash:comments>
+		
+		
+			</item>
+	</channel>
+</rss>

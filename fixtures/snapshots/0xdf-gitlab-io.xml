@@ -1,0 +1,991 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator>
+  <link href="https://0xdf.gitlab.io/feed.xml" rel="self" type="application/atom+xml" />
+  <link href="https://0xdf.gitlab.io/" rel="alternate" type="text/html" />
+  <updated>2026-08-01T14:50:04+00:00</updated>
+  <id>https://0xdf.gitlab.io/feed.xml</id>
+  <title type="html">0xdf hacks stuff</title>
+  <subtitle>CTF solutions, malware analysis, home lab development</subtitle>
+  <icon>https://0xdf.gitlab.io/assets/icons/favicon-32x32.png</icon>
+  <logo>https://0xdf.gitlab.io/assets/icons/favicon-32x32.png</logo>
+  <author>
+    <name>0xdf</name>
+    <email>0xdf.223@gmail.com</email>
+  </author>
+  
+  
+  
+  <entry>
+    <title type="html">HTB: Kobold</title>
+    <link href="https://0xdf.gitlab.io/2026/08/01/htb-kobold.html" rel="alternate" type="text/html" title="HTB: Kobold" />
+    <published>2026-08-01T13:45:00+00:00</published>
+    <updated>2026-08-01T13:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/08/01/htb-kobold</id>
+    <summary type="html">Kobold hosts several services behind an Nginx reverse proxy, including an MCPJam inspector instance, a PrivateBin paste site, and an Arcane Docker management panel. I’ll exploit an unauthenticated remote code execution vulnerability in MCPJam that stems from it binding to all interfaces and installing an attacker-controlled MCP server, getting a shell. From there I’ll abuse a local file inclusion in PrivateBin’s template-selection feature, writing a PHP webshell into a host directory that is mounted into the PrivateBin container to get execution inside it. The container’s configuration leaks a database password that I’ll reuse to log into Arcane. With control over the Docker panel, I’ll create a container that mounts the host filesystem, drop an SSH key for root, and log in to take over the box.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-kobold" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Fries</title>
+    <link href="https://0xdf.gitlab.io/2026/07/25/htb-fries.html" rel="alternate" type="text/html" title="HTB: Fries" />
+    <published>2026-07-25T13:45:00+00:00</published>
+    <updated>2026-07-25T13:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/07/25/htb-fries</id>
+    <summary type="html">Fries is an assume breach Windows box that hides a sprawl of Linux services behind the domain controller. I’ll start with a set of credentials that don’t work anywhere obvious and use them to log into a Gitea instance, recovering database and pgAdmin access along the way. An outdated pgAdmin is vulnerable to a Python eval remote code execution bug that lands a shell in a container. From environment variables and the pgAdmin database I’ll collect more credentials and spray them to get a shell on the Docker host, which is itself a Hyper-V guest. There I’ll abuse a network file share by recreating a domain user locally to read the Docker daemon’s certificates, forge a client certificate, and use the Docker API to mount the host filesystem and become root. Root on that host holds a PWM configuration with an encrypted service account password, which I’ll recover to move into the domain. That account can read a group managed service account password, and from there I’ll abuse control over the certificate authority, chaining three ADCS misconfigurations to forge a certificate for the administrator and take over the domain.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-fries" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Logging</title>
+    <link href="https://0xdf.gitlab.io/2026/07/18/htb-logging.html" rel="alternate" type="text/html" title="HTB: Logging" />
+    <published>2026-07-18T13:45:00+00:00</published>
+    <updated>2026-07-18T13:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/07/18/htb-logging</id>
+    <summary type="html">Logging is a Windows domain controller offered as an assume breach box, starting with credentials for a low privileged domain user. I’ll find an application log on an open SMB share that leaks an old password for a service account, then guess the current password by incrementing the year. That account can only authenticate over Kerberos, and it has GenericWrite over a health monitoring machine account, which I’ll abuse with a shadow credential and gMSA credentials to get a shell. From there I’ll hijack an insecure auto-update program that loads a DLL from a world-writable directory to pivot to the next user. That user is in the IT group with enrollment rights on a certificate template vulnerable to ESC17, which lets me request a certificate for any server name. I’ll issue a certificate for the decommissioned WSUS server, add a DNS record pointing it at my host, and stand up a rogue WSUS server that pushes a malicious update adding my initial user to the administrators group for full control of the domain.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-logging" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Orion</title>
+    <link href="https://0xdf.gitlab.io/2026/07/14/htb-orion.html" rel="alternate" type="text/html" title="HTB: Orion" />
+    <published>2026-07-14T09:00:00+00:00</published>
+    <updated>2026-07-14T09:00:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/07/14/htb-orion</id>
+    <summary type="html">Orion is a Linux box running a Craft CMS website. I’ll exploit an unauthenticated remote code execution vulnerability in Craft’s image transform endpoint, abusing an object injection flaw in the underlying Yii framework to poison a PHP session file and execute my payload, landing a shell as the web user. Reading the Craft configuration, I’ll find database credentials, dump the users table, and crack a bcrypt hash to reach the next user, though that step turns out to be optional. For root, I’ll find inetd serving telnet, and abuse an authentication bypass that provides access as root by smuggling a “-f root” value through the USER environment variable.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-orion" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: CCTV</title>
+    <link href="https://0xdf.gitlab.io/2026/07/11/htb-cctv.html" rel="alternate" type="text/html" title="HTB: CCTV" />
+    <published>2026-07-11T13:45:00+00:00</published>
+    <updated>2026-07-11T13:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/07/11/htb-cctv</id>
+    <summary type="html">CCTV hosts a ZoneMinder surveillance install. I’ll exploit a blind SQL injection in ZoneMinder’s event handling to dump the user database, and crack a bcrypt hash to get a foothold over SSH. I’ll use tcpdump configured to let non-privileged users capture traffic to sniff and recover another user’s password leaking in the clear. That password unlocks a motionEye instance on localhost, where I’ll abuse an authenticated command injection in the still-image filename setting, working around client-side input validation, to execute code as root. In Beyond Root, I’ll show the unintended path that reaches root directly by talking to Motion’s unauthenticated control interface.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-cctv" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Abducted</title>
+    <link href="https://0xdf.gitlab.io/2026/07/07/htb-abducted.html" rel="alternate" type="text/html" title="HTB: Abducted" />
+    <published>2026-07-07T09:00:00+00:00</published>
+    <updated>2026-07-07T09:00:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/07/07/htb-abducted</id>
+    <summary type="html">Abducted is a Linux box running Samba. I’ll exploit a command injection in Samba’s printing subsystem, where a client-controlled print job name is passed to a shell without escaping, to get a foothold. From there, I’ll find an rclone backup config with an obfuscated password, decode it with rclone, and use it to access the next user. That user owns a Samba share configured to follow wide links and to run as a third user, which I’ll abuse to drop an SSH key into that user’s home directory and log in. The final user belongs to a group with write access to the smbd systemd drop-in directory and a polkit rule permitting them to restart the service, so I’ll add an ExecStartPre command that creates a SetUID bash and get root.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-abducted" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: DevArea</title>
+    <link href="https://0xdf.gitlab.io/2026/07/04/htb-devarea.html" rel="alternate" type="text/html" title="HTB: DevArea" />
+    <published>2026-07-04T13:45:00+00:00</published>
+    <updated>2026-07-04T13:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/07/04/htb-devarea</id>
+    <summary type="html">DevArea hosts a freelance developer marketplace backed by several web applications on different stacks. I’ll find a JAR file on an open FTP server that matches one of the web services that uses a vulnerable version of Apache CXF. I’ll abuse its attachment handling to read arbitrary files off the host. Those files leak credentials for a Hoverfly API simulation instance, where a command injection in the middleware feature gives a shell as the first user. From there I’ll pivot through a custom SysWatch monitoring app, forging a session cookie with a secret pulled from a world-readable environment file and slipping a command past a weak input filter to run as the service account. Finally, I’ll exploit a flawed symlink check in a script that account runs as root to read the root login key and get a shell. In Beyond Root I’ll explore why I couldn’t read user.txt from the initial file read, and look at the admin password from the syswatch application.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-devarea" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: WingData</title>
+    <link href="https://0xdf.gitlab.io/2026/06/27/htb-wingdata.html" rel="alternate" type="text/html" title="HTB: WingData" />
+    <published>2026-06-27T13:45:00+00:00</published>
+    <updated>2026-06-27T13:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/06/27/htb-wingdata</id>
+    <summary type="html">WingData runs a Wing FTP Server instance with anonymous access enabled. I’ll abuse a null-byte injection flaw in the web interface that smuggles Lua code into the session file, giving remote code execution and a shell. From there, I’ll find Wing FTP’s account files holding salted password hashes, crack one, and reuse it to move to the next user. That user can run a Python backup-restore script as root that unpacks tar archives using the tarfile module’s “data” extraction filter. I’ll exploit a path-validation bypass in that filter to write outside the extraction directory and drop a key into the root account for full access.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-wingdata" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: NanoCorp</title>
+    <link href="https://0xdf.gitlab.io/2026/06/20/htb-nanocorp.html" rel="alternate" type="text/html" title="HTB: NanoCorp" />
+    <published>2026-06-20T13:45:00+00:00</published>
+    <updated>2026-06-20T13:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/06/20/htb-nanocorp</id>
+    <summary type="html">NanoCorp is a Windows Active Directory machine built around a careers portal that accepts uploaded application archives. I’ll craft a malicious archive that leaks a service account’s authentication to my host when an automated job extracts it, and crack the result to get a foothold. With BloodHound, I’ll map a permissions chain that lets me add my user to a support group and then reset a second service account’s password. That account sits in the Protected Users group, so I’ll authenticate over Kerberos to get a shell. From there, I’ll find the Checkmk monitoring agent installed and abuse CVE-2024-0670 to drop write-protected files into a temp directory that the agent runs as SYSTEM, taking full control of the host. In Beyond Root, I’ll dig into the scheduled automations that keep the box in its intended state.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-nanocorp" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: VariaType</title>
+    <link href="https://0xdf.gitlab.io/2026/06/13/htb-variatype.html" rel="alternate" type="text/html" title="HTB: VariaType" />
+    <published>2026-06-13T13:45:00+00:00</published>
+    <updated>2026-06-13T13:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/06/13/htb-variatype</id>
+    <summary type="html">VariaType hosts a pair of websites for a font foundry, a Flask-based font generator and a PHP validation portal. I’ll recover the portal’s source from an exposed Git repository to get credentials, and then abuse a single-pass filter bypass in its download feature to read files off the host. With the Flask application’s source in hand, I’ll exploit an arbitrary file write in fontTools’ variable font generation to drop a PHP webshell and get a foothold. A cron job validates uploaded fonts with an outdated FontForge build, which I’ll exploit through command injection in a malicious archive’s filenames to pivot to the next user. Finally, I’ll abuse a sudo-allowed plugin installer that downloads files with a vulnerable version of setuptools, using a path traversal in its PackageIndex to write an SSH key to root’s home directory.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-variatype" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Facts</title>
+    <link href="https://0xdf.gitlab.io/2026/06/06/htb-facts.html" rel="alternate" type="text/html" title="HTB: Facts" />
+    <published>2026-06-06T13:45:00+00:00</published>
+    <updated>2026-06-06T13:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/06/06/htb-facts</id>
+    <summary type="html">Facts is a Linux box hosting a trivia website built on the Camaleon CMS, a Ruby on Rails application. I’ll abuse a mass assignment vulnerability in Camaleon to promote my account to administrator, then use credentials from the admin panel to authenticate to a local MinIO S3 service. From the bucket I’ll grab an encrypted SSH private key, crack its passphrase with john, and SSH in as the next user. For root, I’ll abuse a sudo rule on facter, Puppet’s system inventory tool, that lets me load arbitrary Ruby code from a custom facts directory and run it as root. In Beyond Root, I’ll show an alternative foothold using a path traversal in Camaleon’s S3 uploader to read arbitrary files, and use the leaked Rails master key to decrypt the application’s encrypted credentials and session cookies.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-facts" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">AI Glossary</title>
+    <link href="https://0xdf.gitlab.io/cheatsheets/ai" rel="alternate" type="text/html" title="AI Glossary" />
+    <published>2026-06-04T09:00:00+00:00</published>
+    <updated>2026-06-04T09:00:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/cheatsheets/ai-glossary</id>
+    <summary type="html">AI as a technology is moving fast. From the time ChatGPT went mainstream in 2023, it’s grown from a cute way to generate funny poems to a defining technology that is likely to change everything. With its amazingly quick rise, it’s tricky to get the terms and language correct. Even the tech media doesn’t understand it, comparing Mythos to MDASH to Daybreak, when those comparisons make no sense! Let’s understand models vs harnesses vs labs vs initiatives and all that lays between.</summary>
+    
+    <category term="ai" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Interpreter</title>
+    <link href="https://0xdf.gitlab.io/2026/05/30/htb-interpreter.html" rel="alternate" type="text/html" title="HTB: Interpreter" />
+    <published>2026-05-30T13:45:00+00:00</published>
+    <updated>2026-05-30T13:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/05/30/htb-interpreter</id>
+    <summary type="html">Interpreter is a Linux box hosting Mirth Connect, a Java-based healthcare integration engine. I’ll exploit an unauthenticated XStream deserialization vulnerability in the Mirth API to get remote code execution and a foothold as the mirth service account. From the Mirth config I’ll grab database credentials, dump a user password hash from MariaDB, and crack it to pivot to the next user. For root, I’ll abuse a localhost Flask notification server that wraps XML-supplied fields in an evaluated f-string, allowing Python code execution as root.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-interpreter" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: MonitorsFour</title>
+    <link href="https://0xdf.gitlab.io/2026/05/23/htb-monitorsfour.html" rel="alternate" type="text/html" title="HTB: MonitorsFour" />
+    <published>2026-05-23T13:45:00+00:00</published>
+    <updated>2026-05-23T13:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/05/23/htb-monitorsfour</id>
+    <summary type="html">MonitorsFour continues the Monitors series, this time on a Windows host. A company website exposes an authenticated API endpoint that returns every employee’s record. I’ll bypass auth with a PHP type juggling flaw to dump a collection of crackable password hashes. Those credentials open a Cacti instance, where I’ll exploit CVE-2025-24367 to inject commands into rrdtool and drop a webshell, landing in a Docker container. Enumeration shows the host is running Docker Desktop on a WSL2 backend, and that the container can reach the Docker Engine API directly (CVE-2025-9074). I’ll create a new container that mounts the Windows host’s drive and read the root flag. In Beyond Root, I’ll turn that filesystem access into a shell on Windows through a scheduled task, and break down the PHP type juggling bug.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-monitorsfour" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Pterodactyl</title>
+    <link href="https://0xdf.gitlab.io/2026/05/16/htb-pterodactyl.html" rel="alternate" type="text/html" title="HTB: Pterodactyl" />
+    <published>2026-05-16T13:45:00+00:00</published>
+    <updated>2026-05-16T13:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/05/16/htb-pterodactyl</id>
+    <summary type="html">Pterodactyl hosts a Minecraft community site alongside an instance of the Pterodactyl game-server management panel. I’ll exploit an unauthenticated directory traversal in the panel’s locale endpoint that gets PHP to include arbitrary files on disk, and chain it with the classic PEAR pearcmd technique to write and execute a webshell. From there I’ll read database credentials, crack a bcrypt hash, and pivot to a user who reuses that password. The box runs openSUSE, where I’ll abuse a PAM environment-variable flaw to convince Polkit I’m a local console session, then exploit a libblockdev/udisks vulnerability to mount a crafted XFS image carrying a SetUID-root shell and escalate to root. In Beyond Root, I’ll get CopyFail and DirtyFrag (two recent Linux kernel page-cache privilege-escalation exploits) working on the host.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-pterodactyl" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Overwatch</title>
+    <link href="https://0xdf.gitlab.io/2026/05/09/htb-overwatch.html" rel="alternate" type="text/html" title="HTB: Overwatch" />
+    <published>2026-05-09T13:45:00+00:00</published>
+    <updated>2026-05-09T13:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/05/09/htb-overwatch</id>
+    <summary type="html">Overwatch starts with anonymous SMB access to a software share that hosts a custom .NET monitoring binary. I’ll reverse engineer it to recover SQL Server credentials and identify a WCF service with a PowerShell command injection sink. With the SQL creds, I’ll find a linked server pointing to a non-resolving host and abuse CREATE_CHILD on the AD-integrated DNS zone to add a record pointing the hostname at my host, capturing cleartext SQL authentication with Responder when the linked server connects out. Those credentials provide WinRM as a user in Remote Management Users. From there, I’ll exploit the WCF KillProcess command injection on a localhost SOAP endpoint to get code execution as SYSTEM, demonstrating four different ways to interact with the WCF service. In Beyond Root, I’ll look at a log that captured the Windows Administrator password from an HTB pre-release cleanup script.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-overwatch" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Sorcery</title>
+    <link href="https://0xdf.gitlab.io/2026/04/25/htb-sorcery.html" rel="alternate" type="text/html" title="HTB: Sorcery" />
+    <published>2026-04-25T13:45:00+00:00</published>
+    <updated>2026-04-25T13:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/04/25/htb-sorcery</id>
+    <summary type="html">Sorcery is a Linux box with a Rust Rocket web app backed by Neo4j, Gitea, and a Kafka message bus. I’ll exploit Cypher injection in a derive-macro-generated query to leak the seller registration key, then use XSS in a product description to register a passkey on the admin account through a headless Chrome bot. I’ll also show a shortcut to change the admin’s password using cypher injection. As admin, a port-debug tool becomes an SSRF I can use to send Kafka wire protocol messages, which I’ll use to get RCE in the DNS container. From there, I’ll recover a CA keypair from FTP, phish the next user with mitmproxy proxying their own Gitea login page, read a password out of an Xvfb framebuffer, and reverse a .NET binary to generate OTPs for Docker Registry auth. Pulling layers out of a pushed image leaks another password, and the final pivots abuse FreeIPA roles to change one user’s password over LDAP and bootstrap sudo rights to root. I’ll show a couple unintended paths using pspy to capture creds as well.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-sorcery" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: AirTouch</title>
+    <link href="https://0xdf.gitlab.io/2026/04/18/htb-airtouch.html" rel="alternate" type="text/html" title="HTB: AirTouch" />
+    <published>2026-04-18T13:45:00+00:00</published>
+    <updated>2026-04-18T13:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/04/18/htb-airtouch</id>
+    <summary type="html">AirTouch simulates a wireless network environment. I’ll start by pulling a default password from SNMP to SSH as a consultant user inside a container with virtual wireless interfaces. From there, I’ll capture and crack a WPA2-PSK handshake to join the tablet network, then decrypt the captured traffic in WireShark to recover session cookies for a router management site. A client-side role cookie gates an admin upload feature, where I’ll bypass the PHP extension filter with a phtml file to get RCE. Hardcoded credentials in the source give me the next user, and sudo gets me root, where I find the CA and server certs for the corporate wireless network. I’ll use those with eaphammer to stand up an evil twin of AirTouch-Office and capture a PEAP-MSCHAPv2 challenge, which cracks to reveal a user’s password. That gets me onto the corporate network, where a hostapd eap_user file leaks an admin password, and sudo gets me to root.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-airtouch" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Eighteen</title>
+    <link href="https://0xdf.gitlab.io/2026/04/11/htb-eighteen.html" rel="alternate" type="text/html" title="HTB: Eighteen" />
+    <published>2026-04-11T13:45:00+00:00</published>
+    <updated>2026-04-11T13:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/04/11/htb-eighteen</id>
+    <summary type="html">Eighteen is a Windows Server 2025 assume-breach box starting with MSSQL credentials. I’ll use MSSQL login impersonation to access the financial planner database and recover a Werkzeug PBKDF2 hash for the web admin. After cracking the hash and spraying the password against domain users, I’ll get a WinRM shell. From there, I’ll identify that the domain is running at the Windows 2025 functional level and exploit Bad Successor, abusing the dMSA migration feature to create a delegated managed service account that inherits the Administrator’s group memberships, giving full domain admin access.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-eighteen" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: DarkZero</title>
+    <link href="https://0xdf.gitlab.io/2026/04/04/htb-darkzero.html" rel="alternate" type="text/html" title="HTB: DarkZero" />
+    <published>2026-04-04T13:45:00+00:00</published>
+    <updated>2026-04-04T13:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/04/04/htb-darkzero</id>
+    <summary type="html">DarkZero is an assume breach Windows box with two forests connected by a bidirectional cross-forest trust. Starting with given credentials, I’ll enumerate MSSQL on DC01 and find a linked server to DC02 in the other forest where the mapped account is sysadmin. I’ll enable xp_cmdshell on DC02 to get a shell as the SQL service account. To escalate to SYSTEM on DC02, I’ll show four paths: recovering SeImpersonatePrivilege from the original logon token via named pipe impersonation, using ADCS certificate enrollment to get an NT hash and change the password for a service logon with RunAsCS, NTLM authentication reflection using the CMTI DNS record trick to relay the machine account back to its own LDAPS, and CVE-2024-30088. As SYSTEM on DC02, I’ll abuse the cross-forest TGT delegation to capture DC01’s machine account TGT and use it to dump all domain hashes from DC01.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-darkzero" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Snapped</title>
+    <link href="https://0xdf.gitlab.io/2026/04/01/htb-snapped.html" rel="alternate" type="text/html" title="HTB: Snapped" />
+    <published>2026-04-01T09:00:00+00:00</published>
+    <updated>2026-04-01T09:00:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/04/01/htb-snapped</id>
+    <summary type="html">Snapped is a Linux box hosting a static site behind nginx, with an Nginx UI admin panel. I’ll exploit CVE-2026-27944 to decrypt a backup download from the Nginx UI to find bcrypt password hashes in a SQLite database. I’ll crack one to get SSH access. To escalate to root, I’ll exploit CVE-2026-3888, a recent vulnerability in snapd where systemd-tmpfiles deletes snap-confine’s private temp directory, allowing me to win a race condition and replace the dynamic linker with a malicious payload that runs as root.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-snapped" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Principal</title>
+    <link href="https://0xdf.gitlab.io/2026/03/30/htb-principal.html" rel="alternate" type="text/html" title="HTB: Principal" />
+    <published>2026-03-30T09:00:00+00:00</published>
+    <updated>2026-03-30T09:00:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/03/30/htb-principal</id>
+    <summary type="html">Principal is a Linux box with a Java web application using pac4j for JWT authentication. I’ll exploit a vulnerability in pac4j-jwt that allows forging encrypted JWTs using only the server’s public RSA key, bypassing signature verification to access the admin dashboard. From there, I’ll find credentials in the settings and spray them against SSH to get a shell as svc-deploy. For root, I’ll abuse access to an SSH certificate authority private key to sign a certificate for the root principal and SSH in.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-principal" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Browsed</title>
+    <link href="https://0xdf.gitlab.io/2026/03/28/htb-browsed.html" rel="alternate" type="text/html" title="HTB: Browsed" />
+    <published>2026-03-28T13:45:00+00:00</published>
+    <updated>2026-03-28T13:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/03/28/htb-browsed</id>
+    <summary type="html">Browsed is a Linux box hosting a browser extension repository where uploaded extensions are tested in a headless Chrome instance. I’ll analyze the Chrome debug logs to discover an internal Gitea instance and a Python Flask app running on localhost. By crafting a malicious Chrome extension with a background service worker, I’ll perform SSRF to reach the internal Flask app and exploit a Bash arithmetic evaluation injection in a shell script to get remote code execution. For root, I’ll abuse a world-writable pycache directory to poison a Python bytecode file imported by a sudo-allowed script, getting code execution as root.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-browsed" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Conversor</title>
+    <link href="https://0xdf.gitlab.io/2026/03/21/htb-conversor.html" rel="alternate" type="text/html" title="HTB: Conversor" />
+    <published>2026-03-21T13:45:00+00:00</published>
+    <updated>2026-03-21T13:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/03/21/htb-conversor</id>
+    <summary type="html">Conversor is a Linux box hosting a Flask web application that converts nmap XML output to HTML using XSLT. I’ll find the source code and exploit insecure use of os.path.join to write a Python reverse shell into a cron-executed scripts directory, or alternatively abuse XSLT’s exslt:document extension to write files to the server. From there, I’ll find an MD5-hashed password in the SQLite database and crack it to pivot to the next user. For root, I’ll exploit CVE-2024-48990 in needrestart by poisoning the PYTHONPATH environment variable, or abuse needrestart’s Perl config file to get direct code execution.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-conversor" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Gavel</title>
+    <link href="https://0xdf.gitlab.io/2026/03/14/htb-gavel.html" rel="alternate" type="text/html" title="HTB: Gavel" />
+    <published>2026-03-14T09:00:00+00:00</published>
+    <updated>2026-03-14T09:00:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/03/14/htb-gavel</id>
+    <summary type="html">Gavel is a Linux box hosting a PHP auction website with an exposed .git directory. I’ll recover the source code with git-dumper and exploit a novel SQL injection technique that bypasses PDO’s backtick-quoted prepared statements to dump the database. After cracking a bcrypt hash, I’ll access the admin panel and exploit PHP’s runkit extension to inject arbitrary code into auction rules, getting RCE. I’ll pivot to the next user via password reuse, then reverse engineer a custom daemon that validates submitted PHP rules against a restrictive php.ini. Since file_put_contents isn’t disabled, I’ll overwrite the php.ini to remove all restrictions, then use a second submission to get a root shell.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-gavel" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Expressway</title>
+    <link href="https://0xdf.gitlab.io/2026/03/07/htb-expressway.html" rel="alternate" type="text/html" title="HTB: Expressway" />
+    <published>2026-03-07T14:45:00+00:00</published>
+    <updated>2026-03-07T14:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/03/07/htb-expressway</id>
+    <summary type="html">Expressway is a Linux box with only SSH and an IKE VPN service on UDP. I’ll use ike-scan in aggressive mode to leak the VPN identity and capture a pre-shared key hash, which cracks quickly with hashcat. Connecting to the IPSEC VPN doesn’t provide any additional attack surface, but the PSK works for SSH access. For privilege escalation, I’ll show exploitation of two different CVEs in sudo. In Beyond Root, I’ll look at the sudo config that allowed one of the exploits and show how to connect to the IPSec VPN with strongSwan.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-expressway" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Barrier</title>
+    <link href="https://0xdf.gitlab.io/2026/03/03/htb-barrier.html" rel="alternate" type="text/html" title="HTB: Barrier" />
+    <published>2026-03-03T10:00:00+00:00</published>
+    <updated>2026-03-03T10:00:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/03/03/htb-barrier</id>
+    <summary type="html">Barrier is a Linux box with GitLab, Authentik, and Apache Guacamole. I’ll exploit a SAML signature bypass vulnerability in GitLab’s Ruby SAML library to forge a SAML assertion and log in as admin. From GitLab’s CI/CD variables, I’ll recover an Authentik API token and use it to create an admin account. With Authentik admin access, I’ll impersonate a user in Guacamole to get an SSH shell. From there, I’ll find database credentials for Guacamole’s MariaDB backend and extract an SSH private key and passphrase for another user. That user’s bash history contains a password that works with sudo to get root.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-barrier" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Guardian</title>
+    <link href="https://0xdf.gitlab.io/2026/02/28/htb-guardian.html" rel="alternate" type="text/html" title="HTB: Guardian" />
+    <published>2026-02-28T14:45:00+00:00</published>
+    <updated>2026-02-28T14:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/02/28/htb-guardian</id>
+    <summary type="html">Guardian is a Linux box hosting a university portal built with PHP. I’ll exploit an IDOR in the chat feature to find Gitea credentials, then use the source code to identify a vulnerability in PhpSpreadsheet that allows XSS through a malicious XLSX file to steal a lecturer’s session cookie. From the lecturer account, I’ll combine a CSRF vulnerability with a weak CSRF token implementation to create an admin account. As admin, I’ll abuse a local file include with PHP filter chain injection to get RCE. After cracking a database password hash, I’ll pivot through users by modifying a writable Python script. I’ll escalate to root abusing a silly binary wrapper around apache2ctl many ways.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-guardian" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Bruno</title>
+    <link href="https://0xdf.gitlab.io/2026/02/24/htb-bruno.html" rel="alternate" type="text/html" title="HTB: Bruno" />
+    <published>2026-02-24T10:00:00+00:00</published>
+    <updated>2026-02-24T10:00:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/02/24/htb-bruno</id>
+    <summary type="html">Bruno is a Windows Active Directory box. I’ll start by finding a .NET sample scanning application on FTP, and after reverse engineering it, discover a ZipSlip vulnerability in how it handles zip archives. Combining that with a DLL hijack, I’ll get a shell as the service account that runs the scanner. For privilege escalation, I’ll exploit the lack of LDAP signing by performing a Kerberos relay attack, setting up resource-based constrained delegation to impersonate the Administrator.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-bruno" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Giveback</title>
+    <link href="https://0xdf.gitlab.io/2026/02/21/htb-giveback.html" rel="alternate" type="text/html" title="HTB: Giveback" />
+    <published>2026-02-21T14:45:00+00:00</published>
+    <updated>2026-02-21T14:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/02/21/htb-giveback</id>
+    <summary type="html">Giveback starts with a WordPress website with a donation plugin that’s vulnerable to a RCE exploit. I’ll get a shell in a Kubernetes pod, and use it to scan an internal legacy app running PHP-CGI. I’ll abuse a vulnerability in that application to get to the next pod, where I’ll find a Kubernetes secret to interact with the API and dump secrets. I’ll use an SSH password to get on the host. For root I’ll abuse a custom wrapper around runc two different ways.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-giveback" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Soulmate</title>
+    <link href="https://0xdf.gitlab.io/2026/02/14/htb-soulmate.html" rel="alternate" type="text/html" title="HTB: Soulmate" />
+    <published>2026-02-14T14:45:00+00:00</published>
+    <updated>2026-02-14T14:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/02/14/htb-soulmate</id>
+    <summary type="html">Soulmate has a PHP-based dating website, as well as an instance of CrushFTP. I’ll showcase two different authentication bypass CVEs to get admin access to CrushFTP. From there I can upload a PHP webshell and get a foothold on the box. I’ll find hardcoded credentials in an Erlang SSH server, and use them to get to the next user. I’ll also use them to connect to this SSH server and navigate the Erlang console as root to solve the challenge.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-soulmate" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Slonik</title>
+    <link href="https://0xdf.gitlab.io/2026/02/12/htb-slonik.html" rel="alternate" type="text/html" title="HTB: Slonik" />
+    <published>2026-02-12T10:00:00+00:00</published>
+    <updated>2026-02-12T10:00:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/02/12/htb-slonik</id>
+    <summary type="html">Slonik showcases some interesting Linux techniques around NFS and PostgreSQL. I’ll start with an insecurely configured NFS mount where I can list and read files from anywhere on the filesystem as any user except root. I’ll find hashes for a service account in the shadow file and in a postgres history file, and crack either. The service account doesn’t have a shell set, so I can’t get a shell over SSH. I can port forward to a UNIX socket, which provides access to PostgreSQL. I’ll use that to get a shell as the postgres user. To escalate to root, I’ll abuse a cron running a PostgreSQL backup utility. In Beyond Root, I’ll talk about a bug I found and fixed in Netexec and its neat NFS tools.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-slonik" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Breach</title>
+    <link href="https://0xdf.gitlab.io/2026/02/10/htb-breach.html" rel="alternate" type="text/html" title="HTB: Breach" />
+    <published>2026-02-10T10:00:00+00:00</published>
+    <updated>2026-02-10T10:00:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/02/10/htb-breach</id>
+    <summary type="html">Breach is a Windows domain controller box. I’ll start by using guest access to a writable SMB share to drop ntlm_theft lure files, capturing a NetNTLMv2 hash for a domain user with Responder. After cracking that hash, I’ll use BloodHound to find a Kerberoastable MSSQL service account and crack its hash as well. Both accounts map to guest on MSSQL, but I’ll forge a silver ticket as Administrator to get sysadmin access, enable xp_cmdshell, and use GodPotato to escalate to SYSTEM.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-breach" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Signed</title>
+    <link href="https://0xdf.gitlab.io/2026/02/07/htb-signed.html" rel="alternate" type="text/html" title="HTB: Signed" />
+    <published>2026-02-07T14:45:00+00:00</published>
+    <updated>2026-02-07T14:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/02/07/htb-signed</id>
+    <summary type="html">Signed is an assume breach Windows box where I’m given credentials for a local MSSQL account. I’ll enumerate the database, coerce authentication from the MSSQL service account using xp_dirtree, and crack the NetNTLMv2 hash. With the service account password, I’ll forge a silver ticket with the IT group’s RID to gain sysadmin privileges on the database and get command execution. For root, I’ll show three paths: using OPENROWSET BULK impersonation with silver tickets to read files as Domain Admins and find the Administrator’s password in PowerShell history, relaying NTLM authentication from the DC using a crafted DNS record, and recovering SeImpersonatePrivilege from the original logon token to escalate with GodPotato.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-signed" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Bamboo</title>
+    <link href="https://0xdf.gitlab.io/2026/02/03/htb-bamboo.html" rel="alternate" type="text/html" title="HTB: Bamboo" />
+    <published>2026-02-03T10:00:00+00:00</published>
+    <updated>2026-02-03T10:00:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/02/03/htb-bamboo</id>
+    <summary type="html">Bamboo offers a Squid HTTP proxy through which I’ll access a PaperCut NG instance. I’ll use Spose to scan through the proxy and discover the print management application. I’ll exploit an authentication bypass vulnerability in PaperCut and use application access to enabling print scripting to get code execution. For privilege escalation, I’ll abuse a root process that runs a script from the papercut user’s home directory.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-bamboo" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: CodeTwo</title>
+    <link href="https://0xdf.gitlab.io/2026/01/31/htb-codetwo.html" rel="alternate" type="text/html" title="HTB: CodeTwo" />
+    <published>2026-01-31T14:45:00+00:00</published>
+    <updated>2026-01-31T14:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/01/31/htb-codetwo</id>
+    <summary type="html">CodeTwo is a Linux box hosting a developer sandbox where users can execute JavaScript code. The site uses js2py, which I’ll exploit via CVE-2024-28397 to escape the sandbox and get remote code execution. From there, I’ll find MD5 password hashes in the SQLite database and crack one to pivot to marco. Marco can run npbackup-cli with sudo, and I’ll abuse this to read files from root’s backup, including the SSH private key, which I’ll use to get a shell as root.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-codetwo" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">Barbhack 2025 CTF</title>
+    <link href="https://0xdf.gitlab.io/2026/01/29/barbhack-2025-ctf.html" rel="alternate" type="text/html" title="Barbhack 2025 CTF" />
+    <published>2026-01-29T10:00:00+00:00</published>
+    <updated>2026-01-29T10:00:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/01/29/barbhack-2025-ctf</id>
+    <summary type="html">Members of the NetExec team created a small lab as a CTF for the Barbhack conference that took place in August 2025 in the South of France. There are four Windows servers on an Active Directory domain. I’ll find a leaked password on a printer webpage to get access to print jobs where I find initial passwords, some of which still work. I’ll use that to get into the domain, coercing an authentication that I can relay into RBCD to get a ticket at admin on the webserver. I’ll decrypt a saved password on that machine to get access to a new SMB share where I’ll find a GMSA credential in a file. That user can abuse impersonation in the MSSQL database to become sa, where I’ll abuse SeImpersonatePrivilege to get SYSTEM on the DB server. That server has constrained delegation over another, which I’ll abuse with RBCD to get there, and find a backup of ntds.dit. None of the hashes are still good, but a comment on a user provides the domain admin password and completely owns the domain.</summary>
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: JobTwo</title>
+    <link href="https://0xdf.gitlab.io/2026/01/27/htb-jobtwo.html" rel="alternate" type="text/html" title="HTB: JobTwo" />
+    <published>2026-01-27T09:00:00+00:00</published>
+    <updated>2026-01-27T09:00:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/01/27/htb-jobtwo</id>
+    <summary type="html">JobTwo is the sequel to Job, another Windows box from VulnLab released on HackTheBox. I’ll send a malicious Word document with VBA macros to the HR email address via SMTP. From the initial shell as Julian, I’ll find hMailServer and decrypt its database password using a known Blowfish key. After dumping password hashes from the mail database, I’ll crack Ferdinand’s password and pivot via WinRM. Ferdinand has access to Veeam Backup &amp;amp; Replication, which I’ll exploit via CVE-2023-27532 to get a shell as SYSTEM.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-jobtwo" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Job</title>
+    <link href="https://0xdf.gitlab.io/2026/01/26/htb-job.html" rel="alternate" type="text/html" title="HTB: Job" />
+    <published>2026-01-26T10:00:00+00:00</published>
+    <updated>2026-01-26T10:00:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/01/26/htb-job</id>
+    <summary type="html">Job is a Windows box with a website saying that they are looking for resumes in Libre Office format. The box is listening on SMTP, so I’ll create a document with a malicious macro and get a shell on mailing it to the careers email address. For root, I’ll drop a webshell into the web directory, and abuse SeImpersonatePrivilege with GodPotato to get system.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-job" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Imagery</title>
+    <link href="https://0xdf.gitlab.io/2026/01/24/htb-imagery.html" rel="alternate" type="text/html" title="HTB: Imagery" />
+    <published>2026-01-24T14:45:00+00:00</published>
+    <updated>2026-01-24T14:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/01/24/htb-imagery</id>
+    <summary type="html">Imagery hosts a Flask-based image gallery application. I’ll exploit a stored XSS vulnerability in the bug report feature to steal an admin cookie. From the admin panel, I’ll use directory traversal to read the application source code, finding a command injection vulnerability in the image crop feature that requires access as a test user. After reading the database and cracking the test user’s password hash, I’ll exploit the command injection to get a shell. I’ll find an encrypted backup file and brute-force the pyAesCrypt password, getting access to an older backup with additional hashes. After cracking another user’s hash, I’ll pivot to a user that can run a custom backup utility as root via sudo. I’ll show two ways to abuse this. In Beyond Root, I’ll show why SSH is broken and how to get around it.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-imagery" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: HackNet</title>
+    <link href="https://0xdf.gitlab.io/2026/01/17/htb-hacknet.html" rel="alternate" type="text/html" title="HTB: HackNet" />
+    <published>2026-01-17T14:45:00+00:00</published>
+    <updated>2026-01-17T14:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/01/17/htb-hacknet</id>
+    <summary type="html">HackNet hosts a social media site for hackers built with Django. I’ll find an HTML injection in the username field that, combined with how the likes page renders usernames, leads to server-side template injection. While Django templates are restrictive, I’ll use the SSTI to dump user data including plaintext passwords, finding one user whose email reveals their Linux username. After SSHing in, I’ll discover Django’s FileBasedCache uses pickle serialization with a world-writable cache directory. By replacing cache files with a malicious pickle payload, I’ll get a shell as the web user. From there, I’ll crack a GPG key password to decrypt database backups, finding a password shared in messages that works for root.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-hacknet" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Previous</title>
+    <link href="https://0xdf.gitlab.io/2026/01/10/htb-previous.html" rel="alternate" type="text/html" title="HTB: Previous" />
+    <published>2026-01-10T14:45:00+00:00</published>
+    <updated>2026-01-10T14:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2026/01/10/htb-previous</id>
+    <summary type="html">Previous starts with a NextJS application for a fictional JavaScript framework. I’ll exploit the infamous NextJS middleware vulnerability to access the authenticated portion of the site. From there, I’ll find a directory traversal vulnerability in a download API that allows reading files from the server, including the NextAuth config with hard-coded credentials. Those creds work for SSH, and I’ll pivot to root by abusing a misconfigured sudo rule that runs Terraform multiple ways.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-previous" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">SANS Holiday Hack Challenge 2025: Revenge of the Gnome(s)</title>
+    <link href="https://0xdf.gitlab.io/holidayhack2025/" rel="alternate" type="text/html" title="SANS Holiday Hack Challenge 2025: Revenge of the Gnome(s)" />
+    <published>2026-01-05T23:00:00+00:00</published>
+    <updated>2026-01-05T23:00:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/holidayhack25-00-main</id>
+    <summary type="html">The 2025 SANS Holiday Hack Challenge: Revenge of the Gnome(s) takes place over three acts in the Dosis neighborhood, where gnome dolls have come to life and are scurrying around furthering a plot by Frosty the Snowman to freeze the world so that it’s always winter and he never melts. I’ll work through 27 challenges ranging from beginner-friendly to expert-level, covering web exploitation, reverse engineering, cloud security, AI prompt injection, cryptography, and signal analysis to help stop Frosty and save the neighborhood. I’ll also write a hack the game itself, writing a TamperMonkey plugin to do NPC / terminal / door / item locations, teleportation, and allow walking through walls. I’ll find a bunch of hidden gnomes hanging out in a patch of snow and uncover how the game developers made the running gnomes, and a bunch of Easter Eggs as well.</summary>
+    
+    <category term="ctf," />
+    
+    <category term="sans-holiday-hack" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">Flagvent 2025</title>
+    <link href="https://0xdf.gitlab.io/flagvent2025/" rel="alternate" type="text/html" title="Flagvent 2025" />
+    <published>2025-12-31T22:00:00+00:00</published>
+    <updated>2025-12-31T22:00:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/flagvent25</id>
+    <summary type="html">When Hackvent was canceled this year, the community came together and created Flagvent, and it delivered! In the easy sections I’ll reassemble QRcodes, find hidden audio channels in a video, decode a DNA sequence, look at a musicxml file, and do some good old XOR brute forcing. There were also two challenge from me, centered on PyGyat and symbolic links. The medium days brought an interesting steg technique counting pixels, XSS abusing window.name, modem decoding, web exploitation, and uuid abuse. The hard days brought pwn in both heap exploitation and Python exploitation, quantum computing, NAS exploitation, crypto PRNG prediction, reverse engineering, and air-gapped exfil over Christmas tree lights. Finally, in leet there was a hardware challenge, a Kubernetes / vault challenge, and BGP hijacking. 24 days of fun, even if the challenge levels felt harder this year.</summary>
+    
+    <category term="ctf," />
+    
+    <category term="hackvent," />
+    
+    <category term="flagvent" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: WhiteRabbit</title>
+    <link href="https://0xdf.gitlab.io/2025/12/13/htb-whiterabbit.html" rel="alternate" type="text/html" title="HTB: WhiteRabbit" />
+    <published>2025-12-13T14:45:00+00:00</published>
+    <updated>2025-12-13T14:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2025/12/13/htb-whiterabbit</id>
+    <summary type="html">WhiteRabbit is a pentesting company. I’ll exploit their Uptime Kuma instance to find the domain for their WikiJS wiki. On that I’ll find documentation for a n8n pipeline, and find an SQL injection vulnerability in how it processes email, as well as the key for crafting signatures. I’ll make a proxy to add signatures using mitmproxy and then use sqlmap to dump the database. In the DB I’ll find restic commands, which I’ll use to get a backup with SSH keys. I’ll abuse restic command injection to get root on a container, and find SSH keys for a user on the host. From there I’ll find a custom password generator, and using logs from the DB that leak the time the command was run, generate the right password for the next user. That user can run any command as root.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-whiterabbit" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Editor</title>
+    <link href="https://0xdf.gitlab.io/2025/12/06/htb-editor.html" rel="alternate" type="text/html" title="HTB: Editor" />
+    <published>2025-12-06T14:45:00+00:00</published>
+    <updated>2025-12-06T14:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2025/12/06/htb-editor</id>
+    <summary type="html">Editor is a Linux box hosting a code editor website, with documentation on an XWiki instance. I’ll exploit a vulnerability in XWiki’s Solr search that allows unauthenticated Groovy script injection to get remote code execution and a shell. From there, I’ll find database credentials in the XWiki Hibernate config and pivot to a user who reuses the password. Enumerating localhost services, I’ll find NetData running an older version that installs a vulnerable ndsudo SetUID binary that is vulnerable to PATH injection, which I’ll abuse to get root.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-editor" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Era</title>
+    <link href="https://0xdf.gitlab.io/2025/11/29/htb-era.html" rel="alternate" type="text/html" title="HTB: Era" />
+    <published>2025-11-29T10:00:00+00:00</published>
+    <updated>2025-11-29T10:00:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2025/11/29/htb-era</id>
+    <summary type="html">Era starts with a custom file upload website full of insecure direct object reference vulnerabilities. I’ll create an account and abuse one IDOR to download a site backup from the admin account. Then I’ll abuse an IDOR like vulnerability to get admin access to the site. The admin panel has a PHP vulnerability where I can get it to use the SSH module to login to the host and run commands, providing a reverse shell. From there, I’ll create my own signed binary to replace one that I can run with sudo to get root.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-era" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Mirage</title>
+    <link href="https://0xdf.gitlab.io/2025/11/22/htb-mirage.html" rel="alternate" type="text/html" title="HTB: Mirage" />
+    <published>2025-11-22T14:45:00+00:00</published>
+    <updated>2025-11-22T14:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2025/11/22/htb-mirage</id>
+    <summary type="html">Mirage is an Active Directory DC. I’ll start by finding a domain name in a report on an open NFS server. That name is not registered in DNS, so I’ll register it pointing to my host, and use that to capture NATS credentials. I’ll use those to enumerate NATS and find another set of creds. With those, I’ll Kerberoast another user to get a shell, and find another user logged into the box. A cross-session relay attack gets their hash which I can crack. That user can reset the password of a contractor user, and I’ll have to re-enable the account and set working hours to use it. From there, I’ll read a GMSA password, and use that service account to do a ESC10 attack, resulting in Administrator access.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-mirage" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: Outbound</title>
+    <link href="https://0xdf.gitlab.io/2025/11/15/htb-outbound.html" rel="alternate" type="text/html" title="HTB: Outbound" />
+    <published>2025-11-15T14:45:00+00:00</published>
+    <updated>2025-11-15T14:45:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2025/11/15/htb-outbound</id>
+    <summary type="html">Outbound starts with a RoundCube instance and a set of creds to login. I’ll abuse a authenticated deserialization vulnerability to get remote code execution and a shell. From there, I’ll recover another user’s email password from the RoundCube database, showing both how to do it manually and using a RoundCube script. Finally, I’ll abuse a CVE in below to make the passwd file writable and get root. In Beyond Root, I’ll dig into the PHP exploit, showcase some neat CyberChef tricks, and play with the sudo rules on the box.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-outbound" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+  <entry>
+    <title type="html">HTB: RustyKey</title>
+    <link href="https://0xdf.gitlab.io/2025/11/08/htb-rustykey.html" rel="alternate" type="text/html" title="HTB: RustyKey" />
+    <published>2025-11-08T10:00:00+00:00</published>
+    <updated>2025-11-08T10:00:00+00:00</updated>
+    <id>https://0xdf.gitlab.io/2025/11/08/htb-rustykey</id>
+    <summary type="html">RustyKey starts as an assume breach Windows AD box, with initial creds provided for a low privilege account. I’ll collect BloodHound data and find some interesting computer accounts. I’ll Timeroast and crack the password for one of these computer accounts. This account can add itself to the helpdesk group, which has ForceChangePassword over a handful of users. I’ll get access to these users, having to remove them from the Protected Objects group in order to authenticate remotely. I’ll connect via WinRM as one of them, and find a PDF talking about a new context action for 7zip. I’ll pivot to another of these users who has full control over the registry key linking the context menu option to the 7zip dll. I’ll update that to point to my DLL, and get a shell as one of the testing users. That user can configure RBCD on the DC, which I’ll abuse to get full administrator access to the domain.</summary>
+    
+    <category term="ctf" />
+    
+    <category term="hackthebox" />
+    
+    <category term="htb-rustykey" />
+    
+    <category term="pentest" />
+    
+    <category term="bug-bounty" />
+    
+  </entry>
+  
+</feed>

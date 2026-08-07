@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"
+	xmlns:content="http://purl.org/rss/1.0/modules/content/"
+	xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:atom="http://www.w3.org/2005/Atom"
+	xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+	xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+	>
+
+<channel>
+	<title>QuantPedia</title>
+	<atom:link href="https://quantpedia.com/feed/" rel="self" type="application/rss+xml" />
+	<link>https://quantpedia.com</link>
+	<description>The Encyclopedia of Algorithmic and Quantitative Trading Strategies</description>
+	<lastBuildDate>Mon, 03 Aug 2026 21:27:54 +0000</lastBuildDate>
+	<language>en-US</language>
+	<sy:updatePeriod>
+	hourly	</sy:updatePeriod>
+	<sy:updateFrequency>
+	1	</sy:updateFrequency>
+	<generator>https://wordpress.org/?v=7.0.3</generator>
+
+<image>
+	<url>https://quantpedia.com/app/uploads/2020/05/cropped-favicon-32x32.png</url>
+	<title>QuantPedia</title>
+	<link>https://quantpedia.com</link>
+	<width>32</width>
+	<height>32</height>
+</image> 
+	<item>
+		<title>Quantpedia in July 2026</title>
+		<link>https://quantpedia.com/quantpedia-in-july-2026/</link>
+		
+		<dc:creator><![CDATA[Radovan Vojtko]]></dc:creator>
+		<pubDate>Mon, 03 Aug 2026 21:27:23 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">https://quantpedia.com/?p=46596</guid>
+
+					<description><![CDATA[Hello all,
+
+We hope you're enjoying the middle of summer. Here's a quick recap of the latest improvements and additions we've prepared for Quantpedia during the past month
+
+–  API users can now directly download the full research papers written by Quantpedia
+– 10 new Quantpedia Premium strategies
+– 2 new related research papers
+– 7 new backtests
+– and finally, 5 new posts on our Quantpedia blog]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>Quantpedia Premium Update &#8211; July 30th</title>
+		<link>https://quantpedia.com/quantpedia-premium-update-july-30th/</link>
+		
+		<dc:creator><![CDATA[ivana.dragonova@quantpedia.com]]></dc:creator>
+		<pubDate>Sun, 02 Aug 2026 21:12:13 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">https://quantpedia.com/?p=46607</guid>
+
+					<description><![CDATA[Ten new strategies have been added. Two new related research paper have been included into existing strategy reviews and five new short free blog posts have been published during last few weeks. Plus, seven trading strategies have been backtested in QuantConnect in the previous two weeks.]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>Is Trend Still Your Friend?: A Microstructural Account of the Demise of Short-Term Trend-Following</title>
+		<link>https://quantpedia.com/is-trend-still-your-friend-a-microstructural-account-of-the-demise-of-short-term-trend-following/</link>
+		
+		<dc:creator><![CDATA[Cyril Dujava]]></dc:creator>
+		<pubDate>Wed, 29 Jul 2026 15:44:04 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<category><![CDATA[high frequency trading]]></category>
+		<category><![CDATA[liquidity effect]]></category>
+		<category><![CDATA[momentum]]></category>
+		<category><![CDATA[momentum in stocks]]></category>
+		<category><![CDATA[trendfollowing]]></category>
+		<guid isPermaLink="false">https://quantpedia.com/?p=46461</guid>
+
+					<description><![CDATA[<p><strong>Trend following was one of the most persistent anomalies in finance for nearly two centuries, yet its performance deteriorated sharply after the 2008 financial crisis. An analysis of approximately 100 liquid futures contracts from 1995 to 2025 shows that this decline is highly selective. The decisive factor is not asset class, liquidity, market electronification, or strategy crowding, but volatility-normalized tick size. After 2008, trend-following profits collapsed almost entirely on small-tick contracts across all signal horizons, while remaining largely intact on large-tick contracts. This finding suggests that modern trend-following portfolios are fundamentally split into two distinct regimes governed by market microstructure rather than traditional asset classifications.</strong></p>]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>From Backtest to Benchmark: Validating New Strategies with Quantpedia API</title>
+		<link>https://quantpedia.com/from-backtest-to-benchmark-validating-new-strategies-with-quantpedia-api/</link>
+		
+		<dc:creator><![CDATA[david.mesicek@quantpedia.com]]></dc:creator>
+		<pubDate>Mon, 27 Jul 2026 21:26:30 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<category><![CDATA[benchmarking]]></category>
+		<category><![CDATA[clustering]]></category>
+		<category><![CDATA[diversification]]></category>
+		<category><![CDATA[quantpedia API]]></category>
+		<category><![CDATA[trading strategy]]></category>
+		<guid isPermaLink="false">https://quantpedia.com/?p=46051</guid>
+
+					<description><![CDATA[<p><strong>A profitable backtest is rarely the end of a research process. In professional quantitative research, the more important question often comes after the first positive result: is the strategy genuinely new, or is it simply another version of an already known factor, timing rule, or anomaly?
+
+This is especially relevant when a researcher develops a new systematic strategy with a clean historical equity curve. The strategy may have acceptable risk-adjusted performance, stable drawdowns, and a logical trading rule, but those statistics alone do not prove that the idea is unique. A silver strategy, for example, may look different on the surface while still behaving like a known commodity timing model, a trend-following strategy, a volatility filter, or a broader macro factor exposure.
+
+This article shows how Quantpedia API can be used as a benchmark dataset for validating new research. Instead of evaluating a new backtest in isolation, the strategy is compared against the Quantpedia universe of documented quantitative strategies. The workflow identifies nearest neighbours, assigns the strategy to a factor cluster, calculates a uniqueness score, and produces a research robustness report that can be used for deeper validation.
+
+The goal is not to replace human research judgment. The goal is to create a structured robustness checker that helps researchers understand whether a new strategy is truly differentiated, redundant with known effects, or simply a variation of an existing Quantpedia strategy profile.</strong></p>]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>Getting the Target Right in Return Prediction</title>
+		<link>https://quantpedia.com/getting-the-target-right-in-return-prediction/</link>
+		
+		<dc:creator><![CDATA[Cyril Dujava]]></dc:creator>
+		<pubDate>Thu, 23 Jul 2026 16:52:49 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<category><![CDATA[equity long short]]></category>
+		<category><![CDATA[factor investing]]></category>
+		<category><![CDATA[machine learning]]></category>
+		<category><![CDATA[smart beta]]></category>
+		<category><![CDATA[stock picking]]></category>
+		<guid isPermaLink="false">https://quantpedia.com/?p=45798</guid>
+
+					<description><![CDATA[<p><strong>Recent interesting research from Cakici and Zaremba, highlights an often-overlooked aspect of machine learning for equity return prediction: the choice of prediction target. Rather than focusing on increasingly sophisticated model architectures or feature engineering, the authors show that how returns are represented during training has a much larger impact on predictive performance. In particular, models trained to predict stock ranks instead of raw return levels generate substantially stronger portfolio performance—roughly doubling both returns and Sharpe ratios in large-cap universes.</strong></p>]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>Commodity Crisis Analysis &#8211; How Portfolios React to Commodity Shocks</title>
+		<link>https://quantpedia.com/commodity-crisis-analysis-how-portfolios-react-to-commodity-shocks/</link>
+		
+		<dc:creator><![CDATA[david.mesicek@quantpedia.com]]></dc:creator>
+		<pubDate>Sat, 18 Jul 2026 19:26:16 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<category><![CDATA[commodities]]></category>
+		<category><![CDATA[commodity investing]]></category>
+		<category><![CDATA[commodity trading]]></category>
+		<category><![CDATA[crude oil]]></category>
+		<category><![CDATA[risk management]]></category>
+		<category><![CDATA[scenario analysis]]></category>
+		<guid isPermaLink="false">https://quantpedia.com/?p=45643</guid>
+
+					<description><![CDATA[<p><strong>Financial markets are often viewed primarily through lens of equity index movements, as they attract most of the attention. However, commodities represent an important component of the global economy, and shocks in commodity markets can have a significant impact on broader financial assets.
+
+From time to time, market stress originates outside equities. A recent example are the repeated US attacks on Iran, which increased uncertainty in energy markets and raised the risk of an oil supply shocks. A similar dynamic was observed in 2022 during the Russian invasion of Ukraine, when commodity prices moved sharply higher or during the US invasion of Iraq in 2002, when uncertainty in oil markets led to increased price volatility.
+
+These events highlight the importance of analyzing portfolio behavior not only during equity bull and bear markets, but also during commodity-driven shocks.</strong></p>]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>Can AI Do Financial Research?</title>
+		<link>https://quantpedia.com/can-ai-do-financial-research/</link>
+		
+		<dc:creator><![CDATA[Cyril Dujava]]></dc:creator>
+		<pubDate>Thu, 16 Jul 2026 19:45:01 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<category><![CDATA[anthropic]]></category>
+		<category><![CDATA[chatgpt]]></category>
+		<category><![CDATA[claude]]></category>
+		<category><![CDATA[LLM]]></category>
+		<category><![CDATA[machine learning]]></category>
+		<category><![CDATA[openai]]></category>
+		<guid isPermaLink="false">https://quantpedia.com/?p=45699</guid>
+
+					<description><![CDATA[<p><strong>Large language models are already capable of summarizing financial research, but are they ready to conduct it? In their latest paper, researchers from Google, Boston College, and Columbia introduce a framework where a large language model doesn't just fetch data—it acts as an autonomous AI research agent capable of navigating the "hypothesis discovery loop." By placing an LLM within a human-designed laboratory—complete with a symbolic language of 66 accounting primitives and a standardized backtesting pipeline—the authors tested whether AI can move beyond black-box predictions to generate economically legible and statistically robust signals. This isn't just about throwing a transformer at a price series; it is a systematic attempt to automate the "propose–test–reflect" cycle that defines empirical finance.</strong></p>]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>Quantpedia in June 2026</title>
+		<link>https://quantpedia.com/quantpedia-in-june-2026/</link>
+		
+		<dc:creator><![CDATA[m.krivosudsky@gmail.com]]></dc:creator>
+		<pubDate>Mon, 13 Jul 2026 12:10:08 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">https://quantpedia.com/?p=46289</guid>
+
+					<description><![CDATA[Hello all,
+
+What have we accomplished in the last month?
+
+– A new Live Strategies reporting section
+– Quantpedia Awards 2026 Winners Interview
+– 14 new Quantpedia Premium strategies
+– 3 new related research papers
+– 7 new backtests
+– and finally, 8 new posts on our Quantpedia blog]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>Quantpepdia Premium Update &#8211; July 10th</title>
+		<link>https://quantpedia.com/quantpepdia-premium-update-july-10th/</link>
+		
+		<dc:creator><![CDATA[ivana.dragonova@quantpedia.com]]></dc:creator>
+		<pubDate>Fri, 10 Jul 2026 12:08:26 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">https://quantpedia.com/?p=46377</guid>
+
+					<description><![CDATA[Nine new strategies have been added. and two new short free blog posts have been published during last few weeks. Plus, one trading strategy has been backtested in QuantConnect in the previous two weeks.]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>Quantpedia API as an On-Demand Factor Database</title>
+		<link>https://quantpedia.com/quantpedia-api-as-an-on-demand-factor-database/</link>
+		
+		<dc:creator><![CDATA[david.mesicek@quantpedia.com]]></dc:creator>
+		<pubDate>Tue, 07 Jul 2026 09:04:10 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<category><![CDATA[AI agents]]></category>
+		<category><![CDATA[diversification]]></category>
+		<category><![CDATA[factor allocation]]></category>
+		<category><![CDATA[factor analysis]]></category>
+		<category><![CDATA[factor investing]]></category>
+		<category><![CDATA[LLM]]></category>
+		<category><![CDATA[quantpedia API]]></category>
+		<category><![CDATA[trading strategy]]></category>
+		<guid isPermaLink="false">https://quantpedia.com/?p=45961</guid>
+
+					<description><![CDATA[<p><strong>Investors often face a simple but important problem. They receive a fund equity curve, a strategy track record, or a portfolio performance series, but they do not know what is actually inside. The manager may provide only a broad description, while the realized return stream may in practice be driven by a mix of momentum, tactical allocation, defensive overlays, cross-asset rotation, or other systematic effects.
+
+One way to approach this type of problem is to use a specialized Multi-Factor Analysis report available in Quantpedia Pro. However, this case study focuses on the second approach: building a custom workflow through the Quantpedia API and AI-assisted methodology design. Instead of treating Quantpedia only as a static library of strategy ideas, the workflow uses it as an on-demand database of factor-like return streams. The unknown curve becomes the object to explain, while the Quantpedia strategy universe becomes the set of candidate explanatory building blocks.
+
+In this test, the unknown equity curve was treated as a blind case. The “correct” answer was not used during the analysis. The task was therefore not to confirm a known decomposition, but to test whether an API-based workflow can identify which known systematic strategies best explain the behavior of a black-box curve.</strong></p>]]></description>
+		
+		
+		
+			</item>
+	</channel>
+</rss>

@@ -1,0 +1,1107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Eli Bendersky's website</title><link href="https://eli.thegreenplace.net/" rel="alternate"></link><link href="https://eli.thegreenplace.net/feeds/all.atom.xml" rel="self"></link><id>https://eli.thegreenplace.net/</id><updated>2026-08-04T03:01:09-07:00</updated><entry><title>Relative velocity and closing speed</title><link href="https://eli.thegreenplace.net/2026/relative-velocity-and-closing-speed/" rel="alternate"></link><published>2026-08-03T20:01:00-07:00</published><updated>2026-08-04T03:01:09-07:00</updated><author><name>Eli Bendersky</name></author><id>tag:eli.thegreenplace.net,2026-08-03:/2026/relative-velocity-and-closing-speed/</id><summary type="html">&lt;p&gt;In Physics simulations or game engines it’s sometimes useful to
+determine the speed with which two objects are approaching each other.
+This post will discuss the concept of &lt;em&gt;closing speed&lt;/em&gt;, which is the
+&lt;em&gt;normal component&lt;/em&gt; of the &lt;em&gt;relative velocity&lt;/em&gt; of two objects.&lt;/p&gt;
+&lt;div class="section" id="relative-velocity-and-its-components"&gt;
+&lt;h2&gt;Relative velocity and its components&lt;/h2&gt;
+&lt;p&gt;Suppose we …&lt;/p&gt;&lt;/div&gt;</summary><content type="html">&lt;p&gt;In Physics simulations or game engines it’s sometimes useful to
+determine the speed with which two objects are approaching each other.
+This post will discuss the concept of &lt;em&gt;closing speed&lt;/em&gt;, which is the
+&lt;em&gt;normal component&lt;/em&gt; of the &lt;em&gt;relative velocity&lt;/em&gt; of two objects.&lt;/p&gt;
+&lt;div class="section" id="relative-velocity-and-its-components"&gt;
+&lt;h2&gt;Relative velocity and its components&lt;/h2&gt;
+&lt;p&gt;Suppose we have objects A and B &lt;a class="footnote-reference" href="#footnote-1" id="footnote-reference-1"&gt;[1]&lt;/a&gt; with velocity vectors
+&lt;object class="valign-m3 latex-math" data="https://eli.thegreenplace.net/images/math/94a17f930633898bbe6d1ef2a6c263573aa3842a.svg" style="height: 20px;" type="image/svg+xml"&gt;\vec{V_A}&lt;/object&gt; and &lt;object class="valign-m3 latex-math" data="https://eli.thegreenplace.net/images/math/c4f87fb6f28657fbd625b4bfbc514b0574e80108.svg" style="height: 20px;" type="image/svg+xml"&gt;\vec{V_B}&lt;/object&gt;. The &lt;em&gt;relative velocity&lt;/em&gt; of B
+w.r.t. A is:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/27625ffaa87e60a1f991ed3aa390d5b284868118.svg" style="height: 24px;" type="image/svg+xml"&gt;\[\vec{V}_{B|A}=\vec{V}_B-\vec{V}_A\]&lt;/object&gt;
+&lt;p&gt;Put differently, it’s the velocity of B in A’s frame of reference.&lt;/p&gt;
+&lt;p&gt;This relative velocity is a vector, and we can split it into orthogonal
+components. Obviously, the nature of such a split depends on the basis
+we want to use. We could look at the vector’s x an y components (we’ll
+be using &lt;img alt="\mathbb{R}^2" class="valign-0 latex-math" src="https://eli.thegreenplace.net/images/math/2b688757b3d0949451e1fa97e71ac5f5f284a5e4.png" style="height: 15px;" /&gt; - two dimensional space, but everything
+here applies to 3D as well), but for this post we’re interested in
+something slightly different:&lt;/p&gt;
+&lt;img alt="Normal and tangential components of the relative velocity." class="align-center" src="https://eli.thegreenplace.net/images/2026/normal-and-tangential.png" /&gt;
+&lt;p&gt;We draw a line connecting the two objects. The component of
+&lt;object class="valign-m6 latex-math" data="https://eli.thegreenplace.net/images/math/8ccc4a9163c92ed1e8e723b64a9d7056ada65491.svg" style="height: 24px;" type="image/svg+xml"&gt;\vec{V}_{B|A}&lt;/object&gt; in the direction of this line is called the
+&lt;em&gt;normal component&lt;/em&gt; of relative velocity, while the component
+perpendicular to this direction is called the &lt;em&gt;tangential component&lt;/em&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="computing-the-normal-component"&gt;
+&lt;h2&gt;Computing the normal component&lt;/h2&gt;
+&lt;p&gt;How do we find the component of a vector in the direction of a specific
+line? By using a &lt;a class="reference external" href="https://eli.thegreenplace.net/2024/projections-and-projection-matrices/"&gt;vector
+projection!&lt;/a&gt;.
+We’ll represent the line by a vector, and find the projection of
+&lt;object class="valign-m6 latex-math" data="https://eli.thegreenplace.net/images/math/8ccc4a9163c92ed1e8e723b64a9d7056ada65491.svg" style="height: 24px;" type="image/svg+xml"&gt;\vec{V}_{B|A}&lt;/object&gt; onto this vector.&lt;/p&gt;
+&lt;p&gt;The positions of A and B can also be seen as vectors: &lt;object class="valign-m3 latex-math" data="https://eli.thegreenplace.net/images/math/0cbd4a39e2dc15c143419b61cfab3d08c89dd946.svg" style="height: 20px;" type="image/svg+xml"&gt;\vec{P}_A&lt;/object&gt;
+and &lt;object class="valign-m3 latex-math" data="https://eli.thegreenplace.net/images/math/8be98601c153883b6091b8ba841746479c876b9c.svg" style="height: 20px;" type="image/svg+xml"&gt;\vec{P}_B&lt;/object&gt;. The line connecting them can then be expressed as
+the vector &lt;object class="valign-m3 latex-math" data="https://eli.thegreenplace.net/images/math/702505a802f90f2627da0f341f6f28af8a4a2aca.svg" style="height: 20px;" type="image/svg+xml"&gt;\vec{P}_B-\vec{P}_A&lt;/object&gt;:&lt;/p&gt;
+&lt;img alt="The relative-position vector is the difference of the two position vectors." class="align-center" src="https://eli.thegreenplace.net/images/2026/the-relative-position.png" /&gt;
+&lt;p&gt;All we need from this position difference vector is its direction, not
+its magnitude, however &lt;a class="footnote-reference" href="#footnote-2" id="footnote-reference-2"&gt;[2]&lt;/a&gt;. So we’ll use the &lt;em&gt;unit vector&lt;/em&gt; of
+&lt;object class="valign-m3 latex-math" data="https://eli.thegreenplace.net/images/math/702505a802f90f2627da0f341f6f28af8a4a2aca.svg" style="height: 20px;" type="image/svg+xml"&gt;\vec{P}_B-\vec{P}_A&lt;/object&gt;, denoted as:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/4037effd91b348b652473f482fc242b7dc83ea57.svg" style="height: 49px;" type="image/svg+xml"&gt;\[\widehat{P}=\frac{\vec{P}_B-\vec{P}_A}{|\vec{P}_B-\vec{P}_A|}\]&lt;/object&gt;
+&lt;p&gt;Finally, to find the projection of &lt;object class="valign-m6 latex-math" data="https://eli.thegreenplace.net/images/math/8ccc4a9163c92ed1e8e723b64a9d7056ada65491.svg" style="height: 24px;" type="image/svg+xml"&gt;\vec{V}_{B|A}&lt;/object&gt; onto
+&lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/ae76f98aa161c8e6255ff6aac4741c7745715b54.svg" style="height: 17px;" type="image/svg+xml"&gt;\widehat{P}&lt;/object&gt;, we compute &lt;a class="footnote-reference" href="#footnote-3" id="footnote-reference-3"&gt;[3]&lt;/a&gt;:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/bfa87afcdbc16f27582886265e68c81a888a5719.svg" style="height: 24px;" type="image/svg+xml"&gt;\[S_c=\vec{V}_{B|A}\cdot\widehat{P}=(\vec{V}_B-\vec{V}_A)\cdot\widehat{P}\]&lt;/object&gt;
+&lt;p&gt;Where the multiplication operator between the vectors is the &lt;em&gt;dot
+product&lt;/em&gt;. Note that the result of the dot product is a scalar;
+therefore, the quantity &lt;object class="valign-m3 latex-math" data="https://eli.thegreenplace.net/images/math/b423d57e7c978d9b6f9e3d76c3e02f52cf5a1a17.svg" style="height: 15px;" type="image/svg+xml"&gt;S_c&lt;/object&gt; is called the &lt;em&gt;closing speed&lt;/em&gt; - it
+expresses the rate at which the relative distance of the two objects is
+changing. If it’s positive, the objects are drifting farther apart; if
+it’s negative, the objects are getting closer together. Therefore the
+term &amp;quot;closing speed&amp;quot; may be slightly confusing; alternatively, this has
+been called a &amp;quot;signed separation speed&amp;quot;, or &amp;quot;normal relative speed&amp;quot; &lt;a class="footnote-reference" href="#footnote-4" id="footnote-reference-4"&gt;[4]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;The signs in these calculations can be tricky to get right, so we have
+to be very careful. Let’s see a few examples that will help us make
+these computations more concrete.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="examples"&gt;
+&lt;h2&gt;Examples&lt;/h2&gt;
+&lt;p&gt;To build up some intuition and get some practice with the equations,
+we’ll review the following examples:&lt;/p&gt;
+&lt;img alt="Four relative-motion examples." class="align-center" src="https://eli.thegreenplace.net/images/2026/four-relative-motion.png" /&gt;
+&lt;p&gt;&lt;strong&gt;Example I&lt;/strong&gt;: We’ll start by computing the relative position unit
+vector &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/ae76f98aa161c8e6255ff6aac4741c7745715b54.svg" style="height: 17px;" type="image/svg+xml"&gt;\widehat{P}&lt;/object&gt;:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/f28d4a7d06cafd403cd826c0a670975b172ff67a.svg" style="height: 49px;" type="image/svg+xml"&gt;\[\widehat{P}=\frac{\vec{P}_B-\vec{P}_A}{|\vec{P}_B-\vec{P}_A|}=\frac{\langle 4,0\rangle}{|\langle 4,0 \rangle|}=\langle1,0\rangle\]&lt;/object&gt;
+&lt;p&gt;Then, the closing speed is:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/f3b2874b8233cd8c1751ed5ff2fdfbae1d96c711.svg" style="height: 22px;" type="image/svg+xml"&gt;\[S_c=(\vec{V}_B-\vec{V}_A)\cdot\widehat{P}=\langle -3,0\rangle\cdot\langle1,0\rangle=-3\]&lt;/object&gt;
+&lt;p&gt;Based on our convention, the negative sign of &lt;object class="valign-m3 latex-math" data="https://eli.thegreenplace.net/images/math/b423d57e7c978d9b6f9e3d76c3e02f52cf5a1a17.svg" style="height: 15px;" type="image/svg+xml"&gt;S_c&lt;/object&gt; means that the
+objects are approaching each other. Due to the simple nature of the
+example, this result is easy to verify, as it can be immediately guessed
+just by looking at the diagram.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Example II&lt;/strong&gt;: Here &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/ae76f98aa161c8e6255ff6aac4741c7745715b54.svg" style="height: 17px;" type="image/svg+xml"&gt;\widehat{P}&lt;/object&gt; is the same as in the previous
+example. The closing speed is:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/f66ddd84100e0b1eaafe03b3afed57dc50a82965.svg" style="height: 22px;" type="image/svg+xml"&gt;\[S_c=(\vec{V}_B-\vec{V}_A)\cdot\widehat{P}=\langle 3,0\rangle\cdot\langle1,0\rangle=3\]&lt;/object&gt;
+&lt;p&gt;Same magnitude, but different sign from before, because the objects are
+moving farther apart.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Example III&lt;/strong&gt; This example is to demonstrate that we get consistent
+results even if B is to the left of A. Here the relative position unit
+vector is:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/e7796cd9ca52dc9cf7de0692372020ef2303bbb8.svg" style="height: 49px;" type="image/svg+xml"&gt;\[\widehat{P}=\frac{\vec{P}_B-\vec{P}_A}{|\vec{P}_B-\vec{P}_A|}=\frac{\langle -2,0\rangle}{|\langle -2,0 \rangle|}=\langle-1,0\rangle\]&lt;/object&gt;
+&lt;p&gt;And the closing speed:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/67c72205da69531f03dd92be8d75a04c775e5342.svg" style="height: 22px;" type="image/svg+xml"&gt;\[S_c=(\vec{V}_B-\vec{V}_A)\cdot\widehat{P}=\langle 3,0\rangle\cdot\langle -1,0\rangle=-3\]&lt;/object&gt;
+&lt;p&gt;Which is the same as in example I, as expected. The direction of
+&lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/ae76f98aa161c8e6255ff6aac4741c7745715b54.svg" style="height: 17px;" type="image/svg+xml"&gt;\widehat{P}&lt;/object&gt; flipped, but so did the direction of the relative
+velocity vector, so the result has the same sign.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Example IV&lt;/strong&gt;: Finally, an example showing more arbitrary positions and
+velocities.&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/aa10ecf2964b6bfc8fc7613fe86515408c2fa555.svg" style="height: 49px;" type="image/svg+xml"&gt;\[\widehat{P}=\frac{\vec{P}_B-\vec{P}_A}{|\vec{P}_B-\vec{P}_A|}=\frac{\langle 3,4\rangle}{|\langle 3,4 \rangle|}=\langle0.6,0.8\rangle\]&lt;/object&gt;
+&lt;p&gt;Then:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/a03119506d85247140be836d2e7c898ba991e46e.svg" style="height: 22px;" type="image/svg+xml"&gt;\[S_c=(\vec{V}_B-\vec{V}_A)\cdot\widehat{P}=\langle -3,-6\rangle\cdot\langle 0.6,0.8\rangle=-6.6\]&lt;/object&gt;
+&lt;p&gt;This example is a good opportunity to demonstrate something important
+about &lt;object class="valign-m3 latex-math" data="https://eli.thegreenplace.net/images/math/b423d57e7c978d9b6f9e3d76c3e02f52cf5a1a17.svg" style="height: 15px;" type="image/svg+xml"&gt;S_c&lt;/object&gt;: it’s time-dependent, because positions change with
+time. Here, -6.6 is the closing speed at the exact moment when A’s and
+B’s positions and velocities are as stated in the example. In the next
+time step, the position of A will be &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/2bc27b863835e60fdba1357f797159dc72d77045.svg" style="height: 18px;" type="image/svg+xml"&gt;\langle2,5\rangle&lt;/object&gt; and the
+position of B will be &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/2450a84c29d863591b7db00ceada4f084bfb99ea.svg" style="height: 18px;" type="image/svg+xml"&gt;\langle2,3\rangle&lt;/object&gt;, while their velocities
+remain the same. The &lt;object class="valign-m3 latex-math" data="https://eli.thegreenplace.net/images/math/b423d57e7c978d9b6f9e3d76c3e02f52cf5a1a17.svg" style="height: 15px;" type="image/svg+xml"&gt;S_c&lt;/object&gt; then will be quite different. This is a
+good segue to the next topic - which is a more physical view of closing
+speed.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="closing-speed-as-a-function-of-time"&gt;
+&lt;h2&gt;Closing speed as a function of time&lt;/h2&gt;
+&lt;p&gt;The computation shown so far represents a static view of the world;
+perhaps the right word to use is &lt;em&gt;instantaneous&lt;/em&gt;. Given the positions
+and velocities at a given moment, what is the closing speed between the
+objects &lt;em&gt;at that exact moment&lt;/em&gt;?&lt;/p&gt;
+&lt;p&gt;But there’s no reason to not generalize this using a more standard
+physical interpretation of velocity.&lt;/p&gt;
+&lt;p&gt;First, let’s state the position vectors of A and B as a function of
+time: &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/4eb67887f180834938958d847a67ce8c4e833101.svg" style="height: 22px;" type="image/svg+xml"&gt;\vec{P}_A(t)&lt;/object&gt; and &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/3b69a9ddd6f52dba77380fd33edf1ce5adb8e57d.svg" style="height: 22px;" type="image/svg+xml"&gt;\vec{P}_B(t)&lt;/object&gt;. The relative
+position vector between the objects is also a function of time:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/70dfcf594bc9407384d7c009f9a608eb3fef4e73.svg" style="height: 22px;" type="image/svg+xml"&gt;\[\vec{R}(t)=\vec{P}_B(t)-\vec{P}_A(t)\]&lt;/object&gt;
+&lt;p&gt;Now we’ll define the scalar distance as the magnitude of this vector:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/7cdc889c6f871266456a41fba1c39755e176be60.svg" style="height: 22px;" type="image/svg+xml"&gt;\[r(t)=|\vec{R}(t)|=|\vec{P}_B(t)-\vec{P}_A(t)|\]&lt;/object&gt;
+&lt;p&gt;We’re interested in &lt;object class="valign-m6 latex-math" data="https://eli.thegreenplace.net/images/math/2e486b6ff05146a7eec038ad6e7e0fc8528811c3.svg" style="height: 24px;" type="image/svg+xml"&gt;\frac{dr(t)}{dt}&lt;/object&gt; - the change in this
+distance over time. Let’s start by breaking &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/9f99e0576aed540806bce0791e5746726e6e413e.svg" style="height: 18px;" type="image/svg+xml"&gt;R(t)&lt;/object&gt; down to its
+constituents:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/f3fe85228247cba64b2cf42ab620ca2ad021f58e.svg" style="height: 51px;" type="image/svg+xml"&gt;\[\begin{aligned}
+    \vec{R}(t)&amp;amp;=\langle x(t),y(t)\rangle \\
+    r(t)&amp;amp;=\sqrt{x(t)^2+y(t)^2}
+\end{aligned}\]&lt;/object&gt;
+&lt;p&gt;By the chain rule &lt;a class="footnote-reference" href="#footnote-5" id="footnote-reference-5"&gt;[5]&lt;/a&gt;:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/6306fb3b34832bfa2973b4f5f2ce022e50e61bfc.svg" style="height: 100px;" type="image/svg+xml"&gt;\[\begin{aligned}
+    \frac{dr(t)}{dt}&amp;amp;=\frac{\frac{d}{dt}(x(t)^2+y(t)^2)}{2\sqrt{x(t)^2+y(t)^2}}\\
+    &amp;amp;=\frac{2x(t)x&amp;#x27;(t)+2y(t)y&amp;#x27;(t)}{2\sqrt{x(t)^2+y(t)^2}}
+    =\frac{x(t)x&amp;#x27;(t)+y(t)y&amp;#x27;(t)}{\sqrt{x(t)^2+y(t)^2}}
+\end{aligned}\]&lt;/object&gt;
+&lt;p&gt;Switching back to the vector representation: since
+&lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/07a18a0fb49fd212904167765ad6d84a0c82e087.svg" style="height: 22px;" type="image/svg+xml"&gt;\vec{R}(t)=\langle x(t),y(t)\rangle&lt;/object&gt;, the numerator of the
+fraction above is then a dot product between &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/7c50f292ef65e21556b433d72d5c11b6e9f87ecf.svg" style="height: 22px;" type="image/svg+xml"&gt;\vec{R}(t)&lt;/object&gt; and
+&lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/4dfa75b6830d41bca1c17cdb195e628f68ed338b.svg" style="height: 22px;" type="image/svg+xml"&gt;\vec{R}&amp;#x27;(t)&lt;/object&gt;, we can write this as:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/a42dd678ac96ed753c3c3526680198572a2fe257.svg" style="height: 49px;" type="image/svg+xml"&gt;\[\frac{dr(t)}{dt}=\frac{\vec{R}(t)\cdot\vec{R}&amp;#x27;(t)}{|\vec{R}(t)|}=\hat{R}(t)\cdot\vec{R}&amp;#x27;(t)\]&lt;/object&gt;
+&lt;p&gt;But &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/54361db0be49009bd9ab092a77a7a00ddf8a1639.svg" style="height: 21px;" type="image/svg+xml"&gt;\hat{R}(t)&lt;/object&gt; is precisely &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/1787f35be0deea91d648e299fd551f3dcb3e44b5.svg" style="height: 17px;" type="image/svg+xml"&gt;\hat{P}&lt;/object&gt; from the earlier
+section, as a function of time. Moreover:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/a98048e9ed9db3cf9b4799aa6f6146b7dd2cb992.svg" style="height: 22px;" type="image/svg+xml"&gt;\[\vec{R}&amp;#x27;(t)=\vec{P}&amp;#x27;_B(t)-\vec{P}&amp;#x27;_A(t)=\vec{V}_B(t)-\vec{V}_A(t)\]&lt;/object&gt;
+&lt;p&gt;Because velocity is the time derivative of position. Therefore, we end
+up with the same equation, just as a function of time:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/e3e0da99f86f0ff329cba714e12223664276b75c.svg" style="height: 38px;" type="image/svg+xml"&gt;\[\frac{dr(t)}{dt}=\hat{P}(t)\cdot(\vec{V}_B(t)-\vec{V}_A(t))\]&lt;/object&gt;
+&lt;p&gt;This formulation is more precise because it makes it very obvious that
+all the quantities we’re dealing with are time dependent.&lt;/p&gt;
+&lt;hr class="docutils" /&gt;
+&lt;table class="docutils footnote" frame="void" id="footnote-1" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#footnote-reference-1"&gt;[1]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;Throughout this post, we assume our objects are sufficiently far
+apart that they can be treated as &lt;em&gt;points&lt;/em&gt; (or &lt;em&gt;particles&lt;/em&gt;) without
+any shape, area or volume.&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="footnote-2" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#footnote-reference-2"&gt;[2]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;The velocity components should be the same regardless of how far
+apart the two objects are.&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="footnote-3" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#footnote-reference-3"&gt;[3]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;In the standard projection formula we’d also divide by the magnitude
+of &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/ae76f98aa161c8e6255ff6aac4741c7745715b54.svg" style="height: 17px;" type="image/svg+xml"&gt;\widehat{P}&lt;/object&gt;, but in our case it’s a unit vector anyway.&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="footnote-4" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#footnote-reference-4"&gt;[4]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;In some online sources you may see the closing speed described as
+closing velocity because it has a direction. IMHO this is the wrong
+framing. Scalars can be signed! The closing speed is certainly a
+scalar, not a vector.&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="footnote-5" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#footnote-reference-5"&gt;[5]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;The notation &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/8cef7d030134448b059cf3ccf9ef9edc29b769c0.svg" style="height: 18px;" type="image/svg+xml"&gt;x&amp;#x27;(t)&lt;/object&gt; means &lt;object class="valign-m6 latex-math" data="https://eli.thegreenplace.net/images/math/153450414b2add185e4ad0b5fe515c2835446bfe.svg" style="height: 24px;" type="image/svg+xml"&gt;\frac{dx(t)}{dt}&lt;/object&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+</content><category term="misc"></category><category term="Math"></category></entry><entry><title>Notes on the Fourier Transform</title><link href="https://eli.thegreenplace.net/2026/notes-on-the-fourier-transform/" rel="alternate"></link><published>2026-07-14T20:04:00-07:00</published><updated>2026-07-15T03:04:11-07:00</updated><author><name>Eli Bendersky</name></author><id>tag:eli.thegreenplace.net,2026-07-14:/2026/notes-on-the-fourier-transform/</id><summary type="html">&lt;link rel="stylesheet" href="https://eli.thegreenplace.net/demos/fourier/windowed.css"&gt;&lt;p&gt;The Fourier series is a great tool for analyzing periodic functions. But
+what about functions that don’t repeat? &lt;a class="reference external" href="https://eli.thegreenplace.net/2026/notes-on-fourier-series/"&gt;We’ve
+seen&lt;/a&gt;
+that we can compute Fourier series for a non-periodic function defined
+on a finite interval, as long as we don’t care about its behavior beyond
+that interval …&lt;/p&gt;</summary><content type="html">&lt;link rel="stylesheet" href="https://eli.thegreenplace.net/demos/fourier/windowed.css"&gt;&lt;p&gt;The Fourier series is a great tool for analyzing periodic functions. But
+what about functions that don’t repeat? &lt;a class="reference external" href="https://eli.thegreenplace.net/2026/notes-on-fourier-series/"&gt;We’ve
+seen&lt;/a&gt;
+that we can compute Fourier series for a non-periodic function defined
+on a finite interval, as long as we don’t care about its behavior beyond
+that interval.&lt;/p&gt;
+&lt;p&gt;Let’s extend this idea to functions that &lt;em&gt;never&lt;/em&gt; repeat; that is,
+non-periodic functions defined on the interval &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/1cf8fee97b88d4aa5eb4787c05b533d0db945e98.svg" style="height: 18px;" type="image/svg+xml"&gt;(-\infty,\infty)&lt;/object&gt;.&lt;/p&gt;
+&lt;div class="section" id="visualizing-fourier-series-for-non-repeating-functions"&gt;
+&lt;h2&gt;Visualizing Fourier series for non-repeating functions&lt;/h2&gt;
+&lt;p&gt;To motivate the subject ahead, let’s look back at the example used in
+the earlier &lt;a class="reference external" href="https://eli.thegreenplace.net/2026/notes-on-fourier-series/"&gt;post about Fourier
+series&lt;/a&gt;:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/219270dd9765adc74c363412ff71219137e90f0c.svg" style="height: 51px;" type="image/svg+xml"&gt;\[t(x)=
+\begin{cases}
+    x     &amp;amp;  0 \leq x \leq 1 \\
+    2-x   &amp;amp;  1 &amp;lt; x \leq 2  \\
+\end{cases}\]&lt;/object&gt;
+&lt;p&gt;With an odd extension into &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/8291e9956dc145c0d40503664cdb2aa8907faeec.svg" style="height: 17px;" type="image/svg+xml"&gt;[-2,0]&lt;/object&gt;. In that post, to make the
+Fourier series work, we assumed &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/75a7147566fd4ba98fe5d85fe008fab6d58d3968.svg" style="height: 17px;" type="image/svg+xml"&gt;t(x)&lt;/object&gt; keeps repeating with a
+period &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/8f459dda90739295986eb4ce950ace772ec696f7.svg" style="height: 12px;" type="image/svg+xml"&gt;2L=4&lt;/object&gt; on the entire &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/11f6ad8ec52a2984abaafd7c3b516503785c2072.svg" style="height: 8px;" type="image/svg+xml"&gt;x&lt;/object&gt; axis. Here, let’s face the
+reality that it does not - in fact - repeat, and observe how our Fourier
+series work out.&lt;/p&gt;
+&lt;p&gt;Recall that the Fourier series approximating &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/75a7147566fd4ba98fe5d85fe008fab6d58d3968.svg" style="height: 17px;" type="image/svg+xml"&gt;t(x)&lt;/object&gt; are the sine
+series (since it’s an odd function):&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/7942a20004aaf07d850b012826c56720f6efa3ce.svg" style="height: 41px;" type="image/svg+xml"&gt;\[t(x)=\frac{8}{\pi^2}\bigg[ sin\frac{\pi x}{2}-\frac{1}{3^2} sin\frac{3\pi x}{2}+\frac{1}{5^2}sin\frac{5\pi x}{2}-\cdots\bigg]\]&lt;/object&gt;
+&lt;p&gt;The following visualization is interactive. By default, it shows
+&lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/75a7147566fd4ba98fe5d85fe008fab6d58d3968.svg" style="height: 17px;" type="image/svg+xml"&gt;t(x)&lt;/object&gt; (with its odd extension) and no Fourier series
+approximation. We’ll proceed by a series of steps and observe the
+outcome:&lt;/p&gt;
+&lt;div class="plot-stack"&gt;
+  &lt;canvas id="series-canvas" class="canvas" width="760" height="470"&gt;&lt;/canvas&gt;
+
+  &lt;div class="controls"&gt;
+    &lt;div class="number-controls"&gt;
+      &lt;div class="number-control"&gt;
+        &lt;label for="terms-number"&gt;n (terms in the Fourier series)&lt;/label&gt;
+        &lt;input id="terms-number" type="number" min="0" max="500" step="1" value="0"&gt;
+      &lt;/div&gt;
+
+      &lt;div class="number-control"&gt;
+        &lt;label for="interval-l"&gt;L&lt;/label&gt;
+        &lt;input id="interval-l" type="number" min="2" max="128" step="1" value="2"&gt;
+      &lt;/div&gt;
+
+      &lt;div class="number-control"&gt;
+        &lt;label for="x-min"&gt;x min&lt;/label&gt;
+        &lt;input id="x-min" type="number" min="-512" max="511" step="1" value="-16"&gt;
+      &lt;/div&gt;
+
+      &lt;div class="number-control"&gt;
+        &lt;label for="x-max"&gt;x max&lt;/label&gt;
+        &lt;input id="x-max" type="number" min="-511" max="512" step="1" value="16"&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;canvas id="coeffs-canvas" class="canvas" width="760" height="260"&gt;&lt;/canvas&gt;
+&lt;/div&gt;&lt;p&gt;&lt;strong&gt;Step 1&lt;/strong&gt;: set &lt;img alt="n" class="valign-0 latex-math" src="https://eli.thegreenplace.net/images/math/d1854cae891ec7b29161ccaf79a24b00c274bdaa.png" style="height: 7px;" /&gt; to some non-zero number; already at 3, the
+approximation is very good.&lt;/p&gt;
+&lt;p&gt;The frequency spacing is &lt;object class="valign-m6 latex-math" data="https://eli.thegreenplace.net/images/math/5a600bbe993cfd18233241243dff681270daa29f.svg" style="height: 19px;" type="image/svg+xml"&gt;\frac{\pi}{L}&lt;/object&gt; (this is the coefficient
+of &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/11f6ad8ec52a2984abaafd7c3b516503785c2072.svg" style="height: 8px;" type="image/svg+xml"&gt;x&lt;/object&gt; in the sines). Note that the Fourier series repeats every
+&lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/8dde33545500de38fae974b4b18036def142e9e3.svg" style="height: 12px;" type="image/svg+xml"&gt;2L&lt;/object&gt;, as expected.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Step 2&lt;/strong&gt;: increase &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/d160e0986aca4714714a16f29ec605af90be704d.svg" style="height: 12px;" type="image/svg+xml"&gt;L&lt;/object&gt; to 6. This means our series are
+constructed assuming &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/75a7147566fd4ba98fe5d85fe008fab6d58d3968.svg" style="height: 17px;" type="image/svg+xml"&gt;t(x)&lt;/object&gt; has a period of 12, not 4. Note how
+the Fourier series look now - they repeat every 12, and they don’t match
+&lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/75a7147566fd4ba98fe5d85fe008fab6d58d3968.svg" style="height: 17px;" type="image/svg+xml"&gt;t(x)&lt;/object&gt; as well as before. We can increase &lt;img alt="n" class="valign-0 latex-math" src="https://eli.thegreenplace.net/images/math/d1854cae891ec7b29161ccaf79a24b00c274bdaa.png" style="height: 7px;" /&gt; to a higher
+number to make the match better. As &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/d160e0986aca4714714a16f29ec605af90be704d.svg" style="height: 12px;" type="image/svg+xml"&gt;L&lt;/object&gt; grows, the spacing between
+adjacent frequencies decreases.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Step 3&lt;/strong&gt;: increase &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/d160e0986aca4714714a16f29ec605af90be704d.svg" style="height: 12px;" type="image/svg+xml"&gt;L&lt;/object&gt; to 10. We no longer see the repetitions,
+so feel free to increase the values of &lt;em&gt;x min&lt;/em&gt; and &lt;em&gt;x max&lt;/em&gt; until you do.
+Note again that we need to add more and more coefficients to match
+&lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/75a7147566fd4ba98fe5d85fe008fab6d58d3968.svg" style="height: 17px;" type="image/svg+xml"&gt;t(x)&lt;/object&gt; better with this larger &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/d160e0986aca4714714a16f29ec605af90be704d.svg" style="height: 12px;" type="image/svg+xml"&gt;L&lt;/object&gt;, and the spacing adjacent
+frequencies grows smaller.&lt;/p&gt;
+&lt;p&gt;Increasing &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/d160e0986aca4714714a16f29ec605af90be704d.svg" style="height: 12px;" type="image/svg+xml"&gt;L&lt;/object&gt; means our function repeats at larger and larger
+intervals. The logical conclusion of this progression is to ask - what
+happens if the function &lt;em&gt;never&lt;/em&gt; repeats, meaning
+&lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/7024b94c8e1c4e174500651fed6f4034b91338e2.svg" style="height: 12px;" type="image/svg+xml"&gt;L\rightarrow\infty&lt;/object&gt;? While not mathematically rigorous, the
+visual experiment here lets us make some conjectures: we’ll likely need
+an infinite number of coefficients for a good approximation, and
+moreover, the spacing between these coefficients will tend to zero.&lt;/p&gt;
+&lt;p&gt;In other words, instead of a discrete set of coefficients, we’ll end up
+with a continuous line, or &lt;em&gt;function&lt;/em&gt;. The function produced by this
+process is the Fourier transform of &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/75a7147566fd4ba98fe5d85fe008fab6d58d3968.svg" style="height: 17px;" type="image/svg+xml"&gt;t(x)&lt;/object&gt;, and the next section
+shows its mathematical derivation.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="fourier-series-with-l-rightarrow-infty-leading-to-fourier-transform"&gt;
+&lt;h2&gt;Fourier series with &lt;object class="valign-0 latex-math heading-math" data="https://eli.thegreenplace.net/images/math/7024b94c8e1c4e174500651fed6f4034b91338e2.svg" style="height: 18px;" type="image/svg+xml"&gt;L\rightarrow\infty&lt;/object&gt; leading to Fourier transform&lt;/h2&gt;
+&lt;p&gt;In these notes, we’ll be using the complex exponential formulation of
+Fourier series:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/0330fae433a3379cfef316d192bfe32e38e0c9c9.svg" style="height: 47px;" type="image/svg+xml"&gt;\[f(x)=\sum_{n=-\infty}^{\infty}C_n\cdot e^{in\pi x/L}\]&lt;/object&gt;
+&lt;p&gt;With:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/d70fa4e75b4b604398d8d3c108a75bea622e72ef.svg" style="height: 43px;" type="image/svg+xml"&gt;\[C_n=\frac{1}{2L}\int_{-L}^{L}f(x)e^{-in\pi x/L}dx\]&lt;/object&gt;
+&lt;p&gt;We’re interested in a non-periodic &lt;img alt="f(x)" class="valign-m4 latex-math" src="https://eli.thegreenplace.net/images/math/3e03f4706048fbc6c5a252a85d066adf107fcc1f.png" style="height: 17px;" /&gt; defined on the interval
+&lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/1cf8fee97b88d4aa5eb4787c05b533d0db945e98.svg" style="height: 18px;" type="image/svg+xml"&gt;(-\infty,\infty)&lt;/object&gt;. So we’ll be exploring the above equations for
+&lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/7024b94c8e1c4e174500651fed6f4034b91338e2.svg" style="height: 12px;" type="image/svg+xml"&gt;L\rightarrow\infty&lt;/object&gt;.&lt;/p&gt;
+&lt;p&gt;First, let’s make a slight change of notation. Instead of writing
+formulae in terms of the period (&lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/8dde33545500de38fae974b4b18036def142e9e3.svg" style="height: 12px;" type="image/svg+xml"&gt;2L&lt;/object&gt;), we’ll be using the n-th
+harmonic angular frequency &lt;object class="valign-m3 latex-math" data="https://eli.thegreenplace.net/images/math/a155ec23f6c406ec631eab262deac5c2207fc6f0.svg" style="height: 10px;" type="image/svg+xml"&gt;w_n&lt;/object&gt;:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/a8298e8efef6e84054c4b533455925ee5428587e.svg" style="height: 32px;" type="image/svg+xml"&gt;\[w_n=\frac{n\pi}{L}\]&lt;/object&gt;
+&lt;p&gt;So we can slightly rewrite our series as:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/425809fafb73e6c3b365009d48f60e3c8b97c3f6.svg" style="height: 50px;" type="image/svg+xml"&gt;\[f(x)=\sum_{n=-\infty}^{\infty}C_n\cdot e^{i w_n x}=\sum_{n=-\infty}^{\infty}C_n\cdot e^{i\cdot n \Delta w x}\]&lt;/object&gt;
+&lt;p&gt;Using &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/485c352e1532df3fe1ad52c8ac1ec6cdcefae85f.svg" style="height: 12px;" type="image/svg+xml"&gt;\Delta w&lt;/object&gt; as the difference between two consecutive
+frequencies:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/4a4e5e3ca5b4efb65f808b54881624aab7e7786d.svg" style="height: 38px;" type="image/svg+xml"&gt;\[\Delta w=w_n-w_{n-1}=\frac{n\pi}{L}-\frac{(n-1)\pi}{L}=\frac{\pi}{L}\]&lt;/object&gt;
+&lt;p&gt;Using this notation, &lt;object class="valign-m3 latex-math" data="https://eli.thegreenplace.net/images/math/e6456786af3c999a8eda7658e37f7bf5d1bb0db0.svg" style="height: 14px;" type="image/svg+xml"&gt;C_n&lt;/object&gt; is expressed as:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/0afc21dea01d897ed8870f1614de19df218852df.svg" style="height: 49px;" type="image/svg+xml"&gt;\[C_n=\frac{\Delta w}{2\pi}\int_{-\pi/\Delta w}^{\pi/\Delta w}f(x)e^{-i\cdot n \Delta w x}dx\]&lt;/object&gt;
+&lt;p&gt;So far there are no new insights here, just some new notation. Now we’re
+going to use it to facilitate the next step.&lt;/p&gt;
+&lt;p&gt;Since &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/2655eaa60b6a8bca030a08db9d96cdf601c2313f.svg" style="height: 12px;" type="image/svg+xml"&gt;L\rightarrow \infty&lt;/object&gt;, then &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/96155e6778d2196553d71682f0d84e6dae76c5bf.svg" style="height: 12px;" type="image/svg+xml"&gt;\Delta w\rightarrow 0&lt;/object&gt;.
+Let’s calculate the limit of the Fourier series representation of
+&lt;img alt="f(x)" class="valign-m4 latex-math" src="https://eli.thegreenplace.net/images/math/3e03f4706048fbc6c5a252a85d066adf107fcc1f.png" style="height: 17px;" /&gt; when &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/96155e6778d2196553d71682f0d84e6dae76c5bf.svg" style="height: 12px;" type="image/svg+xml"&gt;\Delta w\rightarrow 0&lt;/object&gt;:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/3dd92646779c57175e26c408f74a5bc4685a082a.svg" style="height: 50px;" type="image/svg+xml"&gt;\[f(x)=\lim_{\Delta w\rightarrow 0}\sum_{n=-\infty}^{\infty}C_n\cdot e^{i\cdot n \Delta w x}\]&lt;/object&gt;
+&lt;p&gt;And substitute the latest &lt;object class="valign-m3 latex-math" data="https://eli.thegreenplace.net/images/math/e6456786af3c999a8eda7658e37f7bf5d1bb0db0.svg" style="height: 14px;" type="image/svg+xml"&gt;C_n&lt;/object&gt; into this equation, changing its
+dummy integration variable from &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/11f6ad8ec52a2984abaafd7c3b516503785c2072.svg" style="height: 8px;" type="image/svg+xml"&gt;x&lt;/object&gt; to &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/8efd86fb78a56a5145ed7739dcb00c78581c5375.svg" style="height: 11px;" type="image/svg+xml"&gt;t&lt;/object&gt; to avoid
+confusion &lt;a class="footnote-reference" href="#footnote-1" id="footnote-reference-1"&gt;[1]&lt;/a&gt;&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/36a8195b73e44ed8613e73e0d7021aa8eb6767fb.svg" style="height: 54px;" type="image/svg+xml"&gt;\[f(x)=\lim_{\Delta w\rightarrow 0}\sum_{n=-\infty}^{\infty}\left[\frac{\Delta w}{2\pi}\int_{-\pi/\Delta w}^{\pi/\Delta w}f(t)e^{-i\cdot n \Delta w t}dt\right]\cdot e^{i\cdot n \Delta w x}\]&lt;/object&gt;
+&lt;p&gt;Reordering slightly, and also replacing &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/0c1caf138427d4c92d372c96fcff58fd614da6b0.svg" style="height: 12px;" type="image/svg+xml"&gt;n\Delta w&lt;/object&gt; by &lt;object class="valign-m3 latex-math" data="https://eli.thegreenplace.net/images/math/a155ec23f6c406ec631eab262deac5c2207fc6f0.svg" style="height: 10px;" type="image/svg+xml"&gt;w_n&lt;/object&gt;
+in the complex exponents:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/b30de7a7210644adeebf557aff3ab51cb7404071.svg" style="height: 54px;" type="image/svg+xml"&gt;\[f(x)=\frac{1}{2\pi}\lim_{\Delta w\rightarrow 0}\sum_{n=-\infty}^{\infty}\left[\int_{-\pi/\Delta w}^{\pi/\Delta w}f(t)e^{-i\cdot w_n t}dt\right]\cdot e^{i\cdot w_n x}\Delta w\]&lt;/object&gt;
+&lt;p&gt;Looking at the limit with the sum carefully, this is a Riemann sum (see
+Appendix A)! &lt;object class="valign-m3 latex-math" data="https://eli.thegreenplace.net/images/math/a155ec23f6c406ec631eab262deac5c2207fc6f0.svg" style="height: 10px;" type="image/svg+xml"&gt;w_n&lt;/object&gt; is the &amp;quot;sampled&amp;quot; version of &lt;img alt="w" class="valign-0 latex-math" src="https://eli.thegreenplace.net/images/math/aff024fe4ab0fece4091de044c58c9ae4233383a.png" style="height: 7px;" /&gt;, and
+&lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/96155e6778d2196553d71682f0d84e6dae76c5bf.svg" style="height: 12px;" type="image/svg+xml"&gt;\Delta w\rightarrow 0&lt;/object&gt;. We can therefore replace it by an
+integral, changing &lt;object class="valign-m3 latex-math" data="https://eli.thegreenplace.net/images/math/a155ec23f6c406ec631eab262deac5c2207fc6f0.svg" style="height: 10px;" type="image/svg+xml"&gt;w_n&lt;/object&gt; to &lt;img alt="w" class="valign-0 latex-math" src="https://eli.thegreenplace.net/images/math/aff024fe4ab0fece4091de044c58c9ae4233383a.png" style="height: 7px;" /&gt; and &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/485c352e1532df3fe1ad52c8ac1ec6cdcefae85f.svg" style="height: 12px;" type="image/svg+xml"&gt;\Delta w&lt;/object&gt; to
+&lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/e2c44c572970480e0089da2b6ef90adce84d30fd.svg" style="height: 12px;" type="image/svg+xml"&gt;dw&lt;/object&gt; &lt;a class="footnote-reference" href="#footnote-2" id="footnote-reference-2"&gt;[2]&lt;/a&gt;:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/0d75ff66b6512adbf6049eae18dcd320e5908736.svg" style="height: 43px;" type="image/svg+xml"&gt;\[f(x)=\frac{1}{2\pi}\int_{-\infty}^{\infty}\left[\int_{-\infty}^{\infty}f(t)e^{-i\cdot wt}dt\right]\cdot e^{i\cdot w x}dw\]&lt;/object&gt;
+&lt;p&gt;The inner integral is called the &lt;em&gt;Fourier transform&lt;/em&gt; of &lt;img alt="f(x)" class="valign-m4 latex-math" src="https://eli.thegreenplace.net/images/math/3e03f4706048fbc6c5a252a85d066adf107fcc1f.png" style="height: 17px;" /&gt; and
+denoted &lt;a class="footnote-reference" href="#footnote-3" id="footnote-reference-3"&gt;[3]&lt;/a&gt;:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/07b9baf87b9916d224d769466df53dbf352d2a1b.svg" style="height: 52px;" type="image/svg+xml"&gt;\[\boxed{\hat{f}(w)=\mathcal{F}\left[f(x)\right]=\int_{-\infty}^{\infty}f(x)e^{-i\cdot wx}dx}\]&lt;/object&gt;
+&lt;p&gt;And the full equation for &lt;img alt="f(x)" class="valign-m4 latex-math" src="https://eli.thegreenplace.net/images/math/3e03f4706048fbc6c5a252a85d066adf107fcc1f.png" style="height: 17px;" /&gt; is then the &lt;em&gt;inverse&lt;/em&gt; Fourier
+transform:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/47a2a5bfdc5feed1ef59d8e8311c47539c409ce7.svg" style="height: 52px;" type="image/svg+xml"&gt;\[\boxed{f(x)=\mathcal{F}^{-1}\left[\hat{f}(w)\right]=\frac{1}{2\pi}\int_{-\infty}^{\infty}\hat{f}(w)e^{i\cdot w x}dw}\]&lt;/object&gt;
+&lt;/div&gt;
+&lt;div class="section" id="example-calculation-of-fourier-transform"&gt;
+&lt;h2&gt;Example calculation of Fourier transform&lt;/h2&gt;
+&lt;p&gt;Let’s take our favorite odd triangular pulse example and calculate its
+Fourier transform. The function’s mathematical definition and plot are
+shown earlier in this post. Note that we’re not extending this function
+periodically - it’s zero beyond the range &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/e3408d8a911334402313d66a53871a1c3b55607b.svg" style="height: 18px;" type="image/svg+xml"&gt;[-2,2]&lt;/object&gt;; this is
+exactly why we need the Fourier transform here - as we’ve seen, Fourier
+series won’t do because the function they reconstruct eventually starts
+repeating.&lt;/p&gt;
+&lt;p&gt;We’re looking to find:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/5506bcc40980dfd48a97a2b91f74d4c50727287f.svg" style="height: 43px;" type="image/svg+xml"&gt;\[\hat{t}(w)=\int_{-\infty}^{\infty}t(x)e^{-iwx}dx\]&lt;/object&gt;
+&lt;p&gt;To calculate the integral, let’s decompose the complex exponent using
+Euler’s formula:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/292ca30113586e23eea20039364286010326b698.svg" style="height: 43px;" type="image/svg+xml"&gt;\[\hat{t}(w)=\int_{-\infty}^{\infty}t(x)cos(wx)dx-i\int_{-\infty}^{\infty}t(x)sin(wx)dx\]&lt;/object&gt;
+&lt;p&gt;Since our &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/75a7147566fd4ba98fe5d85fe008fab6d58d3968.svg" style="height: 17px;" type="image/svg+xml"&gt;t(x)&lt;/object&gt; is odd, the &lt;a class="reference external" href="https://eli.thegreenplace.net/2025/notes-on-even-and-odd-functions/"&gt;first integral is
+zero&lt;/a&gt;.
+Also &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/4a37025f97bbb1bd1112f679a4d4a835b0655d9a.svg" style="height: 18px;" type="image/svg+xml"&gt;t(x)sin(wx)&lt;/object&gt; is even, so we can write:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/8f6ce1d110a97ebbeed69dd3d0c1d13005d61f29.svg" style="height: 42px;" type="image/svg+xml"&gt;\[\hat{t}(w)=-2i\int_{0}^{\infty}t(x)sin(wx)dx\]&lt;/object&gt;
+&lt;p&gt;We’ve already calculated a very similar integral in the &lt;a class="reference external" href="https://eli.thegreenplace.net/2026/notes-on-fourier-series/"&gt;post on Fourier
+series&lt;/a&gt;,
+so let’s just skip to the result:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/04fd51ed0652d76467822ab94caff1646ac72c72.svg" style="height: 38px;" type="image/svg+xml"&gt;\[\hat{t}(w)=-2i\cdot\frac{2\cdot sin(w)-sin(2w)}{w^2}\]&lt;/object&gt;
+&lt;p&gt;The only remaining difficulty is its value at 0, which seems undefined
+at first (division by zero). However, note that as
+&lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/29f6b518c7088d0c00dca4681f333cf8aa8dac2c.svg" style="height: 12px;" type="image/svg+xml"&gt;w\rightarrow 0&lt;/object&gt;, the numerator also tends to 0, so we can use
+L’Hopital’s rule (twice!) to find that:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/22b22759b568da532013a7b794fd45efc56bd45a.svg" style="height: 27px;" type="image/svg+xml"&gt;\[\lim_{w\rightarrow 0} \hat{t}(w)=0\]&lt;/object&gt;
+&lt;p&gt;Therefore:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/273a16b2d33abc3b6237a01b85c051fd8964c7aa.svg" style="height: 54px;" type="image/svg+xml"&gt;\[\hat{t}(w)=
+\begin{cases}
+    -2i\cdot\frac{2\cdot sin(w)-sin(2w)}{w^2}     &amp;amp;  w\neq 0 \\
+0   &amp;amp;  w=0  \\
+\end{cases}\]&lt;/object&gt;
+&lt;p&gt;This function is complex-valued; in fact, it’s purely imaginary. How do
+we visualize it? A common way to visualize complex-valued functions is
+by plotting their magnitude and phase separately.&lt;/p&gt;
+&lt;p&gt;The magnitude of &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/0e6e891eb70ed9e095f8516b2fc3f201c0bf9d8e.svg" style="height: 20px;" type="image/svg+xml"&gt;\hat{t}(w)&lt;/object&gt; is:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/c77013c89e8bff5b08d1a65f7b4446b2b58be3c4.svg" style="height: 43px;" type="image/svg+xml"&gt;\[|\hat{t}(w)|=\sqrt{\hat{t}(w)\cdot\hat{t}(w)^*}=2\left|\frac{2\cdot sin(w)-sin(2w)}{w^2} \right|\]&lt;/object&gt;
+&lt;p&gt;Since &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/0e6e891eb70ed9e095f8516b2fc3f201c0bf9d8e.svg" style="height: 20px;" type="image/svg+xml"&gt;\hat{t}(w)&lt;/object&gt; is purely imaginary, there are only two options
+for the phase:&lt;/p&gt;
+&lt;p&gt;When the numerator is positive, we get a negative imaginary number with
+phase &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/2adf81a4226f7a9a304fbb318c5cebf66d36767a.svg" style="height: 18px;" type="image/svg+xml"&gt;-\pi/2&lt;/object&gt;, and when the numerator is negative, we get a
+positive imaginary number with phase &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/9a0abc6cd5f06f21e0cde768dd87e46761225d7c.svg" style="height: 18px;" type="image/svg+xml"&gt;\pi/2&lt;/object&gt;. Finally, when
+&lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/34f7cc2b88e04307f30fd5ec74afec4960849abb.svg" style="height: 20px;" type="image/svg+xml"&gt;\hat{t}(w)=0&lt;/object&gt; (which happens at &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/ed0fa1c268b0a22f58e3bbc08ee1bc0b03b10ce6.svg" style="height: 12px;" type="image/svg+xml"&gt;w=0&lt;/object&gt;, by our earlier
+analysis, but also whenever &lt;img alt="w" class="valign-0 latex-math" src="https://eli.thegreenplace.net/images/math/aff024fe4ab0fece4091de044c58c9ae4233383a.png" style="height: 7px;" /&gt; is a whole multiple of
+&lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/6ac47b6d7372b4087583cfd048d20f4c1571f5cf.svg" style="height: 7px;" type="image/svg+xml"&gt;\pi&lt;/object&gt;), the phase is undefined.&lt;/p&gt;
+&lt;p&gt;Here’s the magnitude and phase of &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/0e6e891eb70ed9e095f8516b2fc3f201c0bf9d8e.svg" style="height: 20px;" type="image/svg+xml"&gt;\hat{t}(w)&lt;/object&gt; plotted against
+&lt;img alt="w" class="valign-0 latex-math" src="https://eli.thegreenplace.net/images/math/aff024fe4ab0fece4091de044c58c9ae4233383a.png" style="height: 7px;" /&gt;:&lt;/p&gt;
+&lt;img alt="Magnitude and phase of the fourier transform of t(x)" class="align-center" src="https://eli.thegreenplace.net/images/2026/ft-triangle.png" /&gt;
+&lt;p&gt;It is common to talk about &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/0e6e891eb70ed9e095f8516b2fc3f201c0bf9d8e.svg" style="height: 20px;" type="image/svg+xml"&gt;\hat{t}(w)&lt;/object&gt; as the &lt;em&gt;frequency domain&lt;/em&gt;
+representation of &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/75a7147566fd4ba98fe5d85fe008fab6d58d3968.svg" style="height: 17px;" type="image/svg+xml"&gt;t(x)&lt;/object&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="the-frequency-domain-representation-of-functions"&gt;
+&lt;h2&gt;The frequency domain representation of functions&lt;/h2&gt;
+&lt;p&gt;When the functions we’re working with have &lt;em&gt;time&lt;/em&gt; as their domain (e.g.
+the &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/11f6ad8ec52a2984abaafd7c3b516503785c2072.svg" style="height: 8px;" type="image/svg+xml"&gt;x&lt;/object&gt; in &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/75a7147566fd4ba98fe5d85fe008fab6d58d3968.svg" style="height: 17px;" type="image/svg+xml"&gt;t(x)&lt;/object&gt; represents time), which is often the case
+in the study of signals and systems, the Fourier transform can be seen
+as computing the &lt;em&gt;frequency domain&lt;/em&gt; representation of the function.&lt;/p&gt;
+&lt;p&gt;Here’s the Fourier transform formula again:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/2205c7692318aadcd75f8fc3daf794dabccf4b1c.svg" style="height: 43px;" type="image/svg+xml"&gt;\[\hat{f}(w)=\mathcal{F}\left[f(x)\right]=\int_{-\infty}^{\infty}f(x)e^{-i\cdot wx}dx\]&lt;/object&gt;
+&lt;p&gt;It takes &lt;img alt="f(x)" class="valign-m4 latex-math" src="https://eli.thegreenplace.net/images/math/3e03f4706048fbc6c5a252a85d066adf107fcc1f.png" style="height: 17px;" /&gt; - the &lt;em&gt;time domain&lt;/em&gt; representation of a function,
+and converts it to &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/9bff3d85604c5a00197a2164be2410dac224875c.svg" style="height: 22px;" type="image/svg+xml"&gt;\hat{f}(w)&lt;/object&gt; - a &lt;em&gt;frequency domain&lt;/em&gt;
+representation. For well-behaved functions, these two representations
+are dual - each one describes the function completely, just in a
+different way.&lt;/p&gt;
+&lt;p&gt;To convert back from a frequency domain representation to the time
+domain, we use the inverse Fourier transform:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/2de25f35b6f53ae6a33c7113aaf818605e809eb5.svg" style="height: 43px;" type="image/svg+xml"&gt;\[\mathcal{F}^{-1}\left[\hat{f}(w)\right]=\frac{1}{2\pi}\int_{-\infty}^{\infty}\hat{f}(w)e^{i\cdot w x}dw\]&lt;/object&gt;
+&lt;p&gt;While a time-domain plot (&lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/75a7147566fd4ba98fe5d85fe008fab6d58d3968.svg" style="height: 17px;" type="image/svg+xml"&gt;t(x)&lt;/object&gt;) shows how a signal changes over
+time, a frequency-domain plot (&lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/0e6e891eb70ed9e095f8516b2fc3f201c0bf9d8e.svg" style="height: 20px;" type="image/svg+xml"&gt;\hat{t}(w)&lt;/object&gt;) shows how the signal
+is distributed across all possible frequencies. Moreover, as we’ve seen,
+&lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/0e6e891eb70ed9e095f8516b2fc3f201c0bf9d8e.svg" style="height: 20px;" type="image/svg+xml"&gt;\hat{t}(w)&lt;/object&gt; is complex valued. Each frequency therefore has both
+a magnitude and a phase: the magnitude tells us how strongly that
+frequency contributes, while the phase tells us how that component is
+shifted.&lt;/p&gt;
+&lt;p&gt;The frequency domain is extremely useful in signal analysis; for
+example, when designing filters.&lt;/p&gt;
+&lt;p&gt;The Fourier transform also has a number of properties that are very
+useful in signal analysis and processing. But first, let’s discuss what
+a &amp;quot;well-behaved function&amp;quot; means for the purpose of applying Fourier
+transforms.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="existence-condition-for-the-fourier-transform"&gt;
+&lt;h2&gt;Existence condition for the Fourier transform&lt;/h2&gt;
+&lt;p&gt;The simplest existence condition for Fourier transforms is absolute
+integrability (also known as Lebesgue integrable):&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/a84f50b71f5f603ba8615fa9ce011a0bdf724c9f.svg" style="height: 43px;" type="image/svg+xml"&gt;\[\int_{-\infty}^{\infty}|f(x)|dx&amp;lt;\infty\]&lt;/object&gt;
+&lt;p&gt;With this condition, &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/9bff3d85604c5a00197a2164be2410dac224875c.svg" style="height: 22px;" type="image/svg+xml"&gt;\hat{f}(w)&lt;/object&gt; exists on the entire &lt;img alt="w" class="valign-0 latex-math" src="https://eli.thegreenplace.net/images/math/aff024fe4ab0fece4091de044c58c9ae4233383a.png" style="height: 7px;" /&gt;
+domain, is continuous and vanishes (tends to 0) as
+&lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/ada7e71c306e8a50144d68218845379d20e80e2a.svg" style="height: 18px;" type="image/svg+xml"&gt;|w|\rightarrow\infty&lt;/object&gt;  &lt;a class="footnote-reference" href="#footnote-4" id="footnote-reference-4"&gt;[4]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;While this condition is sufficient, it’s not necessary; there are less
+well-behaved functions that also have Fourier transforms defined with
+some limitations. In these notes, we’re mostly interested in
+well-behaved functions that are used in real-world engineering, so we
+won’t discuss the other cases.&lt;/p&gt;
+&lt;p&gt;Another assumption commonly made for real-world functions is that they
+vanish (tend to 0) as &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/82b120c729a8ff220a8f0fe52ac392486c01b204.svg" style="height: 18px;" type="image/svg+xml"&gt;|x|\rightarrow\infty&lt;/object&gt;. While this is not a
+direct outcome of absolute integrability &lt;a class="footnote-reference" href="#footnote-5" id="footnote-reference-5"&gt;[5]&lt;/a&gt;, it’s a reasonable
+assumption in engineering. After all, real-world signals have finite
+energies.&lt;/p&gt;
+&lt;p&gt;Intuitively, when we also assume &lt;img alt="f(x)" class="valign-m4 latex-math" src="https://eli.thegreenplace.net/images/math/3e03f4706048fbc6c5a252a85d066adf107fcc1f.png" style="height: 17px;" /&gt; is &lt;a class="reference external" href="https://en.wikipedia.org/wiki/Uniform_continuity"&gt;uniformly
+continuous&lt;/a&gt;, the
+assumption of vanishing at &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/82b120c729a8ff220a8f0fe52ac392486c01b204.svg" style="height: 18px;" type="image/svg+xml"&gt;|x|\rightarrow\infty&lt;/object&gt; is a logical
+conclusion, because otherwise how can the total area for &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/f81ff470d42c28556754b096c397ea462c3950b9.svg" style="height: 18px;" type="image/svg+xml"&gt;|f(x)|&lt;/object&gt;
+be finite?&lt;/p&gt;
+&lt;p&gt;An important outcome of this discussion is that the Fourier transform is
+unsuitable for periodic functions. Functions that repeat at intervals
+&lt;em&gt;are not absolute integrable&lt;/em&gt;. For periodic functions, we use Fourier
+series.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="some-useful-properties-of-fourier-transforms"&gt;
+&lt;h2&gt;Some useful properties of Fourier transforms&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;Linearity&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;The Fourier transform is a linear operator, because the integral is
+linear:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/9a9c05c7059486e502bb8ef0ff3c868ac6597406.svg" style="height: 115px;" type="image/svg+xml"&gt;\[\begin{aligned}
+    \mathcal{F}\left[\alpha f(x)+\beta g(x)\right]&amp;amp;=\int_{-\infty}^{\infty}\alpha f(x)e^{-i\cdot wx}dx+\int_{-\infty}^{\infty}\beta g(x)e^{-i\cdot wx}dx\\
+    &amp;amp;=\alpha\int_{-\infty}^{\infty}f(x)e^{-i\cdot wx}dx+\beta\int_{-\infty}^{\infty}g(x)e^{-i\cdot wx}dx\\
+    &amp;amp;=\alpha\mathcal{F}\left[f(x)\right]+\beta\mathcal{F}\left[g(x)\right]
+\end{aligned}\]&lt;/object&gt;
+&lt;p&gt;So is the inverse Fourier transform; it’s similarly easy to show that:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/ceb89864f3fa7c77f1a9e6ed8f63fa75aedd368a.svg" style="height: 32px;" type="image/svg+xml"&gt;\[\mathcal{F}^{-1}\left[\alpha\hat{f}(w)+\beta\hat{g}(w)\right]=
+\alpha\mathcal{F}^{-1}\left[\hat{f}(w)\right]+\beta\mathcal{F}^{-1}\left[\hat{g}(w)\right]\]&lt;/object&gt;
+&lt;p&gt;&lt;strong&gt;Scaling&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;If we scale the domain of a function by a constant, its transform
+changes only slightly:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/1c9ad54d80807d0cbeaa45001191bfc428550eca.svg" style="height: 43px;" type="image/svg+xml"&gt;\[\mathcal{F}\left[f(ax)\right]=\int_{-\infty}^{\infty}f(ax)e^{-i\cdot wx}dx\]&lt;/object&gt;
+&lt;p&gt;Let’s do the variable substitution &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/6bc4494513070aed18d92705ed2b2f6d3f11c06e.svg" style="height: 8px;" type="image/svg+xml"&gt;u=ax&lt;/object&gt;:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/afeab98c97af01549cebd9b6865d3eee363d7c54.svg" style="height: 43px;" type="image/svg+xml"&gt;\[\mathcal{F}\left[f(ax)\right]=\frac{1}{a}\int_{-\infty}^{\infty}f(u)e^{-i\cdot \frac{wu}{a}}du\]&lt;/object&gt;
+&lt;p&gt;This is the Fourier transform evaluated at &lt;object class="valign-m6 latex-math" data="https://eli.thegreenplace.net/images/math/96bad6acb3e083e5c40a140be76e315fc38a0200.svg" style="height: 19px;" type="image/svg+xml"&gt;\frac{w}{a}&lt;/object&gt;, so:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/9bd358bb9fbe2b08ec4aa6ed1967b52abc440b30.svg" style="height: 36px;" type="image/svg+xml"&gt;\[\mathcal{F}\left[f(ax)\right]=\frac{1}{a}\hat{f}\left(\frac{w}{a}\right)\]&lt;/object&gt;
+&lt;p&gt;There’s one small caveat here; when &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/86f7e437faa5a7fce15d1ddcb9eaeaea377667b8.svg" style="height: 7px;" type="image/svg+xml"&gt;a&lt;/object&gt; is negative, the integral
+bounds should be flipped, causing a minus sign in front of the
+transform. So we can write:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/b7e9ea4076f6b14c02d31e9efa69739dbc49e418.svg" style="height: 40px;" type="image/svg+xml"&gt;\[\mathcal{F}\left[f(ax)\right]=\frac{1}{|a|}\hat{f}\left(\frac{w}{a}\right)\]&lt;/object&gt;
+&lt;p&gt;Which works for any &lt;object class="valign-m3 latex-math" data="https://eli.thegreenplace.net/images/math/bea889333f2129c15a3c4d1075622fe6d3af6091.svg" style="height: 16px;" type="image/svg+xml"&gt;a\ne 0&lt;/object&gt;.&lt;/p&gt;
+&lt;p&gt;This property is intuitive when thinking about signals: suppose
+&lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/496e056115bfe6ab294623525a9f7892000e8dcb.svg" style="height: 12px;" type="image/svg+xml"&gt;a&amp;gt;0&lt;/object&gt;, then &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/80a7826fb0e21d406f279cfd05998f9ca6d7ddd9.svg" style="height: 18px;" type="image/svg+xml"&gt;f(ax)&lt;/object&gt; means the signal is &lt;em&gt;compressed&lt;/em&gt; in the
+time domain by a factor &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/86f7e437faa5a7fce15d1ddcb9eaeaea377667b8.svg" style="height: 7px;" type="image/svg+xml"&gt;a&lt;/object&gt;. The scaling property says that the
+frequency domain is &lt;em&gt;expanded&lt;/em&gt; using the same factor; in other words,
+the higher frequencies become more prominent because we need sharper
+transitions to represent the compressed signal.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Time shifting&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;What happens to the Fourier transform if we time-shift the input signal
+by some constant: &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/90aa755a71f6fd6a4007dad9bbc63a2c476cdaaf.svg" style="height: 18px;" type="image/svg+xml"&gt;f(x-x_0)&lt;/object&gt;. By definition:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/9ca72dc1140fbec6eaeaf5addeb6d58647c46e9f.svg" style="height: 43px;" type="image/svg+xml"&gt;\[\mathcal{F}\left[f(x-x_0)\right]=\int_{-\infty}^{\infty}f(x-x_0)e^{-i\cdot wx}dx\]&lt;/object&gt;
+&lt;p&gt;Substituting &lt;object class="valign-m3 latex-math" data="https://eli.thegreenplace.net/images/math/f0c6d185a731f9b08b4a02bc1360bbeec100f728.svg" style="height: 13px;" type="image/svg+xml"&gt;u=x-x_0&lt;/object&gt;, we get &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/febc1f31b2dbfc3e5d91801704e4d37f73c047af.svg" style="height: 12px;" type="image/svg+xml"&gt;du=dx&lt;/object&gt;, so:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/cb6d354e88f41065c1ea89c6f5c1211f5c191b10.svg" style="height: 116px;" type="image/svg+xml"&gt;\[\begin{aligned}
+    \mathcal{F}\left[f(x-x_0)\right]&amp;amp;=\int_{-\infty}^{\infty}f(u)e^{-i\cdot w(u+x_0)}du\\
+    &amp;amp;=e^{-iwx_0}\int_{-\infty}^{\infty}f(u)e^{-i\cdot wu}du\\
+    &amp;amp;=e^{-iwx_0}\mathcal{F}\left[f(x)\right]
+\end{aligned}\]&lt;/object&gt;
+&lt;p&gt;&lt;strong&gt;Transform of a derivative&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;An extremely useful property that’s often employed in the solution of
+partial differential equations; let’s calculate the Fourier transform of
+the derivative of &lt;img alt="f(x)" class="valign-m4 latex-math" src="https://eli.thegreenplace.net/images/math/3e03f4706048fbc6c5a252a85d066adf107fcc1f.png" style="height: 17px;" /&gt;:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/c68df7988f98d39063d8653406b37eec649db284.svg" style="height: 43px;" type="image/svg+xml"&gt;\[\mathcal{F}\left[f&amp;#x27;(x)\right]=\int_{-\infty}^{\infty}f&amp;#x27;(x)e^{-i\cdot wx}dx\]&lt;/object&gt;
+&lt;p&gt;We’ll use integration by parts, where &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/9105027cd130b253982e71ba3781a3d2cab76497.svg" style="height: 18px;" type="image/svg+xml"&gt;dv=f&amp;#x27;(x)&lt;/object&gt; and
+&lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/6c8c2392ded19fe4785df9e93e8f5a9afafb0b57.svg" style="height: 15px;" type="image/svg+xml"&gt;u=e^{-i\cdot wx}&lt;/object&gt;. Therefore, &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/6e01683a36aeafb75c36f6f53287e0f3526e009d.svg" style="height: 18px;" type="image/svg+xml"&gt;v=f(x)&lt;/object&gt; and
+&lt;object class="valign-m1 latex-math" data="https://eli.thegreenplace.net/images/math/a571d1529809275d168f3927dc0bf3596dcfd6bd.svg" style="height: 16px;" type="image/svg+xml"&gt;du=-iw\cdot e^{-i\cdot wx}&lt;/object&gt;:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/404b14a4142a051740bd0295f55730fdad2cb914.svg" style="height: 43px;" type="image/svg+xml"&gt;\[\mathcal{F}\left[f&amp;#x27;(x)\right]=\left[f(x)e^{-i\cdot wx}\right]^{\infty}_{-\infty}-\int_{-\infty}^{\infty}f(x)(-iw\cdot e^{-i\cdot wx})dx\]&lt;/object&gt;
+&lt;p&gt;Recall the assumption made in the &amp;quot;Existence condition...&amp;quot; section about
+&lt;img alt="f(x)" class="valign-m4 latex-math" src="https://eli.thegreenplace.net/images/math/3e03f4706048fbc6c5a252a85d066adf107fcc1f.png" style="height: 17px;" /&gt; vanishing at infinities. So the first part of the equation
+above is zero, and we’re left with:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/dc5d418235b7eba338e8e89f81294a0ea47e17b4.svg" style="height: 115px;" type="image/svg+xml"&gt;\[\begin{aligned}
+    \mathcal{F}\left[f&amp;#x27;(x)\right]&amp;amp;=-\int_{-\infty}^{\infty}f(x)(-iw\cdot
+    e^{-i\cdot wx})dx\\
+    &amp;amp;=iw\int_{-\infty}^{\infty}f(x)e^{-i\cdot wx}dx\\
+    &amp;amp;=iw\cdot\mathcal{F}\left[f(x)\right]
+\end{aligned}\]&lt;/object&gt;
+&lt;p&gt;&lt;strong&gt;Transform of convolution&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;The convolution between two continuous functions &lt;img alt="f(x)" class="valign-m4 latex-math" src="https://eli.thegreenplace.net/images/math/3e03f4706048fbc6c5a252a85d066adf107fcc1f.png" style="height: 17px;" /&gt; and
+&lt;object class="valign-m5 latex-math" data="https://eli.thegreenplace.net/images/math/65405422ff71ebf2db437dbd89a41355f4f19183.svg" style="height: 19px;" type="image/svg+xml"&gt;g(x)&lt;/object&gt; is defined as:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/64d3b7f12adaf1aed1e65d923a25dc918750d92c.svg" style="height: 43px;" type="image/svg+xml"&gt;\[(f\ast g)(x)=\int_{-\infty}^{\infty}f(\xi)g(x-\xi)d\xi\]&lt;/object&gt;
+&lt;p&gt;Let’s calculate the Fourier transform of this function:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/a8f307d6edd7b1ac3fde4cda60dc344115e7800b.svg" style="height: 91px;" type="image/svg+xml"&gt;\[\begin{aligned}
+    \mathcal{F}\left[(f\ast g)(x)\right]&amp;amp;=\int_{-\infty}^{\infty}e^{-i\cdot wx}\left[\int_{-\infty}^{\infty}f(\xi)g(x-\xi)d\xi\right]dx\\
+    &amp;amp;=\int_{-\infty}^{\infty}\int_{-\infty}^{\infty}e^{-i\cdot wx}f(\xi)g(x-\xi)d\xi\ dx
+\end{aligned}\]&lt;/object&gt;
+&lt;p&gt;This step of combining the integrals into a double integral, as well as
+the next step (changing the order of integration) is possible due to
+&lt;a class="reference external" href="https://en.wikipedia.org/wiki/Fubini%27s_theorem"&gt;Fubini’s theorem&lt;/a&gt;
+and our assumption that &lt;img alt="f(x)" class="valign-m4 latex-math" src="https://eli.thegreenplace.net/images/math/3e03f4706048fbc6c5a252a85d066adf107fcc1f.png" style="height: 17px;" /&gt; and &lt;object class="valign-m5 latex-math" data="https://eli.thegreenplace.net/images/math/65405422ff71ebf2db437dbd89a41355f4f19183.svg" style="height: 19px;" type="image/svg+xml"&gt;g(x)&lt;/object&gt; are Lebesgue
+integrable.&lt;/p&gt;
+&lt;p&gt;Switch order of integration:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/df9fde5e4b753f4c41e5c292f37db1068710b14e.svg" style="height: 43px;" type="image/svg+xml"&gt;\[\mathcal{F}\left[(f\ast g)(x)\right]=\int_{-\infty}^{\infty}\int_{-\infty}^{\infty}e^{-i\cdot wx}f(\xi)g(x-\xi)dx\ d\xi\]&lt;/object&gt;
+&lt;p&gt;Now, &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/2585072601e53de18cd0041cba511465ff8265d2.svg" style="height: 18px;" type="image/svg+xml"&gt;f(\xi)&lt;/object&gt; in the inner integral doesn’t depend on &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/11f6ad8ec52a2984abaafd7c3b516503785c2072.svg" style="height: 8px;" type="image/svg+xml"&gt;x&lt;/object&gt;,
+so we can pull it out:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/c59ef4659d72edb37cba1d180020f83dfc36d5a5.svg" style="height: 43px;" type="image/svg+xml"&gt;\[\mathcal{F}\left[(f\ast g)(x)\right]=\int_{-\infty}^{\infty}f(\xi)\int_{-\infty}^{\infty}e^{-i\cdot wx}g(x-\xi)dx\ d\xi\]&lt;/object&gt;
+&lt;p&gt;The inner integral is just the Fourier transform of a time-shifted
+&lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/58ff017207a2364bb206cc8fa1b5ee6ff77b4fd9.svg" style="height: 18px;" type="image/svg+xml"&gt;g(x-\xi)&lt;/object&gt;, so we can write:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/088b586186d1a9dcb52289cf64705d389fff8cbf.svg" style="height: 43px;" type="image/svg+xml"&gt;\[\mathcal{F}\left[(f\ast g)(x)\right]=\int_{-\infty}^{\infty}f(\xi)e^{-i\cdot w\xi}\mathcal{F}\left[g(x)\right]d\xi=\mathcal{F}\left[g(x)\right]\int_{-\infty}^{\infty}e^{-i\cdot w\xi}f(\xi)d\xi\]&lt;/object&gt;
+&lt;p&gt;And the remaining integral is the Fourier transform of &lt;img alt="f(x)" class="valign-m4 latex-math" src="https://eli.thegreenplace.net/images/math/3e03f4706048fbc6c5a252a85d066adf107fcc1f.png" style="height: 17px;" /&gt;, so:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/54626bd17186b72917424dd6c746874be19eb1c7.svg" style="height: 18px;" type="image/svg+xml"&gt;\[\mathcal{F}\left[(f\ast g)(x)\right]=\mathcal{F}\left[f\right]\cdot\mathcal{F}\left[g\right]\]&lt;/object&gt;
+&lt;p&gt;Convolution in the time domain translates to multiplication in the
+frequency domain! This result is so important in signal processing that
+it’s called &lt;em&gt;the convolution theorem&lt;/em&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="appendix-a-riemann-sum-and-the-definite-integral"&gt;
+&lt;h2&gt;Appendix A: Riemann sum and the definite integral&lt;/h2&gt;
+&lt;p&gt;Suppose we have some function &lt;img alt="f(x)" class="valign-m4 latex-math" src="https://eli.thegreenplace.net/images/math/3e03f4706048fbc6c5a252a85d066adf107fcc1f.png" style="height: 17px;" /&gt; and we want to know the area
+bounded between this function’s graph and the &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/11f6ad8ec52a2984abaafd7c3b516503785c2072.svg" style="height: 8px;" type="image/svg+xml"&gt;x&lt;/object&gt; axis in a
+certain interval &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/1475c39442659c6febe03b2e1809dbde6ec5fb5a.svg" style="height: 18px;" type="image/svg+xml"&gt;[a,b]&lt;/object&gt;. One way to do this is to take a
+&lt;a class="reference external" href="https://en.wikipedia.org/wiki/Partition_of_an_interval"&gt;partition&lt;/a&gt;
+of the interval:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/11ef50ee14b24c3f7713698e491860e9fdd68d4a.svg" style="height: 16px;" type="image/svg+xml"&gt;\[a=x_0&amp;lt;x_1&amp;lt;\cdots&amp;lt;x_{n-1}&amp;lt;x_n=b\]&lt;/object&gt;
+&lt;p&gt;And calculate the area under &lt;img alt="f" class="valign-m3 latex-math" src="https://eli.thegreenplace.net/images/math/4a0a19218e082a343a1b17e5333409af9d98f0f5.png" style="height: 15px;" /&gt; for every element of the
+partition. We can then approximate such sub-areas by rectangles, as
+follows:&lt;/p&gt;
+&lt;img alt="Riemann sum plot" class="align-center" src="https://eli.thegreenplace.net/images/2026/riemann-sum.png" /&gt;
+&lt;p&gt;We’ll denote the area of each rectangle as
+&lt;object class="valign-m5 latex-math" data="https://eli.thegreenplace.net/images/math/7795c99dae5b64c326a3108b4a697e32ce2263aa.svg" style="height: 18px;" type="image/svg+xml"&gt;f(x^*_i)\cdot\Delta x&lt;/object&gt;:&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;&lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/dc13de28bfc406ce5a194900ced006c8ada8fce9.svg" style="height: 18px;" type="image/svg+xml"&gt;\Delta x=(b-a)/n&lt;/object&gt; is the width of one interval (assuming a
+uniform partition, but the math works just as well for non-uniform
+ones).&lt;/li&gt;
+&lt;li&gt;&lt;object class="valign-m5 latex-math" data="https://eli.thegreenplace.net/images/math/306d0e72ecd01369e781c973043a0c39fa258a8a.svg" style="height: 17px;" type="image/svg+xml"&gt;x^*_i&lt;/object&gt; is some value in the interval &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/2408e92610b98a2ab3b45a54e2776cfad31c8e73.svg" style="height: 18px;" type="image/svg+xml"&gt;[x_{i-1},x_i]&lt;/object&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;There are many ways to choose which point of the interval
+&lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/2408e92610b98a2ab3b45a54e2776cfad31c8e73.svg" style="height: 18px;" type="image/svg+xml"&gt;[x_{i-1},x_i]&lt;/object&gt; to denote as &lt;object class="valign-m5 latex-math" data="https://eli.thegreenplace.net/images/math/306d0e72ecd01369e781c973043a0c39fa258a8a.svg" style="height: 17px;" type="image/svg+xml"&gt;x^*_i&lt;/object&gt;: left point
+(&lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/83baeffb5c41a6ad721e8c1a677f379b9dc8722c.svg" style="height: 12px;" type="image/svg+xml"&gt;x_{i-1}&lt;/object&gt;), right point (&lt;img alt="x_i" class="valign-m3 latex-math" src="https://eli.thegreenplace.net/images/math/34e03e6559b14df9fe5a97bbd2ed10109dfebbd3.png" style="height: 10px;" /&gt;), mid-point between the two
+(which is what our plot shows) or anything in between. The distinction
+doesn’t really matter for our purpose, as we will soon see.&lt;/p&gt;
+&lt;p&gt;We can approximate the area under the curve of &lt;img alt="f" class="valign-m3 latex-math" src="https://eli.thegreenplace.net/images/math/4a0a19218e082a343a1b17e5333409af9d98f0f5.png" style="height: 15px;" /&gt; in the interval
+&lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/1475c39442659c6febe03b2e1809dbde6ec5fb5a.svg" style="height: 18px;" type="image/svg+xml"&gt;[a,b]&lt;/object&gt; with the &lt;strong&gt;Riemann sum&lt;/strong&gt;, using a uniform partition:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/fb8aacc8d67e04353800371d56263c334fa42889.svg" style="height: 49px;" type="image/svg+xml"&gt;\[S=\sum_{i=1}^{n}f(x^*_i)\Delta x\]&lt;/object&gt;
+&lt;p&gt;If &lt;img alt="f" class="valign-m3 latex-math" src="https://eli.thegreenplace.net/images/math/4a0a19218e082a343a1b17e5333409af9d98f0f5.png" style="height: 15px;" /&gt; is continuous on &lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/1475c39442659c6febe03b2e1809dbde6ec5fb5a.svg" style="height: 18px;" type="image/svg+xml"&gt;[a,b]&lt;/object&gt;, then as
+&lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/806d3bb52101b325f342d5a3b8ecfd32a067dc3b.svg" style="height: 8px;" type="image/svg+xml"&gt;n\rightarrow \infty&lt;/object&gt;:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/81b22f1f683f913271c4cc8599761a3d95b24c70.svg" style="height: 50px;" type="image/svg+xml"&gt;\[S=\lim_{n\rightarrow \infty}\sum_{i=1}^{n}f(x^*_i)\Delta x=\int_{a}^{b}f(x)dx\]&lt;/object&gt;
+&lt;p&gt;This is known as the &lt;strong&gt;Riemann integral&lt;/strong&gt;, or just the definite
+integral. The limit is why the exact choice of &lt;object class="valign-m5 latex-math" data="https://eli.thegreenplace.net/images/math/306d0e72ecd01369e781c973043a0c39fa258a8a.svg" style="height: 17px;" type="image/svg+xml"&gt;x^*_i&lt;/object&gt; doesn’t
+matter: as &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/d700d1d5bd9381b68e71b723ba8f231ee62dd3f4.svg" style="height: 8px;" type="image/svg+xml"&gt;n\rightarrow\infty&lt;/object&gt; we have
+&lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/68c3d05c11aecce6ca6c6c45e1369f8e21440a47.svg" style="height: 12px;" type="image/svg+xml"&gt;\Delta x\rightarrow 0&lt;/object&gt;, and all points within
+&lt;object class="valign-m4 latex-math" data="https://eli.thegreenplace.net/images/math/ee05ac539c5cac9ca6b187b374a09e20a3e587c9.svg" style="height: 18px;" type="image/svg+xml"&gt;[x_{i-1}, x_i]&lt;/object&gt; are equally good.&lt;/p&gt;
+&lt;hr class="docutils" /&gt;
+&lt;table class="docutils footnote" frame="void" id="footnote-1" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#footnote-reference-1"&gt;[1]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;Note that &lt;object class="valign-m3 latex-math" data="https://eli.thegreenplace.net/images/math/e6456786af3c999a8eda7658e37f7bf5d1bb0db0.svg" style="height: 14px;" type="image/svg+xml"&gt;C_n&lt;/object&gt; is not a function of &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/11f6ad8ec52a2984abaafd7c3b516503785c2072.svg" style="height: 8px;" type="image/svg+xml"&gt;x&lt;/object&gt;; in its
+definition, &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/11f6ad8ec52a2984abaafd7c3b516503785c2072.svg" style="height: 8px;" type="image/svg+xml"&gt;x&lt;/object&gt; only serves as a dummy integration variable and
+can be called anything we choose. When we substitute &lt;object class="valign-m3 latex-math" data="https://eli.thegreenplace.net/images/math/e6456786af3c999a8eda7658e37f7bf5d1bb0db0.svg" style="height: 14px;" type="image/svg+xml"&gt;C_n&lt;/object&gt; into
+the equation for &lt;img alt="f(x)" class="valign-m4 latex-math" src="https://eli.thegreenplace.net/images/math/3e03f4706048fbc6c5a252a85d066adf107fcc1f.png" style="height: 17px;" /&gt;, which &lt;em&gt;is&lt;/em&gt; a function of &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/11f6ad8ec52a2984abaafd7c3b516503785c2072.svg" style="height: 8px;" type="image/svg+xml"&gt;x&lt;/object&gt;, we
+have to be careful. Thus the renaming.&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="footnote-2" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#footnote-reference-2"&gt;[2]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;Note we apply the limit; therefore, the bounds of the inner integral
+(in the square brackets) are now also between &lt;object class="valign-m1 latex-math" data="https://eli.thegreenplace.net/images/math/18787d835dea1ca698e365c252f82b506cecfce7.svg" style="height: 12px;" type="image/svg+xml"&gt;-\infty&lt;/object&gt; and
+&lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/9b97f26fbeb1b84327c736de515f10980d9c7d68.svg" style="height: 8px;" type="image/svg+xml"&gt;\infty&lt;/object&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="footnote-3" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#footnote-reference-3"&gt;[3]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;We change the dummy integration variable back to &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/11f6ad8ec52a2984abaafd7c3b516503785c2072.svg" style="height: 8px;" type="image/svg+xml"&gt;x&lt;/object&gt; here, for
+consistency. Once again, since &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/11f6ad8ec52a2984abaafd7c3b516503785c2072.svg" style="height: 8px;" type="image/svg+xml"&gt;x&lt;/object&gt; is just the integration
+variable and the integral is definite, the final result doesn’t
+depend on &lt;object class="valign-0 latex-math" data="https://eli.thegreenplace.net/images/math/11f6ad8ec52a2984abaafd7c3b516503785c2072.svg" style="height: 8px;" type="image/svg+xml"&gt;x&lt;/object&gt;. It’s a function of &lt;img alt="w" class="valign-0 latex-math" src="https://eli.thegreenplace.net/images/math/aff024fe4ab0fece4091de044c58c9ae4233383a.png" style="height: 7px;" /&gt;.&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="footnote-4" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#footnote-reference-4"&gt;[4]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;The vanishing at infinity part is the Riemann-Lebesgue lemma; you can
+find a proof on Wikipedia&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="footnote-5" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#footnote-reference-5"&gt;[5]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;A pathological absolute-integrable function can have spikes at
+infinity but still have a finite total area.&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;script src="https://eli.thegreenplace.net/demos/fourier/windowed.js"&gt;
+&lt;/script&gt;&lt;/div&gt;
+</content><category term="misc"></category><category term="Math"></category></entry><entry><title>Dot product: Component vs. Geometric definition</title><link href="https://eli.thegreenplace.net/2026/dot-product-component-vs-geometric-definition/" rel="alternate"></link><published>2026-07-10T18:42:00-07:00</published><updated>2026-07-11T01:45:03-07:00</updated><author><name>Eli Bendersky</name></author><id>tag:eli.thegreenplace.net,2026-07-10:/2026/dot-product-component-vs-geometric-definition/</id><summary type="html">&lt;p&gt;The goal of this post is to answer a simple question: why are the
+following two definitions of the vector dot product in Euclidean
+space &lt;a class="footnote-reference" href="#footnote-1" id="footnote-reference-1"&gt;[1]&lt;/a&gt; equivalent for vectors &lt;object class="valign-0" data="https://eli.thegreenplace.net/images/math/1e37c650a8e07c81d1a1b03f075bdf45139d65e9.svg" style="height: 13px;" type="image/svg+xml"&gt;\vec{a}&lt;/object&gt; and &lt;object class="valign-0" data="https://eli.thegreenplace.net/images/math/71fa108edb785ca9f729fa3cd5ad18556dd682e4.svg" style="height: 18px;" type="image/svg+xml"&gt;\vec{b}&lt;/object&gt;:&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;Component definition:
+&lt;object class="valign-m5" data="https://eli.thegreenplace.net/images/math/ceda7d1aeff7f71ec163c06a1027301880a1a11a.svg" style="height: 23px;" type="image/svg+xml"&gt;\vec{a}\cdot\vec{b}=\sum_{i=1}^{n}a_i b_i&lt;/object&gt;&lt;/li&gt;
+&lt;li&gt;Geometric definition:
+&lt;object class="valign-m4" data="https://eli.thegreenplace.net/images/math/18295d9ada05bf75a8c4e834b5cdb5a1fb8236b7.svg" style="height: 22px;" type="image/svg+xml"&gt;\vec …&lt;/object&gt;&lt;/li&gt;&lt;/ul&gt;</summary><content type="html">&lt;p&gt;The goal of this post is to answer a simple question: why are the
+following two definitions of the vector dot product in Euclidean
+space &lt;a class="footnote-reference" href="#footnote-1" id="footnote-reference-1"&gt;[1]&lt;/a&gt; equivalent for vectors &lt;object class="valign-0" data="https://eli.thegreenplace.net/images/math/1e37c650a8e07c81d1a1b03f075bdf45139d65e9.svg" style="height: 13px;" type="image/svg+xml"&gt;\vec{a}&lt;/object&gt; and &lt;object class="valign-0" data="https://eli.thegreenplace.net/images/math/71fa108edb785ca9f729fa3cd5ad18556dd682e4.svg" style="height: 18px;" type="image/svg+xml"&gt;\vec{b}&lt;/object&gt;:&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;Component definition:
+&lt;object class="valign-m5" data="https://eli.thegreenplace.net/images/math/ceda7d1aeff7f71ec163c06a1027301880a1a11a.svg" style="height: 23px;" type="image/svg+xml"&gt;\vec{a}\cdot\vec{b}=\sum_{i=1}^{n}a_i b_i&lt;/object&gt;&lt;/li&gt;
+&lt;li&gt;Geometric definition:
+&lt;object class="valign-m4" data="https://eli.thegreenplace.net/images/math/18295d9ada05bf75a8c4e834b5cdb5a1fb8236b7.svg" style="height: 22px;" type="image/svg+xml"&gt;\vec{a}\cdot\vec{b}=|\vec{a}||\vec{b}|cos(\theta)&lt;/object&gt;, where
+&lt;object class="valign-m4" data="https://eli.thegreenplace.net/images/math/0cab7c57b6f3ee6067b1490781094dd2a0b060ee.svg" style="height: 18px;" type="image/svg+xml"&gt;|\vec{a}|&lt;/object&gt; is the magnitude of &lt;object class="valign-0" data="https://eli.thegreenplace.net/images/math/1e37c650a8e07c81d1a1b03f075bdf45139d65e9.svg" style="height: 13px;" type="image/svg+xml"&gt;\vec{a}&lt;/object&gt; and
+&lt;img alt="\theta" class="valign-0" src="https://eli.thegreenplace.net/images/math/cb005d76f9f2e394a770c2562c2e150a413b3216.png" style="height: 12px;" /&gt; is the angle between the vectors’ directions&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Here’s a graphical depiction of our vectors (focusing on
+&lt;img alt="\mathbb{R}^2" class="valign-0" src="https://eli.thegreenplace.net/images/math/2b688757b3d0949451e1fa97e71ac5f5f284a5e4.png" style="height: 15px;" /&gt; for clarity, though this applies to any-dimensional
+vectors). It shows both the components of the vectors and the angle
+between them. The &lt;em&gt;length&lt;/em&gt; of the arrow for &lt;object class="valign-0" data="https://eli.thegreenplace.net/images/math/1e37c650a8e07c81d1a1b03f075bdf45139d65e9.svg" style="height: 13px;" type="image/svg+xml"&gt;\vec{a}&lt;/object&gt; is
+&lt;object class="valign-m4" data="https://eli.thegreenplace.net/images/math/0cab7c57b6f3ee6067b1490781094dd2a0b060ee.svg" style="height: 18px;" type="image/svg+xml"&gt;|\vec{a}|&lt;/object&gt;.&lt;/p&gt;
+&lt;img alt="Vectors a and b in the cartesian plane" class="align-center" src="https://eli.thegreenplace.net/images/2026/vec-ab.png" /&gt;
+&lt;p&gt;We’ll show two proofs of the equivalence here, the &lt;em&gt;geometric proof&lt;/em&gt; and
+the &lt;em&gt;projection proof&lt;/em&gt;. The Appendix describes some properties of dot
+products that facilitate these proofs.&lt;/p&gt;
+&lt;div class="section" id="geometric-proof"&gt;
+&lt;h2&gt;Geometric proof&lt;/h2&gt;
+&lt;p&gt;We’ll be using this diagram of our vectors &lt;object class="valign-0" data="https://eli.thegreenplace.net/images/math/1e37c650a8e07c81d1a1b03f075bdf45139d65e9.svg" style="height: 13px;" type="image/svg+xml"&gt;\vec{a}&lt;/object&gt; and
+&lt;object class="valign-0" data="https://eli.thegreenplace.net/images/math/71fa108edb785ca9f729fa3cd5ad18556dd682e4.svg" style="height: 18px;" type="image/svg+xml"&gt;\vec{b}&lt;/object&gt;, as well as the vector &lt;object class="valign-m1" data="https://eli.thegreenplace.net/images/math/8a5592cb1eea55d16a0003f0821da2c56d6b57b9.svg" style="height: 19px;" type="image/svg+xml"&gt;\vec{c}=\vec{a}-\vec{b}&lt;/object&gt;:&lt;/p&gt;
+&lt;img alt="Vectors a, b and c in the cartesian plane" class="align-center" src="https://eli.thegreenplace.net/images/2026/vec-abc.png" /&gt;
+&lt;p&gt;Using the law of cosines &lt;a class="footnote-reference" href="#footnote-2" id="footnote-reference-2"&gt;[2]&lt;/a&gt; on the triangle formed by the three
+vectors:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/240ccea2153ff31cc6fe50d5e304555cf1cdf7dc.svg" style="height: 22px;" type="image/svg+xml"&gt;\[|\vec{c}|^2=|\vec{a}|^2+|\vec{b}|^2-2|\vec{a}||\vec{b}|cos(\theta)\]&lt;/object&gt;
+&lt;p&gt;Since for any vector &lt;object class="valign-0" data="https://eli.thegreenplace.net/images/math/1e37c650a8e07c81d1a1b03f075bdf45139d65e9.svg" style="height: 13px;" type="image/svg+xml"&gt;\vec{a}&lt;/object&gt;, we have
+&lt;object class="valign-m4" data="https://eli.thegreenplace.net/images/math/b422cc5da6849fe3e73781c1b45524a245325e75.svg" style="height: 19px;" type="image/svg+xml"&gt;\vec{a}\cdot\vec{a}=|\vec{a}|^2&lt;/object&gt; (see Appendix), let’s rewrite
+this equation as:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/6695944214e34273aa1cf3c5fc019631d3d949eb.svg" style="height: 22px;" type="image/svg+xml"&gt;\[\vec{c}\cdot\vec{c}=\vec{a}\cdot\vec{a}+\vec{b}\cdot\vec{b}-2|\vec{a}||\vec{b}|cos(\theta)\]&lt;/object&gt;
+&lt;p&gt;But &lt;object class="valign-m1" data="https://eli.thegreenplace.net/images/math/8a5592cb1eea55d16a0003f0821da2c56d6b57b9.svg" style="height: 19px;" type="image/svg+xml"&gt;\vec{c}=\vec{a}-\vec{b}&lt;/object&gt; and the dot product obeys the
+distributive property (see Appendix). Therefore:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/e2a2ea0a8703cc17b1247e08f88c0a930f457727.svg" style="height: 110px;" type="image/svg+xml"&gt;\[\begin{aligned}
+(\vec{a}-\vec{b})\cdot(\vec{a}-\vec{b})&amp;amp;=\vec{a}\cdot\vec{a}+\vec{b}\cdot\vec{b}-2|\vec{a}||\vec{b}|cos(\theta)\\
+\vec{a}\cdot\vec{a}-2\vec{a}\cdot\vec{b}+\vec{b}\cdot\vec{b}&amp;amp;=\vec{a}\cdot\vec{a}+\vec{b}\cdot\vec{b}-2|\vec{a}||\vec{b}|cos(\theta)\\
+-2\vec{a}\cdot\vec{b}&amp;amp;=-2|\vec{a}||\vec{b}|cos(\theta)\\
+\vec{a}\cdot\vec{b}&amp;amp;=|\vec{a}||\vec{b}|cos(\theta)
+\end{aligned}\]&lt;/object&gt;
+&lt;/div&gt;
+&lt;div class="section" id="projection-proof"&gt;
+&lt;h2&gt;Projection proof&lt;/h2&gt;
+&lt;p&gt;For this proof, we’ll assume the geometric definition is correct and
+will see how it leads to the component definition. We’ll begin by
+denoting vectors &lt;object class="valign-m3" data="https://eli.thegreenplace.net/images/math/620cb2dfecf64377c0514f58bb921df1a50bf1cc.svg" style="height: 16px;" type="image/svg+xml"&gt;\vec{e}_1,\vec{e}_2\dots\vec{e}_n&lt;/object&gt; as the
+standard orthonormal basis for &lt;img alt="\mathbb{R}^n" class="valign-0" src="https://eli.thegreenplace.net/images/math/98165cf6e8d5d442e040d1fa47aa6845f09294c5.png" style="height: 12px;" /&gt;. For example, in 2D
+space, these basis vectors are &lt;object class="valign-m4" data="https://eli.thegreenplace.net/images/math/70f6d3f52a446d8fc6697e813283690b52f564f5.svg" style="height: 18px;" type="image/svg+xml"&gt;\vec{e}_1=[1\ 0]&lt;/object&gt; and
+&lt;object class="valign-m4" data="https://eli.thegreenplace.net/images/math/09f035a2ceccb1ee6e2299b8f3b39fcba5a50415.svg" style="height: 18px;" type="image/svg+xml"&gt;\vec{e}_2=[0\ 1]&lt;/object&gt;, shown in
+this diagram:&lt;/p&gt;
+&lt;img alt="Projection of vector a on basis vectors" class="align-center" src="https://eli.thegreenplace.net/images/2026/vec-a-proj.png" /&gt;
+&lt;p&gt;If we take an arbitrary &lt;object class="valign-m1" data="https://eli.thegreenplace.net/images/math/e308d2dc4c91a30f229484326d392f20443ae2af.svg" style="height: 13px;" type="image/svg+xml"&gt;\vec{a}\in\mathbb{R}^n&lt;/object&gt; and calculate its
+dot product with a basis vector, we can use the geometric definition:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/186133bb5f8369bd1ecf10d5d2b4d943add95e16.svg" style="height: 18px;" type="image/svg+xml"&gt;\[\vec{a}\cdot\vec{e}_i=|\vec{a}||\vec{e}_i|cos(\theta_i)=|\vec{a}|cos(\theta_i)=a_i\]&lt;/object&gt;
+&lt;p&gt;where &lt;object class="valign-m3" data="https://eli.thegreenplace.net/images/math/1ba9b59bdee92f38c1698c784b67ba70f803331d.svg" style="height: 10px;" type="image/svg+xml"&gt;a_i&lt;/object&gt; is the component of &lt;object class="valign-0" data="https://eli.thegreenplace.net/images/math/1e37c650a8e07c81d1a1b03f075bdf45139d65e9.svg" style="height: 13px;" type="image/svg+xml"&gt;\vec{a}&lt;/object&gt; in the direction
+of &lt;object class="valign-m3" data="https://eli.thegreenplace.net/images/math/affb5dee8540bbf9212209541eb1f5ae1c892c57.svg" style="height: 15px;" type="image/svg+xml"&gt;\vec{e}_i&lt;/object&gt;. The diagram makes it easy to see why this is true
+from basic trigonometry, but in the more general case this is just a
+&lt;a class="reference external" href="https://eli.thegreenplace.net/2024/projections-and-projection-matrices/"&gt;vector
+projection&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Now let’s represent vectors &lt;object class="valign-0" data="https://eli.thegreenplace.net/images/math/1e37c650a8e07c81d1a1b03f075bdf45139d65e9.svg" style="height: 13px;" type="image/svg+xml"&gt;\vec{a}&lt;/object&gt; and &lt;object class="valign-0" data="https://eli.thegreenplace.net/images/math/71fa108edb785ca9f729fa3cd5ad18556dd682e4.svg" style="height: 18px;" type="image/svg+xml"&gt;\vec{b}&lt;/object&gt; as
+linear combinations of the basis vectors:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/c8e0903b930bb28b24c17ed4c11523763abb143e.svg" style="height: 107px;" type="image/svg+xml"&gt;\[\begin{aligned}
+    \vec{a}&amp;amp;=\sum_{i=1}^{n}a_i\vec{e}_i\\
+    \vec{b}&amp;amp;=\sum_{i=1}^{n}b_i\vec{e}_i\\
+\end{aligned}\]&lt;/object&gt;
+&lt;p&gt;And calculate the dot product &lt;object class="valign-0" data="https://eli.thegreenplace.net/images/math/b1048f974a85e79f143668b8f14b1304450e32a3.svg" style="height: 18px;" type="image/svg+xml"&gt;\vec{a}\cdot\vec{b}&lt;/object&gt;, beginning by
+rewriting &lt;object class="valign-0" data="https://eli.thegreenplace.net/images/math/71fa108edb785ca9f729fa3cd5ad18556dd682e4.svg" style="height: 18px;" type="image/svg+xml"&gt;\vec{b}&lt;/object&gt; with its linear combination of basis vectors
+representation:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/e9e1a0ea9925cbc19e45d6003b550319677f2e7f.svg" style="height: 49px;" type="image/svg+xml"&gt;\[\vec{a}\cdot\vec{b}=\vec{a}\cdot\sum_{i=1}^{n}b_i\vec{e}_i\]&lt;/object&gt;
+&lt;p&gt;Using the fact that the dot product distributes over linear
+combinations:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/d5be2ada840bb5b42dc39f2a4cc4bd250b8ca6e6.svg" style="height: 49px;" type="image/svg+xml"&gt;\[\vec{a}\cdot\vec{b}=\sum_{i=1}^{n}b_i(\vec{a}\cdot\vec{e}_i)\]&lt;/object&gt;
+&lt;p&gt;But earlier we’ve shown that &lt;object class="valign-m3" data="https://eli.thegreenplace.net/images/math/8fd516937d096de273bbe7affffe0b4366c8aff8.svg" style="height: 15px;" type="image/svg+xml"&gt;\vec{a}\cdot\vec{e}_i=a_i&lt;/object&gt;.
+Therefore:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/6f9531542f40b48ecd92cb463422c7496338a28d.svg" style="height: 49px;" type="image/svg+xml"&gt;\[\vec{a}\cdot\vec{b}=\sum_{i=1}^{n}b_i a_i=\sum_{i=1}^{n}a_i b_i\]&lt;/object&gt;
+&lt;p&gt;Which is the component definition &lt;object class="valign-0" data="https://eli.thegreenplace.net/images/math/4a4e9e431da45a27bc880a8a1ca44d8b1b9bc143.svg" style="height: 12px;" type="image/svg+xml"&gt;\blacksquare&lt;/object&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="appendix-a-inner-product-space"&gt;
+&lt;h2&gt;Appendix A: Inner product space&lt;/h2&gt;
+&lt;p&gt;A generalization of dot products in &lt;img alt="\mathbb{R}^n" class="valign-0" src="https://eli.thegreenplace.net/images/math/98165cf6e8d5d442e040d1fa47aa6845f09294c5.png" style="height: 12px;" /&gt; is the &lt;em&gt;inner
+product&lt;/em&gt;, which is an operation meeting some specific requirements,
+defined on a vector space.&lt;/p&gt;
+&lt;p&gt;The inner product is denoted as
+&lt;object class="valign-m4" data="https://eli.thegreenplace.net/images/math/cbdca019cccdd6a52a31e7801d2df0ab11ea3308.svg" style="height: 18px;" type="image/svg+xml"&gt;\langle x,y\rangle:\mathbb{R}^n\times\mathbb{R}^n\to\mathbb{R}&lt;/object&gt;,
+and must satisfy the following requirements for all vectors
+&lt;object class="valign-m3" data="https://eli.thegreenplace.net/images/math/e4dc4820e1769287ccf66b5dd55d01e585bebe28.svg" style="height: 16px;" type="image/svg+xml"&gt;x,y,z\in\mathbb{R}^n&lt;/object&gt; and scalars &lt;object class="valign-m3" data="https://eli.thegreenplace.net/images/math/30f42e11547408a4df5cc14e588f8866c8df08b1.svg" style="height: 16px;" type="image/svg+xml"&gt;a,b\in\mathbb{R}&lt;/object&gt;:&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;Symmetry: &lt;object class="valign-m4" data="https://eli.thegreenplace.net/images/math/3c2a6a5c6c97ba865770875225c2b5a66c80eeb4.svg" style="height: 18px;" type="image/svg+xml"&gt;\langle x,y\rangle=\langle y,x\rangle&lt;/object&gt;&lt;/li&gt;
+&lt;li&gt;Linearity in the first argument:
+&lt;object class="valign-m4" data="https://eli.thegreenplace.net/images/math/89712b4ea716fa8e6cd8b9d87122b79bb1a9667d.svg" style="height: 18px;" type="image/svg+xml"&gt;\langle ax+by,z\rangle=a\langle x,z\rangle+b\langle y,z\rangle&lt;/object&gt;&lt;/li&gt;
+&lt;li&gt;Positive-definiteness: if &lt;object class="valign-m3" data="https://eli.thegreenplace.net/images/math/b236da2dfef47fa5412296162341115b27b43299.svg" style="height: 16px;" type="image/svg+xml"&gt;x\ne 0&lt;/object&gt; then
+&lt;object class="valign-m4" data="https://eli.thegreenplace.net/images/math/9535942c7e10297e079a7e3454b38d7950ae2310.svg" style="height: 18px;" type="image/svg+xml"&gt;\langle x,x\rangle&amp;gt;0&lt;/object&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;For &lt;img alt="\mathbb{R}^n" class="valign-0" src="https://eli.thegreenplace.net/images/math/98165cf6e8d5d442e040d1fa47aa6845f09294c5.png" style="height: 12px;" /&gt;, we define the inner product operation in its
+component formulation as:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/9aaa1b0476e540ca44c95a3c19027636f3206a46.svg" style="height: 49px;" type="image/svg+xml"&gt;\[\langle x,y\rangle=\sum_{i=1}^{n}x_i\cdot y_i\]&lt;/object&gt;
+&lt;p&gt;Let’s prove the requirements listed above for this operation; this is
+fairly straightforward, given the well-known properties of scalar
+multiplication and addition on &lt;img alt="\mathbb{R}" class="valign-0" src="https://eli.thegreenplace.net/images/math/0ed839b111fe0e3ca2b2f618b940893eaea88a57.png" style="height: 12px;" /&gt;:&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Symmetry:&lt;/strong&gt;&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/0b40b68141de632daf8ad29a268134ff95bd8913.svg" style="height: 49px;" type="image/svg+xml"&gt;\[\langle x,y\rangle=\sum_{i=1}^{n}x_i\cdot y_i=\sum_{i=1}^{n}y_i\cdot x_i=\langle y,x\rangle\]&lt;/object&gt;
+&lt;p&gt;&lt;strong&gt;Linearity in the first argument:&lt;/strong&gt;&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/da1d69b138c0cd509829247a3df234b2584fc0f8.svg" style="height: 165px;" type="image/svg+xml"&gt;\[\begin{aligned}
+\langle ax+by,z\rangle&amp;amp;=\sum_{i=1}^{n}(ax+by)_i\cdot z_i\\
+&amp;amp;=\sum_{i=1}^{n}a x_i\cdot z_i+b y_i\cdot z_i\\
+&amp;amp;=a\sum_{i=1}^{n}x_i\cdot z_i+b\sum_{i=1}^{n}y_i\cdot z_i=a\langle x,z\rangle+b\langle y,z\rangle
+\end{aligned}\]&lt;/object&gt;
+&lt;p&gt;&lt;strong&gt;Positive-definiteness:&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Consider the components &lt;img alt="x_i" class="valign-m3" src="https://eli.thegreenplace.net/images/math/34e03e6559b14df9fe5a97bbd2ed10109dfebbd3.png" style="height: 10px;" /&gt; of vector &lt;object class="valign-0" data="https://eli.thegreenplace.net/images/math/11f6ad8ec52a2984abaafd7c3b516503785c2072.svg" style="height: 8px;" type="image/svg+xml"&gt;x&lt;/object&gt;. Clearly,
+&lt;object class="valign-m5" data="https://eli.thegreenplace.net/images/math/b612a557dba4596d6c60e575490f16b1ba8ae091.svg" style="height: 19px;" type="image/svg+xml"&gt;\forall i\quad x_i\cdot x_i=x_i^2\ge 0&lt;/object&gt;. Since the vector
+&lt;object class="valign-0" data="https://eli.thegreenplace.net/images/math/11f6ad8ec52a2984abaafd7c3b516503785c2072.svg" style="height: 8px;" type="image/svg+xml"&gt;x&lt;/object&gt; is not the zero vector, at least one of its components
+&lt;img alt="x_i" class="valign-m3" src="https://eli.thegreenplace.net/images/math/34e03e6559b14df9fe5a97bbd2ed10109dfebbd3.png" style="height: 10px;" /&gt; is nonzero, and for that component &lt;object class="valign-m3" data="https://eli.thegreenplace.net/images/math/c5bf177ea7d8fd17a6ca8070c2fdf6d1efb32d66.svg" style="height: 14px;" type="image/svg+xml"&gt;x_i\cdot x_i&amp;gt;0&lt;/object&gt;.
+Therefore:&lt;/p&gt;
+&lt;object class="align-center" data="https://eli.thegreenplace.net/images/math/27f090f1d43176fc69c95eac63d2ff17cbafc55b.svg" style="height: 49px;" type="image/svg+xml"&gt;\[\langle x,x\rangle=\sum_{i=1}^{n}x_i\cdot x_i&amp;gt;0\]&lt;/object&gt;
+&lt;p&gt;Now that we’ve proved all the inner product requirements on our
+operation &lt;object class="valign-m4" data="https://eli.thegreenplace.net/images/math/6ca9deb1a76b8e6935f570856eb9bda46220ce25.svg" style="height: 18px;" type="image/svg+xml"&gt;\langle x,y\rangle&lt;/object&gt;, we can say that
+&lt;img alt="\mathbb{R}^n" class="valign-0" src="https://eli.thegreenplace.net/images/math/98165cf6e8d5d442e040d1fa47aa6845f09294c5.png" style="height: 12px;" /&gt; is an &lt;em&gt;inner product space&lt;/em&gt; with this operation.&lt;/p&gt;
+&lt;p&gt;By meeting these requirements, it can be readily shown that our inner
+product operation has additional useful properties:&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;&lt;object class="valign-m4" data="https://eli.thegreenplace.net/images/math/2ee7d071087a18edac9b46e15b6ca6afbf9a6df8.svg" style="height: 18px;" type="image/svg+xml"&gt;\langle x,0\rangle=\langle 0,x\rangle=0&lt;/object&gt;&lt;/li&gt;
+&lt;li&gt;&lt;object class="valign-m4" data="https://eli.thegreenplace.net/images/math/900b54a8839adf1b8c8bb63303fff2f26f6b0776.svg" style="height: 18px;" type="image/svg+xml"&gt;\langle x,x\rangle=0&lt;/object&gt; if and only if &lt;object class="valign-0" data="https://eli.thegreenplace.net/images/math/8bdf21367eee06097384c37b0448375f07f950f0.svg" style="height: 12px;" type="image/svg+xml"&gt;x=0&lt;/object&gt;&lt;/li&gt;
+&lt;li&gt;&lt;object class="valign-m4" data="https://eli.thegreenplace.net/images/math/997f3a8fe7a79d7774e2b83acfa72f3ffc56a0df.svg" style="height: 18px;" type="image/svg+xml"&gt;\langle x,ay+bz\rangle=a\langle x,y\rangle+b\langle x,z\rangle&lt;/object&gt;&lt;/li&gt;
+&lt;li&gt;&lt;object class="valign-m4" data="https://eli.thegreenplace.net/images/math/685267fd1c951d09b34d3a7cd0f27361649b58cf.svg" style="height: 18px;" type="image/svg+xml"&gt;\langle x+y,x+y\rangle=\langle x,x\rangle+2\langle x,y\rangle+\langle y,y\rangle&lt;/object&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The third property is particularly helpful, because it means the inner
+product is &lt;em&gt;bilinear&lt;/em&gt;, and thus is distributive over addition.&lt;/p&gt;
+&lt;p&gt;Note that these are shown for the component definition of dot product.
+It’s not too hard to prove distributivity for the geometric definition
+using the notion of projections and how they add up.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Norm&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;The &lt;em&gt;norm&lt;/em&gt; of a vector &lt;object class="valign-0" data="https://eli.thegreenplace.net/images/math/11f6ad8ec52a2984abaafd7c3b516503785c2072.svg" style="height: 8px;" type="image/svg+xml"&gt;x&lt;/object&gt; in an inner product space is defined as
+&lt;object class="valign-m5" data="https://eli.thegreenplace.net/images/math/a7bda7d6e7e2e0cad0e29b07b00cf1e660e9e231.svg" style="height: 22px;" type="image/svg+xml"&gt;|x|=\sqrt{\langle x,x\rangle}&lt;/object&gt;. Therefore, the square of the norm
+is &lt;object class="valign-m4" data="https://eli.thegreenplace.net/images/math/d27b2e10b83103098eda64097cdab1a29d01a7f4.svg" style="height: 19px;" type="image/svg+xml"&gt;|x|^2=\langle x,x\rangle&lt;/object&gt;.&lt;/p&gt;
+&lt;p&gt;The norm is used to express the notion of &lt;em&gt;magnitude&lt;/em&gt;, or &lt;em&gt;length&lt;/em&gt; of a
+vector. If you think of a vector &lt;object class="valign-m1" data="https://eli.thegreenplace.net/images/math/33bd5495eaecc64262186977afff85eba0a94885.svg" style="height: 13px;" type="image/svg+xml"&gt;x\in\mathbb{R}^n&lt;/object&gt; in Cartesian
+coordinates, the definition of the norm is a generalization of the
+Pythagorean theorem.&lt;/p&gt;
+&lt;hr class="docutils" /&gt;
+&lt;table class="docutils footnote" frame="void" id="footnote-1" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#footnote-reference-1"&gt;[1]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;By this we mean &lt;img alt="\mathbb{R}^n" class="valign-0" src="https://eli.thegreenplace.net/images/math/98165cf6e8d5d442e040d1fa47aa6845f09294c5.png" style="height: 12px;" /&gt;, where each vector is an n-tuple
+of real numbers, with the usual mathematical operations making this a
+vector space.&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="footnote-2" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#footnote-reference-2"&gt;[2]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;Which is a very fundamental theorem in geometry; it is (or rather,
+its non-trigonometric version) is proven from the basic Euclidean
+axioms in &lt;em&gt;The Elements&lt;/em&gt;.&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+</content><category term="misc"></category><category term="Math"></category></entry><entry><title>Summary of reading: April - June 2026</title><link href="https://eli.thegreenplace.net/2026/summary-of-reading-april-june-2026/" rel="alternate"></link><published>2026-06-30T18:52:00-07:00</published><updated>2026-07-01T01:54:59-07:00</updated><author><name>Eli Bendersky</name></author><id>tag:eli.thegreenplace.net,2026-06-30:/2026/summary-of-reading-april-june-2026/</id><summary type="html">&lt;ul class="simple"&gt;
+&lt;li&gt;&amp;quot;The Nuremberg Trial&amp;quot; by John Tusa and Ann Tusa - a detailed, meticulously
+researched account of the Nuremberg Trials. There's not a whole lot of side
+questing in this book - it's all focused on the trials themselves. Interesting
+read overall, though somewhat dry and academic.&lt;/li&gt;
+&lt;li&gt;&amp;quot;Things Become Other Things: A Walking …&lt;/li&gt;&lt;/ul&gt;</summary><content type="html">&lt;ul class="simple"&gt;
+&lt;li&gt;&amp;quot;The Nuremberg Trial&amp;quot; by John Tusa and Ann Tusa - a detailed, meticulously
+researched account of the Nuremberg Trials. There's not a whole lot of side
+questing in this book - it's all focused on the trials themselves. Interesting
+read overall, though somewhat dry and academic.&lt;/li&gt;
+&lt;li&gt;&amp;quot;Things Become Other Things: A Walking Memoir&amp;quot; by Craig Mod - a kind of
+travelogue of the author walking across Japan's Kii peninsula, mixed with his
+childhood memories and impressions of life in Japan in general. It's a good
+book, though I thought I'd find more details about Japan here, whereas it's
+a much more introspective work about the author himself.&lt;/li&gt;
+&lt;li&gt;&amp;quot;Social Justice Fallacies&amp;quot; by Thomas Sowell - the usual data-driven Sowell
+fare, using real historical data and statistical analysis to tackle some hot
+political issues like personal liberties, poverty data and affirmative action.&lt;/li&gt;
+&lt;li&gt;&amp;quot;Focus: The ASML way&amp;quot; by Marc Hijink - I was inspired to read this book about
+ASML and its EUV technology after watching a fantastic Veritasium video on
+the topic. The book turned out to be a disappointment, however; I was
+interested in the technology behind ASML's machines, but the book is 98%
+focused on the human, political and organizational aspects of the company.
+If you're interested in the tech, the aforementioned video is a much better
+use of your time.&lt;/li&gt;
+&lt;li&gt;&amp;quot;Every Living Thing: The Great and Deadly Race to Know All Life&amp;quot; by Jason
+Roberts - combined biography of Carl Linnaeus and the Comte de Buffon, who
+were groundbreaking naturalists in the 18th century working to categorize all
+living thiings. It's a history of the very early days of what was called
+&amp;quot;natural science&amp;quot;, and later evolved into botany, biology, zoology, ecology
+and related disciplines. The title is hyperbolic, but the book itself is
+interesting and well written.&lt;/li&gt;
+&lt;li&gt;&amp;quot;Junglekeeper: What It Takes to Change the World&amp;quot; by Paul Rosolie - the
+author is a conservationist in the Peruvian Amazonia rainforest. This book
+recounts his adventures on the path to establish Junglekeepers - his
+organization for preserving the forest and its wildlife. It's a nice read
+overall, though the writing is overly embellished and tiringly hyperbolic at
+times.&lt;/li&gt;
+&lt;li&gt;&amp;quot;There Is No Place for Us: Working and Homeless in America&amp;quot; by Brian
+Goldstone - a poignant account of several families in Atlanta struggling with
+keeping access to suitable rental housing, circa 2020. It covers the danger
+zone of having just enough but absolutely no buffer, and how life emergencies
+affect families. Quite impressive investigative work to be able to produce a
+book like this; the stories are truly touching. The book does reasonably well
+to skirt around politics without too much preaching, which is appreciated.&lt;/li&gt;
+&lt;li&gt;&amp;quot;Understanding Software Dynamics&amp;quot; by Richard Sites - from the ground up
+discussion of software performance analysis with sampling, tracing and
+understanding the different ways in which CPUs are unable to make progress.
+A good chunk of the book is dedicated to the author's KUtrace system.
+I wanted to like this book, but ultimately failed. I found it extremely
+verbose and tedious to follow, full of walls of text.&lt;/li&gt;
+&lt;li&gt;&amp;quot;A Table for Two&amp;quot; by Amor Towles - a collection of short stories and a
+Novella. The stories all have some whimsical elements in them, and the
+writing is very good. That said, this book didn't quite recapture the magic
+of &amp;quot;A Gentleman in Moscow&amp;quot; for me.&lt;/li&gt;
+&lt;li&gt;&amp;quot;Never Enough&amp;quot; by Jennifer Breheny Wallace - talks about the stress teens
+are under to excel academically and athletically to improve chances of
+admission to top universities, and what to do about it. Somewhat similar to
+&amp;quot;The Price of Privelege&amp;quot; and &amp;quot;Unequal Childhoods&amp;quot;, though this one is more
+popular, in the sense that the author is a journalist, not a scientist, and
+the book is a collection of anecdata laced with official statistics, rather
+than experiences from the author's own research.&lt;/li&gt;
+&lt;li&gt;&amp;quot;Thunder Below!&amp;quot; by Eugene B. Fluckey - the story of USS Barb, a submarine
+in the pacific during the latter part of WWII, written by its commander
+through 5 different deployments against Japan. Written in an engaging writing
+style, this book is very  informative about how submarine warfare looked back
+then. I was somewhat shocked at the recklesness (suicidal courage?) of the
+commander though; he clearly was a very capable captain with a talented team,
+but surely there was lots of luck involved to be able to survive what he
+describes. That said, the book was also written 45 years after the events, so
+it's possible that there's some embellishment involved.&lt;/li&gt;
+&lt;li&gt;&amp;quot;Breakneck: China's Quest to Engineer the Future&amp;quot; by Dan Wang - a very nice
+book about China's manufacturing superiority in the last few decades, as well
+as other aspects of its society like the one child policy and the COVID-19
+lockdowns. The author contrasts China - &amp;quot;an engineer-driven society&amp;quot; with the
+USA - &amp;quot;a lawyer-driven society&amp;quot;, discussing the effects on industrial
+capacity, culture and civil rights. Informative and well written.&lt;/li&gt;
+&lt;li&gt;&amp;quot;Good People: A Novel&amp;quot; by Patmeena Sabit - an Afghan refugee family settles
+in Virginia in the early 2000s; this is a novel / mystery focused on their
+older children, their assimilation in the USA and what that lead to.
+Haunting book that will be difficult to get out of one's head, particularly
+for parents of teenage girls.&lt;/li&gt;
+&lt;li&gt;&amp;quot;The Invention of China&amp;quot; by Bill Hayton - the author's thesis is that much
+of the national ethos of China - the unity of its peoples, language,
+territory - was invented about a century ago as part of a political agenda.
+The book is quite dry and academic, but this is key to its effectiveness,
+as it relies heavily on historical documents. It mentions a fantastic
+quote from Mao - &amp;quot;Make the past serve the present&amp;quot; - and I feel like this
+describes the book's main thesis very well. A fascinating example of the
+narrative of Orwell's 1948 in real life.&lt;/li&gt;
+&lt;li&gt;&amp;quot;Advanced Hands-on Rust&amp;quot; by Herbert Wolverson - the idea of the book is to
+help one learn Rust through hands-on projects, by building games that use
+the Bevy framework. My conclusion is that Bevy is a particularly poor way
+to learn Rust because it's a massive, opaque and opinionated framework that
+bends your code to its will and conventions. Actually learning or practicing
+a language by building these simple games from scratch would be much better,
+IMO. So if your goal is to practice Bevy, sure, this book isn't too bad; but
+for Rust, stay away. Other than the Bevy issue, the book is poorly
+edited, with code samples out of sync with the accompanying code and diffuclt
+to follow to keep the project buildable. Also, since Bevy changes very quickly,
+you'll have to stick to the older version the book is using - otherwise
+things just won't compile. On the brighter side, the book does provide some
+coverage of Rust tooling that is useful - like benchmarking and creating
+well-behaved crates. But these topics in themselves are hardly worth a whole
+book.&lt;/li&gt;
+&lt;li&gt;&amp;quot;Mathematics for Human Flourishing&amp;quot; by Francis Su - a math professor's
+attempt at defining the effects of doing mathematics on meaning in human
+life. I wanted to like this book, but unfortnately it's a bit too kumbaya for
+me. While I appreciate what the author was aiming at here, it just didn't
+click.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Re-reads:&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;&amp;quot;Benjamin Franklin: An American Life&amp;quot; by Walter Isaacson&lt;/li&gt;
+&lt;li&gt;&amp;quot;A Gentleman in Moscow&amp;quot; by Amor Towles&lt;/li&gt;
+&lt;/ul&gt;
+</content><category term="misc"></category><category term="Book reviews"></category></entry><entry><title>Plugins case study: Pluggy</title><link href="https://eli.thegreenplace.net/2026/plugins-case-study-pluggy/" rel="alternate"></link><published>2026-06-13T20:21:00-07:00</published><updated>2026-06-14T03:20:58-07:00</updated><author><name>Eli Bendersky</name></author><id>tag:eli.thegreenplace.net,2026-06-13:/2026/plugins-case-study-pluggy/</id><summary type="html">&lt;p&gt;Recently I came upon &lt;a class="reference external" href="https://pluggy.readthedocs.io/en/latest/"&gt;Pluggy&lt;/a&gt;,
+a Python library for developing plugin systems. It was originally developed
+as part of the &lt;tt class="docutils literal"&gt;pytest&lt;/tt&gt; project - known for its rich plugin ecosystem - and
+later extracted into a standalone library. You're supposed to reach out for
+Pluggy if you want to add a plugin system …&lt;/p&gt;</summary><content type="html">&lt;p&gt;Recently I came upon &lt;a class="reference external" href="https://pluggy.readthedocs.io/en/latest/"&gt;Pluggy&lt;/a&gt;,
+a Python library for developing plugin systems. It was originally developed
+as part of the &lt;tt class="docutils literal"&gt;pytest&lt;/tt&gt; project - known for its rich plugin ecosystem - and
+later extracted into a standalone library. You're supposed to reach out for
+Pluggy if you want to add a plugin system to your tool or library and want
+to use something proven rather than rolling your own.&lt;/p&gt;
+&lt;p&gt;In this post I will share some notes on how Pluggy works, and will
+then review how it aligns with the
+&lt;a class="reference external" href="https://eli.thegreenplace.net/2012/08/07/fundamental-concepts-of-plugin-infrastructures"&gt;fundamental concepts of plugin infrastructures&lt;/a&gt;.&lt;/p&gt;
+&lt;img alt="Pluggy plug logo" class="align-center" src="https://eli.thegreenplace.net/images/2026/pluggy-plug.png" /&gt;
+&lt;div class="section" id="using-pluggy"&gt;
+&lt;h2&gt;Using Pluggy&lt;/h2&gt;
+&lt;p&gt;Pluggy is built around the concept of &lt;em&gt;hooks&lt;/em&gt;: functions that host
+applications or tools (from here on, just &amp;quot;hosts&amp;quot;) expose and plugins implement.
+A host exposes hooks by using
+a decorator returned from &lt;tt class="docutils literal"&gt;pluggy.HookspecMarker&lt;/tt&gt; and a plugin implements this
+hook using a decorator returned from &lt;tt class="docutils literal"&gt;pluggy.HookimplMarker&lt;/tt&gt;.&lt;/p&gt;
+&lt;p&gt;Pluggy's &lt;a class="reference external" href="https://pluggy.readthedocs.io/en/stable/"&gt;documentation&lt;/a&gt; explains
+this fairly well; in this post, I'll show how to implement the &lt;tt class="docutils literal"&gt;htmlize&lt;/tt&gt; tool
+with some plugins, introduced in &lt;a class="reference external" href="https://eli.thegreenplace.net/2012/08/07/fundamental-concepts-of-plugin-infrastructures"&gt;the original article in my plugin series&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;As a reminder, &lt;tt class="docutils literal"&gt;htmlize&lt;/tt&gt; is a toy tool that takes markup notation similar to
+reStructuredText, and converts it to to HTML. It supports plugins to handle
+custom &amp;quot;roles&amp;quot; like:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;some text :role:`customized text` and more text
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;As well as plugins that do arbitrary processing on the entire text.&lt;/p&gt;
+&lt;div class="section" id="defining-hooks"&gt;
+&lt;h3&gt;Defining hooks&lt;/h3&gt;
+&lt;p&gt;&lt;a class="reference external" href="https://github.com/eliben/code-for-blog/tree/main/2026/plugin-pluggy/htmlize/htmlize"&gt;Out host&lt;/a&gt; defines two hooks:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;pluggy&lt;/span&gt;
+
+&lt;span class="n"&gt;hookspec&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pluggy&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;HookspecMarker&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;htmlize&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="nd"&gt;@hookspec&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;firstresult&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="kc"&gt;True&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;htmlize_role_handler&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;role_name&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="sd"&gt;&amp;quot;&amp;quot;&amp;quot;Return a function accepting role contents.&lt;/span&gt;
+
+&lt;span class="sd"&gt;    The function will be called with a single argument - the role contents, and&lt;/span&gt;
+&lt;span class="sd"&gt;    should return what the role gets replaced with.&lt;/span&gt;
+&lt;span class="sd"&gt;    &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+    &lt;span class="k"&gt;pass&lt;/span&gt;
+
+&lt;span class="nd"&gt;@hookspec&lt;/span&gt;
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;htmlize_contents&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;post&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="sd"&gt;&amp;quot;&amp;quot;&amp;quot;Return a function accepting full document contents.&lt;/span&gt;
+
+&lt;span class="sd"&gt;    The function will be called with a single argument - the document contents&lt;/span&gt;
+&lt;span class="sd"&gt;    (after paragraph splitting and role processing), and should return the&lt;/span&gt;
+&lt;span class="sd"&gt;    transformed contents.&lt;/span&gt;
+&lt;span class="sd"&gt;    &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+    &lt;span class="k"&gt;pass&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;A hook is created by calling &lt;tt class="docutils literal"&gt;HookspecMarker&lt;/tt&gt; with the project's name. This
+project name has to match between the host and its plugins. Pluggy is permissive
+about what hooks accept as parameters and what they return; for maximal
+flexibility and to stay true to the original &lt;tt class="docutils literal"&gt;htmlize&lt;/tt&gt; example, our hooks
+return functions.&lt;/p&gt;
+&lt;p&gt;To accompany this &lt;tt class="docutils literal"&gt;HookspecMarker&lt;/tt&gt;, the host also defines a &lt;tt class="docutils literal"&gt;HookimplMarker&lt;/tt&gt; with
+the same name:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;hookimpl&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pluggy&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;HookimplMarker&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;htmlize&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;This is used by plugins to attach to hooks when they're loaded.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="loading-plugins-in-the-host"&gt;
+&lt;h3&gt;Loading plugins in the host&lt;/h3&gt;
+&lt;p&gt;The host's main function loads plugins at startup as follows:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;pm&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pluggy&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;PluginManager&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;htmlize&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;pm&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;add_hookspecs&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;hookspecs&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;pm&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;load_setuptools_entrypoints&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;htmlize&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;&lt;tt class="docutils literal"&gt;hookspecs&lt;/tt&gt; is our Python module containing the hooks shown above.
+&lt;tt class="docutils literal"&gt;load_setuptools_entrypoints&lt;/tt&gt; is Pluggy's helper for loading plugins that
+were &lt;tt class="docutils literal"&gt;pip&lt;/tt&gt;-installed into the same environment and registered as
+setuptools &lt;a class="reference external" href="https://setuptools.pypa.io/en/latest/userguide/entry_point.html"&gt;entry points&lt;/a&gt;.
+It's a way to signal - in one's &lt;tt class="docutils literal"&gt;setup.py&lt;/tt&gt; or &lt;tt class="docutils literal"&gt;pyproject.toml&lt;/tt&gt; file - some
+metadata that projects can review at runtime. In our project, the plugins
+register themselves with this section in the &lt;tt class="docutils literal"&gt;pyproject.toml&lt;/tt&gt; file:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;[project.entry-points.htmlize]
+tt = &amp;quot;tt&amp;quot;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;This says &amp;quot;for entry point &lt;tt class="docutils literal"&gt;htmlize&lt;/tt&gt;, define a new entry named &lt;tt class="docutils literal"&gt;tt&lt;/tt&gt;&amp;quot;.
+Pluggy's &lt;tt class="docutils literal"&gt;load_setuptools_entrypoints&lt;/tt&gt; then uses &lt;a class="reference external" href="https://docs.python.org/3/library/importlib.metadata.html"&gt;importlib.metadata&lt;/a&gt;
+to access this information.&lt;/p&gt;
+&lt;p&gt;Note that Pluggy doesn't require using this mechanism. Hosts can implement any
+plugin discovery method they want, and add plugins directly to their
+&lt;tt class="docutils literal"&gt;PluginManager&lt;/tt&gt; with the &lt;tt class="docutils literal"&gt;register&lt;/tt&gt; method. But this is the mechanism used
+for &lt;tt class="docutils literal"&gt;pytest&lt;/tt&gt; and many other projects; it makes it very easy to
+automatically discover and register plugins that are installed with &lt;tt class="docutils literal"&gt;pip&lt;/tt&gt; and
+equivalent tools.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="invoking-plugins"&gt;
+&lt;h3&gt;Invoking plugins&lt;/h3&gt;
+&lt;p&gt;Once &lt;tt class="docutils literal"&gt;PluginManager&lt;/tt&gt; loads the plugins, invoking them is straightforward;
+here's how &lt;tt class="docutils literal"&gt;htmlize&lt;/tt&gt; invokes the contents hooks &lt;a class="footnote-reference" href="#footnote-1" id="footnote-reference-1"&gt;[1]&lt;/a&gt;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# Build full contents back again, and ask plugins to act on&lt;/span&gt;
+&lt;span class="c1"&gt;# contents.&lt;/span&gt;
+&lt;span class="n"&gt;contents&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;join&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;parts&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;handler&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;plugin_manager&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;hook&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;htmlize_contents&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;post&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;post&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;contents&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;handler&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;contents&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;contents&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;Generally, hook invocations return a &lt;em&gt;list&lt;/em&gt; of all the hooks attached to by
+different plugins (a single host application can have multiple plugins installed
+and attaching to the same hook). When the host invokes the hook as shown above,
+the default order is LIFO, but plugins can affect this with
+&lt;a class="reference external" href="https://pluggy.readthedocs.io/en/stable/#call-time-order"&gt;hook options&lt;/a&gt;
+like &lt;tt class="docutils literal"&gt;tryfirst&lt;/tt&gt; and &lt;tt class="docutils literal"&gt;trylast&lt;/tt&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="implementing-hooks-in-plugins"&gt;
+&lt;h3&gt;Implementing hooks in plugins&lt;/h3&gt;
+&lt;p&gt;Here's our entire &lt;tt class="docutils literal"&gt;narcissist&lt;/tt&gt; plugin that's attaching to the contents hook:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;htmlize&lt;/span&gt;
+
+&lt;span class="nd"&gt;@htmlize&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;hookimpl&lt;/span&gt;
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;htmlize_contents&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;post&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;repl&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="sa"&gt;f&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;&amp;lt;b&amp;gt;I (&lt;/span&gt;&lt;span class="si"&gt;{&lt;/span&gt;&lt;span class="n"&gt;post&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;author&lt;/span&gt;&lt;span class="si"&gt;}&lt;/span&gt;&lt;span class="s1"&gt;)&amp;lt;/b&amp;gt;&amp;#39;&lt;/span&gt;
+
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;hook&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;contents&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;re&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sub&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="sa"&gt;r&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;\bI\b&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;repl&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;contents&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;hook&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;Some notes:&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;It expects &lt;tt class="docutils literal"&gt;htmlize&lt;/tt&gt; to be installed; as discussed previously, we rely on
+Pluggy's default install-based approach where both the host and plugins are
+installed into the same Python environment and can thus find each other.
+However, Pluggy supports any custom discovery method.&lt;/li&gt;
+&lt;li&gt;It uses the &lt;tt class="docutils literal"&gt;hookimpl&lt;/tt&gt; exported value shown earlier.&lt;/li&gt;
+&lt;li&gt;It returns a function that acts on contents; this is the &lt;tt class="docutils literal"&gt;htmlize&lt;/tt&gt;-specific
+contract (ABI, if you will) we've discussed before.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="fundamental-plugin-concepts-in-this-case-study"&gt;
+&lt;h2&gt;Fundamental plugin concepts in this case study&lt;/h2&gt;
+&lt;p&gt;Let's see how this case study of Pluggy measures against the
+&lt;a class="reference external" href="https://eli.thegreenplace.net/2012/08/07/fundamental-concepts-of-plugin-infrastructures"&gt;Fundamental plugin concepts&lt;/a&gt;
+that were covered &lt;a class="reference external" href="https://eli.thegreenplace.net/tag/plugins"&gt;several times on this blog&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;It's important to remember that Pluggy is not a specific host application with
+a bespoke plugin system; rather, it's a reusable library for creating such
+plugin systems. Therefore, this is more of a &lt;em&gt;meta&lt;/em&gt; case study.&lt;/p&gt;
+&lt;div class="section" id="discovery"&gt;
+&lt;h3&gt;Discovery&lt;/h3&gt;
+&lt;p&gt;Generally, Pluggy leaves discovery logic to the user's discretion. Its
+&lt;tt class="docutils literal"&gt;PluginManager&lt;/tt&gt; has a &lt;tt class="docutils literal"&gt;register&lt;/tt&gt; method for adding plugins, and these can
+be discovered in any way the application chooses.&lt;/p&gt;
+&lt;p&gt;That said, Pluggy comes with one discovery mechanism built in - through the
+entry points process of Python packaging, as shown above. This is hugely
+convenient for a large number of applications, as long as both the application
+and its plugins are installed via standard Python packaging tools (which is
+a very reasonable assumption in the Python ecosystem).&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="registration"&gt;
+&lt;h3&gt;Registration&lt;/h3&gt;
+&lt;p&gt;In the entry point process, plugins register themselves by adding a
+&lt;tt class="docutils literal"&gt;&lt;span class="pre"&gt;[project.entry-points.&amp;lt;HOST-ID&amp;gt;]&lt;/span&gt;&lt;/tt&gt; section in their &lt;tt class="docutils literal"&gt;pyproject.toml&lt;/tt&gt;
+file.&lt;/p&gt;
+&lt;p&gt;Otherwise - as in the previous section - users are free to devise their own
+registration schemes.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="hooks"&gt;
+&lt;h3&gt;Hooks&lt;/h3&gt;
+&lt;p&gt;This one is easy, since it's called &lt;em&gt;hooks&lt;/em&gt; in Pluggy parlance as well!
+Pluggy's implementation of hooks is rather elegant, with function decorators
+available for plugins to set. We've seen an example of this above with
+&lt;tt class="docutils literal"&gt;&amp;#64;htmlize.hookimpl&lt;/tt&gt; decorating &lt;tt class="docutils literal"&gt;htmlize_contents&lt;/tt&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="exposing-an-application-api-to-plugins"&gt;
+&lt;h3&gt;Exposing an application API to plugins&lt;/h3&gt;
+&lt;p&gt;Since Pluggy is designed for Python hosts and Python plugins, this one is
+fairly straightforward. The plugins typically assume the host project is
+already installed in the Python environment and its modules can be imported.&lt;/p&gt;
+&lt;p&gt;In our example, &lt;tt class="docutils literal"&gt;hookimpl&lt;/tt&gt; is imported from &lt;tt class="docutils literal"&gt;htmlize&lt;/tt&gt; by the plugin to
+accomplish this. It also shows how host data is passed to the plugin - the
+&lt;tt class="docutils literal"&gt;post&lt;/tt&gt; and &lt;tt class="docutils literal"&gt;db&lt;/tt&gt; parameters. These are APIs exposed by the host for the
+plugins' use.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="conclusion-is-pluggy-worth-it"&gt;
+&lt;h2&gt;Conclusion - is Pluggy worth it?&lt;/h2&gt;
+&lt;p&gt;In footnote 2 of my original &lt;a class="reference external" href="https://eli.thegreenplace.net/2012/08/07/fundamental-concepts-of-plugin-infrastructures"&gt;fundamental concepts of plugin infrastructures&lt;/a&gt;
+post, I wrote &lt;a class="footnote-reference" href="#footnote-2" id="footnote-reference-2"&gt;[2]&lt;/a&gt;:&lt;/p&gt;
+&lt;blockquote&gt;
+This is probably why there are very few well-established plugin frameworks
+in existence (even in low-level languages like C or C++). It's too easy (and
+tempting) to roll your own.&lt;/blockquote&gt;
+&lt;p&gt;I still believe my statement is true - plugin frameworks are very easy
+to create, and the functionality they provide is relatively small compared to
+their large surface area. In other words, this is a &lt;em&gt;shallow API&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;That said, Pluggy does provide some nice functionality for the more advanced
+uses of plugins:&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;Automatic entry point registration mechanism - if you need it&lt;/li&gt;
+&lt;li&gt;Signature validation&lt;/li&gt;
+&lt;li&gt;Consistent plugin result collection across multiple hook attachments in a
+single plugin and across many plugins&lt;/li&gt;
+&lt;li&gt;Plugin ordering with &lt;tt class="docutils literal"&gt;firstresult&lt;/tt&gt;, &lt;tt class="docutils literal"&gt;tryfirst&lt;/tt&gt;, &lt;tt class="docutils literal"&gt;trylast&lt;/tt&gt;, etc.&lt;/li&gt;
+&lt;li&gt;Hook &amp;quot;wrappers&amp;quot; for some special use cases&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Are these worthwhile for your project? It really depends on the project,
+and it's always worth keeping the &lt;a class="reference external" href="https://eli.thegreenplace.net/2017/benefits-of-dependencies-in-software-projects-as-a-function-of-effort/"&gt;tradeoff between dependencies and project
+effort&lt;/a&gt;
+in mind.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="code"&gt;
+&lt;h2&gt;Code&lt;/h2&gt;
+&lt;p&gt;The full code repository for this post &lt;a class="reference external" href="https://github.com/eliben/code-for-blog/tree/main/2026/plugin-pluggy"&gt;is available here&lt;/a&gt;.&lt;/p&gt;
+&lt;hr class="docutils" /&gt;
+&lt;table class="docutils footnote" frame="void" id="footnote-1" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#footnote-reference-1"&gt;[1]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;Here &lt;tt class="docutils literal"&gt;plugin_manager&lt;/tt&gt; is the value previously returned from
+&lt;tt class="docutils literal"&gt;pluggy.PluginManager&lt;/tt&gt;; in the previous code snippet it's saved into
+&lt;tt class="docutils literal"&gt;pm&lt;/tt&gt; - the different variable name is because a function call is made
+and &lt;tt class="docutils literal"&gt;plugin_manager&lt;/tt&gt; is the parameter name.&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="footnote-2" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#footnote-reference-2"&gt;[2]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;To be fair, that post predates the creation of Pluggy!&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+</content><category term="misc"></category><category term="Plugins"></category><category term="Python"></category></entry></feed>

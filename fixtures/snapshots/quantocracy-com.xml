@@ -1,0 +1,554 @@
+<?xml version="1.0"?><rss version="2.0"
+	xmlns:content="http://purl.org/rss/1.0/modules/content/"
+	xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:atom="http://www.w3.org/2005/Atom"
+	xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+	xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+	>
+
+<channel>
+	<title>Quantocracy, Author at Quantocracy</title>
+	<atom:link href="https://quantocracy.com/author/quantadmin/feed/" rel="self" type="application/rss+xml" />
+	<link>https://quantocracy.com/author/quantadmin/</link>
+	<description>Quant Blog Mashup</description>
+	<lastBuildDate>Fri, 07 Aug 2026 05:15:05 +0000</lastBuildDate>
+	<language>en-US</language>
+	<sy:updatePeriod>
+	hourly	</sy:updatePeriod>
+	<sy:updateFrequency>
+	1	</sy:updateFrequency>
+	
+	<item>
+		<title>Recent Quant Links from Quantocracy as of 08/06/2026</title>
+		<link>https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-08062026/</link>
+		
+		<dc:creator><![CDATA[Quantocracy]]></dc:creator>
+		<pubDate>Fri, 07 Aug 2026 05:15:05 +0000</pubDate>
+				<category><![CDATA[Daily Wraps]]></category>
+		<guid isPermaLink="false">https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-08062026/</guid>
+
+					<description><![CDATA[<p>This is a summary of links recently featured on Quantocracy as of Thursday, 08/06/2026. To see our most recent links, visit the Quant Mashup. Read on readers! Taming the Wildcard: David Varadi&#8217;s &#8220;Inflation Compass&#8221; [Allocate Smartly] This is an independent test of a novel strategy from David Varadi: Inflation Compass. It builds on his earlier [&#8230;]</p>
+<p>The post <a href="https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-08062026/">Recent Quant Links from Quantocracy as of 08/06/2026</a> appeared first on <a href="https://quantocracy.com">Quantocracy</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>This is a summary of links recently featured on Quantocracy as of Thursday, 08/06/2026. To see our most recent links, visit the <a href="https://quantocracy.com/">Quant Mashup</a>. Read on readers!</p>
+<div id="qo-mashup">
+<ul>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=mGWemHWL2y&amp;source=feedburner" target="_blank">Taming the Wildcard: David Varadi&#8217;s &#8220;Inflation Compass&#8221; [Allocate Smartly]</a></p>
+<div class="qo-description">This is an independent test of a novel strategy from David Varadi: Inflation Compass. It builds on his earlier Growth and Inflation strategy by adding a direct market-based measure of expected inflation. Were testing two versions of his new strategy: Original and Enhanced (more on this later). Backtested results from 1990 follow. Results are net of transaction costs  see backtest</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=1fjWIeYoHi&amp;source=feedburner" target="_blank">Testing for Mean Reversion: ADF, Hurst Exponent and Half-Life [Quantt]</a></p>
+<div class="qo-description">A time series is mean-reverting if it tends to return to a stable long-run level after being displaced from it. In pure form, that means the process has a well-defined unconditional mean and a variance that does not grow without bound; shocks decay rather than accumulate. This is the opposite of a random walk, where each innovation is permanently absorbed into the level and variance grows linearly</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=19kOH9VJAb&amp;source=feedburner" target="_blank">The Mathematics of Machine Learning, for Traders [Aligrithm]</a></p>
+<div class="qo-description">You already ran the models. The old article &quot;From One Tree to Forests to Boosting&quot; walked you from a single decision tree to XGBoost, &quot;How a Decision Tree Engineers a New Alpha&quot; showed a tree carving conditional edges out of order-book features, and &quot;Ridge Above 1h, XGBoost Below 5min&quot; handed you a timeframe rule for which model to point at which horizon. None of</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=SCNhTKTmdf&amp;source=feedburner" target="_blank">The Ornstein-Uhlenbeck Process in Finance: Theory, Simulation and Calibration [Quantt]</a></p>
+<div class="qo-description">What Is the Ornstein-Uhlenbeck Process? The OrnsteinUhlenbeck (OU) process is the simplest continuous-time model of a mean-reverting random process. It was introduced in 1930 by Leonard Ornstein and George Uhlenbeck as a physical model of the velocity of a Brownian particle experiencing friction (Uhlenbeck &amp; Ornstein, 1930), and it has since become one of the most widely used stochastic</div>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<p>The post <a href="https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-08062026/">Recent Quant Links from Quantocracy as of 08/06/2026</a> appeared first on <a href="https://quantocracy.com">Quantocracy</a>.</p>
+]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>Recent Quant Links from Quantocracy as of 08/05/2026</title>
+		<link>https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-08052026/</link>
+		
+		<dc:creator><![CDATA[Quantocracy]]></dc:creator>
+		<pubDate>Thu, 06 Aug 2026 05:15:05 +0000</pubDate>
+				<category><![CDATA[Daily Wraps]]></category>
+		<guid isPermaLink="false">https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-08052026/</guid>
+
+					<description><![CDATA[<p>This is a summary of links recently featured on Quantocracy as of Wednesday, 08/05/2026. To see our most recent links, visit the Quant Mashup. Read on readers! The Statistic That Passed Every Test I Had And Still Isn&#8217;t an Edge [Jan Heger] It cleared the control test that kills almost everything I try and that [&#8230;]</p>
+<p>The post <a href="https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-08052026/">Recent Quant Links from Quantocracy as of 08/05/2026</a> appeared first on <a href="https://quantocracy.com">Quantocracy</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>This is a summary of links recently featured on Quantocracy as of Wednesday, 08/05/2026. To see our most recent links, visit the <a href="https://quantocracy.com/">Quant Mashup</a>. Read on readers!</p>
+<div id="qo-mashup">
+<ul>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=CfKCxDXOht&amp;source=feedburner" target="_blank">The Statistic That Passed Every Test I Had And Still Isn&#8217;t an Edge [Jan Heger]</a></p>
+<div class="qo-description">It cleared the control test that kills almost everything I try and that I still wont trade. Thats because theres a gap between those two things and it is the most useful thing Ive learned building this system, so let me show you what actually happened. The pattern For this particular example, I am trading the market on the daily gaps. I noticed what looked like a pull toward round</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=SwoTbu8CbJ&amp;source=feedburner" target="_blank">The Signal Ceiling: Why No Single-Bar OHLCV Edge Beats Costs in MNQ [Aligrithm]</a></p>
+<div class="qo-description">Open any retail futures forum and you will find the same fourteen setups traded as gospel: the opening range breakout, the gap fade, the gap continuation, the volume spike, the liquidity grab reversal, the Asia session expansion. Each comes with a chart, a win rate, and a story about why it works. Mathias Mesfin took the whole list, wired it to a bar-close signal and next-bar-open fill on Micro</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=DSm85ee4Gl&amp;source=feedburner" target="_blank">Quick 5 ETF Rotational Strategy Returns the Upside of Stocks with Half the Risk [Paper to Profit]</a></p>
+<div class="qo-description">The last few posts have been a lot to chew through. So here is a simple ETF rotational strategy that you can do to capture the upside of equities while eliminating half the risk. The inspiration for this strategy comes from the paper Looking for Synergy with Momentum in Main Asset Classes which you can read for yourself here. Not a subscriber? Become one today for more research delivered to your</div>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<p>The post <a href="https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-08052026/">Recent Quant Links from Quantocracy as of 08/05/2026</a> appeared first on <a href="https://quantocracy.com">Quantocracy</a>.</p>
+]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>Recent Quant Links from Quantocracy as of 08/03/2026</title>
+		<link>https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-08032026/</link>
+		
+		<dc:creator><![CDATA[Quantocracy]]></dc:creator>
+		<pubDate>Tue, 04 Aug 2026 05:15:05 +0000</pubDate>
+				<category><![CDATA[Daily Wraps]]></category>
+		<guid isPermaLink="false">https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-08032026/</guid>
+
+					<description><![CDATA[<p>This is a summary of links recently featured on Quantocracy as of Monday, 08/03/2026. To see our most recent links, visit the Quant Mashup. Read on readers! Quantitativo weekly #4 [Quantitativo] The only sustainable competitive advantage is to learn faster than your competition. Arie de Geus Implementing research papers can sometimes work, though a perfect [&#8230;]</p>
+<p>The post <a href="https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-08032026/">Recent Quant Links from Quantocracy as of 08/03/2026</a> appeared first on <a href="https://quantocracy.com">Quantocracy</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>This is a summary of links recently featured on Quantocracy as of Monday, 08/03/2026. To see our most recent links, visit the <a href="https://quantocracy.com/">Quant Mashup</a>. Read on readers!</p>
+<div id="qo-mashup">
+<ul>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=vPIEuqyY9W&amp;source=feedburner" target="_blank">Quantitativo weekly #4 [Quantitativo]</a></p>
+<div class="qo-description">The only sustainable competitive advantage is to learn faster than your competition. Arie de Geus Implementing research papers can sometimes work, though a perfect replication often fails. Its never wasted effort, though: the ideas in the paper end up feeding new ideas and good conversations with other researchers. Heres the 4th edition of the Quantitativo weekly, featuring papers that</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=6q2xeyKpJs&amp;source=feedburner" target="_blank">Supertrend, flipped to death: the most-taught indicator on the internet [The Refutation]</a></p>
+<div class="qo-description">If you learned to trade from YouTube, you probably learned the Supertrend. It topped our folklore hunt being the single most-taught beginner tool on the internet, complete with the green-line/red-line screenshots and the promise that the trend will tell you when to start riding the new trend. So we did the honest thing: we tested it exactly the way it&#039;s taught. Figure 1 is the tool itself, on</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=sJn5JTURwj&amp;source=feedburner" target="_blank">Down June &amp; July: 11 of 13 Septembers Closed Lower [Quantifiable Edges]</a></p>
+<div class="qo-description">Both June and July saw SPX close lower. Seasonality for those two months it is generally favorable. But since 1950, two of the weakest months are August (3rd worst) and September (worst). So in this weekends letter I decided to see how August and September fared when we already had June and July slipping. The table below gives us an answer. After down closes in both June and July. August has</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=XrCK3ApQDV&amp;source=feedburner" target="_blank">Conformal Prediction in Quantitative Finance [Vertox Quant]</a></p>
+<div class="qo-description">In one of our previous articles, we built a neural-network-based volatility forecaster that beats baseline models in all volatility regimes: Volatility Forecasting using Neural Networks Vertox  Jun 22 Volatility Forecasting using Neural Networks Today, we are gonna look at something weve never done in any article before: Neural Networks. Read full story Now no need to be sceptical about the</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=4QTmZ9o8q9&amp;source=feedburner" target="_blank">Making Option Pricing Models More Practical [Relative Value Arbitrage]</a></p>
+<div class="qo-description">The Black-Scholes-Merton model is one of the cornerstones of modern quantitative finance. Despite its elegance and widespread use, its simplifying assumptions limit its ability to capture many features of real financial markets. As a result, researchers continue to extend the model to make it more realistic and applicable in practice. In this post, we discuss two such extensions. The first</div>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<p>The post <a href="https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-08032026/">Recent Quant Links from Quantocracy as of 08/03/2026</a> appeared first on <a href="https://quantocracy.com">Quantocracy</a>.</p>
+]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>Recent Quant Links from Quantocracy as of 07/31/2026</title>
+		<link>https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-07312026/</link>
+		
+		<dc:creator><![CDATA[Quantocracy]]></dc:creator>
+		<pubDate>Sat, 01 Aug 2026 05:15:06 +0000</pubDate>
+				<category><![CDATA[Daily Wraps]]></category>
+		<guid isPermaLink="false">https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-07312026/</guid>
+
+					<description><![CDATA[<p>This is a summary of links recently featured on Quantocracy as of Friday, 07/31/2026. To see our most recent links, visit the Quant Mashup. Read on readers! The 58% Win Rate That Was My Own Code Lying To Me [Jan Heger] Below I have shared my story of an idea that passed four checks Id [&#8230;]</p>
+<p>The post <a href="https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-07312026/">Recent Quant Links from Quantocracy as of 07/31/2026</a> appeared first on <a href="https://quantocracy.com">Quantocracy</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>This is a summary of links recently featured on Quantocracy as of Friday, 07/31/2026. To see our most recent links, visit the <a href="https://quantocracy.com/">Quant Mashup</a>. Read on readers!</p>
+<div id="qo-mashup">
+<ul>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=D1C5R2EGBt&amp;source=feedburner" target="_blank">The 58% Win Rate That Was My Own Code Lying To Me [Jan Heger]</a></p>
+<div class="qo-description">Below I have shared my story of an idea that passed four checks Id set in advance and died on the fifth, and why the fifth one is now the first thing I run. The setup I like to day-trade MNQ, and Id built a framework around specific price levels that I have created. The core claim was simple: price reacts at certain levels within each hundred-point block. Falls into one, bounces. Thanks for</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=xe1CfugDLl&amp;source=feedburner" target="_blank">Fair Value as an Adaptive Low-Pass Filter: LAFO for Mean Reversion [Aligrithm]</a></p>
+<div class="qo-description">Every mean-reversion trade starts with a lie you tell yourself about where price &quot;should&quot; be. You call it fair value, you subtract it from the spot price, and you bet the gap closes. Most traders reach for a moving average and stop thinking. Xu, Firoozye, Koukorinis, Treleaven, and Zhu at UCL take the question seriously and reframe fair value as the output of a tunable low-pass filter,</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=rVLaMVQOs5&amp;source=feedburner" target="_blank">We tested the 50/100 MA ribbon 55 different ways over five years [The Refutation]</a></p>
+<div class="qo-description">Move like the wind, be still as the mountain, the old strategists taught. The moving-average ribbon promises to tell you which moment you&#039;re in. The catch: it&#039;s built from the past, so the wind it reads has already blown. Stack a fan of moving averages on a chart and assign colours to them. Wait for the bands to fan out and align, and price is &quot;in a trend.&quot; When the lines</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=yvPq04dQSp&amp;source=feedburner" target="_blank">Bitcoin&#8217;s Overnight Returns Forecast the VIX [Aligrithm]</a></p>
+<div class="qo-description">Split one Bitcoin day into two pieces and only one of them predicts anything. The piece that runs while US stock exchanges are closed, from yesterday&#039;s 4pm close to today&#039;s 9:30am open, carries a signal for tomorrow&#039;s VIX. The piece that runs while those exchanges are open carries nothing. Gu, Lin, and Liu ran five-minute Bitcoin data from 2018 to 2023 through that split and found</div>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<p>The post <a href="https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-07312026/">Recent Quant Links from Quantocracy as of 07/31/2026</a> appeared first on <a href="https://quantocracy.com">Quantocracy</a>.</p>
+]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>Recent Quant Links from Quantocracy as of 07/29/2026</title>
+		<link>https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-07292026/</link>
+		
+		<dc:creator><![CDATA[Quantocracy]]></dc:creator>
+		<pubDate>Thu, 30 Jul 2026 05:15:05 +0000</pubDate>
+				<category><![CDATA[Daily Wraps]]></category>
+		<guid isPermaLink="false">https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-07292026/</guid>
+
+					<description><![CDATA[<p>This is a summary of links recently featured on Quantocracy as of Wednesday, 07/29/2026. To see our most recent links, visit the Quant Mashup. Read on readers! I Invented 2021 Candle Types to Find the One Holy Grail [Paper to Profit] We spend our trading lives looking at charts, plugging in different indicators, not to [&#8230;]</p>
+<p>The post <a href="https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-07292026/">Recent Quant Links from Quantocracy as of 07/29/2026</a> appeared first on <a href="https://quantocracy.com">Quantocracy</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>This is a summary of links recently featured on Quantocracy as of Wednesday, 07/29/2026. To see our most recent links, visit the <a href="https://quantocracy.com/">Quant Mashup</a>. Read on readers!</p>
+<div id="qo-mashup">
+<ul>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=uU9etAgheq&amp;source=feedburner" target="_blank">I Invented 2021 Candle Types to Find the One Holy Grail [Paper to Profit]</a></p>
+<div class="qo-description">We spend our trading lives looking at charts, plugging in different indicators, not to realize that we are painting on top of the same old picture. Instead of trying a different color of paint, we need to change the canvas. And in doing just that, you may have won yourself a spot in the lead. Heres the thing: Everyone is looking at the same charts. Everyone has access to the same information</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=esQeekHqCf&amp;source=feedburner" target="_blank">Path Signatures: Does the Shape of Price Paths Predict Returns? [Delphic Alpha]</a></p>
+<div class="qo-description">Every indicator you use on a rolling window, momentum, RSI, Bollinger bands, discards the order in which events occurred. Two 2-hour windows with identical total return and identical range expansion score identically, even if one saw price rally first and volatility respond, while the other saw volatility spike first and price catch up later. These are different market events (a breakout versus a</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=zuEXQwLUXJ&amp;source=feedburner" target="_blank">A Microstructural Account of the Demise of Short-Term Trend-Following [Quantpedia]</a></p>
+<div class="qo-description">Trend following was one of the most persistent anomalies in finance for nearly two centuries, yet its performance deteriorated sharply after the 2008 financial crisis. An analysis of approximately 100 liquid futures contracts from 1995 to 2025 shows that this decline is highly selective. The decisive factor is not asset class, liquidity, market electronification, or strategy crowding, but</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=aJ8y8wDgCx&amp;source=feedburner" target="_blank">A Database of Historical Macroeconomic Events [Concretum Group]</a></p>
+<div class="qo-description">Most quantitative backtests start with prices: a clean historical database, ideally free of survivorship bias and the usual data traps. We have written a lot about that already, and shared practical ways for independent researchers to build more reliable datasets. At some point, though, research usually asks for more than prices. How does a strategy behave around major macro announcements? Does</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=i3Vl2GB748&amp;source=feedburner" target="_blank">Does Your Backtest Survive the Adverse Same-Bar Fill? A 48.8 Million-Pair Stress Test [Rulyfi]</a></p>
+<div class="qo-description">Key Takeaways An OHLC bar can show that take-profit and stop-loss prices were both touched. It cannot show which came first. Run the same search under both TP-first and SL-first before promoting a candidate. We evaluated 48,825,000 identical configurations twice, forming 97,650,000 backtest runs. Total return changed in 37,168,124 pairs, or 76.13%. Among the changed pairs, the median SL-first</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=RNyCc9YBT0&amp;source=feedburner" target="_blank">Chicken and Egg: Use the SPX to Time the VIX, Not Vice Versa [Aligrithm]</a></p>
+<div class="qo-description">Twenty years of retail research points the arrow one way. You read the VIX, and the VIX tells you where the S&amp;P 500 is going. Oversold VIX means complacency, sell stocks; spiked VIX means panic, buy the dip. Connors built a cottage industry on it, and every trading forum still runs some version of the &quot;VIX says buy&quot; screenshot. Rob Hanna ran the tests both directions and found the</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=hAUQTxP25B&amp;source=feedburner" target="_blank">When Risk Is Not Rewarded [Concretum Group]</a></p>
+<div class="qo-description">Modern portfolio theory is built on a remarkably intuitive idea: investors should earn higher expected returns for bearing greater risk. This principle lies at the heart of the Capital Asset Pricing Model (CAPM), one of the most influential models in financial economics. According to the theory, stocks with higher systematic risk should compensate investors with higher long-term returns. Yet among</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=viGsfphEC4&amp;source=feedburner" target="_blank">Podcast: Why I stopped trying to predict the market [Trading the Breaking]</a></p>
+<div class="qo-description">In this episode of House of Quants, listeners will discover: My personal perspective: The episode traces the journey from engineering, statistics, data science, and algorithmic trading toward quantitative research, explaining how each field contributed to a deeper understanding of uncertainty, validation, execution, and risk. Why long-term market forecasting often is useless: It examines the</div>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<p>The post <a href="https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-07292026/">Recent Quant Links from Quantocracy as of 07/29/2026</a> appeared first on <a href="https://quantocracy.com">Quantocracy</a>.</p>
+]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>Recent Quant Links from Quantocracy as of 07/27/2026</title>
+		<link>https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-07272026/</link>
+		
+		<dc:creator><![CDATA[Quantocracy]]></dc:creator>
+		<pubDate>Tue, 28 Jul 2026 05:15:06 +0000</pubDate>
+				<category><![CDATA[Daily Wraps]]></category>
+		<guid isPermaLink="false">https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-07272026/</guid>
+
+					<description><![CDATA[<p>This is a summary of links recently featured on Quantocracy as of Monday, 07/27/2026. To see our most recent links, visit the Quant Mashup. Read on readers! The Inflation Compass Model [CSS Analytics] When inflation shifts from low to high, a traditional 60/40 equity-and-bond allocation breaks down because both fall together. You need real assets [&#8230;]</p>
+<p>The post <a href="https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-07272026/">Recent Quant Links from Quantocracy as of 07/27/2026</a> appeared first on <a href="https://quantocracy.com">Quantocracy</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>This is a summary of links recently featured on Quantocracy as of Monday, 07/27/2026. To see our most recent links, visit the <a href="https://quantocracy.com/">Quant Mashup</a>. Read on readers!</p>
+<div id="qo-mashup">
+<ul>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=tPHwp1K3Fa&amp;source=feedburner" target="_blank">The Inflation Compass Model [CSS Analytics]</a></p>
+<div class="qo-description">When inflation shifts from low to high, a traditional 60/40 equity-and-bond allocation breaks down because both fall together. You need real assets to act as the ballast.  Ray Dalio Inflation is one of the most powerful forces in asset allocationand one of the hardest to measure in real time.Everyone understands why it matters. The harder question is how to capture it before markets</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=k40PxQ9FAg&amp;source=feedburner" target="_blank">Crafting a Trading Strategy [Handelsmeisterei]</a></p>
+<div class="qo-description">Alpha rarely arrives as one heroic discovery. It is more like an ant colony carrying a leaf many times its own size: dozens of small contributions, each unimpressive on its own, somehow producing an impressive result. Unfortunately, research also resembles an ant colony in another respect. Much of the work involves running in circles. The first version</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=OwFDTYjrzV&amp;source=feedburner" target="_blank">The NAAIM-AAII Equities Allocation Spread: Smart Money Relative Sentiment Indicator [Portfolio Optimizer]</a></p>
+<div class="qo-description">In a previous blog post, I described the NAAIM Exposure Index, which represents the average exposure to U.S. equity markets as reported by members of the National Association of Active Investment Managers (NAAIM) in a weekly survey. In this second post of this series on sentiment indicators, I will show how that survey of professional money managers can be turned into a relative sentiment</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=zjqcaiXNf4&amp;source=feedburner" target="_blank">GAMLSS/ZAGA: Conditional IR* Distribution For Trading Strategies [Krzysztof Ozimek]</a></p>
+<div class="qo-description">I wrote my newest paper mainly to challenge the conventional way of judging an investment or trading strategy through a single observational point of its performance metric  an approach that discards precious information about a strategy&#039;s effectiveness and can lead to false conclusions. Rather than routinely collapsing a strategy&#039;s performance metric to one observational scalar, I</div>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<p>The post <a href="https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-07272026/">Recent Quant Links from Quantocracy as of 07/27/2026</a> appeared first on <a href="https://quantocracy.com">Quantocracy</a>.</p>
+]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>Recent Quant Links from Quantocracy as of 07/25/2026</title>
+		<link>https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-07252026/</link>
+		
+		<dc:creator><![CDATA[Quantocracy]]></dc:creator>
+		<pubDate>Sun, 26 Jul 2026 05:15:05 +0000</pubDate>
+				<category><![CDATA[Daily Wraps]]></category>
+		<guid isPermaLink="false">https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-07252026/</guid>
+
+					<description><![CDATA[<p>This is a summary of links recently featured on Quantocracy as of Saturday, 07/25/2026. To see our most recent links, visit the Quant Mashup. Read on readers! Network Momentum [Quantitativo] Networks are everywhere. All you need is an eye for them. Albert-Lszl Barabsi. Albert-Lszl Barabsi is a Romanian-born Hungarian-American physicist, renowned for his pioneering discoveries [&#8230;]</p>
+<p>The post <a href="https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-07252026/">Recent Quant Links from Quantocracy as of 07/25/2026</a> appeared first on <a href="https://quantocracy.com">Quantocracy</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>This is a summary of links recently featured on Quantocracy as of Saturday, 07/25/2026. To see our most recent links, visit the <a href="https://quantocracy.com/">Quant Mashup</a>. Read on readers!</p>
+<div id="qo-mashup">
+<ul>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=oIHML1Mq6A&amp;source=feedburner" target="_blank">Network Momentum [Quantitativo]</a></p>
+<div class="qo-description">Networks are everywhere. All you need is an eye for them. Albert-Lszl Barabsi. Albert-Lszl Barabsi is a Romanian-born Hungarian-American physicist, renowned for his pioneering discoveries in network science. In his seminal 1999 paper with Rka Albert, Emergence of Scaling in Random Networks, he reshaped how we understand connected systems. His 2002 book Linked carried the</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=oYjTu7PKfj&amp;source=feedburner" target="_blank">Momentum Is a Ranking Problem: Learning-to-Rank vs Regress-then-Rank [Aligrithm]</a></p>
+<div class="qo-description">Cross-sectional momentum has one job: at each rebalance, order a universe of assets from worst to best, buy the top, sell the bottom. Everyone agrees on that. Where strategies quietly disagree is on how they produce the order. Classic momentum sorts on the past twelve-month return. A neural net predicts each asset&#039;s next return and sorts on the prediction. Both treat the ranking as a</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=OdPY90Ozea&amp;source=feedburner" target="_blank">Part (3/3) &#8211; Refiner Trade: A Second Signal and the Case for Trading Less [Beyond Passive]</a></p>
+<div class="qo-description">The first part described the idea and put a gross Sharpe of about one and a half on it. The second part set it in front of a brokers fees and an integer number of shares, and watched most of the edge go to the cost of trading. This part adds a second signal, drawn from the same spread. It does not raise the return by much. What it does is trade far less, and on a small account that is worth</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=0uv9td3ggy&amp;source=feedburner" target="_blank">Portfolio optimization with macro factors and neural networks [Macrosynergy]</a></p>
+<div class="qo-description">This article shows a practical method for optimizing equity portfolios with point-in-time macroeconomic information and sequential statistical learning. The learning process relies on neural networks, as they learn portfolio weights directly from a full historical panel of macroeconomic divergence factors and return data. They do not require stock-by-stock theoretical priors for model</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=OHkFUwbVga&amp;source=feedburner" target="_blank">Research Review | 24 July 2026 | Strategy Analytics [Capital Spectator]</a></p>
+<div class="qo-description">The CAPE that Cried Wolf Dino Palazzo (Board of Governors of the Federal Reserve System) May 2026 The Capital Spectators Takeaway The paper reports that traditional CAPE ratios false warnings of market overvaluation since the 1990s are an accounting illusion caused by mandatory R&amp;D expensing and volatile special-item write-downs. By stripping out these regulatory distortions, CAPE-H</div>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<p>The post <a href="https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-07252026/">Recent Quant Links from Quantocracy as of 07/25/2026</a> appeared first on <a href="https://quantocracy.com">Quantocracy</a>.</p>
+]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>Recent Quant Links from Quantocracy as of 07/23/2026</title>
+		<link>https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-07232026/</link>
+		
+		<dc:creator><![CDATA[Quantocracy]]></dc:creator>
+		<pubDate>Fri, 24 Jul 2026 05:15:05 +0000</pubDate>
+				<category><![CDATA[Daily Wraps]]></category>
+		<guid isPermaLink="false">https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-07232026/</guid>
+
+					<description><![CDATA[<p>This is a summary of links recently featured on Quantocracy as of Thursday, 07/23/2026. To see our most recent links, visit the Quant Mashup. Read on readers! What Should You Change First in a Crypto Backtest? 99.75 Million Tests [Rulyfi] Key takeaways Neither entries nor exits controlled every result. Win rate was more sensitive to [&#8230;]</p>
+<p>The post <a href="https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-07232026/">Recent Quant Links from Quantocracy as of 07/23/2026</a> appeared first on <a href="https://quantocracy.com">Quantocracy</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>This is a summary of links recently featured on Quantocracy as of Thursday, 07/23/2026. To see our most recent links, visit the <a href="https://quantocracy.com/">Quant Mashup</a>. Read on readers!</p>
+<div id="qo-mashup">
+<ul>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=zllo4aHObq&amp;source=feedburner" target="_blank">What Should You Change First in a Crypto Backtest? 99.75 Million Tests [Rulyfi]</a></p>
+<div class="qo-description">Key takeaways Neither entries nor exits controlled every result. Win rate was more sensitive to exits in all ten market-direction jobs, while maximum drawdown was more sensitive to entries in all ten. Changing an entry indicator was a much larger move than nudging that indicator&#039;s period. Treating both as &quot;entry tuning&quot; hides the useful distinction. For the study&#039;s</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=IKnSI8CvHY&amp;source=feedburner" target="_blank">Getting the Target Right in Return Prediction [Quantpedia]</a></p>
+<div class="qo-description">Recent interesting research from Cakici and Zaremba, highlights an often-overlooked aspect of machine learning for equity return prediction: the choice of prediction target. Rather than focusing on increasingly sophisticated model architectures or feature engineering, the authors show that how returns are represented during training has a much larger impact on predictive performance. In</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=LrxoriDzQY&amp;source=feedburner" target="_blank">Algorithmic Trading, HFT, and Market Stability [Relative Value Arbitrage]</a></p>
+<div class="qo-description">Advances in computing power, declining hardware costs, and the rapid rise of machine learning and algorithmic trading have fundamentally transformed modern financial markets. While these technologies have improved market efficiency and execution, they have also introduced new challenges and risks. In this post, we examine research on the impact of algorithmic trading, from its influence on</div>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<p>The post <a href="https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-07232026/">Recent Quant Links from Quantocracy as of 07/23/2026</a> appeared first on <a href="https://quantocracy.com">Quantocracy</a>.</p>
+]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>Recent Quant Links from Quantocracy as of 07/21/2026</title>
+		<link>https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-07212026/</link>
+		
+		<dc:creator><![CDATA[Quantocracy]]></dc:creator>
+		<pubDate>Wed, 22 Jul 2026 05:15:06 +0000</pubDate>
+				<category><![CDATA[Daily Wraps]]></category>
+		<guid isPermaLink="false">https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-07212026/</guid>
+
+					<description><![CDATA[<p>This is a summary of links recently featured on Quantocracy as of Tuesday, 07/21/2026. To see our most recent links, visit the Quant Mashup. Read on readers! I Mastered Chaos Theory to Develop a 3.275 Sharpe FX Strategy [Paper to Profit] Chaos theory is a fancy topic that alludes to a world almost as mystic [&#8230;]</p>
+<p>The post <a href="https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-07212026/">Recent Quant Links from Quantocracy as of 07/21/2026</a> appeared first on <a href="https://quantocracy.com">Quantocracy</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>This is a summary of links recently featured on Quantocracy as of Tuesday, 07/21/2026. To see our most recent links, visit the <a href="https://quantocracy.com/">Quant Mashup</a>. Read on readers!</p>
+<div id="qo-mashup">
+<ul>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=u01zOnjfub&amp;source=feedburner" target="_blank">I Mastered Chaos Theory to Develop a 3.275 Sharpe FX Strategy [Paper to Profit]</a></p>
+<div class="qo-description">Chaos theory is a fancy topic that alludes to a world almost as mystic and mysterious as quantum physics. Everyone has heard of it, but not many people really know what it means or how to use it. A Mandelbrot Set, or infinitely complex shape described by a simple formula, a classic example of chaos theory where simple rules create complex results. Fortunately for us, you cant judge a book by</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=h6OyCHcWeW&amp;source=feedburner" target="_blank">Can Machines Learn Weak Signals? Ridge &gt; Zero &gt; Lasso [Aligrithm]</a></p>
+<div class="qo-description">Feed 920 firm characteristics into a Lasso to predict next month&#039;s stock returns and it will do something that should stop you cold: it loses to a model that predicts zero for every stock. Not &quot;underperforms a good benchmark.&quot; Loses to the number 0. Shen and Xiu prove this is not bad luck or a coding bug. In the regime where economics and finance actually live, where signals are</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=ygkLLr1xQs&amp;source=feedburner" target="_blank">Daily Long/Short Trend Following: Parameters, Asset Classes, and Universe Depth [Delphic Alpha]</a></p>
+<div class="qo-description">I ran the same trend-following strategy across futures, stocks, FX, and crypto. On futures it produced a net Sharpe of 0.73. Crypto came in at 0.56. US stocks barely broke even at 0.42. FX was marginal at 0.24. Same signal, same methodology, four very different outcomes. All four have near-zero correlation to the S&amp;P 500. The difference isn&#039;t the signal. It&#039;s the market. This is a</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=QmWIYbWLAl&amp;source=feedburner" target="_blank">Are 0DTE Straddles Overpriced? We Tested 193 SPY Sessions (2022-2026) [Flash Alpha]</a></p>
+<div class="qo-description">Are 0DTE straddles systematically overpriced? It is probably the most argued question in options trading since daily expirations took over SPY volume &#8211; and it has a testable answer. We replayed 193 Wednesday sessions from July 2022 through April 2026 on the FlashAlpha Historical 0DTE endpoint, snapshotting the same-day straddle at 10:00 ET and comparing its implied move to what SPY actually did</div>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<p>The post <a href="https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-07212026/">Recent Quant Links from Quantocracy as of 07/21/2026</a> appeared first on <a href="https://quantocracy.com">Quantocracy</a>.</p>
+]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>Recent Quant Links from Quantocracy as of 07/20/2026</title>
+		<link>https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-07202026/</link>
+		
+		<dc:creator><![CDATA[Quantocracy]]></dc:creator>
+		<pubDate>Tue, 21 Jul 2026 05:15:06 +0000</pubDate>
+				<category><![CDATA[Daily Wraps]]></category>
+		<guid isPermaLink="false">https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-07202026/</guid>
+
+					<description><![CDATA[<p>This is a summary of links recently featured on Quantocracy as of Monday, 07/20/2026. To see our most recent links, visit the Quant Mashup. Read on readers! Is RSI Overbought a Sell Signal? We Tested 70/30 [The Refutation] The short version The RSI 70/30 rule (above 70 = overbought, sell; below 30 = oversold, buy) [&#8230;]</p>
+<p>The post <a href="https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-07202026/">Recent Quant Links from Quantocracy as of 07/20/2026</a> appeared first on <a href="https://quantocracy.com">Quantocracy</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>This is a summary of links recently featured on Quantocracy as of Monday, 07/20/2026. To see our most recent links, visit the <a href="https://quantocracy.com/">Quant Mashup</a>. Read on readers!</p>
+<div id="qo-mashup">
+<ul>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=llIB1WUnnl&amp;source=feedburner" target="_blank">Is RSI Overbought a Sell Signal? We Tested 70/30 [The Refutation]</a></p>
+<div class="qo-description">The short version The RSI 70/30 rule (above 70 = overbought, sell; below 30 = oversold, buy) is the most repeated pattern in trading. We measured what price actually does after the signal, across six timeframes and four assets, and ran the traded version through six market regimes. It has no edge: forward travel is ~0.00% where the sample is real, it points the wrong way on the 4-hour chart, and</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=VCPll90C4j&amp;source=feedburner" target="_blank">Quantitativo weekly #3 [Quantitativo]</a></p>
+<div class="qo-description">An idea is nothing more nor less than a new combination of old elements. James Webb Young Implementing research papers can sometimes work, though a perfect replication often fails. Its never wasted effort, though: the ideas in the paper end up feeding new ideas and good conversations with other researchers. Heres the 3rd edition of the Quantitativo weekly, featuring papers that caught</div>
+</div>
+</div>
+</li>
+<li>
+<div class="qo-entry">
+<div class="qo-content-col"><a class="qo-title" href="https://quantocracy.com/redirect.php?key=QCjVDRgMbT&amp;source=feedburner" target="_blank">MACD: The Indicator Is a Passenger [The Refutation]</a></p>
+<div class="qo-description">The short version We wrote down four predictions before running a single test. Then we ran 360 measurements, tuned 320 variants, and put three complete systems through regime cross-validation. All four predictions held. What is actually inside the most famous momentum indicator in trading is not what its users think. The claim on trial MACD is on every platform, in every course, behind every</div>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<p>The post <a href="https://quantocracy.com/recent-quant-links-from-quantocracy-as-of-07202026/">Recent Quant Links from Quantocracy as of 07/20/2026</a> appeared first on <a href="https://quantocracy.com">Quantocracy</a>.</p>
+]]></content:encoded>
+					
+		
+		
+			</item>
+	</channel>
+</rss>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"
+	xmlns:content="http://purl.org/rss/1.0/modules/content/"
+	xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:atom="http://www.w3.org/2005/Atom"
+	xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+	xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+	>
+
+<channel>
+	<title>Hexacorn</title>
+	<atom:link href="https://www.hexacorn.com/blog/feed/" rel="self" type="application/rss+xml" />
+	<link>https://www.hexacorn.com/blog</link>
+	<description>Hexacorn</description>
+	<lastBuildDate>Sun, 07 Jun 2026 00:41:46 +0000</lastBuildDate>
+	<language>en-US</language>
+	<sy:updatePeriod>
+	hourly	</sy:updatePeriod>
+	<sy:updateFrequency>
+	1	</sy:updateFrequency>
+	<generator>https://wordpress.org/?v=6.2.10</generator>
+	<item>
+		<title>little secret of msconfig.exe</title>
+		<link>https://www.hexacorn.com/blog/2026/06/07/little-secret-of-msconfig-exe/</link>
+		
+		<dc:creator><![CDATA[adam]]></dc:creator>
+		<pubDate>Sun, 07 Jun 2026 00:41:46 +0000</pubDate>
+				<category><![CDATA[little known secrets]]></category>
+		<guid isPermaLink="false">https://www.hexacorn.com/blog/?p=10368</guid>
+
+					<description><![CDATA[This post doesn&#8217;t include anything ground breaking, but is just yet another attempt to describe/document less-known command line arguments of many known, often native to the platform, Windows programs. When you launch msconfig.exe it shows a well-known configuration dialog box: &#8230; <a href="https://www.hexacorn.com/blog/2026/06/07/little-secret-of-msconfig-exe/">Continue reading <span class="meta-nav">&#8594;</span></a>]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>1 little known secret of forfiles.exe, part 2</title>
+		<link>https://www.hexacorn.com/blog/2026/05/06/1-little-known-secret-of-forfiles-exe-part-2/</link>
+		
+		<dc:creator><![CDATA[adam]]></dc:creator>
+		<pubDate>Wed, 06 May 2026 09:12:36 +0000</pubDate>
+				<category><![CDATA[little known secrets]]></category>
+		<category><![CDATA[Living off the land]]></category>
+		<category><![CDATA[LOLBins]]></category>
+		<guid isPermaLink="false">https://www.hexacorn.com/blog/?p=10364</guid>
+
+					<description><![CDATA[In this old post I have demonstrated how to abuse forfiles.exe to run your &#8216;cmd.exe&#8217; of choice. There is one more trick we can do with this tool. When forfiles.exe enumerates the files it executes a default command cmd /c &#8230; <a href="https://www.hexacorn.com/blog/2026/05/06/1-little-known-secret-of-forfiles-exe-part-2/">Continue reading <span class="meta-nav">&#8594;</span></a>]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>Some unintelligent fun with ms-notepad protocol</title>
+		<link>https://www.hexacorn.com/blog/2026/04/22/some-unintelligent-fun-with-ms-notepad-protocol/</link>
+		
+		<dc:creator><![CDATA[adam]]></dc:creator>
+		<pubDate>Wed, 22 Apr 2026 00:44:33 +0000</pubDate>
+				<category><![CDATA[Archaeology]]></category>
+		<guid isPermaLink="false">https://www.hexacorn.com/blog/?p=10359</guid>
+
+					<description><![CDATA[In my previous post I have provided a list of &#8216;new&#8217; protocols I noticed in the latest Windows 11 build. One that immediately caught my attention was &#8220;ms-notepad://&#8221;. You can use it to launch Notepad via &#8220;ms-notepad://&#60;filename>&#8221; links and it &#8230; <a href="https://www.hexacorn.com/blog/2026/04/22/some-unintelligent-fun-with-ms-notepad-protocol/">Continue reading <span class="meta-nav">&#8594;</span></a>]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>A few more protocol handlers :), Part 2</title>
+		<link>https://www.hexacorn.com/blog/2026/04/18/a-few-more-protocol-handlers-part-2/</link>
+		
+		<dc:creator><![CDATA[adam]]></dc:creator>
+		<pubDate>Sat, 18 Apr 2026 00:09:41 +0000</pubDate>
+				<category><![CDATA[Archaeology]]></category>
+		<guid isPermaLink="false">https://www.hexacorn.com/blog/?p=10356</guid>
+
+					<description><![CDATA[In 2018 I published this post. In 2022 I published this post and this post. @Radkeyboard7984 and I continue chatting about the new Windows 11 protocols and I just did a quick comparison between the protocols I posted before, and &#8230; <a href="https://www.hexacorn.com/blog/2026/04/18/a-few-more-protocol-handlers-part-2/">Continue reading <span class="meta-nav">&#8594;</span></a>]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>WerReportCreate API</title>
+		<link>https://www.hexacorn.com/blog/2026/04/16/werreportcreate-api/</link>
+		
+		<dc:creator><![CDATA[adam]]></dc:creator>
+		<pubDate>Thu, 16 Apr 2026 23:19:05 +0000</pubDate>
+				<category><![CDATA[Archaeology]]></category>
+		<guid isPermaLink="false">https://www.hexacorn.com/blog/?p=10354</guid>
+
+					<description><![CDATA[The API I want to talk about today is called WerReportCreate. It takes a few arguments, but the most interesting is the first one, which is the Event Name. Looking at Windows OS binaries, we can see this API being &#8230; <a href="https://www.hexacorn.com/blog/2026/04/16/werreportcreate-api/">Continue reading <span class="meta-nav">&#8594;</span></a>]]></description>
+		
+		
+		
+			</item>
+	</channel>
+</rss>

@@ -1,0 +1,685 @@
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"
+	xmlns:content="http://purl.org/rss/1.0/modules/content/"
+	xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:atom="http://www.w3.org/2005/Atom"
+	xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+	xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+	>
+
+<channel>
+	<title>Allocate Smartly</title>
+	<atom:link href="https://allocatesmartly.com/feed/" rel="self" type="application/rss+xml" />
+	<link>https://allocatesmartly.com/</link>
+	<description></description>
+	<lastBuildDate>Thu, 06 Aug 2026 11:59:36 +0000</lastBuildDate>
+	<language>en-US</language>
+	<sy:updatePeriod>
+	hourly	</sy:updatePeriod>
+	<sy:updateFrequency>
+	1	</sy:updateFrequency>
+	
+	<item>
+		<title>Taming the Wildcard: David Varadi&#8217;s &#8220;Inflation Compass&#8221;</title>
+		<link>https://allocatesmartly.com/taming-the-wildcard-david-varadis-inflation-compass/</link>
+		
+		<dc:creator><![CDATA[Allocate Smartly]]></dc:creator>
+		<pubDate>Thu, 06 Aug 2026 07:33:45 +0000</pubDate>
+				<category><![CDATA[Featured Post]]></category>
+		<category><![CDATA[TAA Strategies]]></category>
+		<guid isPermaLink="false">https://allocatesmartly.com/?p=16375</guid>
+
+					<description><![CDATA[<p>This is an independent test of a novel strategy from David Varadi: Inflation Compass. It builds on his earlier Growth and Inflation strategy by adding a direct market-based measure of expected inflation. We&#8217;re testing two versions of his new strategy: Original and Enhanced (more on this later). Backtested results from 1990 follow. Results are net [&#8230;]</p>
+<p>The post <a href="https://allocatesmartly.com/taming-the-wildcard-david-varadis-inflation-compass/">Taming the Wildcard: David Varadi&#8217;s &#8220;Inflation Compass&#8221;</a> appeared first on <a href="https://allocatesmartly.com">Allocate Smartly</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>This is an independent test of a novel strategy from David Varadi: <a href="https://cssanalytics.wordpress.com/2026/07/27/the-inflation-compass-model/" target="_blank" rel="noopener">Inflation Compass</a>. It builds on his earlier <a href="https://allocatesmartly.com/david-varadis-growth-and-inflation-sector-timing-a-wildcard-strategy/">Growth and Inflation</a> strategy by adding a direct market-based measure of expected inflation. We&#8217;re testing two versions of his new strategy: Original and Enhanced (more on this later).</p>
+<p>Backtested results from 1990 follow. Results are net of transaction costs – see <a href="https://allocatesmartly.com/faqs/#backtest-assumptions">backtest assumptions</a>. Learn about <a href="https://allocatesmartly.com/what-we-do/">what we do</a> and follow 100+ asset allocation strategies like this one in near real-time.</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/08/20260805.01.logarithmic.png"><img fetchpriority="high" decoding="async" class="alignnone size-full wp-image-16382" src="https://allocatesmartly.com/wp-content/uploads/2026/08/20260805.01.logarithmic.png" alt="" width="750" height="450" srcset="https://allocatesmartly.com/wp-content/uploads/2026/08/20260805.01.logarithmic.png 750w, https://allocatesmartly.com/wp-content/uploads/2026/08/20260805.01.logarithmic-300x180.png 300w" sizes="(max-width: 750px) 100vw, 750px" /></a><br />
+<i>Logarithmically-scaled. Click for <a href="https://allocatesmartly.com/wp-content/uploads/2026/08/20260805.01.linear.png">linearly-scaled results</a>.</i></p>
+<p class="sx-popup" style="text-align: center; margin-bottom: 15px"><a href="https://allocatesmartly.com/wp-content/uploads/2026/08/20260805.02.png"><img decoding="async" class="alignnone size-full wp-image-16383" src="https://allocatesmartly.com/wp-content/uploads/2026/08/20260805.02.png" alt="" width="561" height="521" srcset="https://allocatesmartly.com/wp-content/uploads/2026/08/20260805.02.png 561w, https://allocatesmartly.com/wp-content/uploads/2026/08/20260805.02-300x279.png 300w" sizes="(max-width: 561px) 100vw, 561px" /></a></p>
+<p style="margin-bottom: 35px">Note: Below we&#8217;ve shown the rolling 3-year max drawdown, rather than the spot drawdown we usually show (otherwise the chart becomes a pile of spaghetti).</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/08/20260805.03.png"><img decoding="async" class="alignnone size-full wp-image-16384" src="https://allocatesmartly.com/wp-content/uploads/2026/08/20260805.03.png" alt="" width="750" height="450" srcset="https://allocatesmartly.com/wp-content/uploads/2026/08/20260805.03.png 750w, https://allocatesmartly.com/wp-content/uploads/2026/08/20260805.03-300x180.png 300w" sizes="(max-width: 750px) 100vw, 750px" /></a></p>
+<p>A word of warning: this is an <i>extremely</i> volatile strategy, usually allocating the entire portfolio to a single stock market sector. Investors should think of it as a unique risk asset &#8211; not a total portfolio solution &#8211; and limit it to a reasonably sized allocation within a broader, diversified <a href="https://allocatesmartly.com/faqs/#custom-model-portfolio">Model Portfolio</a>.</p>
+<h4 class="subheading">How this strategy works:</h4>
+<p>We covered much of the underlying theory behind this strategy in our previous test of <a href="https://allocatesmartly.com/david-varadis-growth-and-inflation-sector-timing-a-wildcard-strategy/">Growth and Inflation</a>. Here&#8217;s a quick refresher:</p>
+<p>Most investors are familiar with the classic &#8220;four seasons&#8221; framework, which categorizes the current market environment based on economic growth versus inflation. Variations of this concept underpin well-known strategies such as the <a href="https://allocatesmartly.com/members/strategy/harry-brownes-permanent-portfolio/">Permanent Portfolio</a> and <a href="https://allocatesmartly.com/members/strategy/ray-dalios-all-weather-all-seasons-portfolio/">All-Weather Portfolio</a>.</p>
+<p class="sx-popup" style="text-align: center; margin-bottom: 0"><a href="https://allocatesmartly.com/wp-content/uploads/2026/08/20260805.04.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-16385" src="https://allocatesmartly.com/wp-content/uploads/2026/08/20260805.04.png" alt="" width="455" height="280" srcset="https://allocatesmartly.com/wp-content/uploads/2026/08/20260805.04.png 455w, https://allocatesmartly.com/wp-content/uploads/2026/08/20260805.04-300x185.png 300w" sizes="auto, (max-width: 455px) 100vw, 455px" /></a></p>
+<p>Different sectors tend to perform best in each quadrant. The challenge, of course, is identifying the current market environment <i>in real time</i>.</p>
+<p>Varadi uses the current trend of the S&amp;P 500 to measure forward growth. The S&amp;P 500 is inherently forward-looking and has been a good proxy for future US economic growth over the last 120 years.</p>
+<p>His original <a href="https://allocatesmartly.com/david-varadis-growth-and-inflation-sector-timing-a-wildcard-strategy/">Growth and Inflation</a> strategy forecasted inflation using an indicator called &#8220;Sector-Implied Expected Inflation&#8221;. It measures the relative performance of sectors with positive beta to expected inflation (energy, financials, industrials and materials) versus sectors with negative beta (consumer staples, health care and utilities).</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.07.png"><img loading="lazy" decoding="async" class="alignnone wp-image-15860 size-medium" src="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.07-300x180.png" alt="" width="300" height="180" srcset="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.07-300x180.png 300w, https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.07.png 752w" sizes="auto, (max-width: 300px) 100vw, 300px" /></a>     <a href="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.08.png"><img loading="lazy" decoding="async" class="alignnone wp-image-15861 size-medium" src="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.08-300x180.png" alt="" width="300" height="180" srcset="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.08-300x180.png 300w, https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.08.png 752w" sizes="auto, (max-width: 300px) 100vw, 300px" /></a></p>
+<p>Varadi&#8217;s new strategy takes this idea a step further by also directly forecasting inflation via the 5-year Breakeven Inflation Rate (<a href="https://fred.stlouisfed.org/series/T5YIE" target="_blank">T5YIE</a>), calculated as the spread between nominal Treasury yields and TIPS yields. This spread represents investors&#8217; expectations for future inflation (plus some other things, more on this later).</p>
+<p>Inflation is considered to be rising when:</p>
+<ul>
+<li>The breakeven inflation rate is above 2%, and &#8211;</li>
+<li>Either the breakeven inflation rate or sector-implied expected inflation is rising.</li>
+</ul>
+<p>Now that we&#8217;ve determined both the growth and inflation regime, the strategy selects the best ETF for that environment:</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/08/20260805.07.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-16388" src="https://allocatesmartly.com/wp-content/uploads/2026/08/20260805.07.png" alt="" width="542" height="268" srcset="https://allocatesmartly.com/wp-content/uploads/2026/08/20260805.07.png 542w, https://allocatesmartly.com/wp-content/uploads/2026/08/20260805.07-300x148.png 300w" sizes="auto, (max-width: 542px) 100vw, 542px" /></a><br />
+XLE = energy, XLK = technology, XLU = utilities, XLP = cons. staples, IEF = US Treasuries</p>
+<p>The strategy trades monthly. Positions are assumed to be executed at the close on the final trading day of each month and held for the following month.</p>
+<h4 class="subheading">Original vs Enhanced:</h4>
+<p>We&#8217;re tracking two versions of Inflation Compass.</p>
+<p>&#8220;Original&#8221; is a replication of Varadi&#8217;s published strategy. We&#8217;ve extended his test with a decade-plus of additional data. Data prior to 2003 can be considered out-of-sample.</p>
+<p>&#8220;Enhanced&#8221; incorporates several refinements proposed by the author. The most significant is parameter diversification (aka &#8220;ensembling&#8221;). Rather than relying on a single lookback period &#8211; for example, the <i>60-day</i> change in the breakeven rate &#8211; the Enhanced version averages the signal across multiple parameter values. This diversification helps to smooth future returns by reducing the &#8220;specification risk&#8221; of any single parameter value underperforming.</p>
+<p>We rarely state one strategy is better than another. We present the evidence and let members draw their own conclusions. That said, we prefer the Enhanced version. The Original version could certainly outperform going forward, but by reducing specification risk, the Enhanced version narrows the range of possible future outcomes.</p>
+<h4 class="subheading">Potential risks to future performance:</h4>
+<p>This strategy would have produced exceptional returns. When we cover high performing strategies like this, we want to be extra skeptical in our coverage. The strategy &#8220;sells itself&#8221;; it doesn&#8217;t need our help. Our focus should be on potential risks to future performance.</p>
+<p>Below we discuss what we view as the two most significant:</p>
+<p><i>Risk #1: Major asset classes are hard to predict; sectors are even harder</i></p>
+<p>First, an obvious risk. It&#8217;s one thing to say that during a given economic condition a broad asset class like stocks or bonds will perform well. That&#8217;s difficult enough on its own. It&#8217;s even harder to identify the specific sector that will outperform.</p>
+<p>The best example is the &#8220;reflation&#8221; asset, energy (XLE), which is also the strategy&#8217;s most frequently held asset. As global energy production and consumption changes in the coming decades, will XLE continue to be the most productive reflation asset? There&#8217;s a risk of that not being the case.</p>
+<p>Perhaps a future version of the strategy could either (a) take a more adaptive approach to selecting sectors or (b) hold multiple diversifying sectors.</p>
+<p><i>Risk #2: TIPS breakeven inflation forecasts vs alternative inflation forecasts</i></p>
+<p>This second potential risk is more nuanced. As Varadi explains, TIPS are a quirky inflation predictor:</p>
+<div style="background-color: #f3f3f3; padding: 20px; margin-bottom: 25px; border-left: 5px solid #377d97;"><i>Part of the spread is an inflation risk premium: compensation for inflation uncertainty, which rises when the range of outcomes widens. Part of the spread reflects liquidity differences between TIPS and nominal Treasuries, which can distort the spread badly in stressed markets — in late 2008 the 5-year breakeven briefly collapsed toward zero as TIPS liquidity evaporated, which was not a literal forecast of zero inflation for five years. Smaller technicalities (CPI seasonality, the deflation floor embedded in TIPS) add noise at the margins.</i></div>
+<p>Let&#8217;s consider alternative measures of 5-year future inflation. Below is a comparison of the TIPS breakeven rate, inflation swaps (Bloomberg: USSWIT5) and the Cleveland Fed&#8217;s forecast (<a href="https://fred.stlouisfed.org/series/EXPINF5YR" target="_blank">EXPINF5YR</a>). </p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/08/20260805.08-1.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-16389" src="https://allocatesmartly.com/wp-content/uploads/2026/08/20260805.08-1.png" alt="" width="750" height="450" /></a></p>
+<p>Each measure has its own strengths and weaknesses:</p>
+<ul>
+<li>Inflation swaps are market-based like the breakeven rate and avoid TIPS&#8217; liquidity-related distortions, but they introduce their own unique quirkiness, such as counterparty risk.</li>
+<li>The Fed forecast is published monthly and is partly survey-driven. It tends to react more slowly than market-based measures and is more anchored to recent inflation levels.</li>
+<li>The Fed forecast will often match the TIPS breakeven rate more closely during calm markets, but inflation swaps match more closely during market stress.</li>
+</ul>
+<p>If we re-backtest the strategy, replacing the TIPS breakeven rate with one of these other inflation forecasts, performance declines. Importantly however, it declines much less when using inflation swaps than when using the Fed forecast.</p>
+<p>Below are the results for the Original strategy as designed, versus results based on the alternative inflation forecasts.</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/08/20260805.09.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-16390" src="https://allocatesmartly.com/wp-content/uploads/2026/08/20260805.09.png" alt="" width="601" height="448" srcset="https://allocatesmartly.com/wp-content/uploads/2026/08/20260805.09.png 601w, https://allocatesmartly.com/wp-content/uploads/2026/08/20260805.09-300x224.png 300w" sizes="auto, (max-width: 601px) 100vw, 601px" /></a></p>
+<p>That suggests two explanations:</p>
+<ul>
+<li>The first is encouraging: TIPS contain unique, actionable information that isn&#8217;t reflected in the other forecasts, and the strategy is exploiting that.</li>
+<li>The second is less encouraging: the strategy is overfit to periods when TIPS diverged from other measures due to a lack of liquidity or other reasons not related to actually forecasting inflation, particularly in 2008/2009 and 2020/2021.</li>
+</ul>
+<p>Our conclusion falls between the two.</p>
+<p>There is clearly actionable information in the market-driven TIPS and inflation swap forecasts not accounted for in the Fed forecast, especially during periods of market stress when moving quickly matters.</p>
+<p>But there&#8217;s probably not enough difference between the TIPS and inflation swap forecasts to say with 100% certainty one set of results is &#8220;more right&#8221; than the other in terms of what they say about the future. Investors should err on the side of caution and view the inflation swap results (which are still quite good) as a better reflection of strategy performance.</p>
+<p>Having said all of that, there is a risk that the distortions introduced by both market-based inflation forecasts don&#8217;t play out in the future the way they have in the past and the strategy doesn&#8217;t perform as well during future periods of market stress. The fact that we have so little data to consider (by TAA standards), exacerbates that risk.</p>
+<h4 class="subheading">David Varadi is a pioneer in the online quant space</h4>
+<p>Our thanks to <a href="https://cssanalytics.wordpress.com/2026/07/27/the-inflation-compass-model/" target="_blank">David Varadi</a> for sharing this strategy and giving us the opportunity to put it to the independent test.</p>
+<p>Readers familiar with David&#8217;s work know he has been producing thoughtful, unconventional ideas like Inflation Compass for a very long time. He&#8217;s one of the pioneers in the online quant space. We highly recommend following what David is doing at <a href="https://cssanalytics.wordpress.com/" target="_blank">CSS Analytics</a>.</p>
+<h4 class="subheading">New here?</h4>
+<p>We invite you to <a href="https://allocatesmartly.com/pricing/">become a member</a> for about a $1 a day, or take our platform for a test drive with a <a href="https://allocatesmartly.com/pricing/">free membership</a>. Put the industry&#8217;s best tactical asset allocation strategies to the test, combine them into your own custom portfolio, and follow them in real-time. Learn more about <a href="https://allocatesmartly.com/what-we-do/">what we do</a>.</p>
+<p style="text-align: center;"><a href="https://allocatesmartly.com/pricing/"><img loading="lazy" decoding="async" class="alignnone size-full" src="https://allocatesmartly.com/wp-content/uploads/sx/banner.300x250.png" width="300" height="250" /></a></p>
+<p>The post <a href="https://allocatesmartly.com/taming-the-wildcard-david-varadis-inflation-compass/">Taming the Wildcard: David Varadi&#8217;s &#8220;Inflation Compass&#8221;</a> appeared first on <a href="https://allocatesmartly.com">Allocate Smartly</a>.</p>
+]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>Margin Debt Is at an All-Time High, What Does That Mean?</title>
+		<link>https://allocatesmartly.com/margin-debt-is-at-an-all-time-high-what-does-that-mean/</link>
+		
+		<dc:creator><![CDATA[Allocate Smartly]]></dc:creator>
+		<pubDate>Fri, 17 Jul 2026 03:34:33 +0000</pubDate>
+				<category><![CDATA[Featured Post]]></category>
+		<category><![CDATA[Market Valuation]]></category>
+		<guid isPermaLink="false">https://allocatesmartly.com/?p=16329</guid>
+
+					<description><![CDATA[<p>&#8220;The current extreme in margin debt offers one way to gauge the speculative exuberance of investors.&#8221; – John Hussman Thinking about this chart from John Hussman, showing margin debt relative to GDP spiking to all-time highs, with previous such instances seeming to foreshadow major market downturns: It&#8217;s very easy to look at a chart like [&#8230;]</p>
+<p>The post <a href="https://allocatesmartly.com/margin-debt-is-at-an-all-time-high-what-does-that-mean/">Margin Debt Is at an All-Time High, What Does That Mean?</a> appeared first on <a href="https://allocatesmartly.com">Allocate Smartly</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<div style="background-color: #f3f3f3; padding: 20px; margin-bottom: 25px; border-left: 5px solid #377d97;"><i>&#8220;The current extreme in margin debt offers one way to gauge the speculative exuberance of investors.&#8221; – John Hussman</i></div>
+<p>Thinking about this chart from <a href="https://www.hussmanfunds.com/comment/mc260715/" target="_blank" rel="noopener">John Hussman</a>, showing margin debt relative to GDP spiking to all-time highs, with previous such instances seeming to foreshadow major market downturns:</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/07/20260715.01.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-16330" src="https://allocatesmartly.com/wp-content/uploads/2026/07/20260715.01.png" alt="" width="750" height="442" srcset="https://allocatesmartly.com/wp-content/uploads/2026/07/20260715.01.png 750w, https://allocatesmartly.com/wp-content/uploads/2026/07/20260715.01-300x177.png 300w" sizes="auto, (max-width: 750px) 100vw, 750px" /></a></p>
+<p>It&#8217;s very easy to look at a chart like this with hindsight and identify the top of each spike. It&#8217;s much more difficult to do that in real-time. That&#8217;s doubly true because of the big shift in the data in the early 1990&#8217;s. Pretending like you would have seen the pre-1990 instances as spikes in real-time, or not seen the entire 1990&#8217;s as a spike, is a little silly.</p>
+<p>Below we present the data a bit differently. Here we show the 12-month difference in Margin/GDP <sup>(*)</sup>.</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/07/20260715.02.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-16331" src="https://allocatesmartly.com/wp-content/uploads/2026/07/20260715.02.png" alt="" width="750" height="450" srcset="https://allocatesmartly.com/wp-content/uploads/2026/07/20260715.02.png 750w, https://allocatesmartly.com/wp-content/uploads/2026/07/20260715.02-300x180.png 300w" sizes="auto, (max-width: 750px) 100vw, 750px" /></a></p>
+<p>The three big spikes in 2000, 2007, 2021 and today now stand out clearly. All spikes prior pale in comparison.</p>
+<p>How has the market performed following these spikes? Below we show S&amp;P 500 returns (annualized) after the change in Margin/GDP spiked above 1% (first instance only, overlapping observations ignored).</p>
+<div style="margin: 30px auto">
+<table class="sx-table" width="100%" style="margin: 0 auto; width: 500px">
+<thead>
+<tr>
+<th class="title" colspan="4">S&amp;P 500 Annualized Return<br />Following Spikes in Margin Debt/GDP</th>
+</tr>
+<tr class="header" style="height: 45px">
+<th class="column-1" style="width: 25%; border-left: 1px solid #484d51">Date</th>
+<th class="column-2" style="width: 25%; text-align: center">12m Return</th>
+<th class="column-2" style="width: 25%; text-align: center">18m Ann. Return</th>
+<th class="column-3" style="width: 25%; text-align: center; border-right: 1px solid #484d51">24m Ann. Return</th>
+</tr>
+</thead>
+<tbody style="font-size: 15px">
+<tr class="odd">
+<td class="column-1" style="border-right: 1px solid #dddddd; text-align: left">01/31/2000</td>
+<td class="column-2" style="border-right: 1px solid #dddddd">-0.8%</td>
+<td class="column-2" style="border-right: 1px solid #dddddd">-7.9%</td>
+<td class="column-3">-8.9%</td>
+</tr>
+<tr class="even">
+<td class="column-1" style="border-right: 1px solid #dddddd; text-align: left">06/29/2007</td>
+<td class="column-2" style="border-right: 1px solid #dddddd">-13.2%</td>
+<td class="column-2" style="border-right: 1px solid #dddddd">-27.3%</td>
+<td class="column-3">-20.0%</td>
+</tr>
+<tr class="odd">
+<td class="column-1" style="border-right: 1px solid #dddddd; text-align: left">01/29/2021</td>
+<td class="column-2" style="border-right: 1px solid #dddddd">23.2%</td>
+<td class="column-2" style="border-right: 1px solid #dddddd">8.9%</td>
+<td class="column-3">6.4%</td>
+</tr>
+<tr class="even">
+<td class="column-1" style="border-right: 1px solid #dddddd; text-align: left">09/30/2025</td>
+<td class="column-2" style="border-right: 1px solid #dddddd">?</td>
+<td class="column-2" style="border-right: 1px solid #dddddd">?</td>
+<td class="column-3">?</td>
+</tr>
+<tr class="odd">
+<td class="column-1" style="border-right: 1px solid #dddddd; text-align: left">Average (Geo)</td>
+<td class="column-2" style="border-right: 1px solid #dddddd">2.0%</td>
+<td class="column-2" style="border-right: 1px solid #dddddd">-10.0%</td>
+<td class="column-3">-8.1%</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Returns following the spikes in 2000 and 2007 were poor, but 2021 bucked the trend.</p>
+<p>Perhaps a better criterion is a spike of more than 1% followed by a decline of any amount, to try to time the top. Those results look as follows:</p>
+<div style="margin: 30px auto">
+<table class="sx-table" width="100%" style="margin: 0 auto; width: 500px">
+<thead>
+<tr>
+<th class="title" colspan="4">S&amp;P 500 Annualized Return<br />Following Spikes + Decline in Margin Debt/GDP</th>
+</tr>
+<tr class="header" style="height: 45px">
+<th class="column-1" style="width: 25%; border-left: 1px solid #484d51">Date</th>
+<th class="column-2" style="width: 25%; text-align: center">12m Return</th>
+<th class="column-2" style="width: 25%; text-align: center">18m Ann. Return</th>
+<th class="column-3" style="width: 25%; text-align: center; border-right: 1px solid #484d51">24m Ann. Return</th>
+</tr>
+</thead>
+<tbody style="font-size: 15px">
+<tr class="odd">
+<td class="column-1" style="border-right: 1px solid #dddddd; text-align: left">4/28/2000</td>
+<td class="column-2" style="border-right: 1px solid #dddddd">-11.8%</td>
+<td class="column-2" style="border-right: 1px solid #dddddd">-18.1%</td>
+<td class="column-3">-12.8%</td>
+</tr>
+<tr class="even">
+<td class="column-1" style="border-right: 1px solid #dddddd; text-align: left">8/31/2007</td>
+<td class="column-2" style="border-right: 1px solid #dddddd">-11.0%</td>
+<td class="column-2" style="border-right: 1px solid #dddddd">-35.5%</td>
+<td class="column-3">-14.7%</td>
+</tr>
+<tr class="odd">
+<td class="column-1" style="border-right: 1px solid #dddddd; text-align: left">4/30/2021</td>
+<td class="column-2" style="border-right: 1px solid #dddddd">0.0%</td>
+<td class="column-2" style="border-right: 1px solid #dddddd">-3.7%</td>
+<td class="column-3">1.3%</td>
+</tr>
+<tr class="even">
+<td class="column-1" style="border-right: 1px solid #dddddd; text-align: left">11/28/2025</td>
+<td class="column-2" style="border-right: 1px solid #dddddd">?</td>
+<td class="column-2" style="border-right: 1px solid #dddddd">?</td>
+<td class="column-3">?</td>
+</tr>
+<tr class="odd">
+<td class="column-1" style="border-right: 1px solid #dddddd; text-align: left">Average (Geo)</td>
+<td class="column-2" style="border-right: 1px solid #dddddd">-7.7%</td>
+<td class="column-2" style="border-right: 1px solid #dddddd">-20.1%</td>
+<td class="column-3">-9.0%</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>These results are more uniformly negative, especially around the 18-month mark.</p>
+<h4 class="subheading">What does all this mean?</h4>
+<p>These results are bearish, but they don&#8217;t mean much in isolation. It&#8217;s dinner conversation (at a very boring dinner where we talk about market valuations).</p>
+<p>At most, it&#8217;s another warning light indicating that the market is overvalued. Add it to the <a href="https://allocatesmartly.com/10-year-stock-market-return-forecast/">giant pile</a> of other indicators warning that this market is too rich.</p>
+<p>If that&#8217;s the case, what do we do about that now, today?</p>
+<p>Nothing. The market can remain overvalued for years. We stay the course and take advantage of the current market trend until we see concrete signs of weakness.</p>
+<p>Trying to precisely time market tops ahead of time is a fool&#8217;s errand.</p>
+<h4 class="subheading">New here?</h4>
+<p>We invite you to <a href="https://allocatesmartly.com/pricing/">become a member</a> for about a $1 a day, or take our platform for a test drive with a <a href="https://allocatesmartly.com/pricing/">free limited membership</a>. Put the industry’s best tactical asset allocation strategies to the test, combine them into your own custom portfolio, and follow them in near real-time. Not a DIY investor? There’s also a <a href="https://allocatesmartly.com/managed/">managed solution</a>. Learn more about <a href="https://allocatesmartly.com/what-we-do/">what we do</a>.</p>
+<p style="text-align: center;"><a href="https://allocatesmartly.com/pricing/"><img loading="lazy" decoding="async" class="alignnone size-full" src="https://allocatesmartly.com/wp-content/uploads/sx/banner.300x250.png" width="300" height="250" /></a></p>
+<p><i>(*) Calcuation notes:</i></p>
+<p><i>(1) Calculated as margin debt today minus margin debt 12m prior, all divided by average monthly GDP over same period.</i></p>
+<p><i>(2) As mentioned, there was a big shift in Margin Debt/GDP in the early 1990&#8217;s. In real-time, without the benefit of hindsight, we would have analyzed this data differently than we have here. A change of say +/- 0.25% may have appeared significant in the mid-1990&#8217;s, whereas now we&#8217;ve set our threshold at 4 times that. Our point is: take all of this with a grain of salt. Markets change and the nature of this metric may very well change over time as well.</i></p>
+<p>The post <a href="https://allocatesmartly.com/margin-debt-is-at-an-all-time-high-what-does-that-mean/">Margin Debt Is at an All-Time High, What Does That Mean?</a> appeared first on <a href="https://allocatesmartly.com">Allocate Smartly</a>.</p>
+]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>Investing in &#8220;Distressed&#8221; TAA Strategies (Redux)</title>
+		<link>https://allocatesmartly.com/investing-in-distressed-taa-strategies-redux/</link>
+		
+		<dc:creator><![CDATA[Allocate Smartly]]></dc:creator>
+		<pubDate>Tue, 14 Jul 2026 02:48:16 +0000</pubDate>
+				<category><![CDATA[Things That Don't Work]]></category>
+		<category><![CDATA[Timing TAA Strategies]]></category>
+		<guid isPermaLink="false">https://allocatesmartly.com/?p=16264</guid>
+
+					<description><![CDATA[<p>This is the fourth installment in our series on selecting Tactical Asset Allocation (TAA) strategies based on recent performance. Read parts 1, 2 and 3. In our previous studies we selected strategies based on recent return. In this study, we select “distressed” strategies, or strategies nearing or exceeding their previous max drawdown. We looked at [&#8230;]</p>
+<p>The post <a href="https://allocatesmartly.com/investing-in-distressed-taa-strategies-redux/">Investing in &#8220;Distressed&#8221; TAA Strategies (Redux)</a> appeared first on <a href="https://allocatesmartly.com">Allocate Smartly</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>This is the fourth installment in our series on selecting Tactical Asset Allocation (TAA) strategies based on recent performance. Read parts <a href="https://allocatesmartly.com/selecting-taa-strategies-based-on-recent-performance-part-1/">1</a>, <a href="https://allocatesmartly.com/selecting-taa-strategies-based-on-recent-performance-part-2-recent-sharpe-ratio/">2</a> and <a href="https://allocatesmartly.com/surfing-the-equity-curve-using-trend-following-to-switch-strategies-on-and-off/">3</a>.</p>
+<p>In our previous studies we selected strategies based on recent return. In this study, we select “distressed” strategies, or strategies nearing or exceeding their previous max drawdown.</p>
+<p>We looked at this subject <a href="https://allocatesmartly.com/investing-in-distressed-taa-strategies/">way back in 2020</a> and concluded that strategies tended to generate higher returns when distressed than on other days. That still holds true today, but there&#8217;s another piece to the puzzle. In short, it doesn&#8217;t make sense to select a strategy simply because it&#8217;s near a previous max drawdown (nor does it necessarily make sense to avoid it).</p>
+<p><i>Note: We track <a href="https://allocatesmartly.com/list-of-strategies/">100+ strategies</a>, making these findings broadly representative of TAA as a trading style.</i></p>
+<h4 class="subheading">Results from 1990 <sup>(*)</sup>:</h4>
+<p>We advocate combining multiple strategies together into <a href="https://allocatesmartly.com/faqs/#custom-model-portfolio">&#8220;Model Portfolios&#8221;</a> to limit the risk of any single strategy underperforming. We&#8217;ve assumed the investor selected strategies for their portfolio at the end of each month by looking at the &#8220;distance to max drawdown&#8221; for all 100+ strategies. </p>
+<p>For example, if a strategy&#8217;s previous max drawdown was -10% and current drawdown is -5%, the distance to max drawdown = 50%. We assume the investor only knew about drawdowns up to that moment in time (no lookahead bias).</p>
+<p>The investor divided the portfolio into Y equally-weighted slots (from 1 to 5) and selected the Y strategies closest to their previous drawdown if the distance was &gt;= X% (50-100%).</p>
+<p>Important: Any slots not filled by a distressed strategy earned the <i>average</i> strategy&#8217;s return the following month. In most months, no strategies meet our criteria. We want to evaluate whether distressed strategies outperform other competing strategies when they do appear.</p>
+<p>We&#8217;ll show results for our hypothetical portfolios across four metrics, starting with annualized return. For comparison, we also include the average strategy we track, as well as the 60/40 benchmark <sup>(*)</sup>.</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/07/20260713.01-1.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-16288" src="https://allocatesmartly.com/wp-content/uploads/2026/07/20260713.01-1.png" alt="" width="400" height="350" srcset="https://allocatesmartly.com/wp-content/uploads/2026/07/20260713.01-1.png 400w, https://allocatesmartly.com/wp-content/uploads/2026/07/20260713.01-1-300x263.png 300w" sizes="auto, (max-width: 400px) 100vw, 400px" /></a></p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/07/20260713.02-1.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-16289" src="https://allocatesmartly.com/wp-content/uploads/2026/07/20260713.02-1.png" alt="" width="400" height="350" srcset="https://allocatesmartly.com/wp-content/uploads/2026/07/20260713.02-1.png 400w, https://allocatesmartly.com/wp-content/uploads/2026/07/20260713.02-1-300x263.png 300w" sizes="auto, (max-width: 400px) 100vw, 400px" /></a></p>
+<p>There has been a small benefit to this approach when the number of slots in our Model Portfolio is large enough to still provide some diversification (3+), and the minimum distance to max drawdown is low enough (i.e. the bottom left of the table).</p>
+<p style="text-align: center;">
+<p style="text-align: center;">
+<p>If we set our minimum distance to max drawdown too high, there simply aren&#8217;t enough strategies that meet our criteria to move the needle.</p>
+<p>Next, we look at two measures of loss: Max Drawdown and the Ulcer Performance Index (UPI). Max Drawdown is of limited value; it&#8217;s capturing a single moment in time. UPI is our preferred measure because it considers return relative to both the depth and length of all drawdowns.</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/07/20260713.03-1.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-16290" src="https://allocatesmartly.com/wp-content/uploads/2026/07/20260713.03-1.png" alt="" width="400" height="350" srcset="https://allocatesmartly.com/wp-content/uploads/2026/07/20260713.03-1.png 400w, https://allocatesmartly.com/wp-content/uploads/2026/07/20260713.03-1-300x263.png 300w" sizes="auto, (max-width: 400px) 100vw, 400px" /></a></p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/07/20260713.04-1.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-16291" src="https://allocatesmartly.com/wp-content/uploads/2026/07/20260713.04-1.png" alt="" width="400" height="350" srcset="https://allocatesmartly.com/wp-content/uploads/2026/07/20260713.04-1.png 400w, https://allocatesmartly.com/wp-content/uploads/2026/07/20260713.04-1-300x263.png 300w" sizes="auto, (max-width: 400px) 100vw, 400px" /></a></p>
+<p>These results are basically in line with annual return and the Sharpe Ratio. There has been some benefit to this approach near the bottom left of the table, but that benefit has been small.</p>
+<h4 class="subheading">A mea culpa, sort of…</h4>
+<p>Again, we looked at this subject <a href="https://allocatesmartly.com/investing-in-distressed-taa-strategies/">back in 2020</a> and concluded that strategies tended to generate a higher return when distressed than on other days. We&#8217;ve more than doubled the number of strategies in our test since then, but that basic observation still holds. However, we missed a piece of the puzzle in that previous analysis.</p>
+<p>We were looking at the question at a strategy level; i.e. how has <i>this</i> strategy performed when distressed versus <i>this</i> strategy on all other months? In our analysis today we&#8217;re looking at the question at a portfolio level, and at a portfolio level there are two additional considerations.</p>
+<p>The first is more obvious: distressed strategies tend to &#8220;cluster&#8221;. On most days there are few or no distressed strategies, and then suddenly market volatility spikes and many strategies simultaneously meet the criteria (think 2022, 2007-08, etc.) At a strategy level that doesn&#8217;t matter &#8211; every instance is treated equally – but at a portfolio level it does – individual strategy performance is diluted.</p>
+<p>The second consideration is really the important one though, and it came as a big surprise to us (although in hindsight it makes sense).</p>
+<p>When at least one strategy is distressed, <i>all</i> strategies tend to perform better the following month. For example, when at least one strategy was within 70% of its previous max drawdown, the average return of all strategies the following month was about 50% higher than other months.</p>
+<p>The more distressed that single strategy is, the better all strategies perform. Likewise, the more strategies that are distressed, the better all strategies perform.</p>
+<p>What voodoo is this?</p>
+<p>We tend to see one or more strategies approach their previous max drawdown during spikes in market volatility. Concurrently, all strategies – including non-distressed ones &#8211; tend to generate higher returns during those same spikes in volatility.</p>
+<p>Put another way, most of the higher return observed when strategies are distressed is not specific to the distressed strategy, it&#8217;s across all strategies.</p>
+<h4 class="subheading">Where does that leave us?</h4>
+<p>Should investors invest in distressed strategies? There is limited evidence for that. It&#8217;s not the worst approach assuming the portfolio is reasonably diversified, but it&#8217;s not a great approach either. Our advice for selecting strategies remains the same:</p>
+<p>Select a broad range of diverse, robust, high-quality strategies based on <i>long-term</i> performance. Consider avoiding strategies that have consistently failed to live up to expectations until performance is better understood (refer to the <a href="https://allocatesmartly.com/members/underperformer-watchlist/">Underperformer Watchlist</a>), but beyond those extreme cases, do not consider recent performance in strategy selection.</p>
+<p>As mentioned, this is the fourth article in this series. Be on the lookout for additional tests in search of an effective approach for selecting strategies based on recent performance.</p>
+<h4 class="subheading">New here?</h4>
+<p>We invite you to <a href="https://allocatesmartly.com/pricing/">become a member</a> for about a $1 a day, or take our platform for a test drive with a <a href="https://allocatesmartly.com/pricing/">free limited membership</a>. Put the industry’s best tactical asset allocation strategies to the test, combine them into your own custom portfolio, and follow them in near real-time. Not a DIY investor? There’s also a <a href="https://allocatesmartly.com/managed/">managed solution</a>. Learn more about <a href="https://allocatesmartly.com/what-we-do/">what we do</a>.</p>
+<p style="text-align: center;"><a href="https://allocatesmartly.com/pricing/"><img loading="lazy" decoding="async" class="alignnone size-full" src="https://allocatesmartly.com/wp-content/uploads/sx/banner.300x250.png" width="300" height="250" /></a></p>
+<p><em>(*) Calculation notes:</em></p>
+<p><em>(1) This analysis is shorter than in the three previous installments in this series. That&#8217;s because we use the first 20 years of backtested data for each strategy to find the max drawdown up to that point in time. The earliest any of the strategies on our platform begins is 1970, hence this analysis begins in 1990.</em></p>
+<p><em>(2) A reminder from our previous analyses: These results account for trading frictions (transaction costs + slippage) in the individual strategy backtests, but do not account for the additional friction of switching between strategies. That means that the actual results of taking such an active approach to selecting strategies would have been worse than what we&#8217;ve presented here.</em></p>
+<p><em>(3) All data as of 04/30/2026.</em></p>
+<p>The post <a href="https://allocatesmartly.com/investing-in-distressed-taa-strategies-redux/">Investing in &#8220;Distressed&#8221; TAA Strategies (Redux)</a> appeared first on <a href="https://allocatesmartly.com">Allocate Smartly</a>.</p>
+]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>New Feature: Return Contribution Analysis</title>
+		<link>https://allocatesmartly.com/new-feature-return-contribution-analysis/</link>
+		
+		<dc:creator><![CDATA[Allocate Smartly]]></dc:creator>
+		<pubDate>Wed, 03 Jun 2026 01:36:38 +0000</pubDate>
+				<category><![CDATA[Site Announcements]]></category>
+		<guid isPermaLink="false">https://allocatesmartly.com/?p=16173</guid>
+
+					<description><![CDATA[<p>Every strategy and Model Portfolio now includes a Return Contribution analysis, showing each asset&#8217;s contribution to overall annual return. We further aggregate results by asset category and risk on/off, as well as estimate the drag from &#8220;trading friction&#8221; (transaction costs + slippage). Let&#8217;s walk through a sample return contribution analysis using the most popular strategy [&#8230;]</p>
+<p>The post <a href="https://allocatesmartly.com/new-feature-return-contribution-analysis/">New Feature: Return Contribution Analysis</a> appeared first on <a href="https://allocatesmartly.com">Allocate Smartly</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>Every strategy and Model Portfolio now includes a Return Contribution analysis, showing each asset&#8217;s contribution to overall annual return. We further aggregate results by asset category and risk on/off, as well as estimate the drag from <a href="https://allocatesmartly.com/faqs/#backtest-assumptions">&#8220;trading friction&#8221;</a> (transaction costs + slippage).</p>
+<p>Let&#8217;s walk through a sample return contribution analysis using the <a href="https://allocatesmartly.com/the-10-most-popular-taa-strategies-ranked/">most popular strategy</a> on our platform: Financial Mentor&#8217;s Optimum3. </p>
+<h4 class="subheading">Return contribution by asset:</h4>
+<p>In the first chart we show each asset&#8217;s contribution to the overall strategy annual return of 14.5%. The chart shows that QQQ has been the biggest contributor at 3.1%, while trading friction has reduced return by about 0.7% per year.</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/05/20260530.01.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-16179" src="https://allocatesmartly.com/wp-content/uploads/2026/05/20260530.01.png" alt="" width="750" height="500" srcset="https://allocatesmartly.com/wp-content/uploads/2026/05/20260530.01.png 750w, https://allocatesmartly.com/wp-content/uploads/2026/05/20260530.01-300x200.png 300w" sizes="auto, (max-width: 750px) 100vw, 750px" /></a></p>
+<p>You can click on any column (not in this article, but in the members area) to see that asset&#8217;s contribution by year. Below is the contribution from QQQ by year. Unsurprisingly, QQQ was most effective in the mid to late 1990&#8217;s.</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/05/20260530.02.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-16180" src="https://allocatesmartly.com/wp-content/uploads/2026/05/20260530.02.png" alt="" width="750" height="500" srcset="https://allocatesmartly.com/wp-content/uploads/2026/05/20260530.02.png 750w, https://allocatesmartly.com/wp-content/uploads/2026/05/20260530.02-300x200.png 300w" sizes="auto, (max-width: 750px) 100vw, 750px" /></a></p>
+<h4 class="subheading">Return contribution by asset category:</h4>
+<p>We also roll up results into broad categories. For instance, &#8220;US Equities&#8221; may include everything from the S&amp;P 500 to individual stock market sectors. This sometimes makes it easier to interpret the data if a strategy trades many assets.</p>
+<p>An example: it wasn&#8217;t clear from the first graph that international equities have been such a major contributor to strategy performance.</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/05/20260530.03.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-16181" src="https://allocatesmartly.com/wp-content/uploads/2026/05/20260530.03.png" alt="" width="750" height="500" srcset="https://allocatesmartly.com/wp-content/uploads/2026/05/20260530.03.png 750w, https://allocatesmartly.com/wp-content/uploads/2026/05/20260530.03-300x200.png 300w" sizes="auto, (max-width: 750px) 100vw, 750px" /></a></p>
+<h4 class="subheading">Return contribution by risk on/off:</h4>
+<p>Finally, we combine assets into the broadest possible categories: risk on and risk off. Risk on includes equities, real estate and high-yield bonds; risk off includes everything else. Not all assets fit neatly into these buckets, but this simplification provides a useful high-level view.</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/05/20260530.04.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-16182" src="https://allocatesmartly.com/wp-content/uploads/2026/05/20260530.04.png" alt="" width="750" height="500" srcset="https://allocatesmartly.com/wp-content/uploads/2026/05/20260530.04.png 750w, https://allocatesmartly.com/wp-content/uploads/2026/05/20260530.04-300x200.png 300w" sizes="auto, (max-width: 750px) 100vw, 750px" /></a></p>
+<h4 class="subheading">How you can use this data in your own analysis:</h4>
+<p>There isn&#8217;t a hard rule for what this data should look like. The usefulness of the data is going to depend on the strategy. Here&#8217;s a practical example.</p>
+<p>Recall our recent analysis of <a href="https://allocatesmartly.com/carlsons-defense-first/">Carlson&#8217;s Defense First</a>. The strategy allocates, on average, about 10% of the portfolio to the US Dollar index (UUP), but UUP has contributed almost nothing to the strategy&#8217;s return. Factoring in real-world trading friction (transaction costs + slippage), we concluded that it might make sense to skip those positions and instead allocate to cash or short-term Treasuries.</p>
+<p>That bears out in the Return Contribution analysis.</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/05/20260530.05.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-16183" src="https://allocatesmartly.com/wp-content/uploads/2026/05/20260530.05.png" alt="" width="750" height="500" srcset="https://allocatesmartly.com/wp-content/uploads/2026/05/20260530.05.png 750w, https://allocatesmartly.com/wp-content/uploads/2026/05/20260530.05-300x200.png 300w" sizes="auto, (max-width: 750px) 100vw, 750px" /></a></p>
+<p>UUP contributed just 0.07% to annual return. Drilling down on the results by year we see that returns when holding UUP have been consistently inconsistent.</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/05/20260530.06.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-16184" src="https://allocatesmartly.com/wp-content/uploads/2026/05/20260530.06.png" alt="" width="750" height="500" srcset="https://allocatesmartly.com/wp-content/uploads/2026/05/20260530.06.png 750w, https://allocatesmartly.com/wp-content/uploads/2026/05/20260530.06-300x200.png 300w" sizes="auto, (max-width: 750px) 100vw, 750px" /></a></p>
+<p>Again, the Return Contribution analysis confirms our conclusion that UUP has been an unproductive position, especially after accounting for trading friction (we understand it&#8217;s purpose is diversification, but a zero expectancy asset probably isn&#8217;t a good way to accomplish that).</p>
+<p>This is just one simple example of the usefulness of the Return Contribution analysis. In the end, the purpose is really just understanding strategies better so that members can better judge the efficacy of the strategy and the assets traded.</p>
+<h4 class="subheading">New here?</h4>
+<p>We invite you to <a href="https://allocatesmartly.com/pricing/">become a member</a> for about a $1 a day, or take our platform for a test drive with a <a href="https://allocatesmartly.com/pricing/">free membership</a>. Put the industry&#8217;s best Tactical Asset Allocation strategies to the test, combine them into your own custom portfolio, and follow them in real-time. Learn more about <a href="https://allocatesmartly.com/what-we-do/">what we do</a>.</p>
+<p style="text-align: center;"><a href="https://allocatesmartly.com/pricing/"><img loading="lazy" decoding="async" class="alignnone size-full" src="https://allocatesmartly.com/wp-content/uploads/sx/banner.300x250.png" width="300" height="250" /></a></p>
+<p>The post <a href="https://allocatesmartly.com/new-feature-return-contribution-analysis/">New Feature: Return Contribution Analysis</a> appeared first on <a href="https://allocatesmartly.com">Allocate Smartly</a>.</p>
+]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>New Feature: Model Portfolio Withdrawal Rates</title>
+		<link>https://allocatesmartly.com/new-feature-model-portfolio-withdrawal-rates/</link>
+		
+		<dc:creator><![CDATA[Allocate Smartly]]></dc:creator>
+		<pubDate>Mon, 01 Jun 2026 02:14:20 +0000</pubDate>
+				<category><![CDATA[Site Announcements]]></category>
+		<guid isPermaLink="false">https://allocatesmartly.com/?p=16141</guid>
+
+					<description><![CDATA[<p>We&#8217;ve added Safe and Perpetual Withdrawal Rates to your custom Model Portfolios. New here? Learn more: What is a Model Portfolio? What are Withdrawal Rates? The Safe Withdrawal Rate (SWR) measures the max amount that could have been withdrawn each year in retirement (with an annual adjustment for inflation) without running out of money over [&#8230;]</p>
+<p>The post <a href="https://allocatesmartly.com/new-feature-model-portfolio-withdrawal-rates/">New Feature: Model Portfolio Withdrawal Rates</a> appeared first on <a href="https://allocatesmartly.com">Allocate Smartly</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>We&#8217;ve added Safe and Perpetual Withdrawal Rates to your custom Model Portfolios. </p>
+<p><i>New here? Learn more: <a href="https://allocatesmartly.com/faqs/#custom-model-portfolio">What is a Model Portfolio?</a></i></p>
+<h4 class="subheading">What are Withdrawal Rates?</h4>
+<p>The Safe Withdrawal Rate (SWR) measures the max amount that could have been withdrawn each year in retirement (with an annual adjustment for inflation) without running out of money over the worst retirement period. It&#8217;s the source of the well-known &#8220;4% withdrawal&#8221; rule in financial planning.</p>
+<p>The Perpetual Withdrawal Rate (PWR) is a more conservative measure. Rather than a goal of not running out of money, the goal is to preserve the entire initial inflation-adjusted portfolio.</p>
+<p>To clarify: We&#8217;ve always provided withdrawal rates for individual strategies (<a href="https://allocatesmartly.com/members/withdrawal-rates/">see the report</a>).  We&#8217;ve now added that same capability to Model Portfolios as well.</p>
+<h4 class="subheading">Where to find Model Portfolio withdrawal rates:</h4>
+<p>You can find the SWR and PWR values at the bottom of the summary stats table.</p>
+<p>For example, here are the results for a Model Portfolio split 50/50 between the two <a href="https://allocatesmartly.com/the-10-most-popular-taa-strategies-ranked/">most popular strategies</a> on our platform: Financial Mentor&#8217;s Optimum3 and Dr. Keller&#8217;s Hybrid Asset Allocation. Note the new stats shown at the bottom.</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/05/20260529.01.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-16160" src="https://allocatesmartly.com/wp-content/uploads/2026/05/20260529.01.png" alt="" width="731" height="418" srcset="https://allocatesmartly.com/wp-content/uploads/2026/05/20260529.01.png 731w, https://allocatesmartly.com/wp-content/uploads/2026/05/20260529.01-300x172.png 300w" sizes="auto, (max-width: 731px) 100vw, 731px" /></a></p>
+<p>In the case of <a href="https://allocatesmartly.com/members/withdrawal-rates/">individual strategies</a>, members can tweak the withdrawal rate analysis by changing retirement length and inflation assumptions, but in order to speed up Model Portfolio backtests, we only provide results based on a 30-year retirement/historical inflation.</p>
+<p>We think that meets 99% of members&#8217; needs. Results based on other assumptions tend to scale up or down in line with that baseline result. We may add a more intense withdrawal rate analysis in the future (like we do for individual strategies) depending on member demand.</p>
+<h4 class="subheading">Calculation note: Withdrawal Rates and the Compare Tool:</h4>
+<p>We also now provide SWR/PWR results on the <a href="https://allocatesmartly.com/members/compare/">Compare Tool</a> for all strategies, Model Portfolios and benchmarks. An important calculation note:</p>
+<p>The Compare Tool aligns strategies to their earliest common start date and shows stats based on that common start date. SWR/PWR is the one exception; we&#8217;ll always show the full sample SWR/PWR.</p>
+<p>Why? Withdrawal rates are a unique statistic. They are based on the single worst n-year period in the test. Strategy A could dominate Strategy B by every other measure, but still have a lower SWR/PWR because of a single bad/unlucky series of n-year returns.</p>
+<p>That means that analyzing less data can only &#8220;improve&#8221; SWR/PWR, but that improvement is an illusion. We take the more conservative, pessimistic (and we&#8217;d argue, realistic) approach of always showing the full sample withdrawal rate.</p>
+<h4 class="subheading">A word of warning about withdrawal rates and short backtests:</h4>
+<p>The discussion above hints at something else members should bear in mind.</p>
+<p>When you backtest your Model Portfolio, withdrawal rates are calculated based on your unique combination of strategies/assets. The shorter the backtest, the less conservative the withdrawal rate analysis will be. Withdrawal rates are based on the worst n-year period, and a shorter backtest means there are less n-year periods to consider.</p>
+<p>Let&#8217;s say you test Model Portfolio A, which begins in 1970, and calculate an SWR of 5%. You then test Model Portfolio B, which begins in 1990, and calculate an SWR of 7%.</p>
+<p>You should not naively assume that Portfolio B definitely has a higher withdrawal rate. It could simply be the lucky result of a much shorter backtest. We have to take into account backtest length when comparing any statistic, but it&#8217;s even more important when comparing withdrawal rates.</p>
+<h4 class="subheading"><i class="fa fa-graduation-cap" style="font-size: 22px; margin-right: 8px;"></i>Methodology (for the geeks): How we calculate Withdrawal Rates</h4>
+<p>We use the approach described by William Bengen in his paper &#8220;Determining Withdrawal Rates Using Historical Data&#8221;.</p>
+<p>We run separate simulations starting on every possible starting quarter in the backtest. When insufficient data exists to project forward n years, we &#8220;loop around&#8221; to the start of the sample, maintaining the sequence of returns. For a portfolio that begins in 1970, that would result in 200+ unique sequences. Withdrawal rates are based on the worst n year period in the test. </p>
+<h4 class="subheading">As always, use common sense:</h4>
+<p>Withdrawal rate analysis, like all investment analysis, involves a degree of uncertainty. The future is guaranteed to be different, and actual withdrawal rates could be significantly higher or lower than modeled results. It would be reckless to plan for retirement as if these values were chiseled in stone. When it comes to financial planning, investors should always err on the side of caution.</p>
+<h4 class="subheading">New here?</h4>
+<p>We invite you to <a href="https://allocatesmartly.com/pricing/">become a member</a> for about a $1 a day, or take our platform for a test drive with a <a href="https://allocatesmartly.com/pricing/">free membership</a>. Put the industry&#8217;s best Tactical Asset Allocation strategies to the test, combine them into your own custom portfolio, and follow them in real-time. Learn more about <a href="https://allocatesmartly.com/what-we-do/">what we do</a>.</p>
+<p style="text-align: center;"><a href="https://allocatesmartly.com/pricing/"><img loading="lazy" decoding="async" class="alignnone size-full" src="https://allocatesmartly.com/wp-content/uploads/sx/banner.300x250.png" width="300" height="250" /></a></p>
+<p>The post <a href="https://allocatesmartly.com/new-feature-model-portfolio-withdrawal-rates/">New Feature: Model Portfolio Withdrawal Rates</a> appeared first on <a href="https://allocatesmartly.com">Allocate Smartly</a>.</p>
+]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>&#8220;Surfing the Equity Curve&#8221;: Using Trend-Following to Switch Strategies On and Off</title>
+		<link>https://allocatesmartly.com/surfing-the-equity-curve-using-trend-following-to-switch-strategies-on-and-off/</link>
+		
+		<dc:creator><![CDATA[Allocate Smartly]]></dc:creator>
+		<pubDate>Tue, 12 May 2026 02:48:18 +0000</pubDate>
+				<category><![CDATA[Things That Don't Work]]></category>
+		<category><![CDATA[Timing TAA Strategies]]></category>
+		<guid isPermaLink="false">https://allocatesmartly.com/?p=16044</guid>
+
+					<description><![CDATA[<p>This is the third installment in a series on selecting Tactical Asset Allocation (TAA) strategies based on recent performance. Read Part 1 and Part 2. We advocate combining multiple TAA strategies together into &#8220;Model Portfolios&#8221; to limit the risk of any single strategy underperforming. In our previous studies we selected strategies for our Model Portfolio [&#8230;]</p>
+<p>The post <a href="https://allocatesmartly.com/surfing-the-equity-curve-using-trend-following-to-switch-strategies-on-and-off/">&#8220;Surfing the Equity Curve&#8221;: Using Trend-Following to Switch Strategies On and Off</a> appeared first on <a href="https://allocatesmartly.com">Allocate Smartly</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>This is the third installment in a series on selecting Tactical Asset Allocation (TAA) strategies based on recent performance. Read <a href="https://allocatesmartly.com/selecting-taa-strategies-based-on-recent-performance-part-1/">Part 1</a> and <a href="https://allocatesmartly.com/selecting-taa-strategies-based-on-recent-performance-part-2-recent-sharpe-ratio/">Part 2</a>.</p>
+<p>We advocate combining multiple TAA strategies together into <a href="https://allocatesmartly.com/faqs/#custom-model-portfolio">&#8220;Model Portfolios&#8221;</a> to limit the risk of any single strategy underperforming. In our previous studies we selected strategies for our Model Portfolio based on recent return. In this study, each strategy in our portfolio is switched on and off based on trend-following &#8211; often called &#8220;surfing the equity curve&#8221;.</p>
+<p><i>We track <a href="https://allocatesmartly.com/list-of-strategies/">100+ TAA strategies</a>, making these findings broadly representative of TAA as a trading style.</i></p>
+<h4 class="subheading">Results from 1973:</h4>
+<p>We use a classic trend-following approach: comparing a shorter <a href="https://www.investopedia.com/terms/m/movingaverage.asp" target="_blank">moving average</a> (MA) to a longer one. We assume that the investor split the portfolio evenly across all 100+ strategies.<br />
+Each strategy is switched on or off independently. At the end of each month, if the strategy&#8217;s shorter X month MA was greater than its longer Y month MA, the investor allocated to that strategy; otherwise, that portion of the portfolio remained in <a href="https://allocatesmartly.com/faqs/#what-is-cash">cash</a>.</p>
+<p>We&#8217;ll show results for our hypothetical portfolios across four metrics, starting with annual return and Sharpe Ratio. For comparison, we also include the average strategy we track and 60/40 benchmark.</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.01.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-16049" src="https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.01.png" alt="" width="400" height="390" srcset="https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.01.png 400w, https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.01-300x293.png 300w" sizes="auto, (max-width: 400px) 100vw, 400px" /></a></p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.02.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-16050" src="https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.02.png" alt="" width="400" height="390" srcset="https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.02.png 400w, https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.02-300x293.png 300w" sizes="auto, (max-width: 400px) 100vw, 400px" /></a></p>
+<p>The longer the long MA, the more months the investor spent invested in each strategy. The average proportion of the portfolio invested ranged from little as 69% (1/2-month crossovers), up to 96% (2/36-month crossovers).</p>
+<p>Unsurprisingly, because shorter MAs spent so little time invested, annual return suffered. Over the long-term, cash (T-Bills) will underperform nearly all assets. The Sharpe Ratio adjusts for that by looking at (excess) return per unit of risk, but here too we see shorter MAs underperform. Longer MAs were more effective, but all combinations still failed to outperform the average strategy.</p>
+<p>A primary benefit of trend-following has been managing losses, so perhaps this is where we&#8217;ll see &#8220;surfing the equity curve&#8221; shine. </p>
+<p>Below we look at two measures of loss: Max Drawdown and the Ulcer Performance Index (UPI). We believe Max Drawdown is of limited value; it&#8217;s capturing a single moment in time. UPI is our preferred measure because it considers return relative to both the depth and length of <i>all</i> drawdowns.</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.03.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-16051" src="https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.03.png" alt="" width="400" height="390" srcset="https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.03.png 400w, https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.03-300x293.png 300w" sizes="auto, (max-width: 400px) 100vw, 400px" /></a></p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.04.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-16052" src="https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.04.png" alt="" width="400" height="390" srcset="https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.04.png 400w, https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.04-300x293.png 300w" sizes="auto, (max-width: 400px) 100vw, 400px" /></a></p>
+<p>Nearly all combinations improved the portfolio&#8217;s max drawdown. That isn&#8217;t too surprising; cash (T-Bills) is a zero drawdown asset. What&#8217;s more relevant is that relative to return (i.e. UPI), all combinations still underperformed the average strategy except one (6/12-month crossovers).</p>
+<p>Looking at the heatmap as a whole, we view the outperformance of that single 6/12-month combination as likely luck/noise.</p>
+<h4 class="subheading">What about &#8220;absolute momentum&#8221;?</h4>
+<p>Closely related to trend-following is &#8220;absolute momentum&#8221;. Here we run the same test, this time investing in each strategy if the strategy&#8217;s return over the last X months was &gt; 0.</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.05.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-16053" src="https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.05.png" alt="" width="319" height="190" srcset="https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.05.png 319w, https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.05-300x179.png 300w" sizes="auto, (max-width: 319px) 100vw, 319px" /></a>    <a href="https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.06.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-16054" src="https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.06.png" alt="" width="319" height="190" srcset="https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.06.png 319w, https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.06-300x179.png 300w" sizes="auto, (max-width: 319px) 100vw, 319px" /></a></p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.07.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-16055" src="https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.07.png" alt="" width="319" height="190" srcset="https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.07.png 319w, https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.07-300x179.png 300w" sizes="auto, (max-width: 319px) 100vw, 319px" /></a>    <a href="https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.08.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-16056" src="https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.08.png" alt="" width="319" height="190" srcset="https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.08.png 319w, https://allocatesmartly.com/wp-content/uploads/2026/05/20260511.08-300x179.png 300w" sizes="auto, (max-width: 319px) 100vw, 319px" /></a></p>
+<p>These results are all in line with our previous trend-following tests. No new information here.</p>
+<p>Geek note: We also tested another common absolute momentum approach. Rather than comparing the strategy&#8217;s return over the last X months to zero, we compared it to the return on T-Bills. Such an approach would have spent even less time in the market, and further reduced annual return and improved max drawdown, but led to no improvement in risk-adjusted performance (Sharpe/UPI).</p>
+<h4 class="subheading">Reminder: These results do not account for all trading frictions:</h4>
+<p>A reminder from our previous analyses: these results account for trading frictions (transaction costs + slippage) in the individual strategy backtests, but do not account for the additional friction of switching the strategies on/off. That means that actual results would have been worse than what we&#8217;ve presented here.</p>
+<h4 class="subheading">Debunking the idea of &#8220;surfing the equity curve&#8221;:</h4>
+<p>We&#8217;ve seen many analyses showing that applying some trend-following approach as an &#8220;overlay&#8221; to such-and-such strategy would have improved performance. We generally view those analyses as overfitting, and the results in this article demonstrate why.</p>
+<p>If a trend-following overlay can&#8217;t be applied broadly to all strategies across a consistent set of parameters (as we&#8217;ve done here), and instead relies on one set of trend-following parameters specifically tuned to one particular strategy, then the benefit of that one set of parameters applied to that one specific strategy is almost certainly a result of overfitting.</p>
+<p>While it&#8217;s true that we haven&#8217;t tested every possible approach to trend-following, if none of these simple tried-and-true approaches show promise, it&#8217;s hard to put faith in a more complex (and likely overfit) one.</p>
+<h4 class="subheading">Outro:</h4>
+<p>Our advice for selecting strategies remains the same:</p>
+<p>Select a broad range of diverse, robust, high-quality strategies. Consider avoiding strategies that have significantly underperformed their own historically-derived expectations until performance is better understood (see the <a href="https://allocatesmartly.com/members/underperformer-watchlist/">Underperformer Watchlist</a>), but beyond those extreme cases, do not consider recent performance in strategy selection.</p>
+<p>As mentioned, this is the third article in a series. Be on the lookout for additional tests in the coming weeks in search of an effective approach for selecting strategies based on recent performance.</p>
+<h4 class="subheading">New here?</h4>
+<p>We invite you to <a href="https://allocatesmartly.com/pricing/">become a member</a> for about a $1 a day, or take our platform for a test drive with a <a href="https://allocatesmartly.com/pricing/">free membership</a>. Put the industry&#8217;s best tactical asset allocation strategies to the test, combine them into your own custom portfolio, and follow them in real-time. Learn more about <a href="https://allocatesmartly.com/what-we-do/">what we do</a>.</p>
+<p style="text-align: center;"><a href="https://allocatesmartly.com/pricing/"><img loading="lazy" decoding="async" class="alignnone size-full" src="https://allocatesmartly.com/wp-content/uploads/sx/banner.300x250.png" width="300" height="250" /></a></p>
+<p>The post <a href="https://allocatesmartly.com/surfing-the-equity-curve-using-trend-following-to-switch-strategies-on-and-off/">&#8220;Surfing the Equity Curve&#8221;: Using Trend-Following to Switch Strategies On and Off</a> appeared first on <a href="https://allocatesmartly.com">Allocate Smartly</a>.</p>
+]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>Selecting TAA Strategies Based on Recent Performance, Part 2: Recent Sharpe Ratio</title>
+		<link>https://allocatesmartly.com/selecting-taa-strategies-based-on-recent-performance-part-2-recent-sharpe-ratio/</link>
+		
+		<dc:creator><![CDATA[Allocate Smartly]]></dc:creator>
+		<pubDate>Wed, 06 May 2026 04:53:21 +0000</pubDate>
+				<category><![CDATA[Things That Don't Work]]></category>
+		<category><![CDATA[Timing TAA Strategies]]></category>
+		<guid isPermaLink="false">https://allocatesmartly.com/?p=15995</guid>
+
+					<description><![CDATA[<p>This is the second installment in a multipart series on selecting Tactical Asset Allocation (TAA) strategies based on recent performance. Read Part 1. We advocate combining multiple TAA strategies together into &#8220;Model Portfolios&#8221; to limit the risk of any single strategy underperforming. In our previous study we selected strategies for our portfolio with the highest [&#8230;]</p>
+<p>The post <a href="https://allocatesmartly.com/selecting-taa-strategies-based-on-recent-performance-part-2-recent-sharpe-ratio/">Selecting TAA Strategies Based on Recent Performance, Part 2: Recent Sharpe Ratio</a> appeared first on <a href="https://allocatesmartly.com">Allocate Smartly</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>This is the second installment in a multipart series on selecting Tactical Asset Allocation (TAA) strategies based on recent performance. Read <a href="https://allocatesmartly.com/selecting-taa-strategies-based-on-recent-performance-part-1/">Part 1</a>.</p>
+<p>We advocate combining multiple TAA strategies together into <a href="https://allocatesmartly.com/faqs/#custom-model-portfolio">&#8220;Model Portfolios&#8221;</a> to limit the risk of any single strategy underperforming. In our previous study we selected strategies for our portfolio with the highest recent return. In this study, we select strategies with the highest recent <i>volatility-adjusted</i> return, aka &#8220;Sharpe Ratio&#8221;.</p>
+<p><i>We track <a href="https://allocatesmartly.com/list-of-strategies/">100+ TAA strategies</a>, making these findings broadly representative of TAA as a trading style.</i></p>
+<h4 class="subheading">Results from 1973:</h4>
+<p>Sharpe Ratio = (return – risk-free rate) / volatility.</p>
+<p>We assume that at the end of each month the investor looked at the Sharpe Ratio over the last X months of all 100+ strategies we track. The investor selected the top Y strategies and traded those Y strategies for the following month (equally-weighted).</p>
+<p>We&#8217;ll show results for our hypothetical portfolios across four metrics, starting with annualized return. For comparison, we also include the average strategy we track, as well as the 60/40 benchmark.</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.01.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-16000" src="https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.01.png" alt="" width="400" height="350" srcset="https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.01.png 400w, https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.01-300x263.png 300w" sizes="auto, (max-width: 400px) 100vw, 400px" /></a></p>
+<p>Recall from our <a href="https://allocatesmartly.com/selecting-taa-strategies-based-on-recent-performance-part-1/">previous study</a> that selecting strategies with the highest return tended to select riskier strategies, and thus all combinations of lookbacks and portfolio sizes produced significantly higher returns than the average strategy.</p>
+<p>That holds somewhat true here as well. Because the Sharpe Ratio includes a &#8220;risk-free hurdle&#8221; (T-Bills), it also rewards higher returning strategies, independent of risk. Later we&#8217;ll look at removing this risk-free hurdle.</p>
+<p>What we really want to understand is how this approach performs on a <i>risk-adjusted</i> basis. Next, we look at the Sharpe Ratio of our hypothetical portfolios.</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.02.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-16001" src="https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.02.png" alt="" width="400" height="350" srcset="https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.02.png 400w, https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.02-300x263.png 300w" sizes="auto, (max-width: 400px) 100vw, 400px" /></a></p>
+<p>No combination of lookbacks and portfolio sizes significantly outperformed the average strategy; at least to a degree that makes this approach worthwhile.</p>
+<p>There was a stark difference between 12+ month lookbacks and shorter lookbacks. This was true across all four metrics. Selecting strategies based on their Sharpe Ratio over less than 12 months has been particularly ineffective.</p>
+<p>Next, we look at two measures of loss: Max Drawdown and the Ulcer Performance Index (UPI). We believe Max Drawdown is of limited value; it&#8217;s capturing a single moment in time. UPI is our preferred measure of drawdown-adjusted return because it considers return relative to both the depth and length of <i>all</i> drawdowns.</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.03.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-16002" src="https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.03.png" alt="" width="400" height="350" srcset="https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.03.png 400w, https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.03-300x263.png 300w" sizes="auto, (max-width: 400px) 100vw, 400px" /></a></p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.04.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-16003" src="https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.04.png" alt="" width="400" height="350" srcset="https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.04.png 400w, https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.04-300x263.png 300w" sizes="auto, (max-width: 400px) 100vw, 400px" /></a></p>
+<p>We were surprised by the high UPI produced with a 12-month lookback, even by smaller portfolios. The 3 strategy/12-month lookback portfolio produced a UPI of 3.59, compared to 3.05 for the average strategy.</p>
+<p>That might appear enticing, but we chalk it up to mostly luck. The benefit of selecting strategies this way has been inconsistent over time and has been ineffective since 2011 (not shown for brevity). In a future installment of this series, we&#8217;ll share a modified approach that has been more consistently effective.</p>
+<h4 class="subheading">Reminder: These results do not account for all trading frictions:</h4>
+<p>A reminder from our <a href="https://allocatesmartly.com/selecting-taa-strategies-based-on-recent-performance-part-1/">previous analysis</a>: these results account for trading frictions (transaction costs + slippage) in the individual strategy backtests, but do not account for the additional friction of switching between strategies. That means that actual results would have been worse than what we&#8217;ve presented here.</p>
+<p>At the end of this multipart series, we may take the most promising approaches to strategy selection and apply this additional analytical step.</p>
+<h4 class="subheading">Bonus data: Removing the risk-free hurdle</h4>
+<p>As previously mentioned, when we select strategies with the highest recent Sharpe Ratio, we implicitly select for riskier strategies, because the Sharpe Ratio includes a risk-free hurdle (T-Bills).</p>
+<p>What if we removed that hurdle, and simply selected strategies based on return relative to volatility? The results across our 4 metrics (click to zoom):</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.05.png"><img loading="lazy" decoding="async" class="alignnone size-medium wp-image-16004" src="https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.05-300x263.png" alt="" width="300" height="263" srcset="https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.05-300x263.png 300w, https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.05.png 400w" sizes="auto, (max-width: 300px) 100vw, 300px" /></a>    <a href="https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.06.png"><img loading="lazy" decoding="async" class="alignnone size-medium wp-image-16005" src="https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.06-300x263.png" alt="" width="300" height="263" srcset="https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.06-300x263.png 300w, https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.06.png 400w" sizes="auto, (max-width: 300px) 100vw, 300px" /></a></p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.07.png"><img loading="lazy" decoding="async" class="alignnone size-medium wp-image-16006" src="https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.07-300x263.png" alt="" width="300" height="263" srcset="https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.07-300x263.png 300w, https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.07.png 400w" sizes="auto, (max-width: 300px) 100vw, 300px" /></a>    <a href="https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.08.png"><img loading="lazy" decoding="async" class="alignnone size-medium wp-image-16007" src="https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.08-300x263.png" alt="" width="300" height="263" srcset="https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.08-300x263.png 300w, https://allocatesmartly.com/wp-content/uploads/2026/05/20260505.08.png 400w" sizes="auto, (max-width: 300px) 100vw, 300px" /></a></p>
+<p>Removing the risk-free hurdle will tend to select strategies that are more conservative than the average strategy. That&#8217;s because it favors strategies that hold assets that perform more consistently month-to-month, like US Treasuries.</p>
+<p>All other observations, however, hold.</p>
+<h4 class="subheading">Outro:</h4>
+<p>In short, selecting strategies based on recent Sharpe Ratio has been a better approach than selecting strategies based on recent return, but it has still been suboptimal. In a future post we&#8217;ll share a modified version that has been more effective.</p>
+<p>Our advice for selecting strategies remains the same:</p>
+<p>Select a broad range of diverse, robust, high-quality strategies. Consider avoiding strategies that have significantly underperformed their own historical expectations until performance is better understood (see the <a href="https://allocatesmartly.com/members/underperformer-watchlist/">Underperformer Watchlist</a>), but beyond those extreme cases, do not consider recent performance in strategy selection.</p>
+<p>As mentioned, this is the second article in a multipart series. Be on the lookout for additional tests in the coming weeks.</p>
+<h4 class="subheading">New here?</h4>
+<p>We invite you to <a href="https://allocatesmartly.com/pricing/">become a member</a> for about a $1 a day, or take our platform for a test drive with a <a href="https://allocatesmartly.com/pricing/">free membership</a>. Put the industry&#8217;s best tactical asset allocation strategies to the test, combine them into your own custom portfolio, and follow them in real-time. Learn more about <a href="https://allocatesmartly.com/what-we-do/">what we do</a>.</p>
+<p style="text-align: center;"><a href="https://allocatesmartly.com/pricing/"><img loading="lazy" decoding="async" class="alignnone size-full" src="https://allocatesmartly.com/wp-content/uploads/sx/banner.300x250.png" width="300" height="250" /></a></p>
+<p>The post <a href="https://allocatesmartly.com/selecting-taa-strategies-based-on-recent-performance-part-2-recent-sharpe-ratio/">Selecting TAA Strategies Based on Recent Performance, Part 2: Recent Sharpe Ratio</a> appeared first on <a href="https://allocatesmartly.com">Allocate Smartly</a>.</p>
+]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>Selecting TAA Strategies Based on Recent Performance (Part 1)</title>
+		<link>https://allocatesmartly.com/selecting-taa-strategies-based-on-recent-performance-part-1/</link>
+		
+		<dc:creator><![CDATA[Allocate Smartly]]></dc:creator>
+		<pubDate>Wed, 29 Apr 2026 04:48:39 +0000</pubDate>
+				<category><![CDATA[Things That Don't Work]]></category>
+		<category><![CDATA[Timing TAA Strategies]]></category>
+		<guid isPermaLink="false">https://allocatesmartly.com/?p=15953</guid>
+
+					<description><![CDATA[<p>This is the first of a multipart series examining the selection of Tactical Asset Allocation (TAA) strategies based on recent performance. We are proponents of combining multiple TAA strategies together into what we call Model Portfolios to limit the risk of any single strategy going of the rails. In this study we ask, what if, [&#8230;]</p>
+<p>The post <a href="https://allocatesmartly.com/selecting-taa-strategies-based-on-recent-performance-part-1/">Selecting TAA Strategies Based on Recent Performance (Part 1)</a> appeared first on <a href="https://allocatesmartly.com">Allocate Smartly</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>This is the first of a multipart series examining the selection of Tactical Asset Allocation (TAA) strategies based on recent performance.</p>
+<p>We are proponents of combining multiple TAA strategies together into what we call <a href="https://allocatesmartly.com/faqs/#custom-model-portfolio">Model Portfolios</a> to limit the risk of any single strategy going of the rails. In this study we ask, what if, each month, we selected strategies for our portfolio that had performed best in recent history.</p>
+<p><i>We track <a href="https://allocatesmartly.com/list-of-strategies/">100+ TAA strategies</a>, making these findings broadly representative of TAA as a trading style.</i></p>
+<h4 class="subheading">Results from 1973:</h4>
+<p>We assume that at the end of each month the investor looked at the return of all 100+ strategies we track over the last X months. The investor then selected the top Y strategies and traded those Y strategies for the following month (equally-weighted).</p>
+<p>We show results across four metrics, starting with annualized return. For comparison, we also include a portfolio of all strategies we track (the &#8220;average strategy&#8221;), as well as the 60/40 benchmark.</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/04/20260428.01.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-15954" src="https://allocatesmartly.com/wp-content/uploads/2026/04/20260428.01.png" alt="" width="400" height="350" srcset="https://allocatesmartly.com/wp-content/uploads/2026/04/20260428.01.png 400w, https://allocatesmartly.com/wp-content/uploads/2026/04/20260428.01-300x263.png 300w" sizes="auto, (max-width: 400px) 100vw, 400px" /></a></p>
+<p>All combinations of lookbacks and portfolio sizes significantly outperformed the average strategy in terms of pure return. That should be unsurprising. We track a wide range of strategies from conservative to aggressive, but selecting the top recent performers (as well as bottom recent performers) will tend to select the riskiest strategies.</p>
+<p>What we really want to understand is <i>risk-adjusted</i> return. Next, we look at the Sharpe Ratio.</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/04/20260428.02.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-15955" src="https://allocatesmartly.com/wp-content/uploads/2026/04/20260428.02.png" alt="" width="400" height="350" srcset="https://allocatesmartly.com/wp-content/uploads/2026/04/20260428.02.png 400w, https://allocatesmartly.com/wp-content/uploads/2026/04/20260428.02-300x263.png 300w" sizes="auto, (max-width: 400px) 100vw, 400px" /></a></p>
+<p>As the number of strategies selected increases, the Sharpe Ratio approaches the average strategy, but no combination significantly outperforms the average strategy.</p>
+<p>Put another way, at some point, as the number of strategies selected increases, we reach a sufficiently diversified portfolio to match average strategy results, but selecting strategies based on recent performance doesn&#8217;t appear to add additional value.</p>
+<p>Next, we look at two measures of loss: Max Drawdown and the Ulcer Performance Index (UPI). We believe Max Drawdown is of limited value; it&#8217;s capturing a single point in time. UPI is our preferred measure of drawdown-adjusted return as it considers return relative to both the depth and length of <i>all</i> drawdowns.</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/04/20260428.03.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-15956" src="https://allocatesmartly.com/wp-content/uploads/2026/04/20260428.03.png" alt="" width="400" height="350" srcset="https://allocatesmartly.com/wp-content/uploads/2026/04/20260428.03.png 400w, https://allocatesmartly.com/wp-content/uploads/2026/04/20260428.03-300x263.png 300w" sizes="auto, (max-width: 400px) 100vw, 400px" /></a></p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/04/20260428.04.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-15957" src="https://allocatesmartly.com/wp-content/uploads/2026/04/20260428.04.png" alt="" width="400" height="350" srcset="https://allocatesmartly.com/wp-content/uploads/2026/04/20260428.04.png 400w, https://allocatesmartly.com/wp-content/uploads/2026/04/20260428.04-300x263.png 300w" sizes="auto, (max-width: 400px) 100vw, 400px" /></a></p>
+<p>These results tell a similar story. In terms of minimizing drawdown, selecting the 1 to 2 top recent performers has been terrible. No combination has significantly outperformed the average strategy.</p>
+<p>It&#8217;s interesting that across 3 out of 4 metrics, results deteriorate badly with a 3 to 6 month lookback. It appears that selecting strategies that have outperformed over the last 3 to 6 months (solely because they&#8217;ve outperformed) has been an especially bad idea.</p>
+<h4 class="subheading">A fly in the ointment:</h4>
+<p>At longer lookbacks and larger portfolio sizes (i.e. the bottom right of each table), these results are essentially in line with the average TAA strategy on a risk-adjusted basis (Sharpe and UPI). There has been no significant advantage, but also no significant disadvantage to selecting strategies based on recent performance.</p>
+<p>However, there&#8217;s an important consideration we didn&#8217;t account for: <a href="https://allocatesmartly.com/faqs/#backtest-assumptions">trading friction</a> (transaction costs + slippage). As always, we accounted for trading friction in our individual strategy backtests, but for simplicity, we didn&#8217;t account for the additional friction of switching between strategies.</p>
+<p>This means that actual results would have been worse than what we&#8217;ve presented here. That really puts a nail in the coffin of the idea of chasing recent performance when selecting strategies.</p>
+<p>Our advice for selecting strategies remains the same: </p>
+<p>Select a broad range of diverse, robust, high-quality strategies. Consider avoiding strategies that have significantly underperformed their own historical norms (see the <a href="https://allocatesmartly.com/members/underperformer-watchlist/">Underperformer Watchlist</a>) until performance is better understood, but beyond those extreme cases, recent performance shouldn&#8217;t be a factor in strategy selection.</p>
+<h4 class="subheading">Outro:</h4>
+<p>As mentioned, this is the first of a multipart series. Be on the lookout for additional tests in the coming weeks, like selecting strategies with the highest recent <i>volatility-adjusted</i> return, and conversely, selecting underperforming strategies.</p>
+<h4 class="subheading">New here?</h4>
+<p>We invite you to <a href="https://allocatesmartly.com/pricing/">become a member</a> for about a $1 a day, or take our platform for a test drive with a <a href="https://allocatesmartly.com/pricing/">free membership</a>. Put the industry&#8217;s best tactical asset allocation strategies to the test, combine them into your own custom portfolio, and follow them in real-time. Learn more about <a href="https://allocatesmartly.com/what-we-do/">what we do</a>.</p>
+<p style="text-align: center;"><a href="https://allocatesmartly.com/pricing/"><img loading="lazy" decoding="async" class="alignnone size-full" src="https://allocatesmartly.com/wp-content/uploads/sx/banner.300x250.png" width="300" height="250" /></a></p>
+<p>The post <a href="https://allocatesmartly.com/selecting-taa-strategies-based-on-recent-performance-part-1/">Selecting TAA Strategies Based on Recent Performance (Part 1)</a> appeared first on <a href="https://allocatesmartly.com">Allocate Smartly</a>.</p>
+]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>Meb Faber&#8217;s &#8220;Tactical Yield&#8221;, Simple and Intuitive</title>
+		<link>https://allocatesmartly.com/meb-fabers-tactical-yield-simple-and-intuitive/</link>
+		
+		<dc:creator><![CDATA[Allocate Smartly]]></dc:creator>
+		<pubDate>Mon, 13 Apr 2026 05:31:35 +0000</pubDate>
+				<category><![CDATA[TAA Strategies]]></category>
+		<guid isPermaLink="false">https://allocatesmartly.com/?p=15907</guid>
+
+					<description><![CDATA[<p>This is a test of Meb Faber&#8217;s &#8220;Tactical Yield&#8221; from T-Bills and Chill&#8230;Most of the Time. Backtested results from 1930 follow compared to a benchmark of 50% int-term US Treasuries (IEF) and 50% US corporate bonds (LQD). Results are net of transaction costs – see backtest assumptions. Learn about what we do and follow 100+ [&#8230;]</p>
+<p>The post <a href="https://allocatesmartly.com/meb-fabers-tactical-yield-simple-and-intuitive/">Meb Faber&#8217;s &#8220;Tactical Yield&#8221;, Simple and Intuitive</a> appeared first on <a href="https://allocatesmartly.com">Allocate Smartly</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>This is a test of Meb Faber&#8217;s &#8220;Tactical Yield&#8221; from <a href="https://www.cambriainvestments.com/wp-content/uploads/2025/02/20250210.TBillsandChillMostoftheTime.Approved.pdf" target="_blank" rel="noopener">T-Bills and Chill&#8230;Most of the Time</a>.</p>
+<p>Backtested results from 1930 follow compared to a benchmark of 50% int-term US Treasuries (IEF) and 50% US corporate bonds (LQD). Results are net of transaction costs – see <a href="https://allocatesmartly.com/faqs/#backtest-assumptions">backtest assumptions</a>. Learn about <a href="https://allocatesmartly.com/what-we-do/">what we do</a> and follow 100+ asset allocation strategies like this one in near real-time.</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/04/20260412.01.logarithmic.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-15921" src="https://allocatesmartly.com/wp-content/uploads/2026/04/20260412.01.logarithmic.png" alt="" width="750" height="450" srcset="https://allocatesmartly.com/wp-content/uploads/2026/04/20260412.01.logarithmic.png 750w, https://allocatesmartly.com/wp-content/uploads/2026/04/20260412.01.logarithmic-300x180.png 300w" sizes="auto, (max-width: 750px) 100vw, 750px" /></a><br />
+<i>Logarithmically-scaled. Click for <a href="https://allocatesmartly.com/wp-content/uploads/2026/04/20260412.01.linear.png">linearly-scaled results</a>.</i></p>
+<p style="margin-bottom: 0;">Clearly, the purpose of Tactical Yield hasn&#8217;t been generating outsized returns. It&#8217;s simply been a smarter approach to bond exposure. It has generated bond-like returns, but at substantially less risk. To further demonstrate the strategy&#8217;s benefit, below we&#8217;ve also included the <i>inverse</i> strategy rules, which are in the market about the same amount of time.</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/04/20260412.02.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-15922" src="https://allocatesmartly.com/wp-content/uploads/2026/04/20260412.02.png" alt="" width="561" height="521" srcset="https://allocatesmartly.com/wp-content/uploads/2026/04/20260412.02.png 561w, https://allocatesmartly.com/wp-content/uploads/2026/04/20260412.02-300x279.png 300w" sizes="auto, (max-width: 561px) 100vw, 561px" /></a></p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/04/20260412.03.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-15923" src="https://allocatesmartly.com/wp-content/uploads/2026/04/20260412.03.png" alt="" width="750" height="450" srcset="https://allocatesmartly.com/wp-content/uploads/2026/04/20260412.03.png 750w, https://allocatesmartly.com/wp-content/uploads/2026/04/20260412.03-300x180.png 300w" sizes="auto, (max-width: 750px) 100vw, 750px" /></a></p>
+<h4 class="subheading">Strategy premise:</h4>
+<p>We know that long-term returns for US Treasury funds are <a href="https://allocatesmartly.com/long-term-returns-for-us-treasury-funds-are-predictable-what-do-we-do-with-that-information/">quite predictable</a>. For a 10-year Treasury fund (ex. IEF), the initial 10-year yield has predicted about 86% of the total return over the subsequent 10 years. That % is even higher for shorter duration Treasuries.</p>
+<p>There will be some deviation from the initial estimate based on how yields change over time. That&#8217;s a risk. Faber&#8217;s strategy essentially asks whether the &#8220;term premium&#8221; is sufficient to justify taking that risk. If it&#8217;s not, we should simply hold risk-free T-Bills.</p>
+<p>Faber tested multiple variations of this concept. We are focusing on two assets: 10-year US Treasuries (represented by IEF) and US corporate bonds (LQD).</p>
+<h4 class="subheading">Strategy rules:</h4>
+<p>At the close on the last trading day of the month, measure two premiums:</p>
+<ul>
+<li>Term premium: Difference in yield between 10-year and 3-month US Treasuries</li>
+<li>Credit premium: Difference in yield between investment grade corporate bonds and 3-month US Treasuries</li>
+</ul>
+<p>If the term premium is in the top half of history, measured up to that moment in time (no lookahead bias), allocate 50% of the portfolio to US Treasuries (IEF).</p>
+<p>Likewise, if the credit premium is in the top half of history, measured up to that moment in time (no lookahead bias), allocate 50% of the portfolio to US corporate bonds (LQD).</p>
+<p>Unallocated funds remain in <a href="https://allocatesmartly.com/faqs/#what-is-cash">cash</a>. Hold all positions until the end of the following month. We&#8217;ve assumed the portfolio is rebalanced monthly, even if there is no change in position.</p>
+<h4 class="subheading">Sometimes simple is best:</h4>
+<p>This strategy makes intuitive sense. </p>
+<p>It&#8217;s another approach to determining whether there is justification for longer duration bonds. Strategy developers usually use a trend-following approach, which has its benefits, but ignores potential risks that the trend doesn&#8217;t capture.</p>
+<p>A more sophisticated approach would take into account how high/low current yields are (regardless of the premium over T-Bills), because <a href="https://allocatesmartly.com/modelling-treasury-etf-performance-era-rising-rates/">as we know</a>, point for point, changing yields have an outsized impact when starting yields are low.</p>
+<h4 class="subheading">An opportunity for overfitting?</h4>
+<p>The strategy considers yields up to that moment in time to determine how high or low each premium is. Does the start date of our data create an opportunity for overfitting? In other words, would these results have been different if our data had started from some other date? The short answer is no.</p>
+<p>In the table below, we test versions of the strategy that compare premiums to the previous 30 and 50 years (rather than all data to that point in time). No significant difference in performance.</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/04/20260412.04.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-15924" src="https://allocatesmartly.com/wp-content/uploads/2026/04/20260412.04.png" alt="" width="561" height="421" srcset="https://allocatesmartly.com/wp-content/uploads/2026/04/20260412.04.png 561w, https://allocatesmartly.com/wp-content/uploads/2026/04/20260412.04-300x225.png 300w" sizes="auto, (max-width: 561px) 100vw, 561px" /></a></p>
+<h4 class="subheading">Nothing magical about the &#8220;top half&#8221;:</h4>
+<p>The strategy sets the premium cutoff at the &#8220;top half&#8221; of historical observations as of that moment in time. There&#8217;s nothing magical about that cutoff. In the table below, we test versions of the strategy setting the cutoff at between 30 and 70%.</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/04/20260412.05.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-15925" src="https://allocatesmartly.com/wp-content/uploads/2026/04/20260412.05.png" alt="" width="641" height="471" srcset="https://allocatesmartly.com/wp-content/uploads/2026/04/20260412.05.png 641w, https://allocatesmartly.com/wp-content/uploads/2026/04/20260412.05-300x220.png 300w" sizes="auto, (max-width: 641px) 100vw, 641px" /></a></p>
+<p>The less strict the threshold (30 and 40%), the more the risk (volatility rises, duration of drawdowns increases, see UPI). The stricter the threshold (60 and 70%), the less the risk, but total return and risk-adjusted return metrics like Sharpe deteriorate. That matches what you would intuitively expect.</p>
+<p>The 50% cutoff is a nice middle ground but isn&#8217;t set in stone. Investors could turn the dial up or down depending on the investment objective.</p>
+<h4 class="subheading">Outro:</h4>
+<p>More than anyone else, Meb Faber is responsible for popularizing Tactical Asset Allocation as a trading style, including many of the fundamental concepts used today. This is another of his simple but effective ideas.</p>
+<p>We realize that for traditional buy &amp; hold investors, TAA strategies that shift the entire portfolio multiple times throughout the year are a bit intense. There&#8217;s a degree of anxiety that comes with deviating from a diversified buy &amp; hold portfolio. We get that.</p>
+<p>But something like this strategy, which is grounded in common sense, trades infrequently, and never deviates very far from B&amp;H returns, seems like an easy bare minimum approach to tactical investing.</p>
+<p>That&#8217;s doubly true for Treasury funds, whose future returns are especially predictable. For long-term buy &amp; hold&#8217;ish investors, when term spreads are super low (as they are now), why would we accept the interest rate risk of long duration Treasuries and not simply <a href="https://www.cambriainvestments.com/wp-content/uploads/2025/02/20250210.TBillsandChillMostoftheTime.Approved.pdf" target="_blank" rel="noopener">T-Bills and chill</a>?</p>
+<h4 class="subheading">New here?</h4>
+<p>We invite you to <a href="https://allocatesmartly.com/pricing/">become a member</a> for about a $1 a day, or take our platform for a test drive with a <a href="https://allocatesmartly.com/pricing/">free membership</a>. Put the industry&#8217;s best tactical asset allocation strategies to the test, combine them into your own custom portfolio, and follow them in real-time. Learn more about <a href="https://allocatesmartly.com/what-we-do/">what we do</a>.</p>
+<p style="text-align: center;"><a href="https://allocatesmartly.com/pricing/"><img loading="lazy" decoding="async" class="alignnone size-full" src="https://allocatesmartly.com/wp-content/uploads/sx/banner.300x250.png" width="300" height="250" /></a></p>
+<p><i>Calculation note: There is some discrepancy between our results and Meb&#8217;s very early in the test, especially around 1932. We chalk that up to different data sources and different start dates for measuring median premium values. Estimating yields so far in the past is inherently uncertain. We think both our test and Meb&#8217;s represent good faith efforts. Any differences between them is attributable to different data sources and/or noise.</i></p>
+<p>The post <a href="https://allocatesmartly.com/meb-fabers-tactical-yield-simple-and-intuitive/">Meb Faber&#8217;s &#8220;Tactical Yield&#8221;, Simple and Intuitive</a> appeared first on <a href="https://allocatesmartly.com">Allocate Smartly</a>.</p>
+]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>David Varadi&#8217;s &#8220;Growth and Inflation Sector Timing&#8221;, a Wildcard Strategy</title>
+		<link>https://allocatesmartly.com/david-varadis-growth-and-inflation-sector-timing-a-wildcard-strategy/</link>
+		
+		<dc:creator><![CDATA[Allocate Smartly]]></dc:creator>
+		<pubDate>Tue, 07 Apr 2026 02:18:59 +0000</pubDate>
+				<category><![CDATA[TAA Strategies]]></category>
+		<guid isPermaLink="false">https://allocatesmartly.com/?p=15850</guid>
+
+					<description><![CDATA[<p>This is a test of a novel strategy from David Varadi: Growth and Inflation Sector Timing. Backtested results from 1991 follow. Results are net of transaction costs – see backtest assumptions. Learn about what we do and follow 100+ asset allocation strategies like this one in near real-time. Logarithmically-scaled. Click for linearly-scaled results. Members know [&#8230;]</p>
+<p>The post <a href="https://allocatesmartly.com/david-varadis-growth-and-inflation-sector-timing-a-wildcard-strategy/">David Varadi&#8217;s &#8220;Growth and Inflation Sector Timing&#8221;, a Wildcard Strategy</a> appeared first on <a href="https://allocatesmartly.com">Allocate Smartly</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>This is a test of a novel strategy from David Varadi: <a href="https://cssanalytics.wordpress.com/2025/03/20/the-growth-and-inflation-sector-timing-model/" target="_blank" rel="noopener">Growth and Inflation Sector Timing</a>.</p>
+<p>Backtested results from 1991 follow. Results are net of transaction costs – see <a href="https://allocatesmartly.com/faqs/#backtest-assumptions">backtest assumptions</a>. Learn about <a href="https://allocatesmartly.com/what-we-do/">what we do</a> and follow 100+ asset allocation strategies like this one in near real-time.</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.01.logarithmic.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-15854" src="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.01.logarithmic.png" alt="" width="750" height="450" srcset="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.01.logarithmic.png 750w, https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.01.logarithmic-300x180.png 300w" sizes="auto, (max-width: 750px) 100vw, 750px" /></a><br />
+<i>Logarithmically-scaled. Click for <a href="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.01.linear.png">linearly-scaled results</a>.</i></p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.02.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-15855" src="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.02.png" alt="" width="652" height="447" srcset="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.02.png 652w, https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.02-300x206.png 300w" sizes="auto, (max-width: 652px) 100vw, 652px" /></a></p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.03.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-15856" src="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.03.png" alt="" width="750" height="450" srcset="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.03.png 750w, https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.03-300x180.png 300w" sizes="auto, (max-width: 750px) 100vw, 750px" /></a></p>
+<p>Members know that we are especially interested in novel asset allocation strategies (<a href="https://allocatesmartly.com/member-note-our-approach-to-selecting-strategies-for-the-platform/">read why</a>). Varadi&#8217;s strategy is definitely that – it&#8217;s unlike anything else we track – but a word of warning: this is an <i>extremely</i> volatile strategy, holding a single stock market sector at all times. We think investors should think of it as a unique risk asset, not a total portfolio solution.</p>
+<h4 class="subheading">How the strategy works:</h4>
+<p>You&#8217;ve likely seen a matrix like the following, breaking down market regimes by growth and inflation:</p>
+<p class="sx-popup" style="text-align: center; margin-bottom: 0"><a href="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.04.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-15857" src="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.04.png" alt="" width="455" height="280" srcset="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.04.png 455w, https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.04-300x185.png 300w" sizes="auto, (max-width: 455px) 100vw, 455px" /></a></p>
+<p>This is the &#8220;4 seasons&#8221; concept employed by a lot of strategies, most famously Harry Browne&#8217;s <a href="https://allocatesmartly.com/members/strategy/harry-brownes-permanent-portfolio/">Permanent Portfolio</a> and Ray Dalio&#8217;s <a href="https://allocatesmartly.com/members/strategy/ray-dalios-all-weather-all-seasons-portfolio/">All-Weather Portfolio</a>.</p>
+<p>Certain stock market sectors perform well during each regime, but how do we know which regime we are currently in in real-time?</p>
+<p>To measure forward growth, Varadi uses the current trend of the S&amp;P 500. The S&amp;P 500 is inherently forward-looking and has been a good proxy for US economic growth over the last 120 years.</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.05.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-15858" src="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.05.png" alt="" width="705" height="388" srcset="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.05.png 705w, https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.05-300x165.png 300w" sizes="auto, (max-width: 705px) 100vw, 705px" /></a></p>
+<p>But near-term forward inflation is trickier to model. Conventional measures are either backward-looking (ex. CPI) or longer-term in nature (ex. TIPS derived <a href="https://fred.stlouisfed.org/series/T5YIE" target="_blank">breakeven inflation rates</a>). Varadi takes an alternate approach. He shows that certain sectors have a strong positive or negative relationship with expected inflation:</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.06.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-15859" src="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.06.png" alt="" width="892" height="489" srcset="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.06.png 892w, https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.06-300x164.png 300w, https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.06-768x421.png 768w" sizes="auto, (max-width: 892px) 100vw, 892px" /></a></p>
+<p>When inflation expectations are rising, Energy, Industrials, Financials and Materials tend to also rise. Conversely, Utilities, Health Care and Staples tend to rise when inflation expectations are falling.</p>
+<p>Varadi leverages this idea to create an expected inflation indicator. He creates two hypothetical portfolios, one with sectors that have positive expected inflation beta and the other with sectors that have negative beta.</p>
+<p>The two portfolios would look as follows (click to zoom):</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.07.png"><img loading="lazy" decoding="async" class="alignnone wp-image-15860 size-medium" src="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.07-300x180.png" alt="" width="300" height="180" srcset="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.07-300x180.png 300w, https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.07.png 752w" sizes="auto, (max-width: 300px) 100vw, 300px" /></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.08.png"><img loading="lazy" decoding="async" class="alignnone wp-image-15861 size-medium" src="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.08-300x180.png" alt="" width="300" height="180" srcset="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.08-300x180.png 300w, https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.08.png 752w" sizes="auto, (max-width: 300px) 100vw, 300px" /></a></p>
+<p>By dividing the positive expected inflation portfolio by the negative we create a &#8220;Sector-Implied Expected Inflation&#8221; indicator:</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.09.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-15862" src="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.09.png" alt="" width="750" height="375" srcset="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.09.png 750w, https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.09-300x150.png 300w" sizes="auto, (max-width: 750px) 100vw, 750px" /></a></p>
+<p>Varadi then breaks down how various stock market sectors perform during each market regime: growth up/down and inflation expectation up/down.</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.10.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-15863" src="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.10.png" alt="" width="1311" height="832" srcset="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.10.png 1311w, https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.10-300x190.png 300w, https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.10-1024x650.png 1024w, https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.10-768x487.png 768w" sizes="auto, (max-width: 1311px) 100vw, 1311px" /></a></p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.11.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-15864" src="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.11.png" alt="" width="1173" height="300" srcset="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.11.png 1173w, https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.11-300x77.png 300w, https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.11-1024x262.png 1024w, https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.11-768x196.png 768w" sizes="auto, (max-width: 1173px) 100vw, 1173px" /></a></p>
+<p>The standout performer during the &#8220;goldilocks&#8221; regime (growth up, inflation down) has clearly been technology (XLK). During reflation (growth up, inflation up) it has been energy (XLE).</p>
+<p>During stagflation and deflation, the best performing sector has been less clear. Varadi doesn&#8217;t select the top performing sector, but rather draws on other data to land on the following sector ETFs to represent each market regime:</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.12.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-15865" src="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.12.png" alt="" width="502" height="293" srcset="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.12.png 502w, https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.12-300x175.png 300w" sizes="auto, (max-width: 502px) 100vw, 502px" /></a></p>
+<p>At the close of each trading day, the strategy determines the current market regime and buys the relevant ETF at the close. Positions are held until a change in regime. Even though the strategy could potentially trade on any trading day, it has averaged less than 6 position changes per year.</p>
+<p><i class="fa fa-graduation-cap" style="font-size: 22px; margin-right: 8px;"></i>Geek note: We are tracking a modified version of Varadi&#8217;s <a href="https://cssanalytics.wordpress.com/2025/03/20/the-growth-and-inflation-sector-timing-model/">original strategy</a>. Varadi&#8217;s original traded much more frequently. That made sense in a hypothetical world without trading frictions (transaction costs + slippage), but we assume a modest 0.1% trading friction (0.2% round trip). Varadi worked with us to reduce turnover without materially changing the nature of the strategy.</p>
+<h4 class="subheading">A unique risk asset, not a total portfolio solution:</h4>
+<p>This should be an obvious statement, but just to be clear: this is not a total portfolio solution the way a conventional TAA strategy aims to be. It holds just a single stock market sector and will frequently experience large swings in performance, both positive and negative.</p>
+<p>In 2025 it would have experienced a 24% drawdown (EOM) out of nowhere, but on the flip side, it is up 39% YTD as of the time we&#8217;re writing this. It&#8217;s a wildcard.</p>
+<p>Over the long-term, it would have reduced broad market drawdowns, but would have also failed to outperform the broad market since 2008. To illustrate, below we show the relative performance of Varadi&#8217;s strategy versus the S&amp;P 500 since 1991:</p>
+<p class="sx-popup" style="text-align: center;"><a href="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.13.png"><img loading="lazy" decoding="async" class="alignnone size-full wp-image-15866" src="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.13.png" alt="" width="750" height="450" srcset="https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.13.png 750w, https://allocatesmartly.com/wp-content/uploads/2026/04/20260406.13-300x180.png 300w" sizes="auto, (max-width: 750px) 100vw, 750px" /></a></p>
+<p>We view the strategy as a unique risk asset, which is meaningful in an era of rising correlation between risk assets. Monthly correlation to the S&amp;P 500 stands at 0.60, and the average pairwise correlation to other strategies we track just 0.41. It may have value as a diversifier or as a partial replacement for equity exposure in a buy &amp; hold portfolio.</p>
+<h4 class="subheading">Future research ideas:</h4>
+<p>Ideas to explore:</p>
+<ul>
+<li>Using other, more direct measures of expected inflation such as the <a href="https://fred.stlouisfed.org/series/T5YIE">breakeven inflation rate</a> derived from TIPS vs Treasury yields.</li>
+<li>
+<div style="margin-bottom: 15px;">Beta-adjusting our positive and negative expected inflation portfolios.</div>
+<div style="margin-bottom: 0;">According to our analysis, the positive expected inflation portfolio has significantly higher beta to the broader market than the negative expected inflation portfolio. That means some of the &#8220;Sector-Implied Expected Inflation&#8221; is not &#8220;pure&#8221;; it&#8217;s driven by market beta. In our tests, performance would be improved by beta adjusting the inflation expectation portfolios.</div>
+</li>
+</ul>
+<h4 class="subheading">Outro:</h4>
+<p>A big thank you to <a href="https://cssanalytics.wordpress.com/2025/03/20/the-growth-and-inflation-sector-timing-model/" target="_blank">David Varadi</a> for sharing this strategy and providing us with the opportunity to put it to the test. Readers who follow David know that he is a reliable source of &#8220;outside the box&#8221; ideas.</p>
+<p>Ideas like this one are a major reason why we think a service like Allocate Smartly is important. These kinds of novel ideas are released into the wild, but too often get lost in the noise. There&#8217;s just too much information out there to keep track of it all. We&#8217;re all trying to take a drink from a firehose. We need an independent arbiter to gather these unique ideas and track them on an ongoing basis.</p>
+<p>How will David&#8217;s strategy respond in the coming years to changing markets? Can the concepts presented here be expanded to improve other developers&#8217; strategies?</p>
+<h4 class="subheading">New here?</h4>
+<p>We invite you to <a href="https://allocatesmartly.com/pricing/">become a member</a> for about a $1 a day, or take our platform for a test drive with a <a href="https://allocatesmartly.com/pricing/">free membership</a>. Put the industry&#8217;s best tactical asset allocation strategies to the test, combine them into your own custom portfolio, and follow them in real-time. Learn more about <a href="https://allocatesmartly.com/what-we-do/">what we do</a>.</p>
+<p style="text-align: center;"><a href="https://allocatesmartly.com/pricing/"><img loading="lazy" decoding="async" class="alignnone size-full" src="https://allocatesmartly.com/wp-content/uploads/sx/banner.300x250.png" width="300" height="250" /></a></p>
+<p>The post <a href="https://allocatesmartly.com/david-varadis-growth-and-inflation-sector-timing-a-wildcard-strategy/">David Varadi&#8217;s &#8220;Growth and Inflation Sector Timing&#8221;, a Wildcard Strategy</a> appeared first on <a href="https://allocatesmartly.com">Allocate Smartly</a>.</p>
+]]></content:encoded>
+					
+		
+		
+			</item>
+	</channel>
+</rss>

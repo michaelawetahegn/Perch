@@ -1,0 +1,1042 @@
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"
+	xmlns:content="http://purl.org/rss/1.0/modules/content/"
+	xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:atom="http://www.w3.org/2005/Atom"
+	xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+	xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+	xmlns:georss="http://www.georss.org/georss" xmlns:geo="http://www.w3.org/2003/01/geo/wgs84_pos#" xmlns:media="http://search.yahoo.com/mrss/"
+	>
+
+<channel>
+	<title>Possibly Wrong</title>
+	<atom:link href="https://possiblywrong.wordpress.com/feed/" rel="self" type="application/rss+xml" />
+	<link>https://possiblywrong.wordpress.com</link>
+	<description>On science, mathematics, and computing</description>
+	<lastBuildDate>Mon, 03 Aug 2026 22:07:02 +0000</lastBuildDate>
+	<language>en</language>
+	<sy:updatePeriod>
+	hourly	</sy:updatePeriod>
+	<sy:updateFrequency>
+	1	</sy:updateFrequency>
+	<generator>http://wordpress.com/</generator>
+<site xmlns="com-wordpress:feed-additions:1">13213908</site><cloud domain='possiblywrong.wordpress.com' port='80' path='/?rsscloud=notify' registerProcedure='' protocol='http-post' />
+<image>
+		<url>https://s0.wp.com/i/webclip.png</url>
+		<title>Possibly Wrong</title>
+		<link>https://possiblywrong.wordpress.com</link>
+	</image>
+	<atom:link rel="search" type="application/opensearchdescription+xml" href="https://possiblywrong.wordpress.com/osd.xml" title="Possibly Wrong" />
+	<atom:link rel='hub' href='https://possiblywrong.wordpress.com/?pushpress=hub'/>
+	<item>
+		<title>Using AI to create a magic trick</title>
+		<link>https://possiblywrong.wordpress.com/2026/08/03/using-ai-to-create-a-magic-trick/</link>
+					<comments>https://possiblywrong.wordpress.com/2026/08/03/using-ai-to-create-a-magic-trick/#respond</comments>
+		
+		<dc:creator><![CDATA[possiblywrong]]></dc:creator>
+		<pubDate>Mon, 03 Aug 2026 22:07:02 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">http://possiblywrong.wordpress.com/?p=5399</guid>
+
+					<description><![CDATA[I recently had my first experience with an LLM solving a seemingly open problem. I wrote about this problem last November, in the form of a proposed card trick presented by a magician with an assistant: With the magician&#8217;s back &#8230; <a href="https://possiblywrong.wordpress.com/2026/08/03/using-ai-to-create-a-magic-trick/">Continue reading <span class="meta-nav">&#8594;</span></a>]]></description>
+										<content:encoded><![CDATA[
+<p class="wp-block-paragraph">I recently had my first experience with an LLM solving a seemingly open problem. I wrote about this problem <a href="https://possiblywrong.wordpress.com/2025/11/14/variants-of-fitch-cheneys-trick/">last November</a>, in the form of a proposed card trick presented by a magician with an assistant:</p>
+
+
+
+<p class="wp-block-paragraph">With the magician&#8217;s back turned, a spectator thoroughly shuffles a deck of <img src="https://s0.wp.com/latex.php?latex=n%3D52&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=n%3D52&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=n%3D52&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="n=52" class="latex" /> cards, selects any <img src="https://s0.wp.com/latex.php?latex=m%3D27&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=m%3D27&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=m%3D27&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="m=27" class="latex" /> (or more) of them, and arranges them face-up in a row left to right, in any desired order. The magician&#8217;s assistant flips one of the cards face-down, leaving the spectator&#8217;s ordered arrangement otherwise undisturbed. The magician turns around, observes this arrangement with the <img src="https://s0.wp.com/latex.php?latex=k%3Dm-1&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=k%3Dm-1&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=k%3Dm-1&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="k=m-1" class="latex" /> face-up cards shown, and announces the face-down card(s).</p>
+
+
+
+<p class="wp-block-paragraph">The linked article discusses this trick as another way to <a href="https://possiblywrong.wordpress.com/2011/05/29/generalizing-fitch-cheneys-five-card-trick/">generalize Fitch Cheney&#8217;s five-card trick</a>. In this case, it&#8217;s not difficult to show that the trick is feasible&#8211; <em>in principle</em>&#8212; if and only if</p>
+
+
+
+<p class="has-text-align-center wp-block-paragraph"><img src="https://s0.wp.com/latex.php?latex=%28n%29_m+%5Cleq+%28n%29_k+%7Bm+%5Cchoose+k%7D+&#038;bg=ffffff&#038;fg=333333&#038;s=2&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=%28n%29_m+%5Cleq+%28n%29_k+%7Bm+%5Cchoose+k%7D+&#038;bg=ffffff&#038;fg=333333&#038;s=2&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=%28n%29_m+%5Cleq+%28n%29_k+%7Bm+%5Cchoose+k%7D+&#038;bg=ffffff&#038;fg=333333&#038;s=2&#038;c=20201002&#038;zoom=4.5 4x" alt="(n)_m &#92;leq (n)_k {m &#92;choose k} " class="latex" /></p>
+
+
+
+<p class="wp-block-paragraph">That is, we know the conditions under which there exists an invertible function mapping the set of <img src="https://s0.wp.com/latex.php?latex=m-&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=m-&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=m-&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="m-" class="latex" />arrangements of cards that the spectator might present to the assistant, into the set of such arrangements with only <img src="https://s0.wp.com/latex.php?latex=k&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=k&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=k&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="k" class="latex" /> cards face-up, that the assistant might &#8220;communicate&#8221; to the magician.</p>
+
+
+
+<p class="wp-block-paragraph">However, the challenge was to convert principle into practice: is there a practical scheme for performing this trick, ideally computable within the human minds of the assistant and magician, but at the very least simply and efficiently on a computer?</p>
+
+
+
+<p class="wp-block-paragraph">Try as I might, I could not come up with such a scheme. Last December, I asked the humans at <a href="https://mathoverflow.net/questions/504530/an-explicit-easily-computable-and-invertible-mapping-between-permutations">MathOverflow</a> for help, including extending the life of the question with a bounty, also with no results.</p>
+
+
+
+<p class="wp-block-paragraph">I also tried to get some insight into this problem from LLMs, primarily the various releases of GPT and Claude. Over the past few years, my personal experiences with &#8220;math-heavy&#8221; or &#8220;algorithmically dense&#8221; coding tasks have mostly ranged from amusing to disappointing. This card trick was no different, with agentic code solutions that didn&#8217;t work, and comments that were confidently incorrect, but just as exuberantly promising a fix when presented with flaws.</p>
+
+
+
+<p class="wp-block-paragraph">But things have changed since late last year, and for this particular problem, just last month, when Claude Opus 5 solved the problem, at least in part, not only providing a scheme for the trick that could be performed by humans, along with code demonstrating how it works, but also pointing out a key property of the problem that I missed entirely, that seems disturbingly simple in hindsight.</p>
+
+
+
+<p class="wp-block-paragraph">The Python code below demonstrates the trick, with the function acting as both the assistant (<code>assistant=True</code>) and as the magician (<code>assistant=False</code>). In both cases, the idea is to assign +1 to each visible face-up card, -1 to each other card in the deck, and compute the minimum of the sequence of cumulative sums of these {+1,-1} values over some natural ordering of cards in the deck. The assistant flips face-down the card <em>after the last</em> of these minimum value(s) in the sequence, while the magician announces the card <em>at the first</em> minimum.</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: python; title: ; notranslate">
+def fitch_variant(cards: list&#91;int], n: int, assistant: bool):
+    &quot;&quot;&quot;Return hidden card in given list from deck in range(n).&quot;&quot;&quot;
+    s, s_min = 0, 0
+    card_min = -1
+    for card in range(n):
+        s += (1 if card in cards else -1)
+        if s &lt; s_min + int(assistant):
+            s_min = s
+            card_min = card
+    return card_min + int(assistant)
+
+if __name__ == &#039;__main__&#039;:
+    import random
+    n, m = 52, 27
+    deck = range(n)
+    print(&#039;Spectator selects&#039;, cards := random.sample(deck, m))
+    print(&#039;Assistant flips&#039;, target := fitch_variant(cards, n, True))
+    cards&#91;cards.index(target)] = -1
+    print(&#039;Magician announces&#039;, fitch_variant(cards, n, False))
+</pre></div>
+
+
+<p class="wp-block-paragraph">I say the problem is only solved &#8220;in part&#8221; because the above only works when <img src="https://s0.wp.com/latex.php?latex=k%3Dm-1&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=k%3Dm-1&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=k%3Dm-1&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="k=m-1" class="latex" />, that is, when the assistant flips a single card face-down. For example, in principle the spectator could arrange 32 or more cards face-up, <em>two</em> of which the assistant could flip face-down to be announced by the magician. It remains open whether there is a simple and efficient algorithm for doing so.</p>
+
+
+
+<p class="wp-block-paragraph">But this special case of <img src="https://s0.wp.com/latex.php?latex=k%3Dm-1&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=k%3Dm-1&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=k%3Dm-1&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="k=m-1" class="latex" /> is particularly nice, since the feasibility condition simplifies to <img src="https://s0.wp.com/latex.php?latex=2m%3En&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=2m%3En&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=2m%3En&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="2m&gt;n" class="latex" /> &#8230; which is the <em>same </em>feasibility condition for the admittedly much less interesting trick where the order of the cards doesn&#8217;t matter. That is, the Python code above effectively ignores the arrangement of the cards and the position of the &#8220;hidden&#8221; card in the arrangement. It is as if the spectator presents an unordered subset of <img src="https://s0.wp.com/latex.php?latex=m&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=m&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=m&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="m" class="latex" /> cards to the assistant, who rather than flipping a card face-down, may as well simply remove it altogether, to be announced by the magician.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://possiblywrong.wordpress.com/2026/08/03/using-ai-to-create-a-magic-trick/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+		<post-id xmlns="com-wordpress:feed-additions:1">5399</post-id>
+		<media:content url="https://0.gravatar.com/avatar/08708acd725f717c5b5d7293d29e78efcef0aa670f72f2962545c441c4da8ddd?s=96&#38;d=identicon&#38;r=G" medium="image">
+			<media:title type="html">possiblywrong</media:title>
+		</media:content>
+	</item>
+		<item>
+		<title>Alice and Bob on Two-Pi Day</title>
+		<link>https://possiblywrong.wordpress.com/2026/06/28/alice-and-bob-on-two-pi-day/</link>
+					<comments>https://possiblywrong.wordpress.com/2026/06/28/alice-and-bob-on-two-pi-day/#respond</comments>
+		
+		<dc:creator><![CDATA[possiblywrong]]></dc:creator>
+		<pubDate>Sun, 28 Jun 2026 13:04:16 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">http://possiblywrong.wordpress.com/?p=5385</guid>
+
+					<description><![CDATA[This weekend 6/28 is “Two-Pi Day” (or Tau Day, if you like). Continuing to be on the lookout for surprising or unexpected occurrences of , this year I didn&#8217;t have to look farther than an interesting paper by Grimmett [2] &#8230; <a href="https://possiblywrong.wordpress.com/2026/06/28/alice-and-bob-on-two-pi-day/">Continue reading <span class="meta-nav">&#8594;</span></a>]]></description>
+										<content:encoded><![CDATA[
+<p class="wp-block-paragraph">This weekend 6/28 is “<a href="https://en.wikipedia.org/wiki/Pi_Day#Alternative_dates">Two-Pi Day</a>” (or <a href="https://www.tauday.com/">Tau Day</a>, if you like). Continuing to be on the lookout for <a href="https://possiblywrong.wordpress.com/2025/06/26/a-maximally-inefficient-monte-carlo-estimate-of-pi/">surprising or unexpected</a> occurrences of <img src="https://s0.wp.com/latex.php?latex=%5Cpi&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=%5Cpi&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=%5Cpi&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="&#92;pi" class="latex" />, this year I didn&#8217;t have to look farther than an interesting paper by Grimmett [2] in last month&#8217;s <em>American Mathematical Monthly</em>.</p>
+
+
+
+<p class="wp-block-paragraph">Suppose that Alice offers Bob the following wager: a fair coin is flipped <img src="https://s0.wp.com/latex.php?latex=n%3D100&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=n%3D100&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=n%3D100&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="n=100" class="latex" /> times. Alice receives a point for every occurrence of a consecutive pair of heads (HH), while Bob receives a point for every occurrence of heads followed immediately by tails (HT). The player with the most points wins a dollar from the loser. Should Bob take the bet? What is his expected return?</p>
+
+
+
+<p class="wp-block-paragraph">We&#8217;ve discussed this game several times here before, <a href="https://possiblywrong.wordpress.com/2024/05/21/another-coin-flip-puzzle/">most recently</a> calculating the exact expected return, with the perhaps-unintuitive result that Bob has an advantage for any <img src="https://s0.wp.com/latex.php?latex=n%3E2&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=n%3E2&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=n%3E2&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="n&gt;2" class="latex" /> flips. This is a special case of a more general game where, for each &#8220;streak&#8221; of <img src="https://s0.wp.com/latex.php?latex=s%3D1&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=s%3D1&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=s%3D1&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="s=1" class="latex" /> consecutive heads, Alice receives a point for an immediately subsequent &#8220;streak-extending&#8221; heads, and Bob receives a point for a &#8220;streak-ending&#8221; tails. We previously <a href="https://possiblywrong.wordpress.com/2019/12/01/gamblers-fallacy-fallacy/">presented</a> this more general game in the context of the <a href="https://en.wikipedia.org/wiki/Gambler%27s_fallacy#Coin_toss">gambler&#8217;s fallacy</a>, where Bob has a roughly 15% advantage when <img src="https://s0.wp.com/latex.php?latex=s%3D4&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=s%3D4&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=s%3D4&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="s=4" class="latex" />.</p>
+
+
+
+<p class="wp-block-paragraph">The <img src="https://s0.wp.com/latex.php?latex=s%3D3&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=s%3D3&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=s%3D3&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="s=3" class="latex" /> case was investigated in 1985 by Gilovich, Vallone, and Tversky in [1], looking for evidence of the <a href="https://possiblywrong.wordpress.com/2019/12/08/the-hot-hand/">&#8220;hot hand&#8221;</a> phenomenon in basketball. They found no significant increase in proportion of “streak-extending” shots made, concluding that a past streak has no effect on current success. However, they seem not to have accounted for this unintuitive unfairness of Alice and Bob&#8217;s game. Miller and Sanjurjo in [3] revisit their analysis, arguing that the <em>absence </em>of a bias toward streak-ending <em>missed </em>shots&#8211; that we should expect if shots were truly independent but limited in number as with Alice and Bob&#8211; suggests that the hot hand is <em>not</em> just “a cognitive illusion.”</p>
+
+
+
+<p class="wp-block-paragraph">So what does all of this have to do with <img src="https://s0.wp.com/latex.php?latex=%5Cpi&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=%5Cpi&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=%5Cpi&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="&#92;pi" class="latex" />? In [2], Grimmett shows that (for the <img src="https://s0.wp.com/latex.php?latex=s%3D1&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=s%3D1&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=s%3D1&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="s=1" class="latex" /> game) Bob&#8217;s expected return is very well approximated by <img src="https://s0.wp.com/latex.php?latex=1%2F%5Csqrt%7B4%5Cpi+n%7D&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=1%2F%5Csqrt%7B4%5Cpi+n%7D&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=1%2F%5Csqrt%7B4%5Cpi+n%7D&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="1/&#92;sqrt{4&#92;pi n}" class="latex" />, and the probability that Alice and Bob <em>tie </em>is asymptotically <img src="https://s0.wp.com/latex.php?latex=1%2F%5Csqrt%7B%5Cpi+n%7D&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=1%2F%5Csqrt%7B%5Cpi+n%7D&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=1%2F%5Csqrt%7B%5Cpi+n%7D&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="1/&#92;sqrt{&#92;pi n}" class="latex" />.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>References</strong>:</p>
+
+
+
+<ol class="wp-block-list">
+<li>Gilovich, T., Vallone, R., and Tversky, A., The Hot Hand in Basketball: On the Misperception of Random Sequences,&nbsp;<em>Cognitive Psychology</em>,&nbsp;<strong>17</strong>(3) July 1985, p. 295-314 [<a href="https://www.cs.colorado.edu/~mozer/Teaching/syllabi/7782/readings/gilovich%20vallone%20tversky.pdf">PDF</a>]</li>
+
+
+
+<li>Grimmett, G. R., Alice and Bob on X: Reversal, Coupling, Renewal, <em>The American Mathematical Monthly</em>, <strong>133</strong>(5), May 2025, 439–451. [<a href="https://arxiv.org/abs/2409.00732">arXiv</a>]</li>
+
+
+
+<li>Miller, Joshua B. and Sanjurjo, Adam, Surprised by the Hot Hand Fallacy? A Truth in the Law of Small Numbers,&nbsp;<em>Econometrica</em>,&nbsp;<strong>86</strong>(6) November 2018, p. 2019-2047 [<a href="https://arxiv.org/abs/1902.01265">arXiv</a>]</li>
+</ol>
+
+
+
+<p class="wp-block-paragraph"></p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://possiblywrong.wordpress.com/2026/06/28/alice-and-bob-on-two-pi-day/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+		<post-id xmlns="com-wordpress:feed-additions:1">5385</post-id>
+		<media:content url="https://0.gravatar.com/avatar/08708acd725f717c5b5d7293d29e78efcef0aa670f72f2962545c441c4da8ddd?s=96&#38;d=identicon&#38;r=G" medium="image">
+			<media:title type="html">possiblywrong</media:title>
+		</media:content>
+	</item>
+		<item>
+		<title>Comments on: What Every Experimenter Must Know About Randomization</title>
+		<link>https://possiblywrong.wordpress.com/2026/05/18/comments-on-what-every-experimenter-must-know-about-randomization/</link>
+					<comments>https://possiblywrong.wordpress.com/2026/05/18/comments-on-what-every-experimenter-must-know-about-randomization/#comments</comments>
+		
+		<dc:creator><![CDATA[possiblywrong]]></dc:creator>
+		<pubDate>Mon, 18 May 2026 00:44:25 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">http://possiblywrong.wordpress.com/?p=5309</guid>
+
+					<description><![CDATA[Introduction T. Kelly writes in [1] about &#8220;What Every Experimenter Must Know About Randomization.&#8221; In a running example scenario throughout the paper, Kelly describes a hypothetical poultry farmer who, wondering whether exposing his turkeys to television will fatten them up, &#8230; <a href="https://possiblywrong.wordpress.com/2026/05/18/comments-on-what-every-experimenter-must-know-about-randomization/">Continue reading <span class="meta-nav">&#8594;</span></a>]]></description>
+										<content:encoded><![CDATA[
+<p class="wp-block-paragraph"><strong>Introduction</strong></p>
+
+
+
+<p class="wp-block-paragraph">T. Kelly writes in [1] about &#8220;What Every Experimenter Must Know About Randomization.&#8221; In a running example scenario throughout the paper, Kelly describes a hypothetical poultry farmer who, wondering whether exposing his turkeys to television will fatten them up, conducts a test using <img src="https://s0.wp.com/latex.php?latex=N&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=N&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=N&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="N" class="latex" /> turkey subjects, from which <img src="https://s0.wp.com/latex.php?latex=N%2F2&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=N%2F2&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=N%2F2&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="N/2" class="latex" /> are randomly selected to receive the TV treatment, with the remaining <img src="https://s0.wp.com/latex.php?latex=N%2F2&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=N%2F2&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=N%2F2&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="N/2" class="latex" /> control turkeys getting no screen time.</p>
+
+
+
+<p class="wp-block-paragraph">How should the farmer randomize the assignment of turkeys to the treatment and control groups? The main point of the paper&#8211; very subtly emphasized in underlined, bold italics&#8211; is to &#8220;<strong><em><span style="text-decoration: underline">never use a PRNG</span> </em></strong>[pseudo-random number generator]<strong><em> <span style="text-decoration: underline">for random assignment</span>.</em></strong>&#8220;</p>
+
+
+
+<p class="wp-block-paragraph">I don&#8217;t really agree with this guidance at all. I think the arguments presented in its favor are flawed, or at least potentially misleading, on practical, mathematical, and even philosophical grounds. But the paper does present at least one very interesting and subtle observation that I think deserves highlighting and clarification.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Balls into bins</strong></p>
+
+
+
+<p class="wp-block-paragraph">To make the case against using a pseudo-random number generator, Kelly provides a C program, <code>balls_into_bins.c</code>, that simulates the random partition of <img src="https://s0.wp.com/latex.php?latex=N%3D32&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=N%3D32&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=N%3D32&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="N=32" class="latex" /> turkeys into two groups of 16, with one group receiving the treatment and the other being the control group. If we start with all 32 turkeys arranged in a fixed initial order, then uniformly randomly shuffle them, we can designate the leftmost 16 turkeys in the treatment group, and the rightmost 16 turkeys in the control group.</p>
+
+
+
+<p class="wp-block-paragraph">(We don&#8217;t actually have to shuffle all 32 turkeys; once we have selected the treatment group&#8211; in a uniformly random order&#8211; we don&#8217;t need to continue rearranging the control turkeys. That is, Kelly effectively implements the first 16 iterations of the <code>mirror_shuffle</code> version of the <a href="https://possiblywrong.wordpress.com/2020/12/10/the-fisher-yates-shuffle-is-backward/">Fisher-Yates shuffle</a>.)</p>
+
+
+
+<p class="wp-block-paragraph">Kelly&#8217;s program then iterates over all <img src="https://s0.wp.com/latex.php?latex=2%5E%7B32%7D&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=2%5E%7B32%7D&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=2%5E%7B32%7D&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="2^{32}" class="latex" /> possible seeds of the C standard library random number generator via <code>srand(seed)</code>, executing this simulated random assignment once for each seed. The idea is to show the distribution of possible assignments, assuming that our farmer conducts the experiment by selecting a &#8220;true random&#8221; value used as the seed for the PRNG to then (pseudo)randomly shuffle the turkeys to select an assignment.</p>
+
+
+
+<p class="wp-block-paragraph">For a 32-bit seed and <img src="https://s0.wp.com/latex.php?latex=N%3D32&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=N%3D32&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=N%3D32&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="N=32" class="latex" /> turkeys, these numbers are small enough that we can manage both the time to simulate each seed (i.e., each &#8220;ball&#8221;), as well as the memory to track all <img src="https://s0.wp.com/latex.php?latex=%7B32+%5Cchoose+16%7D%3D601%2C080%2C390&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=%7B32+%5Cchoose+16%7D%3D601%2C080%2C390&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=%7B32+%5Cchoose+16%7D%3D601%2C080%2C390&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="{32 &#92;choose 16}=601,080,390" class="latex" /> possible treatment assignments (i.e., &#8220;bins&#8221;), recording how many times each assignment is selected (i.e., how many balls end up in each bin). Kelly&#8217;s results are shown in red in the figure below, indicating the number of bins containing a given number of balls.</p>
+
+
+<div class="wp-block-image">
+<figure class="aligncenter size-large"><a href="https://possiblywrong.wordpress.com/wp-content/uploads/2026/04/balls_into_bins.png"><img width="801" height="507" data-attachment-id="5331" data-permalink="https://possiblywrong.wordpress.com/2026/05/18/comments-on-what-every-experimenter-must-know-about-randomization/balls_into_bins/" data-orig-file="https://possiblywrong.wordpress.com/wp-content/uploads/2026/04/balls_into_bins.png" data-orig-size="801,507" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;,&quot;alt&quot;:&quot;&quot;}" data-image-title="balls_into_bins" data-image-description="" data-image-caption="" data-large-file="https://possiblywrong.wordpress.com/wp-content/uploads/2026/04/balls_into_bins.png?w=584" src="https://possiblywrong.wordpress.com/wp-content/uploads/2026/04/balls_into_bins.png?w=801" alt="" class="wp-image-5331" srcset="https://possiblywrong.wordpress.com/wp-content/uploads/2026/04/balls_into_bins.png 801w, https://possiblywrong.wordpress.com/wp-content/uploads/2026/04/balls_into_bins.png?w=150 150w, https://possiblywrong.wordpress.com/wp-content/uploads/2026/04/balls_into_bins.png?w=300 300w, https://possiblywrong.wordpress.com/wp-content/uploads/2026/04/balls_into_bins.png?w=768 768w" sizes="(max-width: 801px) 100vw, 801px" /></a></figure>
+</div>
+
+
+<p class="wp-block-paragraph">For example, the red point at (28,1) indicates that there was a single assignment that was generated 28 times by each of 28 different random seeds. The red point at (0,474467), on the other hand, indicates that 474,467 assignments were <em>never</em> generated, never appearing even once among all <img src="https://s0.wp.com/latex.php?latex=2%5E%7B32%7D&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=2%5E%7B32%7D&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=2%5E%7B32%7D&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="2^{32}" class="latex" /> possible seeded treatment selections. As Kelly writes:</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph">The resulting distribution of balls into bins will be far from uniform: Some bins end up with more balls than others, and some bins end up empty— even, perhaps surprisingly, when the number of balls is considerably larger than the number of bins.</p>
+</blockquote>
+
+
+
+<p class="wp-block-paragraph">That is, there are <img src="https://s0.wp.com/latex.php?latex=2%5E%7B32%7D%2F%7B32+%5Cchoose+16%7D+%5Capprox+7.1&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=2%5E%7B32%7D%2F%7B32+%5Cchoose+16%7D+%5Capprox+7.1&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=2%5E%7B32%7D%2F%7B32+%5Cchoose+16%7D+%5Capprox+7.1&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="2^{32}/{32 &#92;choose 16} &#92;approx 7.1" class="latex" /> times as many balls as bins, so that the presumably ideal behavior would instead be to distribute the balls as evenly as possible, so that every one of the possible assignments would be selected 7 or 8 times.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Comparing generators</strong></p>
+
+
+
+<p class="wp-block-paragraph">There is a useful point here, which we&#8217;ll get to shortly. But first, it wasn&#8217;t clear to me whether Kelly is arguing that the non-uniformity illustrated above is <em>because </em>we are using a PRNG. That is certainly not the case&#8230; but at the same time, some PRNGs are better than others, and at first glance it seemed like a rather disingenuous straw man to use the one PRNG that most everyone agrees <em>shouldn&#8217;t </em>be used &#8220;<a href="https://en.cppreference.com/cpp/numeric/random/rand">for serious random number generation needs</a>,&#8221; namely the one in the C standard library.</p>
+
+
+
+<p class="wp-block-paragraph">For example, how do things look if we try this experiment on Windows, using the MSVCRT/UCRT implementation of <code>rand()</code>? This took some work, since Kelly&#8217;s code does not compile due to lines like this:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: plain; title: ; notranslate">
+static_assert(RAND_MAX == INT_MAX); // would be very weird otherwise
+</pre></div>
+
+
+<p class="wp-block-paragraph">This assertion is, well, weird. Not only is there no language standard guarantee that these constants be equal&#8211; and on Windows, they aren&#8217;t&#8211; neither is there anything in the code that depends on this assertion, so it&#8217;s unclear why it&#8217;s there in the first place.</p>
+
+
+
+<p class="wp-block-paragraph">The program also uses the <code><a href="https://en.cppreference.com/c/numeric/bit_manip">stdc_count_ones</a></code> function defined in the <code>stdbit.h</code> header, which is new enough that it may not be available depending on how up to date your environment is, on either Linux or Windows. But here as well, we don&#8217;t really need this function, or even an equivalent replacement, to get the job done.</p>
+
+
+
+<p class="wp-block-paragraph">So to get things working, I wrote <code>balls_into_bins.cpp</code> (code is on <a href="https://github.com/possibly-wrong/balls-into-bins">GitHub</a>, where I&#8217;ve included Kelly&#8217;s original <code>balls_into_bins.c</code> for side-by-side comparison), with the same behavior, but which (1) works on both Linux and Windows, and (2) allows us to select which of several random number generation approaches we want to evaluate:</p>
+
+
+
+<ul class="wp-block-list">
+<li>The Linux GLIBC pseudo-random generator that reproduces Kelly&#8217;s original results exactly.</li>
+
+
+
+<li>The Windows MSVCRT/UCRT pseudo-random generator.</li>
+
+
+
+<li>The &#8220;true&#8221; random RDSEED hardware-based generator using the <code>_rdseed64_step</code> function.</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">The hardware random number generator is understandably much slower; on my laptop it produces only a little over half a million 64-bit words per second. But eventually we see the output shown in blue above, with &#8220;non-uniform&#8221; behavior very similar to the GLIBC PRNG.</p>
+
+
+
+<p class="wp-block-paragraph">In other words, <em>we should expect</em> to see some treatment assignments selected more often than others. And we should <em>expect </em>to see some assignments not selected at all; with <img src="https://s0.wp.com/latex.php?latex=s%3D2%5E%7B32%7D&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=s%3D2%5E%7B32%7D&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=s%3D2%5E%7B32%7D&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="s=2^{32}" class="latex" /> seeds (&#8220;balls&#8221;) and <img src="https://s0.wp.com/latex.php?latex=r%3D%7B32+%5Cchoose+16%7D&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=r%3D%7B32+%5Cchoose+16%7D&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=r%3D%7B32+%5Cchoose+16%7D&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="r={32 &#92;choose 16}" class="latex" /> possible assignments (&#8220;bins&#8221;), the expected number of empty bins is</p>
+
+
+
+<p class="has-text-align-center wp-block-paragraph"><img src="https://s0.wp.com/latex.php?latex=r%281-%5Cfrac%7B1%7D%7Br%7D%29%5Es+%5Capprox+r+e%5E%7B-%5Cfrac%7Bs%7D%7Br%7D%7D+%5Capprox+473936+&#038;bg=ffffff&#038;fg=333333&#038;s=2&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=r%281-%5Cfrac%7B1%7D%7Br%7D%29%5Es+%5Capprox+r+e%5E%7B-%5Cfrac%7Bs%7D%7Br%7D%7D+%5Capprox+473936+&#038;bg=ffffff&#038;fg=333333&#038;s=2&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=r%281-%5Cfrac%7B1%7D%7Br%7D%29%5Es+%5Capprox+r+e%5E%7B-%5Cfrac%7Bs%7D%7Br%7D%7D+%5Capprox+473936+&#038;bg=ffffff&#038;fg=333333&#038;s=2&#038;c=20201002&#038;zoom=4.5 4x" alt="r(1-&#92;frac{1}{r})^s &#92;approx r e^{-&#92;frac{s}{r}} &#92;approx 473936 " class="latex" /></p>
+
+
+
+<p class="wp-block-paragraph">which matches pretty closely with the 474,467 empty bins using the GLIBC generator, and the 473,435 empty bins from my particular output using RDSEED.</p>
+
+
+
+<p class="wp-block-paragraph">However, there is clearly something different going on with the Windows UCRT implementation, shown in green above. One interesting &#8220;feature&#8221; of the UCRT behavior is that we only see even numbers. That is, each assignment (&#8220;bin&#8221;) is always randomly generated an even number of times&#8211; possibly zero times, or twice, or four times, etc., but never exactly once, nor exactly thrice, etc. (Obligatory puzzle: why?)</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Repeatability</strong></p>
+
+
+
+<p class="wp-block-paragraph">So what, exactly, is the point being made here? Certainly a poor PRNG like the Windows UCRT generator can cause unintended bias. But the GLIBC PRNG is better behaved, at least from the perspective of the balls-into-bins experiment described here. For example, for both the GLIBC output as well as the &#8220;true&#8221; random RDSEED output, a chi-squared test would fail to reject the null hypothesis that the selected assignments constitute a truly (uniformly) random sample.</p>
+
+
+
+<p class="wp-block-paragraph">However, there is a key difference between the two generators, namely their repeatability. That is, although it&#8217;s true that the RDSEED hardware random generator &#8220;misses&#8221; nearly half a million possible turkey treatment assignments in the above output, if we were to run the program again with the RDSEED generator, we would once again fail to select roughly half a million assignments&#8230; but it would be a <em>different </em>subset of missed assignments. But with the GLIBC PRNG, it is the <em>same persistent subset</em> of exactly 474,467 specific assignments that will <em>never </em>be selected, no matter what seed we use, no matter how many times we run the program. For any one of those persistently-missed assignments, the probability that the farmer selects it for his experiment should ideally be <img src="https://s0.wp.com/latex.php?latex=1%2F%7B32+%5Cchoose+16%7D&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=1%2F%7B32+%5Cchoose+16%7D&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=1%2F%7B32+%5Cchoose+16%7D&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="1/{32 &#92;choose 16}" class="latex" />, but instead it&#8217;s zero.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>&#8220;True&#8221; vs. pseudo-random numbers</strong></p>
+
+
+
+<p class="wp-block-paragraph">I think it&#8217;s an interesting question when, and just how much, this matters in any practical sense for many real experimental scenarios. There are certainly scenarios where it <a href="https://www.pcg-random.org/posts/cpp-seeding-surprises.html">can matter</a>&#8212; but in this running example of the farmer experimenting on his turkeys, it&#8217;s less clear to me what actual problem might arise from what effectively amounts to bootstrapping from a single prior uniformly sampled multiset from the population of treatment assignments.</p>
+
+
+
+<p class="wp-block-paragraph">But if we did want to &#8220;fix&#8221; our farmer&#8217;s methodology, there are at least a couple of simple ways to do so. For example, Kelly&#8217;s setup assumes that the farmer starts by generating 32 &#8220;truly&#8221; random bits with which to seed a pseudo-random number generator. Maybe those seed bits are obtained by repeatedly flipping a fair coin; but if we&#8217;re willing to assume access to 32 &#8220;truly random&#8221; bits to seed the PRNG, then why subsequently bother with the PRNG at all? As Kelly points out, we only need <img src="https://s0.wp.com/latex.php?latex=%5Clog_2+%7B32+%5Cchoose+16%7D+%5Capprox+29.2&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=%5Clog_2+%7B32+%5Cchoose+16%7D+%5Capprox+29.2&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=%5Clog_2+%7B32+%5Cchoose+16%7D+%5Capprox+29.2&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="&#92;log_2 {32 &#92;choose 16} &#92;approx 29.2" class="latex" /> bits of entropy, so we need on average at most 2 more, or at most 32 coin flips (on average), to select a random integer and <a href="https://possiblywrong.wordpress.com/2023/12/26/analysis-of-left-center-right-dice-game/">unrank</a> it to determine the corresponding assignment, rather than wasting a lot more coin flips Fisher-Yates shuffling turkeys around.</p>
+
+
+
+<p class="wp-block-paragraph">The above alternative abandons <em>pseudo</em>-random numbers altogether, and only uses a &#8220;true&#8221; random source of numbers to generate an assignment. I&#8217;ve been putting &#8220;true&#8221; in quotes here, since Kelly never defines or explains exactly what is meant by &#8220;true&#8221; randomness. It doesn&#8217;t seem to require anything quantum mechanical or otherwise theoretical, for example; indeed, the requirements seem pretty lax:</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph">Random assignment does not require a computer. Physical coins or urns are reasonable options sanctioned by many statisticians today, for the same reasons that casinos and lotteries continue to use dice, roulette wheels, and other mechanical contraptions.</p>
+</blockquote>
+
+
+
+<p class="wp-block-paragraph">Kelly is even okay with &#8220;re-using&#8221; randomness for an experiment, as long as it&#8217;s &#8220;unrelated&#8221; to that past use:</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph">Regarding &#8220;canned&#8221; entropy (e.g., from an old-fashioned table of random numbers), I&#8217;m aware of no reason why such entropy would lose its usefulness merely from being recorded and stored for a period of time. Similarly, regarding &#8220;recycled&#8221; entropy that has already been used for purposes unrelated to the one at hand, I&#8217;m aware of no reason why such entropy would be any less useful than if it had not been used before for any purpose.</p>
+</blockquote>
+
+
+
+<p class="wp-block-paragraph">This is what I find confusing and contradictory. A not-completely-terrible intuitive description of a PRNG is &#8220;an old-fashioned table of random numbers&#8221;&#8230; but one that is so large that we never need to re-use any of it. That is, for example, suppose that when we complete our undergraduate statistics education, we seed a pseudo-random number generator, one time, and use that single stream of random numbers for the duration of our lifetime, or at least for our entire career as an experimenter. When we need some random numbers, we extract them, then store the subsequent generator state on disk. When we need some more random numbers, we restore the generator state from disk, extract some more random numbers, rinse and repeat.</p>
+
+
+
+<p class="wp-block-paragraph">If our experiments are &#8220;slow&#8221; like testing turkeys, and not &#8220;fast&#8221; like computer simulations, then such a single pseudo-random stream is plenty long enough to support more experiments on more test subjects than our farmer can possibly conduct in their lifetime. And if we are worried, as Kelly writes, that &#8220;the outcome is a foregone conclusion, completely devoid of uncertainty, no matter how random the sequence might appear,&#8221; then why is an old-fashioned published book of random numbers acceptable?</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Reference</strong>:</p>
+
+
+
+<ol class="wp-block-list">
+<li>Kelly, T., What Every Experimenter Must Know About Randomization, <em>ACM Queue Magazine</em>, <strong>23</strong>(6), November/December 2025. [<a href="https://spawn-queue.acm.org/doi/pdf/10.1145/3778029">PDF</a>]</li>
+</ol>
+
+
+
+<p class="wp-block-paragraph"></p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://possiblywrong.wordpress.com/2026/05/18/comments-on-what-every-experimenter-must-know-about-randomization/feed/</wfw:commentRss>
+			<slash:comments>1</slash:comments>
+		
+		
+		<post-id xmlns="com-wordpress:feed-additions:1">5309</post-id>
+		<media:content url="https://0.gravatar.com/avatar/08708acd725f717c5b5d7293d29e78efcef0aa670f72f2962545c441c4da8ddd?s=96&#38;d=identicon&#38;r=G" medium="image">
+			<media:title type="html">possiblywrong</media:title>
+		</media:content>
+
+		<media:content url="https://possiblywrong.wordpress.com/wp-content/uploads/2026/04/balls_into_bins.png?w=801" medium="image" />
+	</item>
+		<item>
+		<title>Analysis of Biscuits dice game</title>
+		<link>https://possiblywrong.wordpress.com/2026/02/24/analysis-of-biscuits-dice-game/</link>
+					<comments>https://possiblywrong.wordpress.com/2026/02/24/analysis-of-biscuits-dice-game/#comments</comments>
+		
+		<dc:creator><![CDATA[possiblywrong]]></dc:creator>
+		<pubDate>Tue, 24 Feb 2026 23:42:05 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">http://possiblywrong.wordpress.com/?p=5292</guid>
+
+					<description><![CDATA[Introduction In the dice game &#8220;Biscuits,&#8221; a player rolls 12d6+1d8+1d10+1d12, then selects one or more of the rolled dice to set aside, rolling the remainder again, continuing this process until eventually all 15 dice have been set aside. The player&#8217;s &#8230; <a href="https://possiblywrong.wordpress.com/2026/02/24/analysis-of-biscuits-dice-game/">Continue reading <span class="meta-nav">&#8594;</span></a>]]></description>
+										<content:encoded><![CDATA[
+<p class="wp-block-paragraph"><strong>Introduction</strong></p>
+
+
+
+<p class="wp-block-paragraph">In the dice game &#8220;Biscuits,&#8221; a player rolls 12d6+1d8+1d10+1d12, then selects one or more of the rolled dice to set aside, rolling the remainder again, continuing this process until eventually all 15 dice have been set aside. The player&#8217;s score is the sum of the final values shown on the dice, with the highest score winning the game.</p>
+
+
+
+<p class="wp-block-paragraph">A rolled six on a d6&#8211; or an eight on the d8, or generally the maximum value on a die&#8211; is referred to as a <em>biscuit</em>&#8230; and as the rules suggest, &#8220;you want biscuits and lots of them!&#8221;, where &#8220;sometimes you&#8217;ll roll several biscuits all at once, you can set them all aside.&#8221;</p>
+
+
+
+<p class="wp-block-paragraph">You <em>can </em>set them all aside&#8230; but <em>should </em>you? That is, suppose that you roll sixes on multiple d6s at once, but relatively small values for the d8, d10, and/or d12. Should you set aside <em>all </em>of those biscuits, banking the highest possible score for those dice, or is it worth it to &#8220;give up&#8221; some of that guaranteed score in exchange for more future opportunities to roll better scores for the d8, d10, and d12?</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Results</strong></p>
+
+
+
+<p class="wp-block-paragraph">Not to beat around the bush, the latter turns out to be the case. Strategy in this game appears to be pretty interesting; let&#8217;s suppose that our objective is to maximize our expected total score (more on this later). Python code is available on <a href="https://github.com/possibly-wrong/biscuits">GitHub</a> to evaluate all possible moves that we might make from any given roll. For a most extreme example situation, suppose that on the initial roll we get biscuits for all 12d6, but we roll 1 for each of the other dice:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: plain; title: ; notranslate">
+&gt;&gt;&gt; analyze(((0, 0, 0, 0, 0, 12),
+             (1, 0, 0, 0, 0, 0, 0, 0),
+             (1, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+             (1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)))
+ 93.836 points by keeping d6 (6 ), 
+ 93.761 points by keeping d6 (6 6 ), 
+ 93.691 points by keeping d6 (6 6 6 ), 
+ 93.625 points by keeping d6 (6 6 6 6 ), 
+ 93.565 points by keeping d6 (6 6 6 6 6 ), 
+ 93.509 points by keeping d6 (6 6 6 6 6 6 ), 
+ 93.462 points by keeping d6 (6 6 6 6 6 6 6 ), 
+ 93.449 points by keeping d6 (6 6 6 6 6 6 6 6 6 6 6 6 ), 
+ 93.427 points by keeping d6 (6 6 6 6 6 6 6 6 6 6 6 ), 
+ 93.426 points by keeping d6 (6 6 6 6 6 6 6 6 ), 
+ 93.407 points by keeping d6 (6 6 6 6 6 6 6 6 6 ), 
+ 93.407 points by keeping d6 (6 6 6 6 6 6 6 6 6 6 ), 
+ 87.292 points by keeping d6 (6 6 6 6 6 6 6 6 6 6 6 6 ), d8 (1 ), 
+ 87.167 points by keeping d6 (6 6 6 6 6 6 6 6 6 6 6 ), d8 (1 ), 
+ 87.064 points by keeping d8 (1 ), 
+ 87.037 points by keeping d6 (6 6 6 6 6 6 6 6 6 6 ), d8 (1 ), 
+...
+</pre></div>
+
+
+<p class="wp-block-paragraph">Optimal strategy is to keep just a single d6, sacrificing all 11 other biscuits in exchange for more future rolls to hopefully improve the contribution from the d8, d10, and d12. Even more interesting is that the expected total score isn&#8217;t monotonic in how many biscuits we might choose to set aside: keeping one d6 is best, and keeping all 12 is worse&#8230; but not as bad as keeping just 10 of them.</p>
+
+
+
+<p class="wp-block-paragraph">The figure below shows the distribution of possible total scores using this strategy, sampled from 10,000 simulated games.</p>
+
+
+<div class="wp-block-image">
+<figure class="aligncenter size-large"><a href="https://possiblywrong.wordpress.com/wp-content/uploads/2026/02/biscuits.png"><img width="480" height="329" data-attachment-id="5304" data-permalink="https://possiblywrong.wordpress.com/2026/02/24/analysis-of-biscuits-dice-game/biscuits/" data-orig-file="https://possiblywrong.wordpress.com/wp-content/uploads/2026/02/biscuits.png" data-orig-size="480,329" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="biscuits" data-image-description="" data-image-caption="" data-large-file="https://possiblywrong.wordpress.com/wp-content/uploads/2026/02/biscuits.png?w=480" src="https://possiblywrong.wordpress.com/wp-content/uploads/2026/02/biscuits.png?w=480" alt="" class="wp-image-5304" srcset="https://possiblywrong.wordpress.com/wp-content/uploads/2026/02/biscuits.png 480w, https://possiblywrong.wordpress.com/wp-content/uploads/2026/02/biscuits.png?w=150 150w, https://possiblywrong.wordpress.com/wp-content/uploads/2026/02/biscuits.png?w=300 300w" sizes="(max-width: 480px) 100vw, 480px" /></a><figcaption class="wp-element-caption">Distribution of final total score in Biscuits using expectation-maximizing strategy, with expected score of about 93.9 (out of 102 possible) shown in red.</figcaption></figure>
+</div>
+
+
+<p class="wp-block-paragraph">I was surprised at how well this strategy performs, with an expected score of about 93.9 (shown in red), and in a few simulated games even reaching the maximum possible score of 102.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Implementation</strong></p>
+
+
+
+<p class="wp-block-paragraph">As discussed previously <a href="https://possiblywrong.wordpress.com/2023/12/26/analysis-of-left-center-right-dice-game/">here</a>, we can efficiently enumerate all possible outcomes from rolling a given subset of the dice as weak compositions of the total number of dice of each type. To compute optimal strategy for a given roll, we consider all possible non-empty subsets of dice to keep, recursively evaluating the expected score of each such move, memoizing results as we go.</p>
+
+
+
+<p class="wp-block-paragraph">As an aside, the Python code was not the starting point. Quite often I find it useful to do my &#8220;thinking&#8221; in Mathematica, then convert the resulting algorithm into a more widely accessible form. It&#8217;s always interesting to see how much more concise&#8211; but often much less readable&#8211; the Mathematica implementation usually is, as shown below.</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: plain; title: ; notranslate">
+rolls&#91;n_, d_] := Map&#91;
+  Differences&#91;Append&#91;Prepend&#91;#, 0], n + d]] - 1 &amp;,
+  Subsets&#91;Range&#91;n + d - 1], {d - 1}]
+  ]
+
+score&#91;ns_, ds_] := score&#91;ns, ds] = Total@Map&#91;
+  (Times @@ Multinomial @@@ #) Max&#91;0, Map&#91;
+    Total&#91;Total /@ (Range&#91;ds] #)] + score&#91;ns - (Total /@ #), ds] &amp;,
+    Rest&#91;Tuples&#91;Tuples /@ Range&#91;0, #]]]
+    ]] &amp;,
+  Tuples&#91;MapThread&#91;rolls, {ns, ds}]]
+  ] / Times @@ (ds^ns)
+
+score&#91;{12, 1, 1, 1}, {6, 8, 10, 12}]
+</pre></div>
+
+
+<p class="wp-block-paragraph"><strong>Open questions</strong></p>
+
+
+
+<p class="wp-block-paragraph">I think there are a lot of interesting additional questions to pursue here. For example, is there a concise description of optimal strategy, or even an approximation of it, that a human player can implement with simple mental calculation?</p>
+
+
+
+<p class="wp-block-paragraph">Can the calculation of optimal strategy be made more efficient? Interestingly, both the Mathematica and Python implementations took about a day and a half to execute on my laptop. Add any more dice and things would get out of hand.</p>
+
+
+
+<p class="wp-block-paragraph">Finally, the strategy analyzed above is only optimal in the sense of maximizing expected score. This is not the same thing as maximizing the probability of beating another player. Similar to the approach utilized <a href="https://possiblywrong.wordpress.com/2013/01/20/analysis-of-shut-the-box/">here</a>, ideally we would evaluate the <em>second </em>player&#8217;s strategy first, with the utility function parameterized by the <em>first </em>player&#8217;s hypothetical final score. Then, once we know all of the possible expected values for the second player, we could compute the <em>first </em>player&#8217;s optimal strategy and overall value of the game, using the (negated) second player&#8217;s expected returns as the utility function. How different do the resulting strategies look as a result, compared with maximizing expectation?</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://possiblywrong.wordpress.com/2026/02/24/analysis-of-biscuits-dice-game/feed/</wfw:commentRss>
+			<slash:comments>3</slash:comments>
+		
+		
+		<post-id xmlns="com-wordpress:feed-additions:1">5292</post-id>
+		<media:content url="https://0.gravatar.com/avatar/08708acd725f717c5b5d7293d29e78efcef0aa670f72f2962545c441c4da8ddd?s=96&#38;d=identicon&#38;r=G" medium="image">
+			<media:title type="html">possiblywrong</media:title>
+		</media:content>
+
+		<media:content url="https://possiblywrong.wordpress.com/wp-content/uploads/2026/02/biscuits.png?w=480" medium="image" />
+	</item>
+		<item>
+		<title>Analysis of Mastermind-like bottle match game</title>
+		<link>https://possiblywrong.wordpress.com/2026/01/23/analysis-of-mastermind-like-bottle-match-game/</link>
+					<comments>https://possiblywrong.wordpress.com/2026/01/23/analysis-of-mastermind-like-bottle-match-game/#comments</comments>
+		
+		<dc:creator><![CDATA[possiblywrong]]></dc:creator>
+		<pubDate>Fri, 23 Jan 2026 16:33:47 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">http://possiblywrong.wordpress.com/?p=5275</guid>
+
+					<description><![CDATA[During the holidays, my niece introduced me to a &#8220;bottle match&#8221; game, variants of which have apparently made the rounds online for a while now, but it was new to me. She secretly arranges seven wooden bottle-shaped pegs, each of &#8230; <a href="https://possiblywrong.wordpress.com/2026/01/23/analysis-of-mastermind-like-bottle-match-game/">Continue reading <span class="meta-nav">&#8594;</span></a>]]></description>
+										<content:encoded><![CDATA[
+<p class="wp-block-paragraph">During the holidays, my niece introduced me to a &#8220;bottle match&#8221; game, variants of which have apparently made the rounds online for a while now, but it was new to me. She secretly arranges seven wooden bottle-shaped pegs, each of a different color, in a row. I then make a series of guesses of the ordering of the colors (arranging a second set of seven bottles visible to everyone), with each guess scored with a number indicating how many bottles are in the correct position. The objective is to get all seven bottles in the correct order in as few guesses as possible.</p>
+
+
+
+<p class="wp-block-paragraph">This is very similar to the board game <a href="https://possiblywrong.wordpress.com/2011/03/13/the-job-interview-question-part-2/">Mastermind</a>: one player arranges a secret &#8220;code,&#8221; and another player makes a series of guesses, with scores providing partial information about how close each guess is to the solution.</p>
+
+
+
+<p class="wp-block-paragraph">Watching family members play the bottle match game, I wondered how inefficient we were being in our guesses. Our exploration of the space of possible solutions seemed pretty timid, making &#8220;small&#8221; single-transposition changes to the arrangement of bottles at each step, even backtracking to previous guesses at times just to confirm remembered scores.</p>
+
+
+
+<p class="wp-block-paragraph">With <img src="https://s0.wp.com/latex.php?latex=n%3D7&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=n%3D7&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=n%3D7&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="n=7" class="latex" /> bottles, a coarse lower bound of at least <img src="https://s0.wp.com/latex.php?latex=%5Clceil%5Clog_%7Bn-1%7Dn%21%5Crceil%3D5&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=%5Clceil%5Clog_%7Bn-1%7Dn%21%5Crceil%3D5&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=%5Clceil%5Clog_%7Bn-1%7Dn%21%5Crceil%3D5&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="&#92;lceil&#92;log_{n-1}n!&#92;rceil=5" class="latex" /> guesses are necessary in the worst case. How close to this bound can we get?</p>
+
+
+
+<p class="wp-block-paragraph">I wrote a program to try to answer this question, taking advantage of the similarity to Mastermind to analyze both games in the process. The resulting ~100 lines of Python code are on <a href="https://github.com/possibly-wrong/mastermind-bottle-match">GitHub</a>.</p>
+
+
+
+<p class="wp-block-paragraph">The greedy heuristic strategy used for both games is that described by Knuth (2): at each turn, make a guess that minimizes the maximum number of possible secret codes that might remain, over all possible scores that the guess might receive. Break any ties by first preferring codes that are <em>possible </em>(so that we have a chance of winning on the next move)&#8230; and in the case of the bottle match game, prefer a code that is &#8220;closest&#8221; to the previous guess, in the sense of requiring the least amount of additional shifting bottles around to turn the previous guess into the new guess.</p>
+
+
+
+<p class="wp-block-paragraph">This distance metric on permutations can be hard to compute, depending on what sort of shifting operations are allowed. The &#8220;block interchange&#8221; metric described by Christie (1) seems reasonably realistic for this problem, while being efficiently computable: one operation involves taking two &#8220;blocks&#8221; of consecutive bottles and swapping them, as shown in the example in the figure below.</p>
+
+
+
+<figure class="wp-block-image size-large"><a href="https://possiblywrong.wordpress.com/wp-content/uploads/2026/01/color_match.png"><img width="600" height="166" data-attachment-id="5284" data-permalink="https://possiblywrong.wordpress.com/2026/01/23/analysis-of-mastermind-like-bottle-match-game/color_match/" data-orig-file="https://possiblywrong.wordpress.com/wp-content/uploads/2026/01/color_match.png" data-orig-size="600,166" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="color_match" data-image-description="" data-image-caption="" data-large-file="https://possiblywrong.wordpress.com/wp-content/uploads/2026/01/color_match.png?w=584" src="https://possiblywrong.wordpress.com/wp-content/uploads/2026/01/color_match.png?w=600" alt="" class="wp-image-5284" srcset="https://possiblywrong.wordpress.com/wp-content/uploads/2026/01/color_match.png 600w, https://possiblywrong.wordpress.com/wp-content/uploads/2026/01/color_match.png?w=150 150w, https://possiblywrong.wordpress.com/wp-content/uploads/2026/01/color_match.png?w=300 300w" sizes="(max-width: 600px) 100vw, 600px" /></a><figcaption class="wp-element-caption">Example of a single block interchange operation, swapping the block of 3 bottles in the gray box with the block of 2 bottles in the black box.</figcaption></figure>
+
+
+
+<p class="wp-block-paragraph">As a sanity check, evaluating the resulting strategy for the Mastermind game across all <img src="https://s0.wp.com/latex.php?latex=6%5E4%3D1296&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=6%5E4%3D1296&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=6%5E4%3D1296&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="6^4=1296" class="latex" /> possible secret codes, replicates the results in Knuth&#8217;s paper: an expected number of guesses of 5801/1296, or about 4.476, never requiring more than a maximum of 5 guesses.</p>
+
+
+
+<p class="wp-block-paragraph">For the bottle match game, we can guess the secret code in 34169/5040, or about 6.78 guesses on average, never requiring more than a maximum of 8 guesses. It&#8217;s interesting how often it is advantageous&#8211; at least in this greedy heuristic minimax sense&#8211; to guess a code that is <em>not </em>consistent with the scores observed so far, as shown in the example output below.</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: plain; title: ; notranslate">
+&gt;&gt;&gt; import mastermind
+&gt;&gt;&gt; game = mastermind.ColorMatch()
+&gt;&gt;&gt; game.play((6, 5, 4, 3, 2, 1, 0), show=True)
+Guess (0, 1, 2, 3, 4, 5, 6) in 5040 remaining: score 1
+Guess (2, 3, 4, 5, 6, 1, 0) not in 1855 remaining: score 3
+Guess (2, 5, 0, 1, 6, 3, 4) not in 106 remaining: score 1
+Guess (4, 3, 0, 1, 6, 5, 2) not in 31 remaining: score 0
+Guess (2, 1, 4, 5, 0, 3, 6) not in 8 remaining: score 1
+Guess (6, 5, 4, 3, 2, 1, 0) in 2 remaining: score 7
+</pre></div>
+
+
+<p class="wp-block-paragraph"><strong>References</strong>:</p>
+
+
+
+<ol class="wp-block-list">
+<li>Christie, D., Sorting permutations by block-interchanges, <em>Information Processing Letters</em>, <strong>60</strong>(4) November 1996, p. 165-169.</li>
+
+
+
+<li>Knuth, D., The Computer as Master Mind, <em>Journal of Recreational Mathematics</em>, <strong>9</strong>(1) 1976-77.</li>
+</ol>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://possiblywrong.wordpress.com/2026/01/23/analysis-of-mastermind-like-bottle-match-game/feed/</wfw:commentRss>
+			<slash:comments>5</slash:comments>
+		
+		
+		<post-id xmlns="com-wordpress:feed-additions:1">5275</post-id>
+		<media:content url="https://0.gravatar.com/avatar/08708acd725f717c5b5d7293d29e78efcef0aa670f72f2962545c441c4da8ddd?s=96&#38;d=identicon&#38;r=G" medium="image">
+			<media:title type="html">possiblywrong</media:title>
+		</media:content>
+
+		<media:content url="https://possiblywrong.wordpress.com/wp-content/uploads/2026/01/color_match.png?w=600" medium="image" />
+	</item>
+		<item>
+		<title>Riddler Solution: Can You Skillfully Ski The Slopes?</title>
+		<link>https://possiblywrong.wordpress.com/2025/12/13/riddler-solution-can-you-skillfully-ski-the-slopes/</link>
+					<comments>https://possiblywrong.wordpress.com/2025/12/13/riddler-solution-can-you-skillfully-ski-the-slopes/#respond</comments>
+		
+		<dc:creator><![CDATA[possiblywrong]]></dc:creator>
+		<pubDate>Sat, 13 Dec 2025 13:53:45 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">http://possiblywrong.wordpress.com/?p=5231</guid>
+
+					<description><![CDATA[Introduction In Zach Wissner-Gross&#8217;s Fiddler on the Proof, he mentions the following problem from nearly five years ago, when it was still FiveThirtyEight’s The Riddler: You are one of finalists in a skiing championship. There are two rounds: in the &#8230; <a href="https://possiblywrong.wordpress.com/2025/12/13/riddler-solution-can-you-skillfully-ski-the-slopes/">Continue reading <span class="meta-nav">&#8594;</span></a>]]></description>
+										<content:encoded><![CDATA[
+<p class="wp-block-paragraph"><strong>Introduction</strong></p>
+
+
+
+<p class="wp-block-paragraph">In Zach Wissner-Gross&#8217;s <a href="https://thefiddler.substack.com/p/can-you-fling-the-fractal-darts">Fiddler on the Proof</a>, he mentions the following problem from nearly five years ago, when it was still FiveThirtyEight’s <a href="https://fivethirtyeight.com/features/can-you-skillfully-ski-the-slopes/">The Riddler</a>:</p>
+
+
+
+<p class="wp-block-paragraph">You are one of <img src="https://s0.wp.com/latex.php?latex=n%3D2&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=n%3D2&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=n%3D2&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="n=2" class="latex" /> finalists in a skiing championship. There are two rounds: in the first round, each finalist skis down the mountain, recording their finishing time; this is repeated in the second round, with the least <em>total </em>time for both runs winning the championship. This is the top talent in the world, so the time for every run is independent and identically distributed. Having learned that you have the best time in the first round, what is the probability that you will win the championship? For extra credit, what if <img src="https://s0.wp.com/latex.php?latex=n%3D30&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=n%3D30&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=n%3D30&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="n=30" class="latex" />?</p>
+
+
+
+<p class="wp-block-paragraph">In the original problem, the finishing times were normally distributed. The neat feature of this problem is a cocktail-napkin solution for <img src="https://s0.wp.com/latex.php?latex=n%3D2&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=n%3D2&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=n%3D2&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="n=2" class="latex" /> that does not depend on this distribution. However, the extra credit for larger <img src="https://s0.wp.com/latex.php?latex=n&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=n&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=n&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="n" class="latex" />&#8212; for normally distributed run times&#8211; appears to require resorting to simulation or approximation, although <a href="https://joshmaxsilverman.github.io/2025-11-18-gaussian-skiers/">Josh Silverman</a> provides some really interesting recent asymptotic analysis.</p>
+
+
+
+<p class="wp-block-paragraph">The motivation for this post is to capture my notes on the exact solution for any <img src="https://s0.wp.com/latex.php?latex=n&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=n&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=n&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="n" class="latex" /> for the case where finishing times are <em>uniformly </em>distributed. (This feels to me like a slightly more natural version of the problem, without the unrealistic negative tails.)</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Solution</strong></p>
+
+
+
+<p class="wp-block-paragraph">Define random variables <img src="https://s0.wp.com/latex.php?latex=X&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=X&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=X&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="X" class="latex" /> and <img src="https://s0.wp.com/latex.php?latex=Y&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=Y&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=Y&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="Y" class="latex" /> to be the finishing times for our first and second run, respectively, and similarly define <img src="https://s0.wp.com/latex.php?latex=R_i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=R_i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=R_i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="R_i" class="latex" /> and <img src="https://s0.wp.com/latex.php?latex=S_i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=S_i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=S_i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="S_i" class="latex" /> to be the first and second round times for each competitor <img src="https://s0.wp.com/latex.php?latex=i+%5Cin+%5C%7B1%2C2%2C%5Cldots%2Cn-1%5C%7D&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=i+%5Cin+%5C%7B1%2C2%2C%5Cldots%2Cn-1%5C%7D&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=i+%5Cin+%5C%7B1%2C2%2C%5Cldots%2Cn-1%5C%7D&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="i &#92;in &#92;{1,2,&#92;ldots,n-1&#92;}" class="latex" />. Define event <img src="https://s0.wp.com/latex.php?latex=A_i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=A_i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=A_i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="A_i" class="latex" /> to be <img src="https://s0.wp.com/latex.php?latex=X%2BY%3CR_i%2BS_i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=X%2BY%3CR_i%2BS_i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=X%2BY%3CR_i%2BS_i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="X+Y&lt;R_i+S_i" class="latex" /> (i.e., we beat competitor <img src="https://s0.wp.com/latex.php?latex=i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="i" class="latex" /> overall) and event <img src="https://s0.wp.com/latex.php?latex=B_i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=B_i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=B_i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="B_i" class="latex" /> to be <img src="https://s0.wp.com/latex.php?latex=X%3CR_i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=X%3CR_i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=X%3CR_i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="X&lt;R_i" class="latex" /> (i.e., we beat competitor <img src="https://s0.wp.com/latex.php?latex=i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="i" class="latex" /> in the first round). Then we want to compute the probability</p>
+
+
+
+<p class="has-text-align-center wp-block-paragraph"><img src="https://s0.wp.com/latex.php?latex=P%28%5Cbigcap%5Climits_%7Bi%3D1%7D%5E%7Bn-1%7DA_i+%7C+%5Cbigcap%5Climits_%7Bi%3D1%7D%5E%7Bn-1%7DB_i%29&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=P%28%5Cbigcap%5Climits_%7Bi%3D1%7D%5E%7Bn-1%7DA_i+%7C+%5Cbigcap%5Climits_%7Bi%3D1%7D%5E%7Bn-1%7DB_i%29&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=P%28%5Cbigcap%5Climits_%7Bi%3D1%7D%5E%7Bn-1%7DA_i+%7C+%5Cbigcap%5Climits_%7Bi%3D1%7D%5E%7Bn-1%7DB_i%29&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="P(&#92;bigcap&#92;limits_{i=1}^{n-1}A_i | &#92;bigcap&#92;limits_{i=1}^{n-1}B_i)" class="latex" /></p>
+
+
+
+<p class="wp-block-paragraph">Applying Bayes&#8217; theorem, and re-ordering and re-grouping the intersection of events in the numerator, we have</p>
+
+
+
+<p class="has-text-align-center wp-block-paragraph"><img src="https://s0.wp.com/latex.php?latex=%5Cfrac%7BP%28%5Cbigcap%5Climits_%7Bi%3D1%7D%5E%7Bn-1%7DA_i+%5Ccap+B_i%29%7D%7BP%28%5Cbigcap%5Climits_%7Bi%3D1%7D%5E%7Bn-1%7DB_i%29%7D+&#038;bg=ffffff&#038;fg=333333&#038;s=2&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=%5Cfrac%7BP%28%5Cbigcap%5Climits_%7Bi%3D1%7D%5E%7Bn-1%7DA_i+%5Ccap+B_i%29%7D%7BP%28%5Cbigcap%5Climits_%7Bi%3D1%7D%5E%7Bn-1%7DB_i%29%7D+&#038;bg=ffffff&#038;fg=333333&#038;s=2&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=%5Cfrac%7BP%28%5Cbigcap%5Climits_%7Bi%3D1%7D%5E%7Bn-1%7DA_i+%5Ccap+B_i%29%7D%7BP%28%5Cbigcap%5Climits_%7Bi%3D1%7D%5E%7Bn-1%7DB_i%29%7D+&#038;bg=ffffff&#038;fg=333333&#038;s=2&#038;c=20201002&#038;zoom=4.5 4x" alt="&#92;frac{P(&#92;bigcap&#92;limits_{i=1}^{n-1}A_i &#92;cap B_i)}{P(&#92;bigcap&#92;limits_{i=1}^{n-1}B_i)} " class="latex" /></p>
+
+
+
+<p class="wp-block-paragraph">There are two key observations: first, by symmetry, the probability in the denominator&#8211; that we are the leader after the first round&#8211; is <img src="https://s0.wp.com/latex.php?latex=1%2Fn&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=1%2Fn&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=1%2Fn&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="1/n" class="latex" />. Second, in the numerator, if we condition on fixed times for our two runs, say for example <img src="https://s0.wp.com/latex.php?latex=X%3Dx%3D0.3&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=X%3Dx%3D0.3&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=X%3Dx%3D0.3&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="X=x=0.3" class="latex" /> and <img src="https://s0.wp.com/latex.php?latex=Y%3Dy%3D0.8&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=Y%3Dy%3D0.8&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=Y%3Dy%3D0.8&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="Y=y=0.8" class="latex" />, then the <img src="https://s0.wp.com/latex.php?latex=n-1&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=n-1&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=n-1&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="n-1" class="latex" /> events <img src="https://s0.wp.com/latex.php?latex=A_i+%5Ccap+B_i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=A_i+%5Ccap+B_i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=A_i+%5Ccap+B_i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="A_i &#92;cap B_i" class="latex" /> are independent&#8211; so we can multiply them&#8211; and they all have the same probability.</p>
+
+
+
+<p class="wp-block-paragraph">The following figure shows this example situation, where the area of the shaded region is the probability <img src="https://s0.wp.com/latex.php?latex=P%28A_i+%5Ccap+B_i%29%3DP%28x%2By%3CR_i%2BS_i+%5Cland+x%3CR_i%29&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=P%28A_i+%5Ccap+B_i%29%3DP%28x%2By%3CR_i%2BS_i+%5Cland+x%3CR_i%29&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=P%28A_i+%5Ccap+B_i%29%3DP%28x%2By%3CR_i%2BS_i+%5Cland+x%3CR_i%29&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="P(A_i &#92;cap B_i)=P(x+y&lt;R_i+S_i &#92;land x&lt;R_i)" class="latex" /> that we beat a particular competitor in both rounds.</p>
+
+
+<div class="wp-block-image">
+<figure class="aligncenter size-large"><a href="https://possiblywrong.wordpress.com/wp-content/uploads/2025/12/ski_p1.png"><img loading="lazy" width="320" height="346" data-attachment-id="5255" data-permalink="https://possiblywrong.wordpress.com/2025/12/13/riddler-solution-can-you-skillfully-ski-the-slopes/ski_p1/" data-orig-file="https://possiblywrong.wordpress.com/wp-content/uploads/2025/12/ski_p1.png" data-orig-size="320,346" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="ski_p1" data-image-description="" data-image-caption="" data-large-file="https://possiblywrong.wordpress.com/wp-content/uploads/2025/12/ski_p1.png?w=320" src="https://possiblywrong.wordpress.com/wp-content/uploads/2025/12/ski_p1.png?w=320" alt="" class="wp-image-5255" srcset="https://possiblywrong.wordpress.com/wp-content/uploads/2025/12/ski_p1.png 320w, https://possiblywrong.wordpress.com/wp-content/uploads/2025/12/ski_p1.png?w=139 139w, https://possiblywrong.wordpress.com/wp-content/uploads/2025/12/ski_p1.png?w=277 277w" sizes="auto, (max-width: 320px) 100vw, 320px" /></a></figure>
+</div>
+
+
+<p class="wp-block-paragraph">This shaded region has two different shapes depending on whether <img src="https://s0.wp.com/latex.php?latex=x%2By&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=x%2By&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=x%2By&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="x+y" class="latex" /> is less than or greater than 1; putting everything together, the desired probability is</p>
+
+
+
+<p class="has-text-align-center wp-block-paragraph"><img src="https://s0.wp.com/latex.php?latex=n+%5Cint_%7Bx%3D0%7D%5E1%28%5Cint_%7By%3D0%7D%5E%7B1-x%7D%281-x-%5Cfrac%7B1%7D%7B2%7Dy%5E2%29%5E%7Bn-1%7D%5Cmathrm%7Bd%7Dy+%2B+%5Cint_%7By%3D1-x%7D%5E1%28%281-x%29%281-y%29%2B%5Cfrac%7B1%7D%7B2%7D%281-x%29%5E2%29%5E%7Bn-1%7D%5Cmathrm%7Bd%7Dy%29%5Cmathrm%7Bd%7Dx&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=n+%5Cint_%7Bx%3D0%7D%5E1%28%5Cint_%7By%3D0%7D%5E%7B1-x%7D%281-x-%5Cfrac%7B1%7D%7B2%7Dy%5E2%29%5E%7Bn-1%7D%5Cmathrm%7Bd%7Dy+%2B+%5Cint_%7By%3D1-x%7D%5E1%28%281-x%29%281-y%29%2B%5Cfrac%7B1%7D%7B2%7D%281-x%29%5E2%29%5E%7Bn-1%7D%5Cmathrm%7Bd%7Dy%29%5Cmathrm%7Bd%7Dx&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=n+%5Cint_%7Bx%3D0%7D%5E1%28%5Cint_%7By%3D0%7D%5E%7B1-x%7D%281-x-%5Cfrac%7B1%7D%7B2%7Dy%5E2%29%5E%7Bn-1%7D%5Cmathrm%7Bd%7Dy+%2B+%5Cint_%7By%3D1-x%7D%5E1%28%281-x%29%281-y%29%2B%5Cfrac%7B1%7D%7B2%7D%281-x%29%5E2%29%5E%7Bn-1%7D%5Cmathrm%7Bd%7Dy%29%5Cmathrm%7Bd%7Dx&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="n &#92;int_{x=0}^1(&#92;int_{y=0}^{1-x}(1-x-&#92;frac{1}{2}y^2)^{n-1}&#92;mathrm{d}y + &#92;int_{y=1-x}^1((1-x)(1-y)+&#92;frac{1}{2}(1-x)^2)^{n-1}&#92;mathrm{d}y)&#92;mathrm{d}x" class="latex" /></p>
+
+
+
+<p class="wp-block-paragraph">Applying binomial expansion to the powers and moving the integrals inside the resulting summation gives the following formula:</p>
+
+
+
+<p class="has-text-align-center wp-block-paragraph"><img src="https://s0.wp.com/latex.php?latex=n%5Csum%5Climits_%7Bk%3D0%7D%5E%7Bn-1%7D%7Bn-1+%5Cchoose+k%7D%5Cfrac%7B1%7D%7B2%5Ek%7D%28%5Cfrac%7B%28-1%29%5Ek%7D%7B%282k%2B1%29%28n%2B1%2Bk%29%7D%2B%5Cfrac%7B%28n-1-k%29%21%28n-1%2Bk%29%21%7D%7B%282n%29%21%7D%29+&#038;bg=ffffff&#038;fg=333333&#038;s=2&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=n%5Csum%5Climits_%7Bk%3D0%7D%5E%7Bn-1%7D%7Bn-1+%5Cchoose+k%7D%5Cfrac%7B1%7D%7B2%5Ek%7D%28%5Cfrac%7B%28-1%29%5Ek%7D%7B%282k%2B1%29%28n%2B1%2Bk%29%7D%2B%5Cfrac%7B%28n-1-k%29%21%28n-1%2Bk%29%21%7D%7B%282n%29%21%7D%29+&#038;bg=ffffff&#038;fg=333333&#038;s=2&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=n%5Csum%5Climits_%7Bk%3D0%7D%5E%7Bn-1%7D%7Bn-1+%5Cchoose+k%7D%5Cfrac%7B1%7D%7B2%5Ek%7D%28%5Cfrac%7B%28-1%29%5Ek%7D%7B%282k%2B1%29%28n%2B1%2Bk%29%7D%2B%5Cfrac%7B%28n-1-k%29%21%28n-1%2Bk%29%21%7D%7B%282n%29%21%7D%29+&#038;bg=ffffff&#038;fg=333333&#038;s=2&#038;c=20201002&#038;zoom=4.5 4x" alt="n&#92;sum&#92;limits_{k=0}^{n-1}{n-1 &#92;choose k}&#92;frac{1}{2^k}(&#92;frac{(-1)^k}{(2k+1)(n+1+k)}+&#92;frac{(n-1-k)!(n-1+k)!}{(2n)!}) " class="latex" /></p>
+
+
+
+<p class="wp-block-paragraph">The figure below shows this probability vs. the number of skiers <img src="https://s0.wp.com/latex.php?latex=n&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=n&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=n&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="n" class="latex" />.</p>
+
+
+<div class="wp-block-image">
+<figure class="aligncenter size-large"><a href="https://possiblywrong.wordpress.com/wp-content/uploads/2025/12/ski_pn-2.png"><img loading="lazy" width="400" height="269" data-attachment-id="5272" data-permalink="https://possiblywrong.wordpress.com/2025/12/13/riddler-solution-can-you-skillfully-ski-the-slopes/ski_pn-3/" data-orig-file="https://possiblywrong.wordpress.com/wp-content/uploads/2025/12/ski_pn-2.png" data-orig-size="400,269" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="ski_pn" data-image-description="" data-image-caption="" data-large-file="https://possiblywrong.wordpress.com/wp-content/uploads/2025/12/ski_pn-2.png?w=400" src="https://possiblywrong.wordpress.com/wp-content/uploads/2025/12/ski_pn-2.png?w=400" alt="" class="wp-image-5272" srcset="https://possiblywrong.wordpress.com/wp-content/uploads/2025/12/ski_pn-2.png 400w, https://possiblywrong.wordpress.com/wp-content/uploads/2025/12/ski_pn-2.png?w=150 150w, https://possiblywrong.wordpress.com/wp-content/uploads/2025/12/ski_pn-2.png?w=300 300w" sizes="auto, (max-width: 400px) 100vw, 400px" /></a></figure>
+</div>
+
+
+<p class="wp-block-paragraph">For 5 or 6 skiers, it&#8217;s roughly a coin toss whether you retain your first-round lead. When <img src="https://s0.wp.com/latex.php?latex=n%3D30&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=n%3D30&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=n%3D30&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="n=30" class="latex" />, the probability is about 0.226.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://possiblywrong.wordpress.com/2025/12/13/riddler-solution-can-you-skillfully-ski-the-slopes/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+		<post-id xmlns="com-wordpress:feed-additions:1">5231</post-id>
+		<media:content url="https://0.gravatar.com/avatar/08708acd725f717c5b5d7293d29e78efcef0aa670f72f2962545c441c4da8ddd?s=96&#38;d=identicon&#38;r=G" medium="image">
+			<media:title type="html">possiblywrong</media:title>
+		</media:content>
+
+		<media:content url="https://possiblywrong.wordpress.com/wp-content/uploads/2025/12/ski_p1.png?w=320" medium="image" />
+
+		<media:content url="https://possiblywrong.wordpress.com/wp-content/uploads/2025/12/ski_pn-2.png?w=400" medium="image" />
+	</item>
+		<item>
+		<title>Variants of Fitch Cheney&#8217;s Trick</title>
+		<link>https://possiblywrong.wordpress.com/2025/11/14/variants-of-fitch-cheneys-trick/</link>
+					<comments>https://possiblywrong.wordpress.com/2025/11/14/variants-of-fitch-cheneys-trick/#comments</comments>
+		
+		<dc:creator><![CDATA[possiblywrong]]></dc:creator>
+		<pubDate>Fri, 14 Nov 2025 23:58:47 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">http://possiblywrong.wordpress.com/?p=5213</guid>
+
+					<description><![CDATA[Nearly 15 years ago, I wrote about the following trick attributed to William &#8220;Fitch&#8221; Cheney, Jr., in [1]: Effect 1: While the magician turns their back or even leaves the room, a spectator shuffles a standard deck of cards, and &#8230; <a href="https://possiblywrong.wordpress.com/2025/11/14/variants-of-fitch-cheneys-trick/">Continue reading <span class="meta-nav">&#8594;</span></a>]]></description>
+										<content:encoded><![CDATA[
+<p class="wp-block-paragraph">Nearly 15 years ago, I <a href="https://possiblywrong.wordpress.com/2011/05/29/generalizing-fitch-cheneys-five-card-trick/">wrote</a> about the following trick attributed to William &#8220;Fitch&#8221; Cheney, Jr., in [1]:</p>
+
+
+
+<p class="wp-block-paragraph"><em><strong>Effect 1</strong></em>: While the magician turns their back or even leaves the room, a spectator shuffles a standard deck of <img src="https://s0.wp.com/latex.php?latex=n%3D52&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=n%3D52&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=n%3D52&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="n=52" class="latex" /> cards, and selects an (unordered) subset of any <img src="https://s0.wp.com/latex.php?latex=m%3D5&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=m%3D5&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=m%3D5&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="m=5" class="latex" /> cards and hands them to the magician&#8217;s assistant. For example:</p>
+
+
+<div class="wp-block-image">
+<figure class="aligncenter size-full"><a href="https://possiblywrong.wordpress.com/wp-content/uploads/2011/05/fitch1.png"><img data-attachment-id="434" data-permalink="https://possiblywrong.wordpress.com/2011/05/29/generalizing-fitch-cheneys-five-card-trick/fitch1/" data-orig-file="https://possiblywrong.wordpress.com/wp-content/uploads/2011/05/fitch1.png" data-orig-size="412,112" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;}" data-image-title="fitch1" data-image-description="" data-image-caption="&lt;p&gt;Cards selected by the spectator.&lt;/p&gt;
+" data-large-file="https://possiblywrong.wordpress.com/wp-content/uploads/2011/05/fitch1.png?w=412" src="https://possiblywrong.wordpress.com/wp-content/uploads/2011/05/fitch1.png" alt="" class="wp-image-434" /></a><figcaption class="wp-element-caption">Cards selected by the spectator.</figcaption></figure>
+</div>
+
+
+<p class="wp-block-paragraph">The assistant arranges <img src="https://s0.wp.com/latex.php?latex=k%3D4&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=k%3D4&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=k%3D4&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="k=4" class="latex" /> of these cards in a row left to right, as shown below, keeping the remaining selected card hidden.</p>
+
+
+<div class="wp-block-image">
+<figure class="aligncenter size-full"><a href="https://possiblywrong.wordpress.com/wp-content/uploads/2011/05/fitch2.png"><img data-attachment-id="435" data-permalink="https://possiblywrong.wordpress.com/2011/05/29/generalizing-fitch-cheneys-five-card-trick/fitch2/" data-orig-file="https://possiblywrong.wordpress.com/wp-content/uploads/2011/05/fitch2.png" data-orig-size="331,112" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;}" data-image-title="fitch2" data-image-description="" data-image-caption="&lt;p&gt;Cards presented to the magician.&lt;/p&gt;
+" data-large-file="https://possiblywrong.wordpress.com/wp-content/uploads/2011/05/fitch2.png?w=331" src="https://possiblywrong.wordpress.com/wp-content/uploads/2011/05/fitch2.png" alt="" class="wp-image-435" /></a><figcaption class="wp-element-caption">Cards presented to the magician.</figcaption></figure>
+</div>
+
+
+<p class="wp-block-paragraph">Upon observing this arrangement, the magician announces the fifth selected card, in this case the ace of diamonds.</p>
+
+
+
+<p class="wp-block-paragraph">The <a href="https://possiblywrong.wordpress.com/2011/05/29/generalizing-fitch-cheneys-five-card-trick/">article linked above</a> describes how the trick works in practice (including Python source code demonstrating both the assistant and the magician), as well as a proof that the following condition on <img src="https://s0.wp.com/latex.php?latex=%28n%2Cm%2Ck%29&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=%28n%2Cm%2Ck%29&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=%28n%2Cm%2Ck%29&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="(n,m,k)" class="latex" /> is necessary and sufficient for the trick to be feasible, at least in principle:</p>
+
+
+
+<p class="has-text-align-center wp-block-paragraph"><img src="https://s0.wp.com/latex.php?latex=%7Bn+%5Cchoose+m%7D+%5Cleq+%28n%29_k+&#038;bg=ffffff&#038;fg=333333&#038;s=2&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=%7Bn+%5Cchoose+m%7D+%5Cleq+%28n%29_k+&#038;bg=ffffff&#038;fg=333333&#038;s=2&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=%7Bn+%5Cchoose+m%7D+%5Cleq+%28n%29_k+&#038;bg=ffffff&#038;fg=333333&#038;s=2&#038;c=20201002&#038;zoom=4.5 4x" alt="{n &#92;choose m} &#92;leq (n)_k " class="latex" /></p>
+
+
+
+<p class="wp-block-paragraph">Intuitively, the LHS binomial coefficient counts the number of spectator selections that may be presented to the assistant, and the RHS <a href="https://en.wikipedia.org/wiki/Falling_and_rising_factorials">falling factorial</a> counts the number of arrangements that may be presented to the magician.</p>
+
+
+
+<p class="wp-block-paragraph">The motivation for this post is to observe that this basic argument, applying the <a href="https://en.wikipedia.org/wiki/K%C5%91nig%27s_theorem_(graph_theory)">König-Egerváry theorem</a> to a <a href="https://en.wikipedia.org/wiki/Biregular_graph">bi-regular graph</a> to find a saturating matching, is more generally applicable: it should be possible to perform other &#8220;Fitch-like&#8221; tricks, whose feasibility rests on similar counting arguments. For example:</p>
+
+
+
+<p class="wp-block-paragraph"><strong><em>Effect 2</em></strong>: A spectator rolls <img src="https://s0.wp.com/latex.php?latex=m%3D6&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=m%3D6&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=m%3D6&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="m=6" class="latex" /> dice each with <img src="https://s0.wp.com/latex.php?latex=n%3D6&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=n%3D6&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=n%3D6&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="n=6" class="latex" /> sides (maybe from their <a href="https://possiblywrong.wordpress.com/2013/04/07/analysis-of-farkle/">Farkle</a> set), and arranges the dice in a row left to right, in any desired order. The assistant covers one of the dice by placing a cup over it, leaving the ordered arrangement otherwise undisturbed. The magician observes this arrangement with the <img src="https://s0.wp.com/latex.php?latex=k%3Dm-1&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=k%3Dm-1&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=k%3Dm-1&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="k=m-1" class="latex" /> values shown, and announces the value on the covered di(c)e.</p>
+
+
+
+<p class="wp-block-paragraph">This trick is feasible if and only if:</p>
+
+
+
+<p class="has-text-align-center wp-block-paragraph"><img src="https://s0.wp.com/latex.php?latex=n%5Em+%5Cleq+n%5Ek+%7Bm+%5Cchoose+k%7D+&#038;bg=ffffff&#038;fg=333333&#038;s=2&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=n%5Em+%5Cleq+n%5Ek+%7Bm+%5Cchoose+k%7D+&#038;bg=ffffff&#038;fg=333333&#038;s=2&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=n%5Em+%5Cleq+n%5Ek+%7Bm+%5Cchoose+k%7D+&#038;bg=ffffff&#038;fg=333333&#038;s=2&#038;c=20201002&#038;zoom=4.5 4x" alt="n^m &#92;leq n^k {m &#92;choose k} " class="latex" /></p>
+
+
+
+<p class="wp-block-paragraph">For another example of this same form, <img src="https://s0.wp.com/latex.php?latex=%28n%2Cm%2Ck%29%3D%2810%2C10%2C9%29&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=%28n%2Cm%2Ck%29%3D%2810%2C10%2C9%29&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=%28n%2Cm%2Ck%29%3D%2810%2C10%2C9%29&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="(n,m,k)=(10,10,9)" class="latex" /> corresponds to writing down a 10-digit number, the assistant covering one of the digits, and the magician announcing the hidden digit.</p>
+
+
+
+<p class="wp-block-paragraph">The linked proof shows that both of these tricks are feasible <em>in principle</em>&#8212; but it&#8217;s a separately interesting challenge to come up with a <em>practical </em>scheme for performing them. In this case, there is a relatively simple solution left as a puzzle for the reader; but things can get complicated quickly, as in this <a href="https://puzzling.stackexchange.com/questions/12284/magician-assistant-nine-dice-and-two-cups">puzzling.stackexchange.com</a> post that discusses the <img src="https://s0.wp.com/latex.php?latex=%286%2C9%2C7%29&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=%286%2C9%2C7%29&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=%286%2C9%2C7%29&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="(6,9,7)" class="latex" /> case.</p>
+
+
+
+<p class="wp-block-paragraph"><strong><em>Effect 3</em></strong>: A spectator selects any <img src="https://s0.wp.com/latex.php?latex=m%3D27&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=m%3D27&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=m%3D27&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="m=27" class="latex" /> cards from a deck of <img src="https://s0.wp.com/latex.php?latex=n%3D52&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=n%3D52&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=n%3D52&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="n=52" class="latex" /> cards, and arranges them face-up in a row left to right, in any desired order. (More practically, imagine shuffling and cutting strictly more than half the deck, and fanning the cards face-up in a row.) The assistant flips one of the cards face-down, leaving the ordered arrangement otherwise undisturbed. The magician observes this arrangement with the <img src="https://s0.wp.com/latex.php?latex=k%3Dm-1&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=k%3Dm-1&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=k%3Dm-1&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="k=m-1" class="latex" /> face-up cards shown, and announces the face-down card(s).</p>
+
+
+
+<p class="wp-block-paragraph">In this case, the trick is feasible if and only if:</p>
+
+
+
+<p class="has-text-align-center wp-block-paragraph"><img src="https://s0.wp.com/latex.php?latex=%28n%29_m+%5Cleq+%28n%29_k+%7Bm+%5Cchoose+k%7D+&#038;bg=ffffff&#038;fg=333333&#038;s=2&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=%28n%29_m+%5Cleq+%28n%29_k+%7Bm+%5Cchoose+k%7D+&#038;bg=ffffff&#038;fg=333333&#038;s=2&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=%28n%29_m+%5Cleq+%28n%29_k+%7Bm+%5Cchoose+k%7D+&#038;bg=ffffff&#038;fg=333333&#038;s=2&#038;c=20201002&#038;zoom=4.5 4x" alt="(n)_m &#92;leq (n)_k {m &#92;choose k} " class="latex" /></p>
+
+
+
+<p class="wp-block-paragraph">Of these two variants, I think this one would be the more powerful effect. Note that unlike Fitch&#8217;s original trick, the spectator gets to not only <em>choose</em> the cards, but to <em>arrange</em> them in any chosen order as well. The assistant&#8217;s only freedom is in which card(s) to flip face-down.</p>
+
+
+
+<p class="wp-block-paragraph">Here again, the obligatory puzzle is to determine a practical scheme for performing this trick. I&#8217;m not sure how much it helps as a hint to note that, in this particular case of <img src="https://s0.wp.com/latex.php?latex=k%3Dm-1&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=k%3Dm-1&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=k%3Dm-1&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="k=m-1" class="latex" /> where the assistant flips exactly one card face-down, for the trick to be possible we need the spectator to select and arrange strictly more than half of the cards in the deck. (So that, for example, it is perhaps useful that the spectator is guaranteed to select at least one pair of cards of the same rank and color in their arrangement?)</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Reference:</strong></p>
+
+
+
+<ol class="wp-block-list">
+<li>Kleber, M., The Best Card Trick.&nbsp;<em>Mathematical Intelligencer</em>,&nbsp;<strong>24</strong>&nbsp;(2002). [<a href="http://www.apprendre-en-ligne.net/crypto/magie/card.pdf">PDF</a>]</li>
+</ol>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://possiblywrong.wordpress.com/2025/11/14/variants-of-fitch-cheneys-trick/feed/</wfw:commentRss>
+			<slash:comments>1</slash:comments>
+		
+		
+		<post-id xmlns="com-wordpress:feed-additions:1">5213</post-id>
+		<media:content url="https://0.gravatar.com/avatar/08708acd725f717c5b5d7293d29e78efcef0aa670f72f2962545c441c4da8ddd?s=96&#38;d=identicon&#38;r=G" medium="image">
+			<media:title type="html">possiblywrong</media:title>
+		</media:content>
+
+		<media:content url="https://possiblywrong.wordpress.com/wp-content/uploads/2011/05/fitch1.png" medium="image" />
+
+		<media:content url="https://possiblywrong.wordpress.com/wp-content/uploads/2011/05/fitch2.png" medium="image" />
+	</item>
+		<item>
+		<title>The criminal coupon collector</title>
+		<link>https://possiblywrong.wordpress.com/2025/10/25/the-criminal-coupon-collector/</link>
+					<comments>https://possiblywrong.wordpress.com/2025/10/25/the-criminal-coupon-collector/#respond</comments>
+		
+		<dc:creator><![CDATA[possiblywrong]]></dc:creator>
+		<pubDate>Sat, 25 Oct 2025 22:33:52 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">http://possiblywrong.wordpress.com/?p=5200</guid>
+
+					<description><![CDATA[Introduction Alice and Bob ride their bicycles together to work each day. They each secure their bicycles using chain combination locks with dials, with 10 decimal digits on each dial. &#8220;I notice you always take longer than I do to &#8230; <a href="https://possiblywrong.wordpress.com/2025/10/25/the-criminal-coupon-collector/">Continue reading <span class="meta-nav">&#8594;</span></a>]]></description>
+										<content:encoded><![CDATA[
+<p class="wp-block-paragraph"><strong>Introduction</strong></p>
+
+
+
+<p class="wp-block-paragraph">Alice and Bob ride their bicycles together to work each day. They each secure their bicycles using chain <a href="https://en.wikipedia.org/wiki/Combination_lock">combination locks</a> with <img src="https://s0.wp.com/latex.php?latex=m%3D6&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=m%3D6&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=m%3D6&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="m=6" class="latex" /> dials, with 10 decimal digits on each dial.</p>
+
+
+
+<p class="wp-block-paragraph">&#8220;I notice you always take longer than I do to lock your bike,&#8221; Alice says, &#8220;and I spin each of my dials independently and uniformly after locking&#8211; making sure I don&#8217;t accidentally leave it unlocked. What takes you so long?&#8221;</p>
+
+
+
+<p class="wp-block-paragraph">&#8220;I spin my dials after locking, too, &#8221; Bob says, &#8220;but I also make sure that <em>none </em>of the individual dials on the lock happens to be correct, giving it extra random spins if necessary. No sense in helping a thief get lucky.&#8221; (In other words, for example, if Bob&#8217;s combination is 123456, then he may leave the combination spun to 451234, but not 151234, since the first digit would be correct.)</p>
+
+
+
+<p class="wp-block-paragraph">Eve is the neighborhood thief, who has noticed these two expensive-looking bicycles at this same location every morning for a while now, and she happens to overhear this conversation. After watching Alice and Bob lock their bikes and enter their building, Eve casually strolls over and observes the sequence of digits on each of the locks. She has an idea.</p>
+
+
+
+<p class="wp-block-paragraph"><em>Puzzle 1</em>: Assuming Eve is able to observe the combination on Alice&#8217;s lock and try exactly one combination each morning after Alice leaves her bike for work, what is the expected number of days until she is able to steal the bike?</p>
+
+
+
+<p class="wp-block-paragraph"><em>Puzzle 2</em>: Similarly observing the displayed combination on Bob&#8217;s lock, what is the expected number of days until Eve is able to steal Bob&#8217;s bike?</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Multiple coupon collectors</strong></p>
+
+
+
+<p class="wp-block-paragraph">Stealing Alice&#8217;s bike is an interesting problem in its own right. But the focus of and motivation for this post is to capture my notes on the second problem of stealing Bob&#8217;s bike. The practice of ensuring that none of the individual combination dials is randomly accidentally correct, while well-intentioned, ends up making Eve&#8217;s job <em>much </em>easier. Despite the lock having one million possible combinations, Eve needs less than 40 days&#8217; worth of observations on average to steal the bike.</p>
+
+
+
+<p class="wp-block-paragraph">We can rephrase the problem in terms of multiple <a href="https://possiblywrong.wordpress.com/2023/10/05/coupon-collectors-problem-variants-with-group-drawings/">coupon collectors</a>: there are <img src="https://s0.wp.com/latex.php?latex=m&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=m&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=m&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="m" class="latex" /> collectors, one for each dial, each independently trying to collect <img src="https://s0.wp.com/latex.php?latex=s%3D10-1%3D9&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=s%3D10-1%3D9&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=s%3D10-1%3D9&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="s=10-1=9" class="latex" /> coupon types, one for each <em>incorrect </em>digit on that dial. Each day, all <img src="https://s0.wp.com/latex.php?latex=m&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=m&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=m&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="m" class="latex" /> collectors draw a coupon; we want to compute the expected number of days until <em>all </em>collectors have each obtained all coupon types. Put another way, we want the expected value of the <em>maximum </em>of <img src="https://s0.wp.com/latex.php?latex=m&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=m&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=m&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="m" class="latex" /> independent random variables, each distributed according to the standard solo coupon collector problem with <img src="https://s0.wp.com/latex.php?latex=s&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=s&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=s&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="s" class="latex" /> coupon types.</p>
+
+
+
+<p class="wp-block-paragraph">The cumulative distribution for this maximum <img src="https://s0.wp.com/latex.php?latex=N&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=N&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=N&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="N" class="latex" /> is</p>
+
+
+
+<p class="has-text-align-center wp-block-paragraph"><img src="https://s0.wp.com/latex.php?latex=P%28N+%5Cleq+n%29+%3D+%28%5Csum%5Climits_%7Bk%3D0%7D%5Es+%28-1%29%5Ek%7Bs+%5Cchoose+k%7D%281-%5Cfrac%7Bk%7D%7Bs%7D%29%5En%29%5Em+&#038;bg=ffffff&#038;fg=333333&#038;s=2&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=P%28N+%5Cleq+n%29+%3D+%28%5Csum%5Climits_%7Bk%3D0%7D%5Es+%28-1%29%5Ek%7Bs+%5Cchoose+k%7D%281-%5Cfrac%7Bk%7D%7Bs%7D%29%5En%29%5Em+&#038;bg=ffffff&#038;fg=333333&#038;s=2&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=P%28N+%5Cleq+n%29+%3D+%28%5Csum%5Climits_%7Bk%3D0%7D%5Es+%28-1%29%5Ek%7Bs+%5Cchoose+k%7D%281-%5Cfrac%7Bk%7D%7Bs%7D%29%5En%29%5Em+&#038;bg=ffffff&#038;fg=333333&#038;s=2&#038;c=20201002&#038;zoom=4.5 4x" alt="P(N &#92;leq n) = (&#92;sum&#92;limits_{k=0}^s (-1)^k{s &#92;choose k}(1-&#92;frac{k}{s})^n)^m " class="latex" /></p>
+
+
+
+<p class="wp-block-paragraph">with expected value</p>
+
+
+
+<p class="has-text-align-center wp-block-paragraph"><img src="https://s0.wp.com/latex.php?latex=E%28N%29+%3D+-%5Csum%5Climits_%7B%5Cmathbf%7Bk%7D%3E%5Cmathbf%7B0%7D%7D+%5Cfrac%7B%5Cprod%5Climits_%7Bi%3D1%7D%5Em+%28-1%29%5E%7Bk_i%7D%7Bs+%5Cchoose+k_i%7D%7D%7B1-%5Cprod%5Climits_%7Bi%3D1%7D%5Em+%281-%5Cfrac%7Bk_i%7D%7Bs%7D%29%7D+&#038;bg=ffffff&#038;fg=333333&#038;s=2&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=E%28N%29+%3D+-%5Csum%5Climits_%7B%5Cmathbf%7Bk%7D%3E%5Cmathbf%7B0%7D%7D+%5Cfrac%7B%5Cprod%5Climits_%7Bi%3D1%7D%5Em+%28-1%29%5E%7Bk_i%7D%7Bs+%5Cchoose+k_i%7D%7D%7B1-%5Cprod%5Climits_%7Bi%3D1%7D%5Em+%281-%5Cfrac%7Bk_i%7D%7Bs%7D%29%7D+&#038;bg=ffffff&#038;fg=333333&#038;s=2&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=E%28N%29+%3D+-%5Csum%5Climits_%7B%5Cmathbf%7Bk%7D%3E%5Cmathbf%7B0%7D%7D+%5Cfrac%7B%5Cprod%5Climits_%7Bi%3D1%7D%5Em+%28-1%29%5E%7Bk_i%7D%7Bs+%5Cchoose+k_i%7D%7D%7B1-%5Cprod%5Climits_%7Bi%3D1%7D%5Em+%281-%5Cfrac%7Bk_i%7D%7Bs%7D%29%7D+&#038;bg=ffffff&#038;fg=333333&#038;s=2&#038;c=20201002&#038;zoom=4.5 4x" alt="E(N) = -&#92;sum&#92;limits_{&#92;mathbf{k}&gt;&#92;mathbf{0}} &#92;frac{&#92;prod&#92;limits_{i=1}^m (-1)^{k_i}{s &#92;choose k_i}}{1-&#92;prod&#92;limits_{i=1}^m (1-&#92;frac{k_i}{s})} " class="latex" /></p>
+
+
+
+<p class="wp-block-paragraph">where the summation ranges over tuples <img src="https://s0.wp.com/latex.php?latex=%5Cmathbf%7Bk%7D&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=%5Cmathbf%7Bk%7D&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=%5Cmathbf%7Bk%7D&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="&#92;mathbf{k}" class="latex" /> of <img src="https://s0.wp.com/latex.php?latex=m&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=m&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=m&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="m" class="latex" /> non-negative integers that are not all zero, corresponding to a number of &#8220;unknown incorrect&#8221; digits for each dial. In Python:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: python; title: ; notranslate">
+from fractions import Fraction
+from itertools import islice, product
+from math import comb, prod
+
+def probability_coupon_draws(n, s, m=1):
+    """CDF(# of coupon draws from s types for all of m collectors)."""
+    return sum((-1) ** k * comb(s, k) * (1 - Fraction(k, s)) ** n
+               for k in range(s + 1)) ** m
+
+def expected_coupon_draws(s, m=1):
+    """E(# of coupon draws from s types for all of m collectors)."""
+    return -sum(prod((-1) ** k_i * comb(s, k_i) for k_i in k) /
+                (1 - prod(1 - Fraction(k_i, s) for k_i in k))
+                for k in islice(product(range(s + 1), repeat=m), 1, None))
+</pre></div>
+
+
+<p class="wp-block-paragraph">The result is about 39.5891 observations on average until Eve knows all 9 incorrect digits for each dial, and thus knows the entire correct combination.</p>
+
+
+
+<p class="wp-block-paragraph"></p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://possiblywrong.wordpress.com/2025/10/25/the-criminal-coupon-collector/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+		<post-id xmlns="com-wordpress:feed-additions:1">5200</post-id>
+		<media:content url="https://0.gravatar.com/avatar/08708acd725f717c5b5d7293d29e78efcef0aa670f72f2962545c441c4da8ddd?s=96&#38;d=identicon&#38;r=G" medium="image">
+			<media:title type="html">possiblywrong</media:title>
+		</media:content>
+	</item>
+		<item>
+		<title>Binomial proportion estimation with unknown and varying number of trials</title>
+		<link>https://possiblywrong.wordpress.com/2025/10/12/binomial-proportion-estimation-with-unknown-and-varying-number-of-trials/</link>
+					<comments>https://possiblywrong.wordpress.com/2025/10/12/binomial-proportion-estimation-with-unknown-and-varying-number-of-trials/#comments</comments>
+		
+		<dc:creator><![CDATA[possiblywrong]]></dc:creator>
+		<pubDate>Sun, 12 Oct 2025 22:35:58 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">http://possiblywrong.wordpress.com/?p=5181</guid>
+
+					<description><![CDATA[Here is a neat trick: our friend, Paul, has asked us for help estimating his skill at the shooting range. Every day for the past several years, he has diligently recorded the number of successful shots he took that day. &#8230; <a href="https://possiblywrong.wordpress.com/2025/10/12/binomial-proportion-estimation-with-unknown-and-varying-number-of-trials/">Continue reading <span class="meta-nav">&#8594;</span></a>]]></description>
+										<content:encoded><![CDATA[
+<p class="wp-block-paragraph">Here is a neat trick: our friend, Paul, has asked us for help estimating his skill at the shooting range. Every day for the past several years, he has diligently recorded the number <img src="https://s0.wp.com/latex.php?latex=x_i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=x_i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=x_i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="x_i" class="latex" /> of successful shots he took that day. Assuming that every shot is an <em>iid</em> Bernoulli trial with success probability <img src="https://s0.wp.com/latex.php?latex=p&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=p&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=p&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="p" class="latex" />, can we estimate <img src="https://s0.wp.com/latex.php?latex=p&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=p&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=p&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="p" class="latex" />?</p>
+
+
+
+<p class="wp-block-paragraph">Unfortunately, no. Paul only recorded the number of <em>successful</em> shots each day. If he hit the target <img src="https://s0.wp.com/latex.php?latex=x_i%3D20&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=x_i%3D20&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=x_i%3D20&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="x_i=20" class="latex" /> times on a given day, was that out of 20 attempts, or 25, or 150? Not only did Paul not record that corresponding <em>total</em> number <img src="https://s0.wp.com/latex.php?latex=n_i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=n_i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=n_i&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="n_i" class="latex" /> of attempted trials each day, but that total varied from one day to the next: some days it might be just one &#8220;stand&#8221; of 25 shots, other days it might be several hours with hundreds of shots.</p>
+
+
+
+<p class="wp-block-paragraph">It might seem like we&#8217;re stuck. However, Paul mentions that he doesn&#8217;t shoot alone. His friend, Quinn, has accompanied him on each of these trips to the shooting range. In friendly competition, they each take the same number of shots, and whoever has the most hits buys a round on the way home. Fortunately, Quinn has kept a similar record of his daily hits (but again, not daily total trials).</p>
+
+
+
+<p class="wp-block-paragraph">This is interesting: Quinn takes each shot with some <em>different</em> success probability <img src="https://s0.wp.com/latex.php?latex=q&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=q&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=q&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="q" class="latex" />, that is just as unknown to us as <img src="https://s0.wp.com/latex.php?latex=p&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=p&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=p&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="p" class="latex" />. How can similarly incomplete information about <em>Quinn</em> possibly help us learn something about <em>Paul</em>?</p>
+
+
+
+<p class="wp-block-paragraph">It turns out that it can; following is Python code implementing a simpler one of several different estimates of Paul&#8217;s success probability <img src="https://s0.wp.com/latex.php?latex=p&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=p&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=p&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="p" class="latex" />, given a list of pairs of Paul&#8217;s and Quinn&#8217;s hit counts.</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: python; title: ; notranslate">
+def estimate_p(xy: list&#91;tuple&#91;int, int]]) -&gt; float:
+    &quot;&quot;&quot;Estimate Bernoulli probability from pairs of success counts.&quot;&quot;&quot;
+    sx  = sum(x     for x, y in xy)
+    sy  = sum(y     for x, y in xy)
+    sxy = sum(x * y for x, y in xy)
+    sx2 = sum(x * x for x, y in xy)
+    return 1 - sx2 / sx + sxy / sy
+</pre></div>
+
+
+<p class="wp-block-paragraph">The figure below shows this estimate vs. Paul&#8217;s true success probability, for each of 100 simulated experiments, where we randomly choose true success probabilities for Paul and Quinn.</p>
+
+
+<div class="wp-block-image">
+<figure class="aligncenter size-large"><a href="https://possiblywrong.wordpress.com/wp-content/uploads/2025/10/estimate_p.png"><img loading="lazy" width="554" height="534" data-attachment-id="5193" data-permalink="https://possiblywrong.wordpress.com/2025/10/12/binomial-proportion-estimation-with-unknown-and-varying-number-of-trials/estimate_p/" data-orig-file="https://possiblywrong.wordpress.com/wp-content/uploads/2025/10/estimate_p.png" data-orig-size="554,534" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="estimate_p" data-image-description="" data-image-caption="" data-large-file="https://possiblywrong.wordpress.com/wp-content/uploads/2025/10/estimate_p.png?w=554" src="https://possiblywrong.wordpress.com/wp-content/uploads/2025/10/estimate_p.png?w=554" alt="" class="wp-image-5193" srcset="https://possiblywrong.wordpress.com/wp-content/uploads/2025/10/estimate_p.png 554w, https://possiblywrong.wordpress.com/wp-content/uploads/2025/10/estimate_p.png?w=150 150w, https://possiblywrong.wordpress.com/wp-content/uploads/2025/10/estimate_p.png?w=300 300w" sizes="auto, (max-width: 554px) 100vw, 554px" /></a><figcaption class="wp-element-caption">Simulation of 100 experiments (one point each) with uniformly random p and q, showing resulting estimated vs. true probability p.</figcaption></figure>
+</div>
+
+
+<p class="wp-block-paragraph">Code for these experiments and plotting results is on <a href="https://github.com/possibly-wrong/estimate-p-unknown-n">GitHub</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://possiblywrong.wordpress.com/2025/10/12/binomial-proportion-estimation-with-unknown-and-varying-number-of-trials/feed/</wfw:commentRss>
+			<slash:comments>1</slash:comments>
+		
+		
+		<post-id xmlns="com-wordpress:feed-additions:1">5181</post-id>
+		<media:content url="https://0.gravatar.com/avatar/08708acd725f717c5b5d7293d29e78efcef0aa670f72f2962545c441c4da8ddd?s=96&#38;d=identicon&#38;r=G" medium="image">
+			<media:title type="html">possiblywrong</media:title>
+		</media:content>
+
+		<media:content url="https://possiblywrong.wordpress.com/wp-content/uploads/2025/10/estimate_p.png?w=554" medium="image" />
+	</item>
+		<item>
+		<title>A trick-taking game</title>
+		<link>https://possiblywrong.wordpress.com/2025/08/28/a-trick-taking-game/</link>
+					<comments>https://possiblywrong.wordpress.com/2025/08/28/a-trick-taking-game/#comments</comments>
+		
+		<dc:creator><![CDATA[possiblywrong]]></dc:creator>
+		<pubDate>Thu, 28 Aug 2025 20:08:24 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">http://possiblywrong.wordpress.com/?p=5178</guid>
+
+					<description><![CDATA[There has not been a puzzle here in a while, so&#8230; Alice is playing a card game with her nephew, Bob, using a standard deck of playing cards. Alice starts with the 26 red cards in her hand, and Bob &#8230; <a href="https://possiblywrong.wordpress.com/2025/08/28/a-trick-taking-game/">Continue reading <span class="meta-nav">&#8594;</span></a>]]></description>
+										<content:encoded><![CDATA[
+<p class="wp-block-paragraph">There has not been a puzzle here in a while, so&#8230;</p>
+
+
+
+<p class="wp-block-paragraph">Alice is playing a card game with her nephew, Bob, using a standard deck of playing cards. Alice starts with the 26 red cards in her hand, and Bob starts with the 26 black cards in his hand. In each of 26 rounds (or <em>tricks</em>), Alice and Bob simultaneously select and play one card from their remaining hand. The player with the higher-ranked card takes the trick; cards of the same rank are discarded with neither player taking the trick. After all cards have been played, Alice wins (loses) one point for every trick won (lost).</p>
+
+
+
+<p class="wp-block-paragraph">At this point, by symmetry, this seems like a fair game. To skew things slightly in her nephew&#8217;s favor, Alice suggests a wrinkle: aces are low&#8230; except for one of Bob&#8217;s aces, the ace of spades, which is high, ranking higher than all other cards.</p>
+
+
+
+<ol class="wp-block-list">
+<li>What are Alice&#8217;s and Bob&#8217;s optimal strategies and corresponding expected score in this game?</li>
+
+
+
+<li>Suppose that instead of a point for every trick, the player with the most tricks wins the game (with a score of +1, or 0 if both players take the same number of tricks). What are Alice&#8217;s and Bob&#8217;s optimal strategies and expected score?</li>
+
+
+
+<li>How does this generalize to arbitrary initial hands? That is, suppose Alice and Bob start with known card ranks <img src="https://s0.wp.com/latex.php?latex=a_1+%5Cleq+a_2+%5Cleq+%5Cldots+%5Cleq+a_n&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=a_1+%5Cleq+a_2+%5Cleq+%5Cldots+%5Cleq+a_n&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=a_1+%5Cleq+a_2+%5Cleq+%5Cldots+%5Cleq+a_n&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="a_1 &#92;leq a_2 &#92;leq &#92;ldots &#92;leq a_n" class="latex" /> and <img src="https://s0.wp.com/latex.php?latex=b_1+%5Cleq+b_2+%5Cleq+%5Cldots+%5Cleq+b_n&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002" srcset="https://s0.wp.com/latex.php?latex=b_1+%5Cleq+b_2+%5Cleq+%5Cldots+%5Cleq+b_n&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002 1x, https://s0.wp.com/latex.php?latex=b_1+%5Cleq+b_2+%5Cleq+%5Cldots+%5Cleq+b_n&#038;bg=ffffff&#038;fg=333333&#038;s=0&#038;c=20201002&#038;zoom=4.5 4x" alt="b_1 &#92;leq b_2 &#92;leq &#92;ldots &#92;leq b_n" class="latex" />, respectively (with all cards known to both players).</li>
+</ol>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://possiblywrong.wordpress.com/2025/08/28/a-trick-taking-game/feed/</wfw:commentRss>
+			<slash:comments>4</slash:comments>
+		
+		
+		<post-id xmlns="com-wordpress:feed-additions:1">5178</post-id>
+		<media:content url="https://0.gravatar.com/avatar/08708acd725f717c5b5d7293d29e78efcef0aa670f72f2962545c441c4da8ddd?s=96&#38;d=identicon&#38;r=G" medium="image">
+			<media:title type="html">possiblywrong</media:title>
+		</media:content>
+	</item>
+	</channel>
+</rss>

@@ -1,0 +1,893 @@
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"
+	xmlns:content="http://purl.org/rss/1.0/modules/content/"
+	xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:atom="http://www.w3.org/2005/Atom"
+	xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+	xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+	>
+
+<channel>
+	<title>The Old New Thing</title>
+	<atom:link href="https://devblogs.microsoft.com/oldnewthing/feed" rel="self" type="application/rss+xml" />
+	<link>https://devblogs.microsoft.com/oldnewthing</link>
+	<description>Practical development throughout the evolution of Windows.</description>
+	<lastBuildDate>Fri, 07 Aug 2026 05:59:30 +0000</lastBuildDate>
+	<language>en-US</language>
+	<sy:updatePeriod>
+	hourly	</sy:updatePeriod>
+	<sy:updateFrequency>
+	1	</sy:updateFrequency>
+	
+
+<image>
+	<url>https://devblogs.microsoft.com/oldnewthing/wp-content/uploads/sites/38/2021/03/Microsoft-Favicon.png</url>
+	<title>The Old New Thing</title>
+	<link>https://devblogs.microsoft.com/oldnewthing</link>
+	<width>32</width>
+	<height>32</height>
+</image> 
+	<item>
+		<title>Creating a fake agile wrapper that is technically agile but is not useful outside its home apartment, part 5</title>
+		<link>https://devblogs.microsoft.com/oldnewthing/20260807-00/?p=112597</link>
+					<comments>https://devblogs.microsoft.com/oldnewthing/20260807-00/?p=112597#respond</comments>
+		
+		<dc:creator><![CDATA[Raymond Chen]]></dc:creator>
+		<pubDate>Fri, 07 Aug 2026 14:00:00 +0000</pubDate>
+				<category><![CDATA[Old New Thing]]></category>
+		<category><![CDATA[Code]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/oldnewthing/?p=112597</guid>
+
+					<description><![CDATA[<p>Cheating with <CODE>std::unique_ptr</CODE>.</p>
+<p>The post <a href="https://devblogs.microsoft.com/oldnewthing/20260807-00/?p=112597">Creating a fake agile wrapper that is technically agile but is not useful outside its home apartment, part 5</a> appeared first on <a href="https://devblogs.microsoft.com/oldnewthing">The Old New Thing</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>Last time, I confessed that <a title="Creating a fake agile wrapper that is technically agile but is not useful outside its home apartment, part 4" href="https://devblogs.microsoft.com/oldnewthing/20260806-00/?p=112595"> I lied when i said that we can&#8217;t use <code>std::<wbr />unique_ptr</code> to manage the registration cookie</a>.</p>
+<p>The trick here is that the registration cookie is of type <code>DWORD</code>, which fits in a pointer, so we can smuggle the integer value inside a pointer.</p>
+<pre>template&lt;typename T&gt;
+struct fake_agile_ref
+{
+private:
+    using Smart = std::conditional_t&lt;
+        std::is_base_of_v&lt;winrt::Windows::Foundation::IUnknown, T&gt;,
+        T, winrt::com_ptr&lt;T&gt;&gt;;
+
+    <span style="border: solid 1px currentcolor; border-bottom: none;">struct git_deleter                                                                           </span>
+    <span style="border: 1px currentcolor; border-style: none solid;">{                                                                                            </span>
+    <span style="border: 1px currentcolor; border-style: none solid;">    winrt::com_ptr&lt;IGlobalInterfaceTable&gt; m_git;                                             </span>
+    <span style="border: 1px currentcolor; border-style: none solid;">                                                                                             </span>
+    <span style="border: 1px currentcolor; border-style: none solid;">    void operator()(void* p)                                                                 </span>
+    <span style="border: 1px currentcolor; border-style: none solid;">    {                                                                                        </span>
+    <span style="border: 1px currentcolor; border-style: none solid;">        m_git-&gt;RevokeInterfaceFromGlobal(static_cast&lt;DWORD&gt;(reinterpret_cast&lt;uintptr_t&gt;(p)));</span>
+    <span style="border: 1px currentcolor; border-style: none solid;">    }                                                                                        </span>
+    <span style="border: solid 1px currentcolor; border-top: none;">};                                                                                           </span>
+
+    winrt::com_ptr&lt;IContextCallback&gt; m_context;
+    ULONG_PTR m_token = 0;
+    <span style="border: solid 1px currentcolor;">std::unique_ptr&lt;void, git_deleter&gt; m_cookie;</span>
+    void* m_raw = nullptr;
+</pre>
+<p>Our custom deleter holds a pointer to the Global Interface Table and uses it to revoke the cookie on destruction. The cookie is an integer smuggled inside a pointer, so we cast the pointer back to an integer by passing through a <code>uintptr_t</code> to avoid a compiler warning about casting between an integer and pointer of different sizes.</p>
+<p>We are relying on the fact that Windows implementations are required to support round-tripping integers through pointers. Macros like <code>MAKEINTRESOURCE</code> rely on it. It&#8217;s also codified in Windows with helper functions like <code>PtrToInt</code> and <code>IntToPtr</code>, but I&#8217;m writing it out for expository purposes rather than using those helpers.</p>
+<p>We can then store the Global Interface Table pointer and the corresponding cookie in the <code>unique_ptr</code>:</p>
+<pre>    fake_agile_ref(Smart const&amp; p) : m_raw(winrt::get_abi(p))
+    {
+        if (m_raw) {
+            m_context = winrt::capture&lt;IContextCallback&gt;(CoGetObjectContext);
+            m_token = get_context_token();
+            <span style="border: solid 1px currentcolor; border-bottom: none;">auto&amp; git = m_cookie.get_deleter().m_git;                                          </span>
+            <span style="border: 1px currentcolor; border-style: none solid;">git = winrt::create_instance&lt;IGlobalInterfaceTable&gt;(CLSID_StdGlobalInterfaceTable);</span>
+            <span style="border: solid 1px currentcolor; border-top: none;">DWORD cookie;                                                                      </span>
+            winrt::check_hresult(<span style="border: solid 1px currentcolor;">git</span>-&gt;RegisterInterfaceInGlobal(
+                winrt::make&lt;force_marshal&lt;Smart&gt;&gt;(p).get(),
+                __uuidof(IUnknown), &amp;m_cookie));
+            <span style="border: solid 1px currentcolor;">m_cookie.reset(reinterpret_cast&lt;void*&gt;(static_cast&lt;uintptr_t&gt;(cookie)));</span>
+        }
+    }
+</pre>
+<p>And now that we are letting <code>unique_ptr</code> manage the lifetime of the cookie, we don&#8217;t need a custom destructor, which allows us to use the Rule of Zero and simply not have any copy or move constructors or assignment operators.</p>
+<pre>    // <span style="text-decoration: line-through;">fake_agile_ref(fake_agile_ref&amp;&amp; other) noexcept :</span>
+    // <span style="text-decoration: line-through;">    m_context(std::move(other.m_context)),</span>
+    // <span style="text-decoration: line-through;">    m_token(std:exchange(other.m_token, 0)),</span>
+    // <span style="text-decoration: line-through;">    m_git(std::move(other.m_git)),</span>
+    // <span style="text-decoration: line-through;">    m_cookie(std::exchange(other.m_cookie, 0)),</span>
+    // <span style="text-decoration: line-through;">    m_raw(other.m_raw)</span>
+    // <span style="text-decoration: line-through;">{</span>
+    // <span style="text-decoration: line-through;">}</span>
+
+    // <span style="text-decoration: line-through;">fake_agile_ref&amp; operator=(fake_agile_ref&amp;&amp; other) noexcept</span>
+    // <span style="text-decoration: line-through;">{</span>
+    // <span style="text-decoration: line-through;">    using std::swap;</span>
+    // <span style="text-decoration: line-through;">    swap(m_context, other.m_context);</span>
+    // <span style="text-decoration: line-through;">    swap(m_token, other.m_token);</span>
+    // <span style="text-decoration: line-through;">    swap(m_git, other.m_git);</span>
+    // <span style="text-decoration: line-through;">    swap(m_cookie, other.m_cookie);</span>
+    // <span style="text-decoration: line-through;">    swap(m_raw, other.m_raw);</span>
+    // <span style="text-decoration: line-through;">}</span>
+
+    // <span style="text-decoration: line-through;">~fake_agile_ref()</span>
+    // <span style="text-decoration: line-through;">{</span>
+    // <span style="text-decoration: line-through;">    if (m_cookie) {</span>
+    // <span style="text-decoration: line-through;">       m_git-&gt;RevokeInterfaceFromGlobal(std::exchange(m_cookie, 0));</span>
+    // <span style="text-decoration: line-through;">   }</span>
+    // <span style="text-decoration: line-through;">}</span>
+</pre>
+<p>Since we are storing the cookie in a <code>unique_ptr</code>, we need to adjust the <code>empty</code> method:</p>
+<pre>    bool empty() const noexcept
+    {
+        return <span style="border: solid 1px currentcolor;">reinterpret_cast&lt;uintptr_t&gt;(m_cookie.get())</span> != 0;
+    }
+</pre>
+<p><b>Bonus chatter</b>: The Windows Implementation Library (wil) has a class similar to <code>unique_ptr</code> called <code>wil::unique_any</code> that lets you apply cleanup to any data type, not just a pointer.</p>
+<p>The post <a href="https://devblogs.microsoft.com/oldnewthing/20260807-00/?p=112597">Creating a fake agile wrapper that is technically agile but is not useful outside its home apartment, part 5</a> appeared first on <a href="https://devblogs.microsoft.com/oldnewthing">The Old New Thing</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/oldnewthing/20260807-00/?p=112597/feed</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			<image url="https://devblogs.microsoft.com/oldnewthing/wp-content/uploads/sites/38/2025/10/banner-oldnewthing-blue.webp" type="image/png" />
+	</item>
+		<item>
+		<title>Creating a fake agile wrapper that is technically agile but is not useful outside its home apartment, part 4</title>
+		<link>https://devblogs.microsoft.com/oldnewthing/20260806-00/?p=112595</link>
+					<comments>https://devblogs.microsoft.com/oldnewthing/20260806-00/?p=112595#respond</comments>
+		
+		<dc:creator><![CDATA[Raymond Chen]]></dc:creator>
+		<pubDate>Thu, 06 Aug 2026 14:00:00 +0000</pubDate>
+				<category><![CDATA[Old New Thing]]></category>
+		<category><![CDATA[Code]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/oldnewthing/?p=112595</guid>
+
+					<description><![CDATA[<p>Moving things around if possible.</p>
+<p>The post <a href="https://devblogs.microsoft.com/oldnewthing/20260806-00/?p=112595">Creating a fake agile wrapper that is technically agile but is not useful outside its home apartment, part 4</a> appeared first on <a href="https://devblogs.microsoft.com/oldnewthing">The Old New Thing</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>Last time, we successfully <a title="Creating a fake agile wrapper that is technically agile but is not useful outside its home apartment, part 3" href="https://devblogs.microsoft.com/oldnewthing/20260805-00/?p=112591"> our plan to use the global interface table to hold created a fake agile wrapper that is technically agile, even though it isn&#8217;t useful outside its home apartment</a>. I noted that there are opportunities for fine-tuning.</p>
+<p>One thing we can do is move the non-marshalable COM object rather than copying it. This means forwarding the reference all the way into the <code>force_<wbr />marshal</code> wrapper.</p>
+<pre>template&lt;typename Smart&gt;
+struct force_marshal :
+    winrt::implements&lt;force_marshal&lt;Smart&gt;, IUnknown, winrt::non_agile&gt;
+{
+    <span style="border: solid 1px currentcolor; border-bottom: none;">template&lt;typename Arg&gt;                                   </span>
+    <span style="border: solid 1px currentcolor; border-top: none;">force_marshal(Arg&amp;&amp; arg) : m_p(std::forward&lt;Arg&gt;(arg)) {}</span>
+    Smart m_p;
+};
+</pre>
+<p>The <code>force_<wbr />marshal&lt;Smart&gt;</code> now takes anything and forwards it into the smart pointer. This means that if the inbound parameter is an rvalue reference to a smart pointer, the COM reference is moved into the <code>force_<wbr />marshal&lt;Smart&gt;</code> object rather than copied.</p>
+<p>Now it&#8217;s a matter of plumbing this reference all the way down.</p>
+<pre>template&lt;typename T&gt;
+struct fake_agile_ref
+{
+    ⟦ ... ⟧
+
+    <span style="border: solid 1px currentcolor;">template&lt;typename Arg&gt;</span>
+    fake_agile_ref(<span style="border: solid 1px currentcolor;">Arg&amp;&amp;</span> p) : m_raw(winrt::get_abi(p))
+    {
+        if (m_raw) {
+            m_context = winrt::capture&lt;IContextCallback&gt;(CoGetObjectContext);
+            m_token = get_context_token();
+            m_git = winrt::create_instance&lt;IGlobalInterfaceTable&gt;(CLSID_StdGlobalInterfaceTable);
+            winrt::check_hresult(m_git-&gt;RegisterInterfaceInGlobal(
+                winrt::make&lt;force_marshal&lt;Smart&gt;&gt;(<span style="border: solid 1px currentcolor;">std::forward&lt;Arg&gt;(p)</span>).get(),
+                __uuidof(IUnknown), &amp;m_cookie));
+        }
+    }
+
+    ⟦ ... ⟧
+};
+
+template&lt;typename Delegate&gt;
+std::remove_reference_t&lt;Delegate&gt; make_agile_delegate(Delegate&amp;&amp; d)
+{
+    if (d.try_as&lt;::IAgileObject&gt;()) {
+        return d;
+    }
+
+    if (d.try_as&lt;::INoMarshal&gt;()) {
+        return [agile = fake_agile_ref(<span style="border: solid 1px currentcolor;">std::forward&lt;Delegate&gt;(d)</span>](auto&amp;&amp;...args) {
+            return agile.get()(std::forward&lt;decltype(args)&gt;(args)...);
+        };
+    }
+
+    return [agile = winrt::agile_ref(d)](auto&amp;&amp;...args) {
+        return agile.get()(std::forward&lt;decltype(args)&gt;(args)...);
+    };
+}
+</pre>
+<p>Note that we didn&#8217;t have to update the deduction guides for <code>fake_<wbr />agile_<wbr />ref</code> to add forwarding support. Deduction guides are matched against the constructor invocation to determine which template specialization to use, but they are not used for actually invoking the constructor. That happens by matching against the constructors themselves. So if somebody tries to create a <code>fake_<wbr />agile_<wbr />ref</code> from an rvalue reference, the deduction guide for <code>const&amp;</code> steers class template argument deduction (CTAD) toward the correct specialization, and then when the compiler actually looks for a constructor, it finds the one that takes an rvalue reference.</p>
+<p>Remember how I complained that we couldn&#8217;t use <code>std::<wbr />unique_ptr</code> to avoid a lot of boilerplate in <code>fake_<wbr />agile_<wbr />ref</code> to manage the fact that cookies cannot be copied?</p>
+<p>Yeah, so maybe I lied.</p>
+<p>We&#8217;ll look at it next time.</p>
+<p>The post <a href="https://devblogs.microsoft.com/oldnewthing/20260806-00/?p=112595">Creating a fake agile wrapper that is technically agile but is not useful outside its home apartment, part 4</a> appeared first on <a href="https://devblogs.microsoft.com/oldnewthing">The Old New Thing</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/oldnewthing/20260806-00/?p=112595/feed</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			<image url="https://devblogs.microsoft.com/oldnewthing/wp-content/uploads/sites/38/2025/10/banner-oldnewthing-blue.webp" type="image/png" />
+	</item>
+		<item>
+		<title>Creating a fake agile wrapper that is technically agile but is not useful outside its home apartment, part 3</title>
+		<link>https://devblogs.microsoft.com/oldnewthing/20260805-00/?p=112591</link>
+					<comments>https://devblogs.microsoft.com/oldnewthing/20260805-00/?p=112591#comments</comments>
+		
+		<dc:creator><![CDATA[Raymond Chen]]></dc:creator>
+		<pubDate>Wed, 05 Aug 2026 14:00:00 +0000</pubDate>
+				<category><![CDATA[Old New Thing]]></category>
+		<category><![CDATA[Code]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/oldnewthing/?p=112591</guid>
+
+					<description><![CDATA[<p>Forcing an object into the global interface table.</p>
+<p>The post <a href="https://devblogs.microsoft.com/oldnewthing/20260805-00/?p=112591">Creating a fake agile wrapper that is technically agile but is not useful outside its home apartment, part 3</a> appeared first on <a href="https://devblogs.microsoft.com/oldnewthing">The Old New Thing</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>Last time, we tried to execute on <a title="Creating a fake agile wrapper that is technically agile but is not useful outside its home apartment, part 2" href="https://devblogs.microsoft.com/oldnewthing/20260804-00/?p=112586"> our plan to use the global interface table to hold hold a reference to an object in another apartment that automatically expires when the apartment runs down</a>. But it broke down because objects that are marked <code>INoMarshal</code> can&#8217;t go into the global interface table.</p>
+<p>So we will just force the square peg into the round hole: We can put the non-marshalable object inside an object that <i>is</i> marshalable.</p>
+<pre>template&lt;typename Smart&gt;
+struct force_marshal :
+    winrt::implements&lt;force_marshal&lt;Smart&gt;, ::IUnknown, winrt::non_agile&gt;
+{
+    force_marshal(Smart const&amp; p) : m_p(p) {}
+    Smart m_p;
+};
+</pre>
+<p>The <code>force_marshal&lt;Smart&gt;</code> object babysits a non-marshalable smart pointer to a COM object and exposes a marshalable wrapper around it. Since the wrapped object is not agile, the wrapper cannot be either. (If the wrapper were agile, then we&#8217;d be back where we started: How do we ensure that the <code>m_p</code> is destructed in the correct apartment?)¹</p>
+<p>We can put the unmarshalable object inside the wrapper, and then put the wrapper in the global interface table.</p>
+<pre>template&lt;typename T&gt;
+struct fake_agile_ref
+{
+    ⟦ ... ⟧
+
+    fake_agile_ref(Smart const&amp; p) : m_raw(winrt::get_abi(p))
+    {
+        if (m_raw) {
+            m_context = winrt::capture&lt;IContextCallback&gt;(CoGetObjectContext);
+            m_token = get_context_token();
+            m_git = winrt::create_instance&lt;IGlobalInterfaceTable&gt;(CLSID_StdGlobalInterfaceTable);
+            winrt::check_hresult(m_git-&gt;RegisterInterfaceInGlobal(
+                <span style="border: solid 1px currentcolor;">winrt::make&lt;force_marshal&lt;Smart&gt;&gt;(p).get()</span>,
+                __uuidof(IUnknown), &amp;m_cookie));
+        }
+    }
+
+    ⟦ ... ⟧
+};
+
+template&lt;typename T&gt; fake_agile_ref(winrt::com_ptr&lt;T&gt; const&amp;)
+    -&gt; fake_agile_ref&lt;T&gt;;
+template&lt;typename T&gt; fake_agile_ref(T const&amp;)
+    -&gt; fake_agile_ref&lt;T&gt;;
+</pre>
+<p>Okay, so now we have managed to create an agile wrapper around an unmarshalable object. This agile wrapper is agile on paper: You can use it from any thread. However, it is not agile in practice: If you try to use it from the wrong apartment, it throws an exception. But at least the behavior when used from the wrong apartment is <i>well-defined</i>, as opposed to the case of directly using an unmarshalable object from the wrong apartment, which is <i>undefined</i>.</p>
+<p>Next time, we&#8217;ll do some fine tuning.</p>
+<p><b>Bonus chatter</b>: Of course, now that we have a marshalable wrapper, we <i>could</i> use that wrapper to call the original non-marshalable object.</p>
+<table class="cp3" style="border-collapse: collapse; text-align: center;" border="0" cellspacing="0" cellpadding="3">
+<tbody>
+<tr>
+<td>Original apartment</td>
+<td style="border-right: dashed currentcolor 1px;"> </td>
+<td>&nbsp;</td>
+<td>Other apartment</td>
+</tr>
+<tr>
+<td style="border: solid currentcolor 1px;">Wrapper</td>
+<td style="border-right: dashed currentcolor 1px;">←</td>
+<td>←</td>
+<td style="border: solid currentcolor 1px;">Caller</td>
+</tr>
+<tr>
+<td>↓</td>
+<td style="border-right: dashed currentcolor 1px;"> </td>
+<td>&nbsp;</td>
+</tr>
+<tr>
+<td style="border: solid currentcolor 1px;">Non-marshalable</td>
+<td style="border-right: dashed currentcolor 1px;"> </td>
+<td>&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p>The non-marshalable object does not allow any arrows to come in from other apartments, but the wrapper lives in the same apartment as the non-marshalable object, so <i>its</i> arrow is coming from within the same apartment.</p>
+<p>You can think of the wrapper as a VPN into the original apartment, allowing calls to come in from the outside, but to appear to the non-marshalable object as if they came from within the same apartment.</p>
+<p>Now, you <i>could</i> do that, but I&#8217;m not going to. The original object presumably went out of its way to declare itself non-marshalable for a reason, so we honor that preference and not play funny games to trick it into doing something it said that it didn&#8217;t want to do.</p>
+<p>¹ Two commenters fell into this trap by suggesting that we wrap the non-marshalable object inside an object that implements <code>IMarshal</code>. If you implement <code>IMarshal</code>, then you are saying, &#8220;I&#8217;m way cooler than a standard non-agile object. I&#8217;m going to do fancy stuff (like being agile).&#8221; But we <i>want</i> to be a boring non-agile object, so that COM will do standard marshaling for us.</p>
+<p>The post <a href="https://devblogs.microsoft.com/oldnewthing/20260805-00/?p=112591">Creating a fake agile wrapper that is technically agile but is not useful outside its home apartment, part 3</a> appeared first on <a href="https://devblogs.microsoft.com/oldnewthing">The Old New Thing</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/oldnewthing/20260805-00/?p=112591/feed</wfw:commentRss>
+			<slash:comments>4</slash:comments>
+		
+		
+			<image url="https://devblogs.microsoft.com/oldnewthing/wp-content/uploads/sites/38/2025/10/banner-oldnewthing-blue.webp" type="image/png" />
+	</item>
+		<item>
+		<title>Creating a fake agile wrapper that is technically agile but is not useful outside its home apartment, part 2</title>
+		<link>https://devblogs.microsoft.com/oldnewthing/20260804-00/?p=112586</link>
+					<comments>https://devblogs.microsoft.com/oldnewthing/20260804-00/?p=112586#comments</comments>
+		
+		<dc:creator><![CDATA[Raymond Chen]]></dc:creator>
+		<pubDate>Tue, 04 Aug 2026 14:00:00 +0000</pubDate>
+				<category><![CDATA[Old New Thing]]></category>
+		<category><![CDATA[Code]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/oldnewthing/?p=112586</guid>
+
+					<description><![CDATA[<p>Using a reference stored in the global interface table.</p>
+<p>The post <a href="https://devblogs.microsoft.com/oldnewthing/20260804-00/?p=112586">Creating a fake agile wrapper that is technically agile but is not useful outside its home apartment, part 2</a> appeared first on <a href="https://devblogs.microsoft.com/oldnewthing">The Old New Thing</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>Last time, <a title="Creating a fake agile wrapper that is technically agile but is not useful outside its home apartment, part 1" href="https://devblogs.microsoft.com/oldnewthing/20260803-00/?p=112582"> we hatched a plan for holding a reference to an object in another apartment that automatically expires when the apartment runs down</a>. Let&#8217;s try to implement that plan.</p>
+<pre>template&lt;typename T&gt;
+struct fake_agile_ref
+{
+private:
+    using Smart = std::conditional_t&lt;
+        std::is_base_of_v&lt;winrt::Windows::Foundation::IUnknown, T&gt;,
+        T, winrt::com_ptr&lt;T&gt;&gt;;
+</pre>
+<p>We define <code>Smart</code> to represent the smart pointer that holds a <code>T</code>. If <code>T</code> is a projected type, then it is already a smart pointer. Otherwise, <code>T</code> is a COM interface, and we put it inside a <code>com_ptr</code>. This is the same pattern that the C++/WinRT <code>agile_ref&lt;T&gt;</code> uses.</p>
+<pre>    winrt::com_ptr&lt;IContextCallback&gt; m_context;
+    ULONG_PTR m_token = 0;
+    winrt::com_ptr&lt;IGlobalInterfaceTable&gt; m_git;
+    DWORD m_cookie = 0;
+    void* m_raw = nullptr;
+</pre>
+<p>Our fake agile reference starts with a callback context and a context token. These are used to detect whether we are in the correct apartment when it comes time to access the original non-agile COM object.</p>
+<p>Next comes a reference to the GIT and a cookie that records the registered reference to the original non-agile COM object.</p>
+<p>Finally, we keep a raw (non-refcounted) pointer to the original non-agile COM object.</p>
+<p>The fake agile reference is considered &#8220;empty&#8221; if the cookie is zero, meaning that it does not refer to any object. In the case of an empty fake agile reference, none of the other members contains anything meaningful.</p>
+<pre>public:
+    fake_agile_ref(std::nullptr_t = nullptr) noexcept {}
+</pre>
+<p>Constructing an empty <code>fake_<wbr />agile_<wbr />ref</code> is easy: Just leave everything at its initial state. In particular, the <code>m_cookie</code> is zero, meaning that there is nothing inside. The values of all the other members are irrelevant, as long as they can be safely destructed.</p>
+<pre>    fake_agile_ref(Smart const&amp; p) : m_raw(winrt::get_abi(p))
+    {
+        if (m_raw) {
+            m_context = winrt::capture&lt;IContextCallback&gt;(CoGetObjectContext);
+            m_token = get_context_token();
+            m_git = winrt::create_instance&lt;IGlobalInterfaceTable&gt;(CLSID_StdGlobalInterfaceTable);
+            winrt::check_hresult(m_git-&gt;RegisterInterfaceInGlobal(
+                static_cast&lt;::IUnknown*&gt;(m_raw), __uuidof(IUnknown), &amp;m_cookie));
+        }
+    }
+</pre>
+<p>To construct a <code>fake_<wbr />agile_<wbr />ref</code> from a smart pointer, we extract the raw pointer and check whether it is null. If so, then the smart pointer is empty, and we leave the <code>m_cookie</code> at zero. But if it is not null, we initialize the context information (so we can recognize this apartment later), and we register the COM object in the GIT to retain a reference to it for as long as the apartment is valid.</p>
+<pre>    fake_agile_ref(fake_agile_ref&amp;&amp; other) noexcept :
+        m_context(std::move(other.m_context)),
+        m_token(std:exchange(other.m_token, 0)),
+        m_git(std::move(other.m_git)),
+        m_cookie(std::exchange(other.m_cookie, 0)),
+        m_raw(other.m_raw)
+    {
+    }
+</pre>
+<p>Since we will have a nontrivial destructor, we need copy and move constructors per the Rule of Five. The move constructor merely steals all the content from the source and leaves the source in the empty state. We don&#8217;t need to create a copy constructor because the move constructor causes the implicitly-defined copy constructor to become deleted. (The fake agile reference is not copyable because we don&#8217;t know how to copy the cookie.)</p>
+<pre>    fake_agile_ref&amp; operator=(fake_agile_ref&amp;&amp; other) noexcept
+    {
+        using std::swap;
+        swap(m_context, other.m_context);
+        swap(m_token, other.m_token);
+        swap(m_git, other.m_git);
+        swap(m_cookie, other.m_cookie);
+        swap(m_raw, other.m_raw);
+    }
+</pre>
+<p>The fake agile reference also needs a move assignment operator to satisfy the Rule of Five. It just swaps the contents with the assigned-from object. Again, we don&#8217;t need a copy assignment operator because the declared move assignment operator causes the implicitly-defined copy assignment operator to become deleted.</p>
+<pre>    bool empty() const noexcept
+    {
+        return m_cookie == 0;
+    }
+
+    explicit operator bool() const noexcept
+    {
+        return !empty();
+    }
+</pre>
+<p>An explicit boolean conversion operator lets callers test the fake agile pointer to see whether it is empty.</p>
+<pre>    ~fake_agile_ref()
+    {
+        if (!empty()) {
+            m_git-&gt;RevokeInterfaceFromGlobal(std::exchange(m_cookie, 0));
+        }
+    }
+</pre>
+<p>We have reached our nontrivial destructor: If we have a GIT cookie, we revoke it. It would have been nice to let this be a custom deleter of a <code>unique_ptr</code>, but a cookie is not a pointer, and <code>unique_ptr</code> works only with pointers.</p>
+<pre>    [[nodiscard]] Smart get() const
+    {
+        if (empty()) {
+            return nullptr;
+        }
+        if (m_token != get_context_token()) {
+            throw winrt::hresult_error(CO_E_NOT_SUPPORTED);
+        }
+
+        Smart result{ nullptr };
+        winrt::copy_from_abi(result, m_raw);
+        return result;
+    }
+</pre>
+<p>Here is where the excitement is. To recover the original COM object, we first check if the fake agile pointer is empty. If so, then there is no COM object to return. If the fake agile pointer is nonempty, but we are in the wrong apartment, then we throw the <code>CO_<wbr />E_<wbr />NOT_<wbr />SUPPORTED</code> exception which is the same thing that <code>Ro­Get­Agile­Reference</code> does.</p>
+<p>Otherwise, we are in the correct context. Our cookie is keeping the original object alive, so we can just recover it from the raw pointer. (We could also redeem the cookie from the GIT, but this is faster.)</p>
+<pre>};
+</pre>
+<p>That ends the definition of <code>fake_<wbr />agile_<wbr />ref</code>, but we&#8217;re not done yet.</p>
+<pre>template&lt;typename T&gt; fake_agile_ref(winrt::com_ptr&lt;T&gt; const&amp;)
+    -&gt; fake_agile_ref&lt;T&gt;;
+template&lt;typename T&gt; fake_agile_ref(T const&amp;)
+    -&gt; fake_agile_ref&lt;T&gt;;
+</pre>
+<p>These deduction guides allow class template argument deduction (CTAD) to deduce the <code>T</code> from the constructor parameter: If the constructor parameter is a <code>com_ptr&lt;T&gt;</code>, then the template type parameter is <code>T</code>. Otherwise, the template type parameter matches the constructor parameter, which we assume is a projected type.</p>
+<p>We can now use this fake agile reference as a drop-in replacement for the normal agile reference in the case that the delegate is not marshalable.</p>
+<pre>template&lt;typename Delegate&gt;
+std::remove_reference_t&lt;Delegate&gt; make_agile_delegate(Delegate&amp;&amp; d)
+{
+    if (d.try_as&lt;::IAgileObject&gt;()) {
+        return d;
+    }
+
+    if (d.try_as&lt;::INoMarshal&gt;()) {
+        return [agile = <span style="border: solid 1px currentcolor;">fake_agile_ref</span>(d)](auto&amp;&amp;...args) {
+            return agile.get()(std::forward&lt;decltype(args)&gt;(args)...);
+        };
+    }
+
+    return [agile = winrt::agile_ref(d)](auto&amp;&amp;...args) {
+        return agile.get()(std::forward&lt;decltype(args)&gt;(args)...);
+    };
+}
+</pre>
+<p>Unfortunately, when we take this out for a spin and give it a non-marshalable delegate, it fails at this line:</p>
+<pre>            winrt::check_hresult(m_git-&gt;RegisterInterfaceInGlobal(
+                static_cast&lt;::IUnknown*&gt;(m_raw), __uuidof(IUnknown), &amp;m_cookie));
+</pre>
+<p>That&#8217;s because <code>Register­Interface­In­Global</code> will not register objects that deny marshalability.</p>
+<p>Oh great, so we&#8217;re back to square one.</p>
+<p>We&#8217;ll break the cycle of despair next time.</p>
+<p>The post <a href="https://devblogs.microsoft.com/oldnewthing/20260804-00/?p=112586">Creating a fake agile wrapper that is technically agile but is not useful outside its home apartment, part 2</a> appeared first on <a href="https://devblogs.microsoft.com/oldnewthing">The Old New Thing</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/oldnewthing/20260804-00/?p=112586/feed</wfw:commentRss>
+			<slash:comments>2</slash:comments>
+		
+		
+			<image url="https://devblogs.microsoft.com/oldnewthing/wp-content/uploads/sites/38/2025/10/banner-oldnewthing-blue.webp" type="image/png" />
+	</item>
+		<item>
+		<title>Creating a fake agile wrapper that is technically agile but is not useful outside its home apartment, part 1</title>
+		<link>https://devblogs.microsoft.com/oldnewthing/20260803-00/?p=112582</link>
+					<comments>https://devblogs.microsoft.com/oldnewthing/20260803-00/?p=112582#comments</comments>
+		
+		<dc:creator><![CDATA[Raymond Chen]]></dc:creator>
+		<pubDate>Mon, 03 Aug 2026 14:00:00 +0000</pubDate>
+				<category><![CDATA[Old New Thing]]></category>
+		<category><![CDATA[Code]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/oldnewthing/?p=112582</guid>
+
+					<description><![CDATA[<p>Looking for a COM reference that is between strong and weak.</p>
+<p>The post <a href="https://devblogs.microsoft.com/oldnewthing/20260803-00/?p=112582">Creating a fake agile wrapper that is technically agile but is not useful outside its home apartment, part 1</a> appeared first on <a href="https://devblogs.microsoft.com/oldnewthing">The Old New Thing</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>Last time, <a title="Making an agile version of a Windows Runtime delegate in C++/WinRT, part 10" href="https://devblogs.microsoft.com/oldnewthing/20260731-00/?p=112578"> we considered what it means when the context callback fails</a>, which prevents us from releasing the object in its original context. We noted that the problem is that when the original apartment tears down, we lose our chance to release the object.</p>
+<p>What we want is something between a strong reference and a weak reference. We want a reference that is strong, but which releases its reference to the destination when the originating apartment tears down.</p>
+<p>Is there such a thing?</p>
+<p>It turns out that there is.</p>
+<p>What we can do is register the object in the global interface table (historically known as the GIT, unrelated to the source control system). The usual reason for doing this is to allow the object to be accessed from another apartment by redeeming the registration cookie. We have no intention of accessing the object from another apartment, but we do this to take advantage of a feature of the GIT: References in the GIT are automatically released when the object&#8217;s apartment shuts down. The registration cookie remains valid, but if you try to redeem it, you are told that the server is no longer available.</p>
+<p>So the idea here to register the original delegate in the GIT and save it in the agile wrapper. The agile wrapper then unregisters the delegate on destruction. We never redeem the registration cookie. The purpose of registering the delegate was not to access it from another apartment, but just to auto-release it when the original apartment tears down.</p>
+<p>So let&#8217;s try it.</p>
+<p>Next time.</p>
+<p>The post <a href="https://devblogs.microsoft.com/oldnewthing/20260803-00/?p=112582">Creating a fake agile wrapper that is technically agile but is not useful outside its home apartment, part 1</a> appeared first on <a href="https://devblogs.microsoft.com/oldnewthing">The Old New Thing</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/oldnewthing/20260803-00/?p=112582/feed</wfw:commentRss>
+			<slash:comments>2</slash:comments>
+		
+		
+			<image url="https://devblogs.microsoft.com/oldnewthing/wp-content/uploads/sites/38/2025/10/banner-oldnewthing-blue.webp" type="image/png" />
+	</item>
+		<item>
+		<title>Making an agile version of a Windows Runtime delegate in C++/WinRT, part 10</title>
+		<link>https://devblogs.microsoft.com/oldnewthing/20260731-00/?p=112578</link>
+					<comments>https://devblogs.microsoft.com/oldnewthing/20260731-00/?p=112578#comments</comments>
+		
+		<dc:creator><![CDATA[Raymond Chen]]></dc:creator>
+		<pubDate>Fri, 31 Jul 2026 14:00:00 +0000</pubDate>
+				<category><![CDATA[Old New Thing]]></category>
+		<category><![CDATA[Code]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/oldnewthing/?p=112578</guid>
+
+					<description><![CDATA[<p>What failure of the context callback means.</p>
+<p>The post <a href="https://devblogs.microsoft.com/oldnewthing/20260731-00/?p=112578">Making an agile version of a Windows Runtime delegate in C++/WinRT, part 10</a> appeared first on <a href="https://devblogs.microsoft.com/oldnewthing">The Old New Thing</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>In <a title="Making an agile version of a Windows Runtime delegate in C++/WinRT, part 5" href="https://devblogs.microsoft.com/oldnewthing/20260724-00/?p=112562"> part 5 of this unnecessarily long series on agile delegates</a>, <a href="https://devblogs.microsoft.com/oldnewthing/20260724-00/?p=112562&amp;commentid=144539#comment-144539"> commenter LB asked</a>, &#8220;Is the <code>Context­Callback</code> in the deleter guaranteed to always succeed? According to the docs it can fail. I wonder if there&#8217;s a way to move the fallible part to an earlier point so the deleter can be infallible.&#8221;</p>
+<p>Let&#8217;s look at the first part: What if <code>IContext­Callback::<wbr />Context­Callback</code> fails?</p>
+<p>If it fails, it means that COM couldn&#8217;t switch to the destination context.</p>
+<p>If you can&#8217;t switch to the destination context, then you can&#8217;t release the pointer. It&#8217;s not clear what recovery is possible anyway. Do you just keep retrying until it finally works?</p>
+<p>If the destination context is an ASTA, then it&#8217;s possible that the reason is that the context is already busy, and ASTA doesn&#8217;t allow re-entrancy. We&#8217;d have to wait a little bit and try again later, when the destination context might be ready. We can&#8217;t just block on the retry because the destination context might be calling into the thread we are on right now, so just spinning in a retry loop won&#8217;t help because it&#8217;s waiting for us! We&#8217;re have to return, allow whatever we&#8217;re doing to finish, which in turn allows the ASTA to resume, and then it becomes worthwhile to try to call into the ASTA again.</p>
+<p>This would be the issue for conventional COM calls into the ASTA, but we are using <code>IContextCallback</code>, and that lets us control whether or not to honor ASTA reentrancy roadblocks.</p>
+<blockquote class="q"><p>If riid is set to IID_ICallbackWithNoReentrancyToApplicationSTA, the function does not reenter an ASTA arbitrarily.</p></blockquote>
+<p>We are not passing that special value, so our call to <code>Context­Callback</code> is allowed to reenter an ASTA. That removes one possible source of failure.</p>
+<p>What other reasons could there be for not being able to switch to the destination apartment?</p>
+<p>The most likely reason is that the destination apartment no longer exists, in which case there is no recovery. Depending on how the object was managed by its creating thread, it might have been forcibly destroyed at thread termination¹, or it may simply have been leaked. We don&#8217;t know. At any rate, there&#8217;s no way to release it now.</p>
+<p>The other case is that the destination apartment is not reachable due to a low-memory condition. We discussed earlier how <a title="What does it mean when my cross-thread COM call fails with RPC_E_SYS_CALL_FAILED?" href="https://devblogs.microsoft.com/oldnewthing/20230216-00/?p=107836"> the most common reason is a destination thread that has stopped responding to messages</a>. I guess you could wait and try again later, but in practice if a thread has stopped responding for so long that its inbound message queue is full, the odds that it will magically start responding soon are pretty low.</p>
+<p>All of the failures are effectively unrecoverable. But some of them are non-fatal, such as the <code>Co­Disconnect­Object</code> discussed in the footnote. Unfortunately, we can&#8217;t tell what case we are in. The <code>Context­Callback</code> returns <code>RPC_E_DISCONNECTED</code> to say that the destination apartment no longer exists, but we don&#8217;t know how that apartment cleaned up its orphaned objects.</p>
+<p>The C++/CX implementation of lazy-created agile delegates ignores errors that occur trying to release the original pointer. So we&#8217;ll do the same.</p>
+<p>But wait, we can do better. Next time.</p>
+<p>¹ This is often combined with a <code>Co­Disconnect­Object</code> to tell proxies to fail all calls with <code>RPC_E_DISCONNECTED</code>, so that there are no external references to destroyed objects.</p>
+<p>The post <a href="https://devblogs.microsoft.com/oldnewthing/20260731-00/?p=112578">Making an agile version of a Windows Runtime delegate in C++/WinRT, part 10</a> appeared first on <a href="https://devblogs.microsoft.com/oldnewthing">The Old New Thing</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/oldnewthing/20260731-00/?p=112578/feed</wfw:commentRss>
+			<slash:comments>1</slash:comments>
+		
+		
+			<image url="https://devblogs.microsoft.com/oldnewthing/wp-content/uploads/sites/38/2025/10/banner-oldnewthing-blue.webp" type="image/png" />
+	</item>
+		<item>
+		<title>Making an agile version of a Windows Runtime delegate in C++/WinRT, part 9</title>
+		<link>https://devblogs.microsoft.com/oldnewthing/20260730-00/?p=112573</link>
+					<comments>https://devblogs.microsoft.com/oldnewthing/20260730-00/?p=112573#comments</comments>
+		
+		<dc:creator><![CDATA[Raymond Chen]]></dc:creator>
+		<pubDate>Thu, 30 Jul 2026 14:00:00 +0000</pubDate>
+				<category><![CDATA[Old New Thing]]></category>
+		<category><![CDATA[Code]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/oldnewthing/?p=112573</guid>
+
+					<description><![CDATA[<p>Maybe it doesn't matter.</p>
+<p>The post <a href="https://devblogs.microsoft.com/oldnewthing/20260730-00/?p=112573">Making an agile version of a Windows Runtime delegate in C++/WinRT, part 9</a> appeared first on <a href="https://devblogs.microsoft.com/oldnewthing">The Old New Thing</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>Over half of the time we spent trying to make an agile version of a Windows Runtime delegate in C++/WinRT was dealing with the case of <a title="Making an agile version of a Windows Runtime delegate in C++/WinRT, part 8" href="https://devblogs.microsoft.com/oldnewthing/20260729-00/?p=112570"> a delegate that declares non-marshalability</a>. But how much does it matter?</p>
+<p>I looked at the three major C++ implementations of the Windows Runtime: C++/WinRT, C++/CX, and WRL.</p>
+<p>The C++/WinRT implementation <a href="https://github.com/microsoft/cppwinrt/blob/55f1b452aca069d6ac7eaad3e05cc1058fc39d27/strings/base_delegate.h#L88"> has an optimization for <code>IAgile­Object</code></a>, but for objects that aren&#8217;t agile, <a href="https://github.com/microsoft/cppwinrt/blob/55f1b452aca069d6ac7eaad3e05cc1058fc39d27/strings/base_delegate.h#L95"> it just goes directly to <code>agile_<wbr />ref</code></a> without checking for <code>INoMarshal</code>. This means that a delegate that declares non-marshability will always be rejected by C++/WinRT when used as an event handler.</p>
+<p>The C++/CX implementation <a href="https://github.com/ojdkbuild/tools_toolchain_vs2013e/blob/a6cea36c2e52a571864986ee2957fbd91d6f4ce8/VC/include/agile.h#L207"> lazy-creates the agile reference to the original delegate when the wrapper is used from a different apartment</a>. If the original delegate is non-marshalable, it means that the <code>CO_<wbr />E_<wbr />NOT­SUPPORTED</code> is produced only when the wrapper is used in a way that requires a marshalable delegate.</p>
+<p>The WRL implementation does not have an optimization for <code>IAgile­Object</code>, although <a href="https://github.com/tpn/winsdk-10/blob/9b69fd26ac0c7d0b83d378dba01080e93349c2ed/Include/10.0.16299.0/winrt/wrl/event.h#L278"> it mentions it as a possible optimization</a>. It always creates the agile reference eagerly, which means that if the original delegate is non-marshalable, it cannot be added to an agile event source.</p>
+<p>Okay, so let&#8217;s summarize in a table.</p>
+<table class="cp3" style="border-collapse: collapse;" border="1" cellspacing="0" cellpadding="3">
+<tbody>
+<tr>
+<th rowspan="2">Event source</th>
+<th rowspan="2">C++/WinRT</th>
+<th rowspan="2">C++/CX</th>
+<th colspan="2">WRL</th>
+<th rowspan="2">Our version</th>
+</tr>
+<tr>
+<th>single-threaded</th>
+<th>multi-threaded</th>
+</tr>
+<tr>
+<td>Optimize agile delegates</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>N/A</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Avoid wrapping agile delegates</td>
+<td>Yes</td>
+<td>No</td>
+<td>Never wraps</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Agile reference creation</td>
+<td>Eager</td>
+<td>Lazy</td>
+<td>Never</td>
+<td>Eager</td>
+<td>Eager</td>
+</tr>
+<tr>
+<td>Non-marshalable delegates</td>
+<td>Rejected</td>
+<td>Allowed if used<br />
+non-agile-ly</td>
+<td>Allowed (always<br />
+used non-agile-ly)</td>
+<td>Rejected</td>
+<td>Allowed if used<br />
+non-agile-ly</td>
+</tr>
+</tbody>
+</table>
+<p>Now, maybe you think we are working too hard. (Maybe we are.) In which case you can remove support for whatever cases you feel you don&#8217;t need.</p>
+<p>The post <a href="https://devblogs.microsoft.com/oldnewthing/20260730-00/?p=112573">Making an agile version of a Windows Runtime delegate in C++/WinRT, part 9</a> appeared first on <a href="https://devblogs.microsoft.com/oldnewthing">The Old New Thing</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/oldnewthing/20260730-00/?p=112573/feed</wfw:commentRss>
+			<slash:comments>1</slash:comments>
+		
+		
+			<image url="https://devblogs.microsoft.com/oldnewthing/wp-content/uploads/sites/38/2025/10/banner-oldnewthing-blue.webp" type="image/png" />
+	</item>
+		<item>
+		<title>Making an agile version of a Windows Runtime delegate in C++/WinRT, part 8</title>
+		<link>https://devblogs.microsoft.com/oldnewthing/20260729-00/?p=112570</link>
+					<comments>https://devblogs.microsoft.com/oldnewthing/20260729-00/?p=112570#comments</comments>
+		
+		<dc:creator><![CDATA[Raymond Chen]]></dc:creator>
+		<pubDate>Wed, 29 Jul 2026 14:00:00 +0000</pubDate>
+				<category><![CDATA[Old New Thing]]></category>
+		<category><![CDATA[Code]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/oldnewthing/?p=112570</guid>
+
+					<description><![CDATA[<p>Exceptions hiding in lambda captures.</p>
+<p>The post <a href="https://devblogs.microsoft.com/oldnewthing/20260729-00/?p=112570">Making an agile version of a Windows Runtime delegate in C++/WinRT, part 8</a> appeared first on <a href="https://devblogs.microsoft.com/oldnewthing">The Old New Thing</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>Last time, we <a title="Making an agile version of a Windows Runtime delegate in C++/WinRT, part 7" href="https://devblogs.microsoft.com/oldnewthing/20260728-00/?p=112568"> fixed the problem of an exception thrown from the custom deleter&#8217;s constructor resulting in a reference leak</a>. But wait, there&#8217;s another source of exceptions.</p>
+<p>To recap, here is where we left off:</p>
+<pre>    if (d.try_as&lt;::INoMarshal&gt;()) {
+        in_context_deleter del;
+        void* p;
+        if constexpr (std::is_reference_v&lt;Delegate&gt;) {
+            p = winrt::detach_abi(d);
+        } else {
+            winrt::copy_to_abi(d, p);
+        }
+        return
+            [p = std::unique_ptr&lt;void, in_context_deleter&gt;(p, std::move(del)),
+            token = get_context_token()](auto&amp;&amp;...args) {
+                if (token == get_context_token()) {
+                    std::remove_reference_t&lt;Delegate&gt; d;
+                    winrt::copy_from_abi(d, p.get());
+                    d(std::forward&lt;decltype(args)&gt;(args)...);
+                } else {
+                    throw winrt::hresult_error(CO_E_NOT_SUPPORTED);
+                }
+            };
+    }
+</pre>
+<p>Precreating the deleter means that an exception in its construction happens before we do any funny business with the raw pointer. That way, we close the gap between creating the raw pointer (with its reference obligation) and putting it into a <code>unique_ptr</code>.</p>
+<p>Or did we?</p>
+<p>In C++, the order of construction of the captures of a lambda is <i>unspecified</i>.</p>
+<blockquote class="q">
+<p><b>[expr.prim.lambda.capture]</b></p>
+<p>(10.2) ⟦ … ⟧ For each entity captured by copy, an unnamed non-static data member is declared in the closure type. The declaration order of these members is <span style="border: solid 1px currentcolor;">unspecified</span>.</p>
+</blockquote>
+<p>Since the order of construction is the order of declaration, the fact that the declaration order is unspecified implies that the order of construction is unspecified. And just to make sure you get the point, this is reiterated in paragraph 15 where it discusses the initialization of captures:</p>
+<blockquote class="q">
+<p>(15) ⟦ … ⟧ These initializations are performed when the <i>lambda-expression</i> is evaluated and in the (<span style="border: solid 1px currentcolor;">unspecified</span>) order in which the non-static data members are declared.</p>
+</blockquote>
+<p>Therefore, it&#8217;s possible that the <code>get_<wbr />context_<wbr />token()</code> happens before the creation of the <code>std::<wbr />unique_<wbr />ptr</code>, and if <code>get_<wbr />context_<wbr />token()</code> fails, then the reference held in the raw pointer is leaked because it never got put into a <code>unique_ptr</code>.</p>
+<p>One solution is to put it into a <code>unique_ptr</code> before we create the lambda.</p>
+<pre>    if (d.try_as&lt;::INoMarshal&gt;()) {
+        in_context_deleter del;
+        void* p;
+        if constexpr (std::is_reference_v&lt;Delegate&gt;) {
+            p = winrt::detach_abi(d);
+        } else {
+            winrt::copy_to_abi(d, p);
+        }
+        <span style="border: solid 1px currentcolor;">std::unique_ptr&lt;void, in_context_deleter&gt; up(p, std::move(del));</span>
+        return
+            [p = <span style="border: solid 1px currentcolor;">std::move(up)</span>,
+            token = get_context_token()](auto&amp;&amp;...args) {
+                if (token == get_context_token()) {
+                    std::remove_reference_t&lt;Delegate&gt; d;
+                    winrt::copy_from_abi(d, p.get());
+                    d(std::forward&lt;decltype(args)&gt;(args)...);
+                } else {
+                    throw winrt::hresult_error(CO_E_NOT_SUPPORTED);
+                }
+            };
+    }
+</pre>
+<p>By creating the <code>unique_ptr</code> immediately, we remove any opportunity for an exception to sneak in between the time we create an obligation in the raw pointer and the time we assign that obligation to the <code>unique_ptr</code>.</p>
+<p>One thing that bugs me about this is that we introduce another <code>unique_ptr</code>, which means that its destructor will have to check something for null, when it&#8217;s almost always null.</p>
+<p>We can avoid this temporary <code>unique_ptr</code> by using copy elision directly into the capture.</p>
+<pre>    if (d.try_as&lt;::INoMarshal&gt;()) {
+        <span style="border: solid 1px currentcolor;">auto make = [](auto&amp;&amp; d) {</span>
+            in_context_deleter del;
+            void* p;
+            if constexpr (std::is_reference_v&lt;Delegate&gt;) {
+                p = winrt::detach_abi(d);
+            } else {
+                winrt::copy_to_abi(d, p);
+            }
+        <span style="border: solid 1px currentcolor; border-bottom: none;">    return std::unique_ptr&lt;void,                      </span>
+        <span style="border: 1px currentcolor; border-style: none solid;">               in_context_deleter&gt;(p, std::move(del));</span>
+        <span style="border: solid 1px currentcolor; border-top: none;">};                                                    </span>
+        return
+            [p = <span style="border: solid 1px currentcolor;">make(std::forward&lt;Delegate&gt;(d))</span>,
+            token = get_context_token()](auto&amp;&amp;...args) {
+                if (token == get_context_token()) {
+                    std::remove_reference_t&lt;Delegate&gt; d;
+                    winrt::copy_from_abi(d, p.get());
+                    d(std::forward&lt;decltype(args)&gt;(args)...);
+                } else {
+                    throw winrt::hresult_error(CO_E_NOT_SUPPORTED);
+                }
+            };
+    }
+</pre>
+<p><b>Bonus reading</b>: <a title="How do I put a non-copyable, non-movable, non-constructible object into a std::optional?" href="https://devblogs.microsoft.com/oldnewthing/20241115-00/?p=110527"> Previously, in copy elision</a>.</p>
+<p>But an easier solution is to create the token early, just like we did with the deleter.</p>
+<pre>    if (d.try_as&lt;::INoMarshal&gt;()) {
+        in_context_deleter del;
+        <span style="border: solid 1px currentcolor;">auto token = get_context_token();</span>
+        void* p;
+        if constexpr (std::is_reference_v&lt;Delegate&gt;) {
+            p = winrt::detach_abi(d);
+        } else {
+            winrt::copy_to_abi(d, p);
+        }
+        return
+            [p = std::unique_ptr&lt;void, in_context_deleter&gt;(p, std::move(del)),
+             <span style="border: solid 1px currentcolor;">token</span>](auto&amp;&amp;...args) {
+                if (token == get_context_token()) {
+                    std::remove_reference_t&lt;Delegate&gt; d;
+                    winrt::copy_from_abi(d, p.get());
+                    d(std::forward&lt;decltype(args)&gt;(args)...);
+                } else {
+                    throw winrt::hresult_error(CO_E_NOT_SUPPORTED);
+                }
+            };
+    }
+</pre>
+<p>Okay, are we done?</p>
+<p>Maybe.</p>
+<p>But maybe this all wasn&#8217;t worth it.</p>
+<p>We&#8217;ll talk about that next time.</p>
+<p>The post <a href="https://devblogs.microsoft.com/oldnewthing/20260729-00/?p=112570">Making an agile version of a Windows Runtime delegate in C++/WinRT, part 8</a> appeared first on <a href="https://devblogs.microsoft.com/oldnewthing">The Old New Thing</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/oldnewthing/20260729-00/?p=112570/feed</wfw:commentRss>
+			<slash:comments>5</slash:comments>
+		
+		
+			<image url="https://devblogs.microsoft.com/oldnewthing/wp-content/uploads/sites/38/2025/10/banner-oldnewthing-blue.webp" type="image/png" />
+	</item>
+		<item>
+		<title>Making an agile version of a Windows Runtime delegate in C++/WinRT, part 7</title>
+		<link>https://devblogs.microsoft.com/oldnewthing/20260728-00/?p=112568</link>
+					<comments>https://devblogs.microsoft.com/oldnewthing/20260728-00/?p=112568#comments</comments>
+		
+		<dc:creator><![CDATA[Raymond Chen]]></dc:creator>
+		<pubDate>Tue, 28 Jul 2026 14:00:00 +0000</pubDate>
+				<category><![CDATA[Old New Thing]]></category>
+		<category><![CDATA[Code]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/oldnewthing/?p=112568</guid>
+
+					<description><![CDATA[<p>Further explorations into exception safety.</p>
+<p>The post <a href="https://devblogs.microsoft.com/oldnewthing/20260728-00/?p=112568">Making an agile version of a Windows Runtime delegate in C++/WinRT, part 7</a> appeared first on <a href="https://devblogs.microsoft.com/oldnewthing">The Old New Thing</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>Last time, we <a title="Making an agile version of a Windows Runtime delegate in C++/WinRT, part 6" href="https://devblogs.microsoft.com/oldnewthing/20260727-00/?p=112566"> fixed the problem of creating a <code>unique_ptr</code> whose deleter&#8217;s constructor was might throw an exception</a>. But we&#8217;re not out of the woods yet.</p>
+<p>Let&#8217;s take another look at what we have:</p>
+<pre>    if (d.try_as&lt;::INoMarshal&gt;()) {
+        void* p;
+        if constexpr (std::is_reference_v&lt;Delegate&gt;) {
+            p = winrt::detach_abi(d);
+        } else {
+            winrt::copy_to_abi(d, p);
+        }
+        return
+            [p = std::unique_ptr&lt;void, in_context_deleter&gt;(p, {}),
+            token = get_context_token()](auto&amp;&amp;...args) {
+                if (token == get_context_token()) {
+                    std::remove_reference_t&lt;Delegate&gt; d;
+                    winrt::copy_from_abi(d, p.get());
+                    d(std::forward&lt;decltype(args)&gt;(args)...);
+                } else {
+                    throw winrt::hresult_error(CO_E_NOT_SUPPORTED);
+                }
+            };
+    }
+</pre>
+<p>We had originally broken the rule that the <code>unique_ptr(p)</code> constructor requires that the deleter&#8217;s default constructor not throw an exception. We fixed it by constructing the deleter explicitly as a parameter, so that the <code>unique_ptr</code> constructor can move it into the stored deleter without an exception.</p>
+<p>But wait, if an exception occurs in construction of the <code>in_<wbr />context_<wbr />deleter</code>, the raw pointer we created in the previous block will be leaked. It owns a reference count but doesn&#8217;t clean up in the case of an exception.</p>
+<p>We can fix this by creating the deleter first.</p>
+<pre>    if (d.try_as&lt;::INoMarshal&gt;()) {
+        <span style="border: solid 1px currentcolor;">in_context_deleter del;</span>
+        void* p;
+        if constexpr (std::is_reference_v&lt;Delegate&gt;) {
+            p = winrt::detach_abi(d);
+        } else {
+            winrt::copy_to_abi(d, p);
+        }
+        return
+            [p = std::unique_ptr&lt;void, in_context_deleter&gt;(p, <span style="border: solid 1px currentcolor;">std::move(del)</span>),
+            token = get_context_token()](auto&amp;&amp;...args) {
+                if (token == get_context_token()) {
+                    std::remove_reference_t&lt;Delegate&gt; d;
+                    winrt::copy_from_abi(d, p.get());
+                    d(std::forward&lt;decltype(args)&gt;(args)...);
+                } else {
+                    throw winrt::hresult_error(CO_E_NOT_SUPPORTED);
+                }
+            };
+    }
+</pre>
+<p>If there is an exception constructing the custom deleter, it happens before we initialze the raw pointer, so there is no leak of the reference owned by that raw pointer.</p>
+<p>Okay, so are we done now?</p>
+<p>Nope.</p>
+<p>More next time.</p>
+<p>The post <a href="https://devblogs.microsoft.com/oldnewthing/20260728-00/?p=112568">Making an agile version of a Windows Runtime delegate in C++/WinRT, part 7</a> appeared first on <a href="https://devblogs.microsoft.com/oldnewthing">The Old New Thing</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/oldnewthing/20260728-00/?p=112568/feed</wfw:commentRss>
+			<slash:comments>3</slash:comments>
+		
+		
+			<image url="https://devblogs.microsoft.com/oldnewthing/wp-content/uploads/sites/38/2025/10/banner-oldnewthing-blue.webp" type="image/png" />
+	</item>
+		<item>
+		<title>Making an agile version of a Windows Runtime delegate in C++/WinRT, part 6</title>
+		<link>https://devblogs.microsoft.com/oldnewthing/20260727-00/?p=112566</link>
+					<comments>https://devblogs.microsoft.com/oldnewthing/20260727-00/?p=112566#comments</comments>
+		
+		<dc:creator><![CDATA[Raymond Chen]]></dc:creator>
+		<pubDate>Mon, 27 Jul 2026 14:00:00 +0000</pubDate>
+				<category><![CDATA[Old New Thing]]></category>
+		<category><![CDATA[Code]]></category>
+		<guid isPermaLink="false">https://devblogs.microsoft.com/oldnewthing/?p=112566</guid>
+
+					<description><![CDATA[<p>Exception-safety, the invisible bug.</p>
+<p>The post <a href="https://devblogs.microsoft.com/oldnewthing/20260727-00/?p=112566">Making an agile version of a Windows Runtime delegate in C++/WinRT, part 6</a> appeared first on <a href="https://devblogs.microsoft.com/oldnewthing">The Old New Thing</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<p>It looked like we were done when we <a title="Making an agile version of a Windows Runtime delegate in C++/WinRT, part 5" href="https://devblogs.microsoft.com/oldnewthing/20260724-00/?p=112562"> fixed the problem of releasing a non-marshalable delegate on the correct thread</a>.</p>
+<p>But we missed something.</p>
+<p>Again.</p>
+<pre>    if (d.try_as&lt;::INoMarshal&gt;()) {
+        void* p;
+        if constexpr (std::is_reference_v&lt;Delegate&gt;) {
+            p = winrt::detach_abi(d);
+        } else {
+            winrt::copy_to_abi(d, p);
+        }
+        return
+            [p = std::unique_ptr&lt;void, in_context_deleter&gt;(p),
+            token = get_context_token()](auto&amp;&amp;...args) {
+                if (token == get_context_token()) {
+                    std::remove_reference_t&lt;Delegate&gt; d;
+                    winrt::copy_from_abi(d, p.get());
+                    d(std::forward&lt;decltype(args)&gt;(args)...);
+                } else {
+                    throw winrt::hresult_error(CO_E_NOT_SUPPORTED);
+                }
+            };
+    }
+</pre>
+<p>The first part gets a raw ABI pointer, either by moving it out of the inbound delegate if we can, else by copying it from the inbound delegate. The reference count is owned by the raw pointer.</p>
+<p>The second part wraps the raw ABI pointer inside a <code>std::<wbr />unique_ptr</code> with our custom deleter. The unique pointer now owns the reference count, and the custom deleter will release it.</p>
+<p>The problem is that one of the requirements for a custom deleter is that if you use the <code>unique_ptr(p)</code> constructor, the custom deleter must not throw an exception at construction.</p>
+<blockquote class="q">
+<p><b>[unique.ptr.single.ctor]</b></p>
+<pre>constexpr explicit unique_ptr(type_identity_t&lt;pointer&gt; p) noexcept;
+</pre>
+<p>Constraints: <code>is_<wbr />pointer_<wbr />v&lt;deleter_<wbr />type&gt;</code> is <code>false</code> and <code>is_<wbr />default_<wbr />constructible_<wbr />v&lt;deleter_<wbr />type&gt;</code> is <code>true</code>.</p>
+<p>Preconditions: <code>D</code> meets the Cpp17DefaultConstructible requirements, and that <span style="border: solid 1px currentcolor;">construction does not throw an exception</span>.</p>
+</blockquote>
+<p>But our custom deleter could throw an exception if <code>Co­Get­Object­Context</code> fails. So it doesn&#8217;t meet the preconditions.</p>
+<p>We can fix that by using the constructor that takes an explicit deleter from which the stored deleter can be move-constructed. If an exception occurs, it happens during the creation of the parameter and not inside the <code>unique_<wbr />ptr</code> constructor.</p>
+<pre>    if (d.try_as&lt;::INoMarshal&gt;()) {
+        void* p;
+        if constexpr (std::is_reference_v&lt;Delegate&gt;) {
+            p = winrt::detach_abi(d);
+        } else {
+            winrt::copy_to_abi(d, p);
+        }
+        return
+            [p = std::unique_ptr&lt;void, in_context_deleter&gt;(p, <span style="border: solid 1px currentcolor;">{}</span>),
+            token = get_context_token()](auto&amp;&amp;...args) {
+                if (token == get_context_token()) {
+                    std::remove_reference_t&lt;Delegate&gt; d;
+                    winrt::copy_from_abi(d, p.get());
+                    d(std::forward&lt;decltype(args)&gt;(args)...);
+                } else {
+                    throw winrt::hresult_error(CO_E_NOT_SUPPORTED);
+                }
+            };
+    }
+</pre>
+<p>Okay, so now we&#8217;re done?</p>
+<p>Nope, still broken.</p>
+<p>More next time.</p>
+<p>The post <a href="https://devblogs.microsoft.com/oldnewthing/20260727-00/?p=112566">Making an agile version of a Windows Runtime delegate in C++/WinRT, part 6</a> appeared first on <a href="https://devblogs.microsoft.com/oldnewthing">The Old New Thing</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://devblogs.microsoft.com/oldnewthing/20260727-00/?p=112566/feed</wfw:commentRss>
+			<slash:comments>3</slash:comments>
+		
+		
+			<image url="https://devblogs.microsoft.com/oldnewthing/wp-content/uploads/sites/38/2025/10/banner-oldnewthing-blue.webp" type="image/png" />
+	</item>
+	</channel>
+</rss>

@@ -1,0 +1,861 @@
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"
+	xmlns:content="http://purl.org/rss/1.0/modules/content/"
+	xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:atom="http://www.w3.org/2005/Atom"
+	xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+	xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+	>
+
+<channel>
+	<title>The Financial Hacker</title>
+	<atom:link href="https://financial-hacker.com/feed/" rel="self" type="application/rss+xml" />
+	<link>https://financial-hacker.com</link>
+	<description>A new view on algorithmic trading</description>
+	<lastBuildDate>Sat, 04 Jul 2026 12:18:08 +0000</lastBuildDate>
+	<language>en-US</language>
+	<sy:updatePeriod>
+	hourly	</sy:updatePeriod>
+	<sy:updateFrequency>
+	1	</sy:updateFrequency>
+	
+
+<image>
+	<url>https://financial-hacker.com/wp-content/uploads/2017/07/cropped-mask-32x32.jpg</url>
+	<title>The Financial Hacker</title>
+	<link>https://financial-hacker.com</link>
+	<width>32</width>
+	<height>32</height>
+</image> 
+	<item>
+		<title>The Market Regime Filter</title>
+		<link>https://financial-hacker.com/the-market-regime-filter/</link>
+					<comments>https://financial-hacker.com/the-market-regime-filter/#comments</comments>
+		
+		<dc:creator><![CDATA[Petra Volkova]]></dc:creator>
+		<pubDate>Sat, 04 Jul 2026 09:02:32 +0000</pubDate>
+				<category><![CDATA[Indicators]]></category>
+		<category><![CDATA[Petra on Programming]]></category>
+		<category><![CDATA[Market Regime]]></category>
+		<guid isPermaLink="false">https://financial-hacker.com/?p=5025</guid>
+
+					<description><![CDATA[The market changes all the time. Sometimes it trends, sometimes it oscillates, sometimes it goes sidewards. Trading systems that do not react on market regime change will bring uncomfortable times for their traders (and their wallets). In TASC 9/2026, Gaetano Di Prima and Fabio Baruffa provide a solution. Their market regime filter consists of three &#8230; <a href="https://financial-hacker.com/the-market-regime-filter/" class="more-link">Continue reading<span class="screen-reader-text"> "The Market Regime Filter"</span></a>]]></description>
+										<content:encoded><![CDATA[<p><em></p>
+<p>The market changes all the time. Sometimes it trends, sometimes it oscillates, sometimes it goes sidewards. Trading systems that do not react on market regime change will bring uncomfortable times for their traders (and their wallets). In TASC 9/2026, <strong>Gaetano Di Prima</strong> and <strong>Fabio Baruffa</strong> provide a solution. Their market regime filter consists of three components for detecting trend, volatility, and credit spread. Does this filter improve trading?</p>
+<p></em></p>
+<p><span id="more-5025"></span></p>
+<p>Although the 3 detectors are not this complex, the authors provided 9 pages Python code for realizing them. Python is an effective language, but not so for financial indicators. Neither I, nor Claude or ChatGPT did really want to convert 9 pages of code, so I programmed the three detectors from scratch. This took five minutes:</p>
+<pre class="prettyprint">int marketDir(int TimePeriod)
+{
+  asset("SPY");
+  return priceC() &gt; SMA(seriesC(),TimePeriod);
+}
+
+int marketVolatility()
+{
+  return assetPrice("VIX") &lt; assetPrice("VIX3M");
+}
+
+var marketCC(int TimePeriod)
+{
+  var Ratio = assetPrice("HYG")/fix0(assetPrice("IEF"));
+  return zscore(Ratio,TimePeriod);
+}</pre>
+<p>The <strong>assetPrice</strong> function is a helper function that returns the current price of the given asset and then switches back to the original asset. The <strong>fix0</strong> function prevents division by zero, just in case. The first two functions return <strong>1</strong> when the condition is fulfilled, otherwise <strong>0</strong>.</p>
+<p>The authors consider the market in a favorable state when all 3 detectors give green light. If only 2 do, trading should be done with caution, and otherwise entrirely suspended. This is the code to plot a green, orange, or red bar depending on the market state:</p>
+<pre class="prettyprint">function run()
+{
+  BarPeriod = 1440;
+  StartDate = 2008;
+  EndDate = 2026;
+  LookBack = 200;
+  setf(PlotMode,PL_ALL);
+  assetList("AssetsIB");
+
+  int Score = marketDir(200) 
+    + marketVolatility() 
+    + (marketCC(100) &gt; -2);
+
+  plot("#0",0,NEW,WHITE); // plot in a new window
+  if(Score == 3)
+    plot("On",1,BARS,GREEN);
+  else if(Score == 2)
+    plot("Caution",1,BARS,ORANGE);
+  else
+    plot("Risk",1,BARS,RED);}
+}</pre>
+<p>The resulting chart:</p>
+<p><img fetchpriority="high" decoding="async" width="882" height="486" class="wp-image-5026" src="https://financial-hacker.com/wp-content/uploads/2026/07/word-image-5025-1.png" srcset="https://financial-hacker.com/wp-content/uploads/2026/07/word-image-5025-1.png 882w, https://financial-hacker.com/wp-content/uploads/2026/07/word-image-5025-1-300x165.png 300w, https://financial-hacker.com/wp-content/uploads/2026/07/word-image-5025-1-768x423.png 768w" sizes="(max-width: 709px) 85vw, (max-width: 909px) 67vw, (max-width: 1362px) 62vw, 840px" /></p>
+<p>Now we’re going to put the market detector to the test. We invest all capital in SPY when the market is in a green state, half the capital in an orange state, and go out of the market in a red state. For this we add this code to the <strong>run</strong> function:</p>
+<pre class="prettyprint">asset("SPY");
+Capital = 10000;
+Leverage = 1;
+int Exposure = (Capital+ProfitTotal)/MarginCost;
+if(Score &lt; 3) Exposure /= 2;
+if(Score &lt; 2) Exposure = 0;
+
+if(Exposure &gt; LotsPool)
+  enterLong(Exposure-LotsPool);
+else if(Exposure &lt; LotsPool)
+  exitLong(0,0,LotsPool-Exposure);</pre>
+<p>The backtest reproduces the results from the TASC article, with 8% CAGR and 18% drawdown:</p>
+<p><img decoding="async" width="882" height="486" class="wp-image-5027" src="https://financial-hacker.com/wp-content/uploads/2026/07/word-image-5025-2.png" srcset="https://financial-hacker.com/wp-content/uploads/2026/07/word-image-5025-2.png 882w, https://financial-hacker.com/wp-content/uploads/2026/07/word-image-5025-2-300x165.png 300w, https://financial-hacker.com/wp-content/uploads/2026/07/word-image-5025-2-768x423.png 768w" sizes="(max-width: 709px) 85vw, (max-width: 909px) 67vw, (max-width: 1362px) 62vw, 840px" /></p>
+<p>8% return is good, but not too exciting. However drawdown and risk are remarkably smaller than with a buy-and-hold strategy.</p>
+<p>The code can be downloaded from the 2026 script repository.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://financial-hacker.com/the-market-regime-filter/feed/</wfw:commentRss>
+			<slash:comments>4</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Evaluating Robert Pardo&#8217;s Ranger System</title>
+		<link>https://financial-hacker.com/implementing-robert-pardos-ranger-system/</link>
+					<comments>https://financial-hacker.com/implementing-robert-pardos-ranger-system/#comments</comments>
+		
+		<dc:creator><![CDATA[jcl]]></dc:creator>
+		<pubDate>Tue, 16 Jun 2026 06:30:51 +0000</pubDate>
+				<category><![CDATA[No Math]]></category>
+		<category><![CDATA[System Development]]></category>
+		<category><![CDATA[System Evaluation]]></category>
+		<category><![CDATA[Pardo]]></category>
+		<category><![CDATA[Ranger]]></category>
+		<category><![CDATA[Walk forward analysis]]></category>
+		<category><![CDATA[Zorro]]></category>
+		<guid isPermaLink="false">https://financial-hacker.com/?p=4998</guid>
+
+					<description><![CDATA[There are traders who became famous due to winning competitions, inventing indicators, managing large funds, or having lucky years. Robert Pardo became known for changing the way trading strategies are optimized and tested. And he gained further fame for the trading systems that he developed over the last 30 years for large investment firms. His &#8230; <a href="https://financial-hacker.com/implementing-robert-pardos-ranger-system/" class="more-link">Continue reading<span class="screen-reader-text"> "Evaluating Robert Pardo&#8217;s Ranger System"</span></a>]]></description>
+										<content:encoded><![CDATA[<p class="isSelectedEnd">There are traders who became famous due to winning competitions, inventing indicators, managing large funds, or having lucky years. <strong>Robert Pardo</strong> became known for changing the way trading strategies are optimized and tested. And he gained further fame for the trading systems that he developed over the last 30 years for large investment firms. His latest development, <strong>Ranger</strong>, produced spectacular returns in the past years, despite the turbulent markets. Is this the one system to rule them all?  <span id="more-4998"></span></p>
+<p class="isSelectedEnd">I knew Robert Pardo as the author of a well known trading book that&#8217;s also mentioned in Zorro&#8217;s <a href="https://zorro-project.com/manual/en/links.hmt" target="_blank" rel="noopener">book list</a>. Long before algorithmic trading was widely used, Pardo was thinking about the practical problems that every system developer still faces today: How can you distinguish a robust trading system from a system that has a beautiful backtest, but will go belly-up when exposed to the live market? Pardo&#8217;s solution, described in his book, was <strong>Walk-Forward Analysis</strong>. The idea sounds almost obvious: Optimize a system on one segment of historical data, test it on the next unseen segment, roll the whole window forward, and repeat the process. But this turned what previously was a kind of black art, needing experience and intuition, into a repeatable engineering process.</p>
+<h3>From Software Pioneer to System Designer</h3>
+<p class="isSelectedEnd">Pardo built some of the early software tools for technical analysis and trading system development. His platforms, such as Chartist and Swing Trader, were part of the prehistory of today’s algorithmic trading platforms such as TradeStation or Zorro. His book, <em>The Evaluation and Optimization of Trading Strategies</em>, became a classic because it addressed the uncomfortable part of trading system development: not how to generate signals, but how to know whether those signals deserve trust.</p>
+<p>Using his experience and his development process, Pardo provided algorithmic strategies and consulting to large firms such as Goldman Sachs, Daiwa Securities, Transworld Oil, and DUNN Capital. His systems XT99 Diversified and Pardo Renaissance Diversified systems proved consistently profitable over the years. XT99 alone has been cited over 30 times for excellence and top performance, and made &#8211; according to Pardo &#8211; millions of dollars for its users. Ranger is the final consequence of his trading philosophy.</p>
+<h3>What Ranger Is — and What It Is Not</h3>
+<p class="isSelectedEnd">Superficially, Ranger is a strategy script for TradeStation. But calling Ranger “a strategy” is somewhat misleading. Ranger is better understood as a strategy generator.</p>
+<p class="isSelectedEnd">It is built around a classic idea: the range breakout. The simplest version of a range breakout buys when price exceeds the highest high of the last <em>n</em> bars and sells when price breaks below the lowest low of the last <em>n</em> bars. This idea goes back to Richard Donchian’s four-week breakout system and later became famous in a generalized form through the Turtle Trading system.</p>
+<p class="isSelectedEnd">Ranger starts there. But instead of giving the trader a fixed breakout model, Ranger offers many switches and variables that change the nature of the system. A Ranger strategy can trade breakouts, pullbacks, with the trend, against the trend, or only when the market is moving sidewards. It can use volatility filters, entry filters, exit orders, profit targets, risk stops, and trailing stops. With different combinations of those elements, Ranger can produce thousands of structurally different strategies.</p>
+<p class="isSelectedEnd">That is the central idea: not one magic system, but a factory for generating robust systems. </p>
+<h3>The Portfolio Concept</h3>
+<p class="isSelectedEnd">One of the interesting aspects of Ranger is not any single indicator or rule, but the portfolio idea. A trader can try to build the perfect strategy for a particular market. That is the traditional approach. Ranger uses a different approach: build a family of strategies whose logic differs enough that they do not all make and lose money at the same time.</p>
+<p class="isSelectedEnd">This is especially relevant for <strong>single-market portfolios</strong>. If ten strategies all buy the same breakout and use the same exit, they are not really ten strategies, but ten incarnations of one strategy. Ranger tries to avoid that by offering structural variation: stop versus limit entry, with-trend versus counter-trend logic, volatility regimes, trend-neutral modes, and different exit behavior.</p>
+<p class="isSelectedEnd">This is where Pardo’s background becomes visible. Ranger is not just a clever signal generator. It reflects the thinking of someone who spent decades worrying about validation, robustness, and the difference between a strategy that looks good in a particular backtest and a strategy that really survives all sorts of market regimes.</p>
+<h3>RangerZ &#8211; the Zorro Version</h3>
+<p class="isSelectedEnd">Robert Pardo contacted us last year for creating a Zorro variant of his Ranger system. <a href="https://zorro-project.com/rangerz.php" target="_blank" rel="noopener">RangerZ</a> had to replicate the components, variables, and trading behavior of Ranger, but take advantage of Zorro’s superior speed, optimizing, and analysis functions. My colleague Petra took over the development, and recently wrote an <a href="https://financial-hacker.com/coding-the-largest-strategy-ever/" target="_blank" rel="noopener">article</a> about it.</p>
+<p>I became quickly conviced of Ranger&#8217;s flexibility and proven performance. But I was, for various reasons, not so convinced of the &#8216;Rangermaker&#8217; tool that Robert Pardo uses to evaluate Ranger strategies and build Ranger portfolios, even though they had an impressive track record. That&#8217;s why we decided not to replicate this tool and its evaluation process, but developed our own one last year, the <a href="https://financial-hacker.com/build-better-strategies-part-6-evaluation/">Evaluation Shell</a>. </p>
+<p class="isSelectedEnd">The Shell converted RangerZ from a manual strategy laboratory to an automated research environment. The setup consists of jobs, variables, assets, time frames, and algorithms. A job defines a particular combination of Ranger variables; Zorro then trains and tests that configuration with all assets and time periods. After further analysis steps, a final portfolio is created. All these processes run fully automated, only at the last stage the user can pick the most uncorrelated strategies by their equity curves from a preselected set. The basic portfolio included in RangerZ results from this process. </p>
+<figure style="width: 701px" class="wp-caption alignnone"><img decoding="async" src="https://financial-hacker.com/wp-content/uploads/2026/06/RangerZperf.png" alt="" width="701" height="405" /><figcaption class="wp-caption-text">RangerZ basic portfolio equity curve, trading DJI, S&amp;P500, DAX, Gold, and Bitcoin.</figcaption></figure>
+<p class="isSelectedEnd">The important point is that RangerZ does not merely translate Ranger from EasyLanguage to C. It embeds Ranger in a full development workflow. Strategies can be compared by their individual equity curves, filtered by cluster analysis, and finally subjected to a Monte Carlo reality check. Although this concept is not reviewed or approved by Robert Pardo, it fits very well with his philosophy: a trading system should not be trusted because its backtest looks good, but because it has survived a disciplined validation process.</p>
+<p class="isSelectedEnd">RangerZ also makes the Ranger idea more accessible to systematic experimentation. Variable settings can be stored as CSV job files, reused, modified, and combined. Users can begin with the included jobs, then create their own combinations of markets, time frames, trend modes, entry types, volatility filters, exits, stops, targets, and position-sizing rules. Asset lists can be freely defined, so the strategy architecture can be applies to various asset types &#8211; CFDs, ETFs, or futures &#8211; based on the same markets such as indexes, commodities, or bitcoin.</p>
+<p>In that sense, RangerZ is a natural continuation of Pardo’s work. Ranger supplied the strategy architecture. Zorro supplies the engineering machinery around it. Together they turn Ranger from a powerful strategy toolbox into a complete research and development system that can generate almost any sort of strategy.</p>
+<p class="isSelectedEnd">The old dream of traders was to find the one perfect system. Ranger’s approach is more realistic: Build many good systems, test them properly, and combine them to the final robust portfolio that rules them all.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://financial-hacker.com/implementing-robert-pardos-ranger-system/feed/</wfw:commentRss>
+			<slash:comments>15</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>The AutoTune filter</title>
+		<link>https://financial-hacker.com/the-autotune-filter/</link>
+					<comments>https://financial-hacker.com/the-autotune-filter/#comments</comments>
+		
+		<dc:creator><![CDATA[Petra Volkova]]></dc:creator>
+		<pubDate>Fri, 17 Apr 2026 14:53:29 +0000</pubDate>
+				<category><![CDATA[Indicators]]></category>
+		<category><![CDATA[Petra on Programming]]></category>
+		<category><![CDATA[System Development]]></category>
+		<category><![CDATA[Dominant Cycle]]></category>
+		<category><![CDATA[Ehlers]]></category>
+		<guid isPermaLink="false">https://financial-hacker.com/?p=4989</guid>
+
+					<description><![CDATA[By the Fourier theorem, any price curve is a mix of many long-term and short-term cycles. Once in a while a dominant market cycle emerges and can be exploited for trading. In his TASC 5/2026 article, John Ehlers described an algorithm for detecting such dominant cycles, using them to tune a bandpass filter, and creating &#8230; <a href="https://financial-hacker.com/the-autotune-filter/" class="more-link">Continue reading<span class="screen-reader-text"> "The AutoTune filter"</span></a>]]></description>
+										<content:encoded><![CDATA[<p><em>By the Fourier theorem, any price curve is a mix of many long-term and short-term cycles. Once in a while a <strong>dominant market cycle</strong> emerges and can be exploited for trading. In his TASC 5/2026 article, <strong>John Ehlers</strong> described an algorithm for detecting such dominant cycles, using them to tune a bandpass filter, and creating a profitable trading system. Here&#8217;s how to do it.</em></p>
+<p><span id="more-4989"></span></p>
+<p>Ehlers&#8217; Easylanguage code from the TASC article can be directly converted to C for Zorro.  ChatGPT does the job in a few seconds. First, the cycle detector:</p>
+<pre class="prettyprint">var MinCorr, Filt;
+var AutoTune(vars Data,int Window)
+{
+  Filt = HighPass3(Data,Window);
+  vars HP = series(Filt);
+  var Corr[256];
+  int Lag, J;
+  for(Lag = 1; Lag &lt;= Window; Lag++)
+  {
+    var Sx = 0., Sy = 0.;
+    var Sxx = 0., Sxy = 0., Syy = 0.;
+    for(J = 0; J &lt; Window; J++)
+    {
+      var X = HP[J];
+      var Y = HP[Lag + J];
+      Sx += X; Sy += Y;
+      Sxx += X*X; Sxy += X*Y; Syy += Y*Y;
+    }
+    var Den1 = Window*Sxx - Sx*Sx;
+    var Den2 = Window*Syy - Sy*Sy;
+    Corr[Lag] = (Window*Sxy - Sx*Sy) / sqrt(fix0(Den1*Den2));
+  }
+
+  MinCorr = 1.;
+  var DC = Window;
+  for(Lag = 1; Lag &lt;= Window; Lag++)
+    if(Corr[Lag] &lt; MinCorr) {
+      MinCorr = Corr[Lag];
+      DC = 2*Lag;
+    }
+
+  vars DCs = series(DC,2);
+  return DCs[0] = clamp(DC,DCs[1]-2.,DCs[1]+2.);
+}</pre>
+<p>The output of the <strong>AutoTune</strong> function is supposed to be the dominant price cycle in units of bars. It is then used to set the center frequency of a bandpass filter. Since Zorro has already a bandpass filter in its arsenal, I named Ehlers&#8217; new version <strong>BandPass2</strong>:</p>
+<pre class="prettyprint">var BandPass2(vars Data, int Period, var Bandwidth)
+{
+  var L1 = cos(2.*PI/Period);
+  var G1 = cos(Bandwidth*2.*PI/Period);
+  var S1 = 1./G1 - sqrt(1./(G1*G1) - 1.);
+  vars BP = series(0,3);
+  return BP[0] = 0.5*(1.-S1)*(Data[0]-Data[2]) 
+    + L1*(1.+S1)*BP[1] - S1*BP[2];
+}</pre>
+<p>Here&#8217;s some code for reproducing Ehlers’ ES chart in the article:</p>
+<pre class="prettyprint">function run()
+{
+  BarPeriod = 1440;
+  StartDate = 2024;
+  EndDate = 2025;
+  asset("ES");
+  var DC = AutoTune(seriesC(),20);
+  var BP = BandPass2(seriesC(),DC,0.25);
+  plot("Zero",0,NEW,BLACK);
+  plot("BP",BP,LINE,BLUE);
+}</pre>
+<p>The resulting chart:</p>
+<p><img loading="lazy" decoding="async" width="877" height="514" class="wp-image-4990" src="https://financial-hacker.com/wp-content/uploads/2026/04/word-image-4989-1.png" srcset="https://financial-hacker.com/wp-content/uploads/2026/04/word-image-4989-1.png 877w, https://financial-hacker.com/wp-content/uploads/2026/04/word-image-4989-1-300x176.png 300w, https://financial-hacker.com/wp-content/uploads/2026/04/word-image-4989-1-768x450.png 768w" sizes="auto, (max-width: 709px) 85vw, (max-width: 909px) 67vw, (max-width: 1362px) 62vw, 840px" /></p>
+<p>How can we use this bandpass output for a trade signal? Ehlers used the zero crossovers of its rate-of-change (ROC). In this way he generated an impressive equity curve in his article, unfortunately with in-sample optimization. For a more realistic result, we’re using <strong>walk-forward analysis</strong> and reinvest profits by the <strong>square root rule</strong>:</p>
+<pre class="prettyprint">function run()
+{
+  BarPeriod = 1440;
+  StartDate = 2010;
+  EndDate = 2025;
+  Capital = 100000;
+
+  asset("ES");
+  set(TESTNOW,PARAMETERS);
+  NumWFOCycles = 10;
+
+  int Window = optimize("Window",26,10,30,2);
+  var BW = optimize("BW",0.22,0.10,0.30,0.01);
+  var Thresh = -optimize("Thresh",0.22,0.1,0.3,0.01);
+  var DC = AutoTune(seriesC(),Window);
+  var BP = BandPass2(seriesC(),DC,BW);
+  vars ROCs = series(BP-ref(BP,2));
+  
+  Lots = 0.5*(Capital+sqrt(1.+ProfitTotal/Capital))/MarginCost;
+  MaxLong = MaxShort = 1;
+  if(crossOver(ROCs,0) &amp;&amp; MinCorr &lt; Thresh)
+    enterLong();
+  if(crossUnder(ROCs,0) &amp;&amp; MinCorr &lt; Thresh &amp;&amp; Filt &gt; 0)
+    enterShort();
+}</pre>
+<p>The signals are filtered by a threshold that determines whether we&#8217;re in a cyclic market condition or not. The system is not fully symmetrical in long and short positions. Training and testing produced this equity curve:</p>
+<p><img loading="lazy" decoding="async" width="701" height="405" class="wp-image-4991" src="https://financial-hacker.com/wp-content/uploads/2026/04/word-image-4989-2.png" srcset="https://financial-hacker.com/wp-content/uploads/2026/04/word-image-4989-2.png 701w, https://financial-hacker.com/wp-content/uploads/2026/04/word-image-4989-2-300x173.png 300w" sizes="auto, (max-width: 709px) 85vw, (max-width: 909px) 67vw, (max-width: 984px) 61vw, (max-width: 1362px) 45vw, 600px" /></p>
+<p>This curve does not look as impressive as Ehler’s one, but the CAGR is in the 25% area, much better than a buy-and-hold strategy. The code can be downloaded from the 2026 script repository.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://financial-hacker.com/the-autotune-filter/feed/</wfw:commentRss>
+			<slash:comments>1</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Coding the largest strategy ever</title>
+		<link>https://financial-hacker.com/coding-the-largest-strategy-ever/</link>
+					<comments>https://financial-hacker.com/coding-the-largest-strategy-ever/#comments</comments>
+		
+		<dc:creator><![CDATA[Petra Volkova]]></dc:creator>
+		<pubDate>Mon, 30 Mar 2026 11:30:15 +0000</pubDate>
+				<category><![CDATA[No Math]]></category>
+		<category><![CDATA[Petra on Programming]]></category>
+		<category><![CDATA[EasyLanguage]]></category>
+		<category><![CDATA[TradeStation]]></category>
+		<guid isPermaLink="false">https://financial-hacker.com/?p=4934</guid>
+
+					<description><![CDATA[Recently I got a quite unusual job: Here’s an extremely profitable strategy for the TradeStation platform. It’s a bit large &#8211; about 3000 lines of EasyLanguage code. Please replicate that monster in C++ so that it runs on the Zorro platform, but still produces the same trades as on TS. While you’re at it, fix &#8230; <a href="https://financial-hacker.com/coding-the-largest-strategy-ever/" class="more-link">Continue reading<span class="screen-reader-text"> "Coding the largest strategy ever"</span></a>]]></description>
+										<content:encoded><![CDATA[<p><em>Recently I got a quite unusual job: Here’s an extremely profitable strategy for the TradeStation platform. It’s a bit large &#8211; about 3000 lines of EasyLanguage code. Please replicate that monster in C++ so that it runs on the Zorro platform, but still produces the same trades as on TS. While you’re at it, fix any bugs that you encounter in the EasyLanguage code. You have 3 weeks. Good luck.</em></p>
+<p><span id="more-4934"></span></p>
+<p>The strategy in question is arguably the largest trading script ever written. At least it&#8217;s the largest I&#8217;ve ever seen. The system was created by a famous trader, and is said to produce &#8216;stellar returns&#8217; for his customers. It had to be now migrated to Zorro. It&#8217;s not a single strategy, but a combination of multiple algorithms, similar to Zorro&#8217;s <a href="https://zorro-project.com/manual/en/zsystems.htm" target="_blank" rel="noopener">Z12 system</a>. However unlike Z12, it is not divided into separate algos that trade simultaneously. Rather, its many indicators, filters, entry and exit conditions can be combined with each other in multiple ways.  With the right combinations, you got the ultimate strategy. What are these magic combinations? I don’t know, but if you buy the system, you can maybe find out.</p>
+<p>It turned out that coding the system in C++ was the easiest part of the job. The code was large, but well structured and not very complex. Using C++ reduced the code size by 50% and increased the speed by up to 2000%. I suppose some of its functions are now also more reliable. The challenging part was not the code conversion, but exactly replicating the trade behavior of TS. And that is the main topic of this article.</p>
+<p>When you convert an EasyLanguage script to a different platform, you&#8217;ll face the problem that TS opens positions &#8211; or not &#8211; in a way you might not always expect. The usual command for entering a long position with an entry limit looks like this:</p>
+<pre>TS:  Buy N Contracts Next Bar at MyEntry Limit;
+Zorro:  enterLong(N,-MyEntry);</pre>
+<p>Zorro would then just enter a pending trade at the given limit. But what TS does depends on the context. This is only partially documented, so I had to find out by experiment. Here are the rules by which TS appears to trade and fill positions (unless ‘pyramiding’ is enabled):</p>
+<ul>
+<li>If another buy or sell command was given within the current bar, the new command is ignored.</li>
+<li>If a position in the same direction was already open, the command is ignored.</li>
+<li>If a position in the opposite direction was already open, the command is executed and closes the opposite position when filled.</li>
+<li>If a position in the same direction is currently pending, and if no other buy or sell short command was already given within the current bar, the entry limit of the pending position is set to the current entry limit.</li>
+<li>If no position is open and no other buy or sell short command was given within the current bar, the command is executed.</li>
+<li>If several pending positions hit their entry limits within the current bar, only the first one is filled.</li>
+<li>If a position is filled, the fill price is the given entry limit with no slippage, but 1 point penalty.</li>
+</ul>
+<p>Similar rules apply for closing a position.</p>
+<p>For replicating the TS behavior, you first need to set up Zorro’s trading parameters in this way:</p>
+<pre class="prettyprint">void emulateTS()
+{
+  setf(TradeMode,TR_EXTEND); // update pending trades
+  MaxLong = MaxShort = 1; // only 1 open position
+  Hedge = 1; // close opposite positions
+  Fill = 3; // next bar, optimistic mode
+  Penalty = 1*PIP; // 1 point
+  Slippage = 0; // don’t simulate slippage
+  Interest = 0; // don’t calculate margin interest
+}</pre>
+<p>When the entry limit is hit, you must check whether it’s the first hit of the current bar or not. If not, don’t enter. You need a trade management function for this:</p>
+<pre class="prettyprint">#define LastEntryBar AssetInt[0] 
+int manage() // fill only the first pending position at any bar
+{
+  if(TradeIsEntry) {
+    if (Bar == LastEntryBar)
+      return 1; // don’t open it
+    LastEntryBar = Bar;
+  }
+  return 16; // open it or wait for next entry
+}</pre>
+<p>TS adjusts the entry limits and stops of open positions only if no other buy/sell command was given before on the same bar:</p>
+<pre class="prettyprint">#define LastBarLong AssetInt[1]; 
+void buyNextBar(var Limit)
+{
+  if(Bar != LastBarLong) { // first command of the bar?
+    setf(TradeMode,TR_ANYLIMIT|TR_ANYSTOP); // adjust limit/stop
+    LastBarLong = Bar;
+  } else // don’t adjust 
+    resf(TradeMode,TR_ANYLIMIT|TR_ANYSTOP);
+  enterLong(Lots,-Limit);
+}
+
+#define LastBarShort AssetInt[2]; 
+void sellShortNextBar(var Limit) 
+{
+  if(Bar != LastBarShort) { // first command of the bar?
+    setf(TradeMode,TR_ANYLIMIT|TR_ANYSTOP); // adjust limit/stop
+    LastBarShort = Bar;
+  } else // don’t adjust 
+    resf(TradeMode,TR_ANYLIMIT|TR_ANYSTOP);
+  enterShort(Lots,-Limit);
+}</pre>
+<p>I do not recommend using this code for other purposes than for emulating TradeStation. But the monster strategy with this trading code opened exactly the same positions at exactly the same time and entry price as the original system on TS.  Only exceptions were a few differences by rounding or by fixing bugs of the original code.</p>
+<p>By the way, here are some code lines to replicate some often-used TradeStation parameters in C/C++:</p>
+<pre class="prettyprint">int MarketPosition = sign(NumOpenLong-NumOpenShort); 
+var PriceScale = 100; <em>// always 100 for stocks and futures</em> 
+var MinMove = PIP * PriceScale; <em>// Stock: 0.01 * 100, Emini: 0.25 * 100</em> 
+var PointValue = LotAmount / PriceScale; <em>// Stock: 0.01, Emini: 0.50</em> 
+var BigPointValue = LotAmount; 
+var EntryPrice = 0; 
+for(current_trades) if(TradeIsOpen) EntryPrice = TradeFill;</pre>
+<p>I hope this helps anyone who happens to get the task of replicating a large TradeStation system on a different platform. Good luck!</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://financial-hacker.com/coding-the-largest-strategy-ever/feed/</wfw:commentRss>
+			<slash:comments>11</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>The One Euro Filter</title>
+		<link>https://financial-hacker.com/the-one-euro-filter/</link>
+					<comments>https://financial-hacker.com/the-one-euro-filter/#comments</comments>
+		
+		<dc:creator><![CDATA[Petra Volkova]]></dc:creator>
+		<pubDate>Mon, 16 Mar 2026 10:07:33 +0000</pubDate>
+				<category><![CDATA[Indicators]]></category>
+		<category><![CDATA[Petra on Programming]]></category>
+		<category><![CDATA[Ehlers]]></category>
+		<category><![CDATA[Indicator]]></category>
+		<category><![CDATA[Low-Lag]]></category>
+		<guid isPermaLink="false">https://financial-hacker.com/?p=4925</guid>
+
+					<description><![CDATA[Whenever John Ehlers writes about a new indicator, I crack it open and wire it straight into C for the Zorro platform. Or rather, I let ChatGPT do most of the work. The One Euro Filter is a minimalistic, yet surprisingly effective low-latency smoother that reacts instantly to volatility with less lag of the usual &#8230; <a href="https://financial-hacker.com/the-one-euro-filter/" class="more-link">Continue reading<span class="screen-reader-text"> "The One Euro Filter"</span></a>]]></description>
+										<content:encoded><![CDATA[<p><em>Whenever <strong>John Ehlers</strong> writes about a new indicator, I crack it open and wire it straight into C for the Zorro platform. Or rather, I let ChatGPT do most of the work. The <strong>One Euro Filter</strong> is a minimalistic, yet surprisingly effective low-latency smoother that reacts instantly to volatility with less lag of the usual adaptive averages. This is achieved by dynamically adapting its time period.</em><span id="more-4925"></span></p>
+<p>This is the <strong>OneEurFilter</strong> function in C, converted straight from Ehlers’ EasyLanguage code, the comments left in place:</p>
+<pre class="prettyprint">var OneEurFilter(vars Data, int PeriodMin, var Factor)
+{
+  vars SmoothedDX = series(Data[0],2), 
+    Smoothed = series(Data[0],2);
+  var Alpha = 2*PI/(4*PI + 10);
+//EMA the Delta Price
+  SmoothedDX[0] = Alpha*(Data[0]-Data[1]) + (1.-Alpha)*SmoothedDX[1];
+//Adjust cutoff period based on a fraction of the rate of change
+  var Cutoff = PeriodMin + Factor*abs(SmoothedDX[0]);
+//Compute adaptive alpha
+  Alpha = 2*PI/(4*PI + Cutoff);
+//Adaptive smoothing
+  return Smoothed[0] = Alpha*Data[0] + (1.-Alpha)*Smoothed[1];
+}</pre>
+<p>This is how the OneEurFilter (blue line) looks when applied on a ES chart:</p>
+<p><img loading="lazy" decoding="async" width="1112" height="571" class="wp-image-4926" src="https://financial-hacker.com/wp-content/uploads/2026/03/word-image-4925-1.png" srcset="https://financial-hacker.com/wp-content/uploads/2026/03/word-image-4925-1.png 1112w, https://financial-hacker.com/wp-content/uploads/2026/03/word-image-4925-1-300x154.png 300w, https://financial-hacker.com/wp-content/uploads/2026/03/word-image-4925-1-1024x526.png 1024w, https://financial-hacker.com/wp-content/uploads/2026/03/word-image-4925-1-768x394.png 768w" sizes="auto, (max-width: 709px) 85vw, (max-width: 909px) 67vw, (max-width: 1362px) 62vw, 840px" /></p>
+<p>The price curve is well reproduced with almost no lag. Cheap, efficient, low-latency — 1 Euro well spent. The code can be downloaded from the 2026 script repository.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://financial-hacker.com/the-one-euro-filter/feed/</wfw:commentRss>
+			<slash:comments>7</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Build Better Strategies, Part 6: Evaluation</title>
+		<link>https://financial-hacker.com/build-better-strategies-part-6-evaluation/</link>
+					<comments>https://financial-hacker.com/build-better-strategies-part-6-evaluation/#comments</comments>
+		
+		<dc:creator><![CDATA[jcl]]></dc:creator>
+		<pubDate>Thu, 05 Feb 2026 16:54:41 +0000</pubDate>
+				<category><![CDATA[No Math]]></category>
+		<category><![CDATA[System Development]]></category>
+		<category><![CDATA[System Evaluation]]></category>
+		<category><![CDATA[Experiment]]></category>
+		<category><![CDATA[Indicator]]></category>
+		<category><![CDATA[Walk forward analysis]]></category>
+		<category><![CDATA[White's reality check]]></category>
+		<category><![CDATA[Zorro]]></category>
+		<guid isPermaLink="false">https://financial-hacker.com/?p=4901</guid>
+
+					<description><![CDATA[Developing a successful strategy is a process with many steps, described in the Build Better Strategies article series. At some point you have coded a first, raw version of the strategy. At that stage you&#8217;re usually experimenting with different functions for market detection or trade signals. The problem: How can you determine which indicator, filter, &#8230; <a href="https://financial-hacker.com/build-better-strategies-part-6-evaluation/" class="more-link">Continue reading<span class="screen-reader-text"> "Build Better Strategies, Part 6: Evaluation"</span></a>]]></description>
+										<content:encoded><![CDATA[<p>Developing a successful strategy is a process with many steps, described in the <a href="https://financial-hacker.com/build-better-strategies/">Build Better Strategies</a> article series. At some point you have coded a first, raw version of the strategy. At that stage you&#8217;re usually experimenting with different functions for market detection or trade signals. The problem: How can you determine which indicator, filter, or machine learning method  works best with which markets and which time frames? Manually testing all combinations is very time consuming, close to impossible. Here&#8217;s a way to run that process automated with a single mouse click.<span id="more-4901"></span></p>
+<p>A robust trading strategy has to meet several criteria:</p>
+<ul>
+<li>It must exploit a real and significant market inefficiency. Random-walk markets cannot be algo traded.</li>
+<li>It must work in all market situations. A trend follower must survive a mean reverting regime.</li>
+<li>It must work under many different optimization settings and parameter ranges.</li>
+<li>It must be unaffected by random events and price fluctuations.</li>
+</ul>
+<p>There are metrics and algorithms to test all this. The robustness under different market situations can be determined through the <strong>R2 coefficient</strong> or the deviations between the <strong>walk forward cycles</strong>. The parameter range robustness can be tested with a WFO profile (aka <strong>cluster analysis</strong>), the price fluctuation robustness with <strong><a href="https://financial-hacker.com/better-tests-with-oversampling/">oversampling</a></strong>. A <strong>Montecarlo analysis</strong> finds out whether the strategy is based on a real market inefficiency.</p>
+<p>Some platforms, such as <strong>Zorro</strong>, have functions for all this. But they require dedicated code in the strategy, often more than for the algorithm itself. In this article I&#8217;m going to describe an <strong>evaluation framework</strong> &#8211; a &#8216;shell&#8217; &#8211; that skips the coding part. The evaluation shell is included in the latest Zorro version. It can be simply attached to any strategy script. It makes all strategy variables accessible in a panel and adds stuff that&#8217;s common to all strategies &#8211; optimization, money management, support for multiple assets and algos, cluster and montecarlo analysis. It evaluates all strategy variants in an automated process and builds the optimal portfolio of combinations from different algorithms, assets, and timeframes. </p>
+<p>The process involves these steps: </p>
+<p><img decoding="async" src="https://financial-hacker.com/wp-content/uploads/2026/02/eval.png" alt="" /></p>
+<p>The first step of strategy evaluation is generating sets of parameter settings, named <strong><span class="tast">jobs</span></strong>. Any job is a variant of the strategy that you want to test and possibly include in the final portfolio. Parameters can be switches that select between different indicators, or variables (such as timeframes) with optimization ranges. All parameters can be edited in the user interface of the shell, then saved with a mouse click as a job. </p>
+<p>The next step is an automated process that runs through all previously stored jobs, trains and tests any of them with different asset, algo, and time frame combinations, and stores their results in a <strong><span class="tast">summary</span></strong>. The summary is a CSV list with the performance metrics of all jobs. It is automatically sorted &#8211; the best performing job variants are at the top &#8211; and looks like this:</p>
+<p><img decoding="async" src="https://financial-hacker.com/wp-content/uploads/2026/02/shellsummary.png" alt="" /></p>
+<p>So you can see at a glance which parameter combinations work with which assets and time frames, and which are not worth to examine further. You can repeat this step with different global settings, such as bar period or optimization method, and generate multiple summaries in this way. </p>
+<p>The next step in the process is <strong><span class="tast">cluster analysis</span></strong>. Every job in a selected summary is optimized multiple times with different walk-forward settings. The result with any job variant is stored in WFO profiles or heatmaps:</p>
+<p><img decoding="async" src="https://financial-hacker.com/wp-content/uploads/2026/02/RangerMatrix.png" alt="" /></p>
+<p>After this process, you likely ended up with a couple survivors in the top of the summary. The surviving jobs have all a positive return, a steady rising equity curve, shallow drawdowns, and robust parameter ranges since they passed the cluster analysis. But any selection process generates <strong><span class="tast">selection bias</span></strong>. Your perfect portfolio will likely produce a great backtest, but will it perform equally well in live trading? To find out, you run a <span class="tast"><strong>Montecarlo analysis</strong>, aka &#8216;Reality Check&#8217;</span>.</p>
+<p><img decoding="async" src="https://financial-hacker.com/wp-content/uploads/2026/02/RealityCheck_s1.png" alt="" /></p>
+<p>This is the most important test of all, since it can determine whether your strategy exploits a real market inefficiency. If the Montecarlo analysis fails with the final portfolio, it will likely also fail with any other parameter combination, so you need to run it only close to the end. If your system passes Montecarlo with a <strong><span class="tast">p-value</span></strong> below 5%, you can be relatively confident that the system will return good and steady profit in live trading. Otherwise, back to the drawing board.</p>
+<h3>The use case</h3>
+<p>For a real life use case,  we generated algorithms for the Z12 system that comes with Zorro. Z12 is a portfolio from several trend and counter trend algorithms that all trade simultaneously. The trading signals are generated with spectral analysis filters. The system trades a subset of Forex pairs and index CFDs on a 4-hour timeframe. The timeframe was choosen for best performance, as were the traded Forex pairs and CFDs. </p>
+<p>We used the evaluation shell to create new algos, not from a selected subset, but from all major Forex pairs and major index CFDs, with 3 different time frames from 60, 120, and 240 minutes. 29 algorithms passed the cluster and montecarlo analysis, of which the least correlated were put into the final portfolio. This is the equity curve of the new Z12 system:</p>
+<p><img decoding="async" src="https://financial-hacker.com/wp-content/uploads/2026/02/z12perf.png" alt="" /></p>
+<p>Other performance parameters, such as Profit Factor, Sharpe ratio, Calmar Ratio, and R2 also improved by more than 30%. The annual return almost doubled, compared with the average of the previous years. Nothing in the basic Z12 algorithms has changed. Only new combinations of algos, assets, and timeframes are now traded.</p>
+<p>The evaluation shell is included in Zorro version 3.01 or above. Usage and details are described under <a href="https://zorro-project.com/manual/en/shell.htm" target="_blank" rel="noopener">https://zorro-project.com/manual/en/shell.htm</a>.  Attaching the shell to a strategy is described under <a href="https://zorro-project.com/manual/en/shell2.htm" target="_blank" rel="noopener">https://zorro-project.com/manual/en/shell2.htm</a>.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://financial-hacker.com/build-better-strategies-part-6-evaluation/feed/</wfw:commentRss>
+			<slash:comments>4</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>The Points-and-Line Chart</title>
+		<link>https://financial-hacker.com/the-points-and-line-chart/</link>
+					<comments>https://financial-hacker.com/the-points-and-line-chart/#comments</comments>
+		
+		<dc:creator><![CDATA[Petra Volkova]]></dc:creator>
+		<pubDate>Tue, 14 Oct 2025 13:45:25 +0000</pubDate>
+				<category><![CDATA[Indicators]]></category>
+		<category><![CDATA[Petra on Programming]]></category>
+		<category><![CDATA[Amibroker]]></category>
+		<category><![CDATA[Bars]]></category>
+		<category><![CDATA[MACD]]></category>
+		<guid isPermaLink="false">https://financial-hacker.com/?p=4869</guid>
+
+					<description><![CDATA[Traders like charts with special bars, since they let the price curve appear smoother and more predictable as it really is. Some types of bars, such as Renko bars, even use fake prices for generating curves that appear to move straight upwards or downwards. In the TASC November issue, Mohamed Ashraf and Mohamed Meregy presented &#8230; <a href="https://financial-hacker.com/the-points-and-line-chart/" class="more-link">Continue reading<span class="screen-reader-text"> "The Points-and-Line Chart"</span></a>]]></description>
+										<content:encoded><![CDATA[<p><em>Traders like charts with special bars, since they let the price curve appear smoother and more predictable as it really is. Some types of bars, such as <strong>Renko bars</strong>, even use fake prices for generating curves that appear to move straight upwards or downwards. In the TASC November issue, Mohamed Ashraf and Mohamed Meregy presented the <strong>Points and Line Chart</strong> that avoids this problem. At least in the standard variant, the prices in the chart are real, and can be used with indicators. In this article I&#8217;ll explain the usage of special bars with Zorro, and how ChatGPT can help with generating code.</em><span id="more-4869"></span></p>
+<p>As far as I know, there is only one trading platform that supports custom bars natively. All other platforms require complicated workarounds. The author&#8217;s Amibroker code for the points-and-line chart filled six pages and looked a bit&#8230; awful. I did not want to touch it. Fortunately, my new friend Chad offered his help. The prompt:</p>
+<p><strong>Dear Chad, please convert the AmiBroker code in this PDF to C for Zorro. Use the bar function for user-defined bars on </strong><a href="https://zorro-project.com/manual/en/bar.htm"><strong>https://zorro-project.com/manual/en/bar.htm</strong></a><strong>. Generate a DJIA chart with MACD and MACDSignal. For good code I’ll give you $100.</strong></p>
+<p>(The $100 reward, in my experience, often improves Chad’s code. In the past, <em>“write good code or I break all your bones”</em> used to work even better, but not anymore since Chad 5.0 came out).</p>
+<p>After about 3 minutes, Chad produced a lite-C script. It does still look a bit awful, but far better than the original code. I have cleaned it up at a few places, used different colors for the MACD, and added a ‘g’ to the names of global and static variables since this is my custom. This is the code of the <strong>bar</strong> function to generate Points-and-Line bars:</p>
+<pre class="prettyprint">//////////////////////////////////////////////////////////
+// PointsLine.c — Zorro C port of "Points &amp; Line" chart
+// Ashraf &amp; Meregy, TASC Traders' Tips
+// Conversion P. Volkova &amp; ChatGPT 5.0
+//////////////////////////////////////////////////////////
+// Modes
+#define SCALE_DEFAULT 0
+#define SCALE_ATR 1
+#define SCALE_PERCENT 2
+#define M_POINTSIZE 0
+#define M_HIGHLOW 1
+#define M_CLOSE 2
+
+// User parameters
+int gReverse = 3; // boxes needed to reverse
+int gScale = SCALE_DEFAULT; // 0=Default, 1=ATR(14), 2=Percent
+int gMethod = M_CLOSE; // 0=PointSize, 1=HighLow, 2=Close
+var gPercent = 1.0; // % for SCALE_PERCENT
+
+// Compute "box size"
+var box(var Price)
+{
+  if(gScale == SCALE_DEFAULT) {
+#define RNG(X,Y) if(Price &lt; X) return Y
+    RNG(0.25,0.025);
+    RNG(0.5,0.05);
+    RNG(1,0.1);
+    RNG(5,0.25);
+    RNG(20,0.5);
+    RNG(100,1);
+    RNG(200,2);
+    RNG(500,5);
+    RNG(1000,10);
+    RNG(2000,20);
+    RNG(5000,50);
+    RNG(10000,100);
+    RNG(20000,200);
+    return 500;
+  }
+  if(gScale = SCALE_ATR)
+    return ATR(14);
+  else // SCALE_PERCENT
+    return Price*gPercent/100;
+}
+ 
+// User-defined bars
+function bar(var *Open, var *High, var *Low, var *Close)
+{
+  var C = Close[0], H = High[0], L = Low[0];
+  static int gDir = -1; // initially down
+  static var gCF = C, gCR = C, gLF = C, gHR = C;
+// box size
+  var Box = fix0(box(C));
+  var CF = ceil(C/Box)*Box,
+  CR = floor(C/Box)*Box,
+  LF = ceil(L/Box)*Box,
+  HR = floor(H/Box)*Box;
+   
+  Switch (gMethod)
+  {
+  case M_POINTSIZE:
+    if(CF &lt; gCF &amp;&amp; gDir &lt; 0) { // continue down, new box
+      gCR = CF - Box; gCF = CF;
+      Close[0] = CF; return 1;
+    }
+    if(gCF + Box*gReverse &lt;= CR &amp;&amp; gDir &lt; 0) {
+      gCR = CR; gCF = CR + Box;
+      Close[0] = CR; gDir = 1; return 1; // swap direction
+    }
+    if(gCR &lt; CR &amp;&amp; gDir &gt; 0) { // continue up
+      gCR = CR; gCF = CR + Box; Close[0] = CR; return 1;
+    }
+    if(gCR - Box*gReverse &gt;= CF &amp;&amp; gDir &gt; 0) {
+      gCF = CF; gCR = CF - Box; Close[0] = CF;
+      gDir = -1; return 1;
+    }
+    break;
+     
+  case M_HIGHLOW:
+    if(LF &lt; gLF &amp;&amp; gDir &lt; 0) {
+      gHR = LF - Box; gLF = LF;
+      Close[0] = L; return 1;
+    }
+    if(gLF + Box*gReverse &lt;= HR &amp;&amp; gDir &lt; 0) {
+      gHR = HR; gLF = HR + Box;
+      Close[0] = H; gDir = 1; return 1;
+    }
+    if(gHR &lt; HR &amp;&amp; gDir &gt; 0) {
+      gHR = HR; gLF = HR + Box;
+      Close[0] = H; return 1;
+    }
+    if(gHR - Box*gReverse &gt;= LF &amp;&amp; gDir &gt; 0) {
+      gLF = LF; gHR = LF - Box;
+      Close[0] = L; gDir = -1; return 1;
+    }
+    break;
+     
+  case M_CLOSE:
+    if(CF &lt; gCF &amp;&amp; gDir &lt; 0) { // continue down
+      gCR = CF-Box; gCF = CF;
+    return 1;
+    }
+    if(gCF+Box*gReverse &lt;= CR &amp;&amp; gDir &lt; 0) { // go up
+      gCR = CR; gCF = CR+Box;
+      gDir = 1; return 1;
+    }
+    if(gCR &lt; CR &amp;&amp; gDir &gt; 0) {
+      gCR = CR; gCF = CR+Box;
+    return 1;
+    }
+    if(gCR-Box*gReverse &gt;= CF &amp;&amp; gDir &gt; 0) {
+      gCF = CF; gCR = CF-Box;
+      gDir = -1; return 1;
+    }
+    break;
+  }
+  return 4; // keep bar open, call again on next tick
+}
+</pre>
+<p>The algorithm of the points-and-line chart in its 3 variants &#8211; POINTSIZE, HIGHLOW, and CLOSE &#8211; can be read up in the TASC article. Here I&#8217;ll only illustrate the usage of the <strong>bar()</strong> function for establishing special, event-driven bars instead of the usual time bars. The function evaluates the current and previous candle, modifies the current candle if needed, and returns <strong>1</strong> for beginning a new bar or <strong>4</strong> for continuing with the current bar. This way, all imaginable sorts of event driven bars can be generated, in the same way for backtests and for live trading. These bars are also displayed on the chart, and affect the scale of the X axis.</p>
+<p>Since AmiBroker did not support standard indicators on a chart with special bars, the authors had exported the created chart and imported it as a fake asset price curve to Metastocks for using indicators with it. I wonder how this would work in live trading. Fortunately, the Zorro platform has no problems of this kind, since it treats standard bars and special bars in the same way. The <strong>run</strong> function looks just as usual:</p>
+<pre class="prettyprint">function run()
+{
+  set(PLOTNOW,TICKS);
+  BarPeriod = 1440;
+  LookBack = 120;
+  StartDate = 2017;
+  EndDate = 2025;
+  BarZone = EST;
+  assetAdd("DJIA","STOOQ:^DJI");
+  asset("DJIA");
+  plot("MACD",MACDFix(seriesC(),14),NEW,RED);
+  plot("Signal",rMACDSignal,0,GREY);
+ }</pre>
+<p>The function uses STOOQ as a price source and plots the MACD indicator (red) and its signal line (grey). The chart below reproduces the DJIA chart in the TASC article, and applies a standard MACD:</p>
+<p><img loading="lazy" decoding="async" width="885" height="479" class="wp-image-4870" src="https://financial-hacker.com/wp-content/uploads/2025/10/ein-bild-das-text-diagramm-reihe-zahl-enthalt-.png" alt="Ein Bild, das Text, Diagramm, Reihe, Zahl enthält.
+
+KI-generierte Inhalte können fehlerhaft sein." srcset="https://financial-hacker.com/wp-content/uploads/2025/10/ein-bild-das-text-diagramm-reihe-zahl-enthalt-.png 885w, https://financial-hacker.com/wp-content/uploads/2025/10/ein-bild-das-text-diagramm-reihe-zahl-enthalt--300x162.png 300w, https://financial-hacker.com/wp-content/uploads/2025/10/ein-bild-das-text-diagramm-reihe-zahl-enthalt--768x416.png 768w" sizes="auto, (max-width: 709px) 85vw, (max-width: 909px) 67vw, (max-width: 1362px) 62vw, 840px" /></p>
+<p>Due to the variable length of bars, the time scale on the X axis is uneven; the DJIA moved a lot more in the years 2020 and 2022 than in the other years. The code can be downloaded from the 2025 script repository.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://financial-hacker.com/the-points-and-line-chart/feed/</wfw:commentRss>
+			<slash:comments>2</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>A Better Stock Rotation System</title>
+		<link>https://financial-hacker.com/a-better-stock-rotation-system/</link>
+					<comments>https://financial-hacker.com/a-better-stock-rotation-system/#comments</comments>
+		
+		<dc:creator><![CDATA[Petra Volkova]]></dc:creator>
+		<pubDate>Sun, 27 Jul 2025 14:26:47 +0000</pubDate>
+				<category><![CDATA[Petra on Programming]]></category>
+		<category><![CDATA[System Development]]></category>
+		<category><![CDATA[Amibroker]]></category>
+		<category><![CDATA[Portfolio rotation]]></category>
+		<guid isPermaLink="false">https://financial-hacker.com/?p=4861</guid>
+
+					<description><![CDATA[A stock rotation system is normally a safe haven, compared to other algorithmic systems. There’s no risk of losing all capital, and you can expect small but steady gains. The catch: Most of those systems, and also the ETFs derived from them, do not fare better than the stock index. Many fare even worse. But &#8230; <a href="https://financial-hacker.com/a-better-stock-rotation-system/" class="more-link">Continue reading<span class="screen-reader-text"> "A Better Stock Rotation System"</span></a>]]></description>
+										<content:encoded><![CDATA[<p><em>A stock rotation system is normally a safe haven, compared to other algorithmic systems. There’s no risk of losing all capital, and you can expect small but steady gains. The catch: Most of those systems, and also the ETFs derived from them, do not fare better than the stock index. Many fare even worse. But how can you make sure that your rotation strategy beats the index? There is a way.</em></p>
+<p><span id="more-4861"></span></p>
+<p>In the TASC July 2026 issue, <strong>Markos Katsanos</strong> suggests a solution for a better stock rotation system. He applies two twists: Excluding the top performers, which often experience a reversal to the mean, and filtering out bear market situations. This improves stock rotation systems a lot.</p>
+<p>The code of his system is unfortunately written in Amibroker languge, which means that for using it with any other platform, one must rewrite it from scratch. Amibroker does not use buy or sell orders. Instead it has a ‘portfolio rotation mode’ that is set up with many variables. Zorro’s C language has no special rotation mode, but uses buy and sell orders for rotating, just as for any other strategy. This requires rewriting the Amibroker code, but the positive side is that the script becomes much shorter and easier to comprehend.</p>
+<pre class="prettyprint">var Score[1000],Weights[1000];
+
+void run()
+{
+  StartDate = 2012;
+  EndDate = 2025;
+  BarPeriod = 1440;
+  LookBack = 252; // 1 year
+
+  Capital = slider(1,10000,0,20000,"Capital","");
+  assetList("AssetsNASDAQ");
+  assetAdd("QQQ","STOOQ:QQQ"); // for the bear market detection
+  asset("QQQ");
+// set up variables
+  int MaxOpenPositions = 15;
+  int ROCBars = 100;
+  int ExitBars = 20;
+  int MAPeriod = 300;
+  int ExcludeTopN = 2;
+// bear market filter
+  var MAQQQ = ZMA(seriesC(),MAPeriod);
+  bool Bear = MAQQQ &lt; ref(MAQQQ,1);
+  if(Day%ExitBars == 0) {
+// assign a score to any asset
+     for(listed_assets) {
+       asset(Asset);
+       if(Asset == "QQQ" || Bear)
+         Score[Itor] = 0; // don't trade the index
+       else
+         Score[Itor] = ROC(seriesC(),ROCBars);
+     }
+// exclude the N top scores
+     int i;
+     for(i=0; i&lt;ExcludeTopN; i++)
+       Score[MaxIndex(Score,NumAssetsListed)] = 0;
+
+// rotate the positions
+    distribute(Weights,Score,NumAssetsListed,MaxOpenPositions,0.5);
+     rotate(0); // decrease positions
+     rotate(1); // increase positions
+   }
+}</pre>
+<p>We’re loading all NASDAQ stocks from an asset list (<strong>AssetsNASDAQ</strong>), and add the <strong>‘QQQ’</strong> index ETF because we’re needing that for the bear market filter. The <strong>MAQQQ</strong> variable holds the average index value, determined with a zero-lag moving average (<strong>ZMA</strong>). The ZMA has two advantages over a standard moving average: faster reaction (as the name says) and not needing a long data history. We assume a bear market when the average is falling.</p>
+<p>Next, we check if we have reached the rotation date (<strong>Day%ExitBars</strong> is the number of days since start modulo the number of days for a rotation). If so, we loop over all assets and assign every one a score, depending on its N-day rate of return (<strong>ROC</strong>). The <strong>Itor</strong> variable is the number of the asset in the loop. The QQQ index gets no score, and in a bear market none of them gets a score.</p>
+<p>Next, we remove the two top performers, since we assume they are overbought. The <strong>distribute</strong> function takes the scores and converts them to weights, while all weights sum up to 1. The function can be looked up in the Zorro manual (<a href="https://zorro-project.com/manual/en/renorm.htm">https://zorro-project.com/manual/en/renorm.htm</a>). Finally we perform the actual rotation. This is a bit tricky, because we need two steps. The first step reduces all positions that ought to be reduced. The second step increases all positions that ought to be increased. This order is important, because if we increased a position first, the total volume could exceed our capital on the broker account.</p>
+<p>The <strong>rotate</strong> function is not a Zorro function, but just assigns new position sizes to any asset of the portfolio:</p>
+<pre class="prettyprint">void rotate(int Buy)
+{
+  for(listed_assets) {
+    asset(Asset);
+    int NewLots = Capital*Weights[Itor]/MarginCost;
+    if(NewLots &lt; LotsPool)
+      exitLong(0,0,LotsPool-NewLots);
+    else if(Buy &amp;&amp; NewLots &gt; LotsPool)
+      enterLong(NewLots-LotsPool);
+  }
+}</pre>
+<p>Since I see from Markos Katsanos&#8217; code that he optimized his variables, I have to do the same. For this, his variables now get optimization ranges:</p>
+<pre class="prettyprint">set(PARAMETERS); // parameter optimization
+setf(TrainMode,TRADES|GENETIC); // size matters
+int MaxOpenPositions = optimize(15,5,30,5);
+int ROCBars = optimize(100,50,250,50);
+int ExitBars = optimize(20,10,50,5);
+int MAPeriod = optimize(300,100,1000,100);
+int ExcludeTopN = optimize(2,1,5,1);</pre>
+<p>We’re using genetic optimization with considering the trade volume (<strong>TRADES|GENETIC</strong>). The optimization takes about one minute. It’s in-sample, so take the result with a grain of salt. This is the equity curve resulting from a backtest:</p>
+<p><img loading="lazy" decoding="async" width="768" height="465" class="wp-image-4862" src="https://financial-hacker.com/wp-content/uploads/2025/07/word-image-4861-1.png" srcset="https://financial-hacker.com/wp-content/uploads/2025/07/word-image-4861-1.png 768w, https://financial-hacker.com/wp-content/uploads/2025/07/word-image-4861-1-300x182.png 300w" sizes="auto, (max-width: 709px) 85vw, (max-width: 909px) 67vw, (max-width: 984px) 61vw, (max-width: 1362px) 45vw, 600px" /></p>
+<p>In the backtest, we’re reinvesting profits; for this replace <strong>Capital</strong> with <strong>Equity</strong> in the <strong>rotate</strong> function. The blue bars are the account equity, the black line is the QQQ index. We can see that the account has far less drawdowns than the index. The black line in the small chart below is our trade volume, which is zero when a bear market is detected. The green line is the QQQ average, with bear market situations indicated in red. In 2022, the year when the Russian attack on Ukraine began, the system did not trade at all since the bear market filter was active almost the whole year.</p>
+<p>The system produces 32% CAGR, with a 14% worst drawdown. This replicates Markos Katsanos’ results, but again, keep in mind that this is from an in-sample optimization. When applying walk-forward optimization (left as an exercise to the reader :), the CAGR goes down to 22%. Still a good performance, well beyond the NASDAQ index.</p>
+<p>The code can be downloaded from the 2025 script repository.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://financial-hacker.com/a-better-stock-rotation-system/feed/</wfw:commentRss>
+			<slash:comments>5</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>The Cybernetic Oscillator</title>
+		<link>https://financial-hacker.com/the-cybernetic-oscillator/</link>
+					<comments>https://financial-hacker.com/the-cybernetic-oscillator/#comments</comments>
+		
+		<dc:creator><![CDATA[Petra Volkova]]></dc:creator>
+		<pubDate>Sun, 18 May 2025 16:30:05 +0000</pubDate>
+				<category><![CDATA[Indicators]]></category>
+		<category><![CDATA[Petra on Programming]]></category>
+		<category><![CDATA[Ehlers]]></category>
+		<category><![CDATA[Indicator]]></category>
+		<guid isPermaLink="false">https://financial-hacker.com/?p=4847</guid>
+
+					<description><![CDATA[Oscillator-type indicators swing around the zero line. They are often used for opening positions when oscillator exceeds a positive or negative threshold. In his article series about no-lag indicators, John Ehlers presents in the TASC June issue the Cybernetic Oscillator. It is built by applying a highpass and afterwards a lowpass filter to the price &#8230; <a href="https://financial-hacker.com/the-cybernetic-oscillator/" class="more-link">Continue reading<span class="screen-reader-text"> "The Cybernetic Oscillator"</span></a>]]></description>
+										<content:encoded><![CDATA[<p><em>Oscillator-type indicators swing around the zero line. They are often used for opening positions when oscillator exceeds a positive or negative threshold. In his article series about no-lag indicators, <strong>John Ehlers</strong> presents in the TASC June issue the Cybernetic Oscillator. It is built by applying a highpass and afterwards a lowpass filter to the price curve, then normalizing the result.</em></p>
+<p><span id="more-4847"></span></p>
+<p>We already know Ehlers’ highpass filter from previous articles. It’s in the Zorro indicator library under the name <strong>HighPass3</strong>. The lowpass filter, Ehlers’ ‘SuperSmoother’, is also in the library, as well as the Sum of Sqares function for normalizing. This makes the Cybernetic Oscillator easy to code in C:</p>
+<pre class="prettyprint">var CyberOsc(vars Data,int HPLength,int LPLength)
+{
+  vars HP = series(HighPass3(Data,HPLength));
+  vars LP = series(Smooth(HP,LPLength));
+  var RMS = sqrt(SumSq(LP,100)/100);
+  return LP[0]/fix0(RMS);
+}</pre>
+<p>We apply two Cybernetic Oscillators, one with a short and one with a long highpass cutoff, to an S&amp;P500 chart from 2024:</p>
+<pre class="prettyprint">void run()
+{
+  BarPeriod = 1440;
+  LookBack = 250;
+  StartDate = 20240301;
+  EndDate = 20250407;
+  asset("SPX500");
+  plot("CyberOsc1",CyberOsc(seriesC(),30,20),NEW|LINE,RED);
+  plot("CyberOsc2",CyberOsc(seriesC(),250,20),NEW|LINE,BLUE);
+}</pre>
+<p>The resulting chart replicates Ehler’s chart in the article. The red line reproduces the swings of the price curve, the blue line the long-term trend:</p>
+<p><img loading="lazy" decoding="async" width="701" height="410" class="wp-image-4848" src="https://financial-hacker.com/wp-content/uploads/2025/05/word-image-4847-1.png" srcset="https://financial-hacker.com/wp-content/uploads/2025/05/word-image-4847-1.png 701w, https://financial-hacker.com/wp-content/uploads/2025/05/word-image-4847-1-300x175.png 300w" sizes="auto, (max-width: 709px) 85vw, (max-width: 909px) 67vw, (max-width: 984px) 61vw, (max-width: 1362px) 45vw, 600px" /></p>
+<p>Now we test the Cybernetic Oscillator by using it for a swing trading system. We open positions in the direction of the trend. The code, replicated from Ehlers&#8217; EasyLanguage script:</p>
+<pre class="prettyprint">void run()
+{
+  BarPeriod = 1440;
+  LookBack = 250;
+  StartDate = 2009;
+  EndDate = 2025;
+  Fill = 2; // enter at next open
+  assetList("AssetsIB"); // simulate IBKR
+  asset("SPY");
+  vars LP = series(Smooth(seriesC(),20));
+  vars BP1 = series(HighPass3(LP,55));
+  var ROC1 = BP1[0] - BP1[2];
+  vars BP2 = series(HighPass3(LP,156));
+  var ROC2 = BP2[0] - BP2[2];
+
+  if(!NumOpenLong &amp;&amp; ROC1 &gt; 0 &amp;&amp; ROC2 &gt; 0)
+    enterLong();
+  if(NumOpenLong &amp;&amp; (ROC1 &lt; 0 || ROC2 &lt; 0))
+    exitLong();
+}</pre>
+<p>The system is opening a 1-share SPY position without reinvestment. We’re using commission, leverage and other trading parameters from a popular US broker for the simulation. Ehlers had produced his filter parameters with in-sample optimization, so take the result with a grain of salt. This is the equity curve:</p>
+<p><img loading="lazy" decoding="async" width="701" height="405" class="wp-image-4849" src="https://financial-hacker.com/wp-content/uploads/2025/05/word-image-4847-2.png" srcset="https://financial-hacker.com/wp-content/uploads/2025/05/word-image-4847-2.png 701w, https://financial-hacker.com/wp-content/uploads/2025/05/word-image-4847-2-300x173.png 300w" sizes="auto, (max-width: 709px) 85vw, (max-width: 909px) 67vw, (max-width: 984px) 61vw, (max-width: 1362px) 45vw, 600px" /></p>
+<p>Backtesting the same system with walk-forward optimization, for getting a more accurate result, is left as an exercise to the reader. Hint: you need to enter 4 extra lines. Ehlers’ system generates about 180 trades with 60% win rate and profit factor 2. The code can be downloaded from the 2025 script repository on <a href="https://financial-hacker.com">https://financial-hacker.com</a>.</p>
+<p>&nbsp;</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://financial-hacker.com/the-cybernetic-oscillator/feed/</wfw:commentRss>
+			<slash:comments>5</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Trading the Channel</title>
+		<link>https://financial-hacker.com/trading-the-channel/</link>
+					<comments>https://financial-hacker.com/trading-the-channel/#comments</comments>
+		
+		<dc:creator><![CDATA[Petra Volkova]]></dc:creator>
+		<pubDate>Wed, 09 Apr 2025 12:14:55 +0000</pubDate>
+				<category><![CDATA[Indicators]]></category>
+		<category><![CDATA[Petra on Programming]]></category>
+		<category><![CDATA[System Development]]></category>
+		<category><![CDATA[Channels]]></category>
+		<category><![CDATA[Kaufman]]></category>
+		<category><![CDATA[Momentum]]></category>
+		<category><![CDATA[Regression]]></category>
+		<guid isPermaLink="false">https://financial-hacker.com/?p=4834</guid>
+
+					<description><![CDATA[One of the simplest form of trend trading opens positions when the price crosses its moving average, and closes or reverses them when the price crosses back. In the latest TASC issue, Perry Kaufman suggested an alternative. He is using a linear regression line with an upper and lower band for trend trading. Such a &#8230; <a href="https://financial-hacker.com/trading-the-channel/" class="more-link">Continue reading<span class="screen-reader-text"> "Trading the Channel"</span></a>]]></description>
+										<content:encoded><![CDATA[<p><em>One of the simplest form of trend trading opens positions when the price crosses its moving average, and closes or reverses them when the price crosses back. In the latest TASC issue, <strong>Perry Kaufman</strong> suggested an alternative. He is using a linear regression line with an upper and lower band for trend trading. Such a band indicator can be used to trigger long or short positions when the price crosses the upper or lower band, or when it gets close.</em><span id="more-4834"></span></p>
+<p>Let’s first code the bands. They are simply a regression line moved up or down so that it crosses through the highest and lowest price peaks and valleys. Here’s the piece of code in C:</p>
+<pre class="prettyprint">var Slope = LinearRegSlope(seriesC(),N);
+var Intercept = LinearRegIntercept(seriesC(),N);
+var LinVal, HighDev = 0, LowDev = 0;
+for(i=N; i&gt;0; i--) {
+  LinVal = Intercept + Slope*(N-i);
+  HighDev = max(HighDev,priceC(i)-LinVal);
+  LowDev = min(LowDev,priceC(i)-LinVal);
+}</pre>
+<p><strong>N</strong> is the number of bars for which the regression line is calculated. The line has the formula <strong>y = b + m*x</strong>, where <strong>b</strong> is the intercept and <strong>m</strong> the slope. The code generates both for the previous <strong>N</strong> bars, then calculates in the loop the maximum and minimum deviations (<strong>HighDev</strong>, <strong>LowDev</strong>). The regression value (<strong>LinVal</strong>) is calculated from the intercept and slope with the above formula. Since the bar offset <strong>i</strong> runs backwards from the current bar, the bar number that’s multiplied with the slope runs from <strong>N</strong> down to <strong>0</strong>. Here’s the code applied to a SPY chart from 2025:</p>
+<p><strong><img loading="lazy" decoding="async" width="701" height="405" class="wp-image-4835" src="https://financial-hacker.com/wp-content/uploads/2025/04/ein-bild-das-diagramm-text-reihe-screenshot-en.png" srcset="https://financial-hacker.com/wp-content/uploads/2025/04/ein-bild-das-diagramm-text-reihe-screenshot-en.png 701w, https://financial-hacker.com/wp-content/uploads/2025/04/ein-bild-das-diagramm-text-reihe-screenshot-en-300x173.png 300w" sizes="auto, (max-width: 709px) 85vw, (max-width: 909px) 67vw, (max-width: 984px) 61vw, (max-width: 1362px) 45vw, 600px" /></strong></p>
+<p>The candles can exceed the upper and lower bands because only the close price is used for the bands. It would probably improve the system, at least in theory, when we used the high and low prices instead.</p>
+<p>Kaufman suggests several methods of trading with these bands; we’re here using the ‘Inside Channel’ method since it is, according to Kaufman, the most profitable. We open a long position when the price comes within a zone around the lower band, and close the position (or open a short position) when the price comes within a zone around the upper band. Here’s the complete trading system in C for Zorro, using the above code to calculate the bands.</p>
+<pre class="prettyprint">void run()
+{
+  BarPeriod = 1440;
+  StartDate = 20100101;
+  LookBack = 150;
+  assetList("AssetsIB");
+  asset("SPY");
+  if(is(LOOKBACK)) return;
+
+  int i, N = 40;
+  var Factor = 0.2;
+  var Slope = LinearRegSlope(seriesC(),N);
+  var Intercept = LinearRegIntercept(seriesC(),N);
+  var LinVal, HighDev = 0, LowDev = 0;
+  for(i=N; i&gt;0; i--) {
+    LinVal = Intercept + Slope*(N-i);
+    HighDev = max(HighDev,priceC(i)-LinVal);
+    LowDev = min(LowDev,priceC(i)-LinVal);
+  }
+  var Zone = Factor*(HighDev+LowDev);
+  if(!NumOpenLong &amp;&amp; priceC(0) &lt; LinVal+LowDev+Zone)
+    enterLong();
+  if(!NumOpenShort &amp;&amp; priceC(0) &gt; LinVal+HighDev-Zone)
+    exitLong();
+}</pre>
+<p>We’ve selected the <strong>AssetsIB</strong> asset list, which contains the margins, commissions and other parameters from an US broker (IBKR). So the backtest simulates trading with IBKR. The resulting equity curve with the default parameters, <strong>N = 40</strong> and <strong>Zone Factor = 20%</strong>, already shows promise with a 2.8 profit factor:</p>
+<p><img loading="lazy" decoding="async" width="701" height="405" class="wp-image-4836" src="https://financial-hacker.com/wp-content/uploads/2025/04/word-image-4834-2.png" srcset="https://financial-hacker.com/wp-content/uploads/2025/04/word-image-4834-2.png 701w, https://financial-hacker.com/wp-content/uploads/2025/04/word-image-4834-2-300x173.png 300w" sizes="auto, (max-width: 709px) 85vw, (max-width: 909px) 67vw, (max-width: 984px) 61vw, (max-width: 1362px) 45vw, 600px" /></p>
+<p>However, Kaufman mentioned that he tested <strong>N</strong> values from 20 to 150, and zone factors from 5% to 50%. We’ll do the same by optimizing these parameters. Of course a backtest with the best optimization result would be meaningless due to bias (see <a href="https://zorro-project.com/backtest.php">https://zorro-project.com/backtest.php</a>). Therefore we’re using <strong>walk forward optimization</strong> for an out-of-sample backtest. Since anything with Zorro is done in code, we’ll insert 4 lines of C code for the optimization:</p>
+<pre class="prettyprint">set(PARAMETERS); // optimize parameters
+NumWFOCycles = 5;
+N = optimize(40,20,150,10);
+Factor = optimize(0.2,0.05,0.5,0.05);</pre>
+<p>We also changed the trading from only long positions to long and short by replacing <strong>exitLong</strong> with <strong>enterShort</strong> By default, entering a short position automatically exits the long one, and vice versa. So the system is always in the market with 1 share, either long or short. The walk forward optimization takes about 3 seconds. This is the resulting equity curve:</p>
+<p><img loading="lazy" decoding="async" width="701" height="405" class="wp-image-4837" src="https://financial-hacker.com/wp-content/uploads/2025/04/word-image-4834-3.png" srcset="https://financial-hacker.com/wp-content/uploads/2025/04/word-image-4834-3.png 701w, https://financial-hacker.com/wp-content/uploads/2025/04/word-image-4834-3-300x173.png 300w" sizes="auto, (max-width: 709px) 85vw, (max-width: 909px) 67vw, (max-width: 984px) 61vw, (max-width: 1362px) 45vw, 600px" /></p>
+<p>The profit factor rose to 7, with a 76% win rate &#8211; not bad for such a simple system. The code can be downloaded from the 2025 script repository on <a href="https://financial-hacker.com">https://financial-hacker.com</a>. </p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://financial-hacker.com/trading-the-channel/feed/</wfw:commentRss>
+			<slash:comments>8</slash:comments>
+		
+		
+			</item>
+	</channel>
+</rss>

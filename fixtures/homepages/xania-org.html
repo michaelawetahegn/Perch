@@ -1,0 +1,594 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="css/foundation.css" />
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="stylesheet" href="css/syntax.css" />
+
+  <title>Matt Godbolt&#8217;s blog</title>
+
+  <link rel="alternate" type="application/atom+xml"
+        title="Atom (full content)" href="/feed.atom">
+    <script src="js/vendor/modernizr.js"></script>
+  </head>
+  <body>
+<nav class="top-bar" data-topbar role="navigation">
+<input type="hidden" name="sitesearch" value="xania.org" checked id="ss1">
+    <ul class="title-area">
+        <li class="name">
+        <h1><a href="/">Matt Godbolt's blog</a></h1>
+        </li>
+        <li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
+    </ul>
+
+    <section class="top-bar-section">
+        <form method="get" action="https://www.google.com/custom">
+        <ul class="right">
+            <li class="has-dropdown">
+            <a href="#">Tags</a>
+            <ul class="dropdown">
+                
+                <li><a href="/AI">AI</a></li>
+                
+                <li><a href="/Amusing-Stuff">Amusing Stuff</a></li>
+                
+                <li><a href="/AoCO2025">AoCO2025</a></li>
+                
+                <li><a href="/Blog">Blog</a></li>
+                
+                <li><a href="/Coding">Coding</a></li>
+                
+                <li><a href="/Compiler-Explorer">Compiler Explorer</a></li>
+                
+                <li><a href="/Emulation">Emulation</a></li>
+                
+                <li><a href="/Games">Games</a></li>
+                
+                <li><a href="/Microarchitecture">Microarchitecture</a></li>
+                
+                <li><a href="/New-Zealand-Trip">New Zealand Trip</a></li>
+                
+                <li><a href="/Personal">Personal</a></li>
+                
+                <li><a href="/Python">Python</a></li>
+                
+                <li><a href="/Rants">Rants</a></li>
+                
+                <li><a href="/Rust">Rust</a></li>
+                
+                <li><a href="/WeeBox-Project">WeeBox Project</a></li>
+                
+            </ul>
+            </li>
+            <li class="has-dropdown">
+            <a href="#">Archive</a>
+            <ul class="dropdown">
+                
+                <li><a href="/AI-archive">AI</a></li>
+                
+                <li><a href="/Amusing-Stuff-archive">Amusing Stuff</a></li>
+                
+                <li><a href="/AoCO2025-archive">AoCO2025</a></li>
+                
+                <li><a href="/Blog-archive">Blog</a></li>
+                
+                <li><a href="/Coding-archive">Coding</a></li>
+                
+                <li><a href="/Compiler-Explorer-archive">Compiler Explorer</a></li>
+                
+                <li><a href="/Emulation-archive">Emulation</a></li>
+                
+                <li><a href="/Games-archive">Games</a></li>
+                
+                <li><a href="/Microarchitecture-archive">Microarchitecture</a></li>
+                
+                <li><a href="/New-Zealand-Trip-archive">New Zealand Trip</a></li>
+                
+                <li><a href="/Personal-archive">Personal</a></li>
+                
+                <li><a href="/Python-archive">Python</a></li>
+                
+                <li><a href="/Rants-archive">Rants</a></li>
+                
+                <li><a href="/Rust-archive">Rust</a></li>
+                
+                <li><a href="/WeeBox-Project-archive">WeeBox Project</a></li>
+                
+            </ul>
+            </li>
+            <li class="has-dropdown">
+            <a href="#">About</a>
+            <ul class="dropdown">
+                <li><a href="/MattGodbolt">About me</a></li>
+                <li><a href="mailto:matt@godbolt.org">Contact me</a></li>
+                <li><a href="https://www.linkedin.com/in/godbolt">
+                    <img src="https://www.linkedin.com/img/webpromo/btn_liprofile_blue_80x15.gif" width="80" height="15" alt="View Matt Godbolt's profile on LinkedIn" title="View Matt Godbolt's profile on LinkedIn"></a></li>
+            </ul>
+            </li>
+            <li class="has-form">
+            <div class="row collapse">
+                <input type="hidden" name="domains" value="xania.org">
+                <input type="hidden" name="sitesearch" value="xania.org" checked id="ss2">
+                <input type="hidden" name="client" value="pub-7939800625935372">
+                <input type="hidden" name="forid" value="1">
+                <input type="hidden" name="ie" value="ISO-8859-1">
+                <input type="hidden" name="oe" value="ISO-8859-1">
+                <input type="hidden" name="cof" value="GALT:#008000;GL:1;DIV:#336699;VLC:663399;AH:center;BGC:FFFFFF;LBGC:336699;ALC:0000FF;LC:0000FF;T:000000;GFNT:0000FF;GIMP:0000FF;FORID:1">
+                <input type="hidden" name="hl" value="en">
+                <div class="large-8 small-9 columns">
+                    <input type="text" name="q" id="sbi" placeholder="Find Stuff">
+                </div>
+                <div class="large-4 small-3 columns">
+                    <input type="submit" id="sbb" class="alert button expand" value="Search">
+                </div>
+            </div>
+            </li>
+        </ul>
+    </form>
+    </section>
+</nav>
+
+
+<div class="row">
+    <div class="small-12 columns article">
+        <h2>How Compiler Explorer Runs on AWS in 2026</h2>
+
+        <p class="ai-disclaimer">Written with LLM assistance.<br/>Details at end.</p>
+
+<p>I&rsquo;ve been meaning to write an update on how <a href="https://godbolt.org">Compiler Explorer</a> actually runs on Amazon&rsquo;s cloud, and it&rsquo;s been sat on my list for a good while now, somewhere behind the other random things that take up what laughably I refer to as my spare time<sup id="fnref:list"><a class="footnote-ref" href="#fn:list">1</a></sup>.</p>
+<p>The last time I wrote about this was <a href="/201609/how-compiler-explorer-runs-on-amazon">2016</a>, when the whole site was a load balancer, a couple of instances and some Docker containers I built on my laptop. I wrote a much longer <a href="/202506/how-compiler-explorer-works">how it works</a> last summer, but that one is mostly about Compiler Explorer and only incidentally about the cloud it sits on.</p>
+        
+        <div class="more">
+            <div class="medium-12 columns">
+                <p align="center"><a href="/202608/how-compiler-explorer-runs-on-aws" class="permalink">Read more...</a></p>
+            </div>
+        </div>
+        
+    </div>
+</div>
+<div class="row">
+    <div class="small-12 columns">
+        <div class="panel">
+            <div class="row">
+                <div class="medium-2 right columns"><a href="/202608/how-compiler-explorer-runs-on-aws" class="permalink">Permalink</a></div>
+                <div class="medium-4 columns">
+                    Filed under:
+                    
+                    <a href="/Coding">Coding</a>
+                    
+                    <a href="/Compiler-Explorer">Compiler Explorer</a>
+                    
+                </div>
+                <div class="medium-6 columns postingtime" id="a202608_how-compiler-explorer-runs-on-aws_postingtime">Posted at 10:19:00 CDT on 5<sup>th</sup> August 2026.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<hr>
+
+
+
+<div class="row">
+    <div class="small-12 columns article">
+        <h2>Walking the dog with Claude</h2>
+
+        <p class="ai-disclaimer">Written with LLM assistance.<br/>The interview format is genuine; the prose is lightly tidied from voice notes.</p>
+
+<p>I had lunch with a pal yesterday, and we got onto the subject of why
+so much technical material is either accurate-but-impenetrable or
+polished-but-slightly-wrong. It&rsquo;s a gap I think about a lot, partly
+because I make videos that try to land in the middle of it and don&rsquo;t
+always succeed. The conversation stuck with me on the drive home.</p>
+<p>This morning, whilst walking the dog, I tried something a bit silly: I
+asked Claude (dictating to the mobile app<sup id="fnref:expl"><a class="footnote-ref" href="#fn:expl">1</a></sup>) to interview me about it.
+Voice-to-text on one end, an LLM
+playing journalist on the other, and a black lab setting the pace. What
+follows is that conversation, lightly tidied &ndash; paraphrased in places,
+verbatim in others. The LLM is the interviewer; I&rsquo;m the subject.</p>
+        
+        <div class="more">
+            <div class="medium-12 columns">
+                <p align="center"><a href="/202605/walking-the-dog" class="permalink">Read more...</a></p>
+            </div>
+        </div>
+        
+    </div>
+</div>
+<div class="row">
+    <div class="small-12 columns">
+        <div class="panel">
+            <div class="row">
+                <div class="medium-2 right columns"><a href="/202605/walking-the-dog" class="permalink">Permalink</a></div>
+                <div class="medium-4 columns">
+                    Filed under:
+                    
+                    <a href="/Blog">Blog</a>
+                    
+                    <a href="/Personal">Personal</a>
+                    
+                    <a href="/Coding">Coding</a>
+                    
+                    <a href="/AI">AI</a>
+                    
+                </div>
+                <div class="medium-6 columns postingtime" id="a202605_walking-the-dog_postingtime">Posted at 11:55:00 CDT on 24<sup>th</sup> May 2026.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<hr>
+
+
+
+<div class="row">
+    <div class="small-12 columns article">
+        <h2>2025 in Review</h2>
+
+        <p class="ai-disclaimer">Written by me, proof-read by an LLM.
+<br/>Details at end.</p>
+
+<p>2025 has been quite a year for me. The big ticket things for me were having the majority of the year on a non-compete, a new job, and some videos and conference talks.</p>
+<p>It was a bumper year for my public talks, which included:</p>
+<ul>
+<li>ACCU Keynote - <a href="https://www.youtube.com/watch?v=jlt_fScVl50">Teaching an Old Dog New Tricks</a></li>
+<li>C++ on Sea - a <a href="https://www.youtube.com/watch?v=gg4pLJNCV9I">reprise</a> of the above talk, slightly shortened</li>
+<li>CppCon Keynote - <a href="https://cppcon.org/2025-keynote-matt-godbolt/">C++: Some Assembly Required</a></li>
+<li>Jane Street - <a href="https://www.janestreet.com/tech-talks/microarchitecture/">Microarchitecture: What Happens Beneath</a></li>
+</ul>
+        
+        <div class="more">
+            <div class="medium-12 columns">
+                <p align="center"><a href="/202512/2025-in-review" class="permalink">Read more...</a></p>
+            </div>
+        </div>
+        
+    </div>
+</div>
+<div class="row">
+    <div class="small-12 columns">
+        <div class="panel">
+            <div class="row">
+                <div class="medium-2 right columns"><a href="/202512/2025-in-review" class="permalink">Permalink</a></div>
+                <div class="medium-4 columns">
+                    Filed under:
+                    
+                    <a href="/Blog">Blog</a>
+                    
+                </div>
+                <div class="medium-6 columns postingtime" id="a202512_2025-in-review_postingtime">Posted at 15:30:00 CST on 31<sup>st</sup> December 2025.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<hr>
+
+
+
+<div class="row">
+    <div class="small-12 columns article">
+        <h2>Thank you</h2>
+
+        <p class="ai-disclaimer">Written by me, proof-read by an LLM.
+<br/>Details at end.</p>
+<p>It&rsquo;s the 25th! Whatever you celebrate this time of year, I wish you the very best and hope you are having a lovely day. For me, this is a family time: I&rsquo;m not at all religious but was brought up to celebrate Christmas. So, today we&rsquo;ll be cooking a massive roast dinner and enjoying family time<sup id="fnref:teenage"><a class="footnote-ref" href="#fn:teenage">1</a></sup>.</p>
+<p>This series was an idea I had around this time last year, and it has been a substantial amount of work. I&rsquo;ve really enjoyed writing it, and seeing the impact it has had on the compiled language community. I realise now in retrospect I exclusively used C and C++<sup id="fnref:rust"><a class="footnote-ref" href="#fn:rust">2</a></sup>, and concentrated on x86 a bit too much. If I do this again, I&rsquo;ll try and widen my horizons!</p>
+        
+        <div class="more">
+            <div class="medium-12 columns">
+                <p align="center"><a href="/202512/25-thank-you" class="permalink">Read more...</a></p>
+            </div>
+        </div>
+        
+    </div>
+</div>
+<div class="row">
+    <div class="small-12 columns">
+        <div class="panel">
+            <div class="row">
+                <div class="medium-2 right columns"><a href="/202512/25-thank-you" class="permalink">Permalink</a></div>
+                <div class="medium-4 columns">
+                    Filed under:
+                    
+                    <a href="/Coding">Coding</a>
+                    
+                    <a href="/AoCO2025">AoCO2025</a>
+                    
+                </div>
+                <div class="medium-6 columns postingtime" id="a202512_25-thank-you_postingtime">Posted at 06:00:00 CST on 25<sup>th</sup> December 2025.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<hr>
+
+
+
+<div class="row">
+    <div class="small-12 columns article">
+        <h2>When compilers surprise you</h2>
+
+        <p class="ai-disclaimer">Written by me, proof-read by an LLM.
+<br/>Details at end.</p>
+<p>Every now and then a compiler will surprise me with a really smart trick. When I first saw this optimisation I could hardly believe it. I was looking at loop optimisation, and wrote something like this simple function that sums all the numbers up to a given value:</p>
+<iframe width="100%" height="400px" src="https://aoco.compiler-explorer.com/e?hideEditorToolbars=true#compiler:g152,filters:'demangle,commentOnly,libraryCode,trim,intel,directives,labels',options:'-O2+-Wall+-Wextra+-Wpedantic+-Wconversion+-Wsign-conversion+-Werror+-std%3Dc%2B%2B2c',source:'int+sum_up_to(int+value)+%7B%0A++int+result+%3D+0%3B%0A++for+(int+x+%3D+0%3B+x+%3C+value%3B+%2B%2Bx)+%7B%0A++++result+%2B%3D+x%3B%0A++%7D%0A++return+result%3B%0A%7D'"></iframe>
+        
+        <div class="more">
+            <div class="medium-12 columns">
+                <p align="center"><a href="/202512/24-cunning-clang" class="permalink">Read more...</a></p>
+            </div>
+        </div>
+        
+    </div>
+</div>
+<div class="row">
+    <div class="small-12 columns">
+        <div class="panel">
+            <div class="row">
+                <div class="medium-2 right columns"><a href="/202512/24-cunning-clang" class="permalink">Permalink</a></div>
+                <div class="medium-4 columns">
+                    Filed under:
+                    
+                    <a href="/Coding">Coding</a>
+                    
+                    <a href="/AoCO2025">AoCO2025</a>
+                    
+                </div>
+                <div class="medium-6 columns postingtime" id="a202512_24-cunning-clang_postingtime">Posted at 06:00:00 CST on 24<sup>th</sup> December 2025.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<hr>
+
+
+
+<div class="row">
+    <div class="small-12 columns article">
+        <h2>Switching it up a bit</h2>
+
+        <p class="ai-disclaimer">Written by me, proof-read by an LLM.
+<br/>Details at end.</p>
+<p>The standard wisdom is that switch statements compile to jump tables. And they do - when the compiler can&rsquo;t find something cleverer to do instead.</p>
+<p>Let&rsquo;s start with a really simple example:</p>
+        
+        <div class="more">
+            <div class="medium-12 columns">
+                <p align="center"><a href="/202512/23-switching-it-up" class="permalink">Read more...</a></p>
+            </div>
+        </div>
+        
+    </div>
+</div>
+<div class="row">
+    <div class="small-12 columns">
+        <div class="panel">
+            <div class="row">
+                <div class="medium-2 right columns"><a href="/202512/23-switching-it-up" class="permalink">Permalink</a></div>
+                <div class="medium-4 columns">
+                    Filed under:
+                    
+                    <a href="/Coding">Coding</a>
+                    
+                    <a href="/AoCO2025">AoCO2025</a>
+                    
+                </div>
+                <div class="medium-6 columns postingtime" id="a202512_23-switching-it-up_postingtime">Posted at 06:00:00 CST on 23<sup>rd</sup> December 2025.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<hr>
+
+
+
+<div class="row">
+    <div class="small-12 columns article">
+        <h2>Clever memory tricks</h2>
+
+        <p class="ai-disclaimer">Written by me, proof-read by an LLM.
+<br/>Details at end.</p>
+<p>After exploring SIMD vectorisation over the last <a href="/202512/20-simd-city">couple</a> of <a href="/202512/21-vectorising-floats">days</a>, let&rsquo;s shift gears to look at another class of compiler cleverness: memory access patterns. String comparisons seem straightforward enough - check the length, compare the bytes, done. But watch what Clang does when comparing against compile-time constants, and you&rsquo;ll see some rather clever tricks involving overlapping memory reads and bitwise operations. What looks like it should be a call to <code>memcmp</code> becomes a handful of inline instructions that exploit the fact that the comparison value is known at compile time<sup id="fnref:gcc"><a class="footnote-ref" href="#fn:gcc">1</a></sup>.</p>
+<iframe width="100%" height="340px" src="https://aoco.compiler-explorer.com/e?hideEditorToolbars=true#compiler:clang2110,filters:'labels,intel,directives,commentOnly,libraryCode,demangle,trim',options:'-O2+-Wall+-Wextra+-Wpedantic+-Wconversion+-Wsign-conversion+-Werror+-std%3Dc%2B%2B2c',source:'%23include+%3Cstring_view%3E%0A%0Ausing+namespace+std::literals%3B%0A%0Abool+t1(std::string_view+sv)+%7B+return+sv+%3D%3D+%22A%22sv%3B+%7D%0Abool+t2(std::string_view+sv)+%7B+return+sv+%3D%3D+%22AB%22sv%3B+%7D%0Abool+t3(std::string_view+sv)+%7B+return+sv+%3D%3D+%22ABC%22sv%3B+%7D%0Abool+t4(std::string_view+sv)+%7B+return+sv+%3D%3D+%22ABCD%22sv%3B+%7D%0Abool+t5(std::string_view+sv)+%7B+return+sv+%3D%3D+%22ABCDE%22sv%3B+%7D%0Abool+t6(std::string_view+sv)+%7B+return+sv+%3D%3D+%22ABCDEF%22sv%3B+%7D%0Abool+t7(std::string_view+sv)+%7B+return+sv+%3D%3D+%22ABCDEFG%22sv%3B+%7D%0Abool+t8(std::string_view+sv)+%7B+return+sv+%3D%3D+%22ABCDEFGH%22sv%3B+%7D%0Abool+t9(std::string_view+sv)+%7B+return+sv+%3D%3D+%22ABCDEFGHI%22sv%3B+%7D'"></iframe>
+        
+        <div class="more">
+            <div class="medium-12 columns">
+                <p align="center"><a href="/202512/22-memory-cunningness" class="permalink">Read more...</a></p>
+            </div>
+        </div>
+        
+    </div>
+</div>
+<div class="row">
+    <div class="small-12 columns">
+        <div class="panel">
+            <div class="row">
+                <div class="medium-2 right columns"><a href="/202512/22-memory-cunningness" class="permalink">Permalink</a></div>
+                <div class="medium-4 columns">
+                    Filed under:
+                    
+                    <a href="/Coding">Coding</a>
+                    
+                    <a href="/AoCO2025">AoCO2025</a>
+                    
+                </div>
+                <div class="medium-6 columns postingtime" id="a202512_22-memory-cunningness_postingtime">Posted at 06:00:00 CST on 22<sup>nd</sup> December 2025.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<hr>
+
+
+
+<div class="row">
+    <div class="small-12 columns article">
+        <h2>When SIMD Fails: Floating Point Associativity</h2>
+
+        <p class="ai-disclaimer">Written by me, proof-read by an LLM.
+<br/>Details at end.</p>
+<p><a href="/202512/20-simd-city">Yesterday</a> we saw SIMD work beautifully with integers. But floating point has a surprise in store. Let&rsquo;s try summing an array<sup id="fnref:sum"><a class="footnote-ref" href="#fn:sum">1</a></sup>:</p>
+<iframe width="100%" height="400px" src="https://aoco.compiler-explorer.com/e?hideEditorToolbars=true#compiler:g152,filters:'directives,libraryCode,commentOnly,demangle,labels,trim,intel',options:'-O3+-march%3Dskylake+-Wall+-Wextra+-Wpedantic+-Wconversion+-Wsign-conversion+-Werror+-std%3Dc%2B%2B2c',source:'%23include+%3Cspan%3E%0Ausing+T+%3D+int%3B%0AT+sum(std::span%3CT,+65536%3E+span)+%7B%0A++T+result%7B%7D%3B%0A++for+(auto+x+:+span)%0A++++result+%2B%3D+x%3B%0A++return+result%3B%0A%7D'"></iframe>
+        
+        <div class="more">
+            <div class="medium-12 columns">
+                <p align="center"><a href="/202512/21-vectorising-floats" class="permalink">Read more...</a></p>
+            </div>
+        </div>
+        
+    </div>
+</div>
+<div class="row">
+    <div class="small-12 columns">
+        <div class="panel">
+            <div class="row">
+                <div class="medium-2 right columns"><a href="/202512/21-vectorising-floats" class="permalink">Permalink</a></div>
+                <div class="medium-4 columns">
+                    Filed under:
+                    
+                    <a href="/Coding">Coding</a>
+                    
+                    <a href="/AoCO2025">AoCO2025</a>
+                    
+                </div>
+                <div class="medium-6 columns postingtime" id="a202512_21-vectorising-floats_postingtime">Posted at 06:00:00 CST on 21<sup>st</sup> December 2025.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<div class="row">
+    <div class="small-12 columns">
+        <div class="panel callout radius">
+            <h3>About Matt Godbolt</h3>
+            <p>
+            <a href="/MattGodbolt">Matt Godbolt</a> is a C++ developer living in Chicago.
+            He works for <a href="https://www.hudsonrivertrading.com/">Hudson River Trading</a> on super fun but secret things.
+            He is one half of the <a href="https://twoscomplement.org">Two's Complement</a> podcast.
+            Follow him on <a rel="me" href="https://hachyderm.io/@mattgodbolt">Mastodon</a>
+            or <a rel="me" href="https://bsky.app/profile/matt.godbolt.org">Bluesky</a>.
+            </p>
+        </div>
+        <div class="footer">
+            <p>Copyright 2007-2026 Matt Godbolt.
+            Unless otherwise stated, all content is licensed under the
+            <a rel="license" href="https://creativecommons.org/licenses/by-nc/3.0/">Creative Commons Attribution-Noncommercial 3.0 Unported License</a>.
+            This blog is powered by the MalcBlogSystem by <a href="https://www.farside.org.uk/">Malcolm Rowe</a>.
+            <strong>Note:</strong> This is my personal website. The views expressed on
+            these pages are mine alone and not those of my employer.
+            </p>
+        </div>
+    </div>
+</div>
+
+
+    <script src="js/vendor/jquery.js"></script>
+    <script src="js/foundation.min.js"></script>
+    <script>
+function updatePostingTime(id, time) {
+  if (!document)
+    return;
+  if (!document.getElementById)
+    return;
+
+  var span = document.getElementById(id);
+  if (!span)
+    return;
+
+  // time in the form yyyy-mm-ddThh:mm:ssZ.
+  var year = time.substring(0, 4);
+  var month = Number(time.substring(5, 7)) - 1;
+  var day = time.substring(8, 10);
+  var hour = time.substring(11, 13);
+  var minute = time.substring(14, 16);
+  var second = time.substring(17, 19);
+  var then_ms_utc = Date.UTC(year, month, day, hour, minute, second);
+  var now_ms_utc = new Date().getTime();
+
+  var diff_min = (now_ms_utc - then_ms_utc) / 1000 / 60;
+  var diff_desc;
+
+  if (diff_min < 3)          diff_desc = "just a few minutes";
+  else if (diff_min < 60)
+    diff_desc = "about " + Math.round(diff_min.toString()) + " minutes";
+  else if (diff_min < 65)    diff_desc = "about an hour";
+  else if (diff_min < 90)    diff_desc = "just over an hour";
+  else if (diff_min < 120)   diff_desc = "nearly two hours";
+  else if (diff_min < 125)   diff_desc = "about two hours";
+  else if (diff_min < 150)   diff_desc = "just over two hours";
+  else if (diff_min < 180)   diff_desc = "nearly three hours";
+  else if (diff_min < 185)   diff_desc = "about three hours";
+  else if (diff_min < 210)   diff_desc = "just over three hours";
+  else if (diff_min < 240)   diff_desc = "nearly four hours";
+  else if (diff_min < 245)   diff_desc = "about four hours";
+  else if (diff_min < 270)   diff_desc = "just over four hours";
+  else if (diff_min < 24*60)
+    diff_desc = "about " + Math.round(diff_min / 60).toString() + " hours";
+  else if (diff_min < 37*60) diff_desc = "about a day";
+  else if (diff_min < 6*24*60)
+    diff_desc = "about " + Math.round(diff_min / 60 / 24).toString() + " days";
+  else if (diff_min < 11*24*60)
+    diff_desc = "about a week";
+  else if (diff_min < 5*7*24*60)
+    diff_desc = "about " + Math.round(diff_min / 60 / 24 / 7).toString() +
+      " weeks";
+  else
+    return;  // Nothing useful to say.
+
+  while (span.hasChildNodes())
+    span.removeChild(span.firstChild);
+
+  span.appendChild(document.createTextNode("Posted " + diff_desc + " ago."));
+  span.title = "Posted at " + time;
+}
+
+
+updatePostingTime("a202608_how-compiler-explorer-runs-on-aws_postingtime", "2026-08-05T15:19:00Z");
+
+updatePostingTime("a202605_walking-the-dog_postingtime", "2026-05-24T16:55:00Z");
+
+updatePostingTime("a202512_2025-in-review_postingtime", "2025-12-31T21:30:00Z");
+
+updatePostingTime("a202512_25-thank-you_postingtime", "2025-12-25T12:00:00Z");
+
+updatePostingTime("a202512_24-cunning-clang_postingtime", "2025-12-24T12:00:00Z");
+
+updatePostingTime("a202512_23-switching-it-up_postingtime", "2025-12-23T12:00:00Z");
+
+updatePostingTime("a202512_22-memory-cunningness_postingtime", "2025-12-22T12:00:00Z");
+
+updatePostingTime("a202512_21-vectorising-floats_postingtime", "2025-12-21T12:00:00Z");
+
+      $(document).foundation();
+    </script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WHWD9JKN0G"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-WHWD9JKN0G');
+</script>
+
+  </body>
+</html>

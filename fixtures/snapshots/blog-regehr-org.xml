@@ -1,0 +1,1175 @@
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"
+	xmlns:content="http://purl.org/rss/1.0/modules/content/"
+	xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:atom="http://www.w3.org/2005/Atom"
+	xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+	xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+	>
+
+<channel>
+	<title>Embedded in Academia</title>
+	<atom:link href="https://blog.regehr.org/feed" rel="self" type="application/rss+xml" />
+	<link>https://blog.regehr.org</link>
+	<description>John Regehr, Professor of Computer Science, University of Utah, USA</description>
+	<lastBuildDate>Wed, 04 Sep 2024 18:29:03 +0000</lastBuildDate>
+	<language>en-US</language>
+	<sy:updatePeriod>
+	hourly	</sy:updatePeriod>
+	<sy:updateFrequency>
+	1	</sy:updateFrequency>
+	<generator>https://wordpress.org/?v=6.9.6</generator>
+	<item>
+		<title>Looking for Missed Alarm Bugs in a Formal Verification Tool</title>
+		<link>https://blog.regehr.org/archives/2124</link>
+					<comments>https://blog.regehr.org/archives/2124#comments</comments>
+		
+		<dc:creator><![CDATA[regehr]]></dc:creator>
+		<pubDate>Wed, 04 Sep 2024 18:29:03 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">https://blog.regehr.org/?p=2124</guid>
+
+					<description><![CDATA[[This piece is co-authored with Vsevolod Livinskii.] Formal verification isn&#8217;t some sort of magic pixie dust that we sprinkle over a computer system to make it better. Real formal verification involves a lot of the same kind of difficult, nasty, grungy engineering work that any other systems-level job involves. Furthermore, the verification tools themselves are [&#8230;]]]></description>
+										<content:encoded><![CDATA[
+<p>[This piece is co-authored with Vsevolod Livinskii.]</p>
+
+
+
+<p>Formal verification isn&#8217;t some sort of magic pixie dust that we sprinkle over a computer system to make it better. Real formal verification involves a lot of  the same kind of difficult, nasty, grungy engineering work that any other systems-level job involves. Furthermore, the verification tools themselves are very difficult to get right. They are subject to many kinds of defects, and they are if anything more difficult to debug than other software. They need to be rigorously tested if we&#8217;re going to trust them.</p>
+
+
+
+<p><a href="https://users.cs.utah.edu/~regehr/alive2-pldi21.pdf">Alive2 is a translation validation tool</a>: given two versions of a function in LLVM IR&#8211;usually these correspond to some code before and after an optimization has been performed on it&#8211;Alive2 tries to either prove that the optimization was correct, or prove that it was incorrect. Alive2 is used in practice by compiler engineers: <a href="https://github.com/llvm/llvm-project/issues?q=is%3Aissue+alive2.llvm.org">more than 600 LLVM issues</a> link to our <a href="https://alive2.llvm.org/ce/">online Alive2 instance</a>.</p>
+
+
+
+<p>Ignoring crashes and such, we can broadly categorize defects in Alive2 as:</p>
+
+
+
+<ul class="wp-block-list">
+<li>a false alarm: Alive2 signals an error when none was present</li>
+
+
+
+<li>a missed alarm: Alive2 fails to signal an error when one was present</li>
+</ul>
+
+
+
+<p>The first kind of error, false alarms, are not too difficult to test for: we simply ask Alive2 to verify a large number of optimizations, and we look closely at the errors that it signals. Every such error is the result of either a bug in LLVM or in Alive2. The second kind of error, the ones in the bottom left quadrant, are much more difficult to test for:</p>
+
+
+
+<figure class="wp-block-image size-large"><img fetchpriority="high" decoding="async" width="1280" height="817" src="https://blog.regehr.org/wp-content/uploads/2021/10/Screen-Shot-2021-10-20-at-12.16.35-PM-1280x817.png" alt="" class="wp-image-2165" srcset="https://blog.regehr.org/wp-content/uploads/2021/10/Screen-Shot-2021-10-20-at-12.16.35-PM-1280x817.png 1280w, https://blog.regehr.org/wp-content/uploads/2021/10/Screen-Shot-2021-10-20-at-12.16.35-PM-450x287.png 450w, https://blog.regehr.org/wp-content/uploads/2021/10/Screen-Shot-2021-10-20-at-12.16.35-PM-150x96.png 150w, https://blog.regehr.org/wp-content/uploads/2021/10/Screen-Shot-2021-10-20-at-12.16.35-PM-768x490.png 768w, https://blog.regehr.org/wp-content/uploads/2021/10/Screen-Shot-2021-10-20-at-12.16.35-PM-1536x981.png 1536w, https://blog.regehr.org/wp-content/uploads/2021/10/Screen-Shot-2021-10-20-at-12.16.35-PM-1568x1001.png 1568w, https://blog.regehr.org/wp-content/uploads/2021/10/Screen-Shot-2021-10-20-at-12.16.35-PM.png 1688w" sizes="(max-width: 1280px) 100vw, 1280px" /></figure>
+
+
+
+<p>The thing we&#8217;re missing is test cases that might trigger a missed-alarm bug: each such test requires a pair of functions in LLVM IR that have the same signatures, but which provably behave differently for at least one choice of inputs. We can&#8217;t rely on compiler bugs to create these test cases because LLVM is not a very buggy compiler! The vast majority of optimizations it performs are correct.</p>
+
+
+
+<p>To find missed-alarm bugs, we tried two different ideas. In the rest of this piece we&#8217;ll describe both of them.</p>
+
+
+
+<p>First, we started with <a href="https://github.com/intel/yarpgen">YARPGen</a>, a random program generator that has been used to find a large number of compiler bugs. The key guarantee that YARPGen provides is that the C or C++ function it generates is free of undefined behavior. Without this guarantee, we can&#8217;t really do randomized differential testing, since different compilers will tend to exploit undefined behaviors differently. However, this guarantee isn&#8217;t a sufficient basis for finding missed alarm bugs, so we modified YARPGen to suit our purposes. Our modified version generates a random function, as usual, and then it does something new: it randomly mutates this function slightly, while maintaining the guarantee that the new function is also free of undefined behavior.</p>
+
+
+
+<p>Now we have two functions, very similar to each other, both guaranteed to be free of undefined behavior. Is this a basis for finding missed alarm bugs? Not quite&#8211;we still need to make sure that these functions produce different results when executed, for at least one set of inputs. To do this, we simply compile and run the pairs of functions, throwing away any pairs where our mutation happens to not change the observable behavior. Finally, we compile the pair of functions into LLVM IR and then ask Alive2 to see if one of them refines the other. By construction, this check must fail&#8211;if Alive2 does not signal an error, then we have found the kind of missed alarm bug in Alive2 that we were originally looking for.</p>
+
+
+
+<p>The other method that we have for seeking out missed alarm bugs is one that we arrived at by accident. We realized that Zhengyang Liu&#8217;s LLVM superoptimizer, Minotaur, is basically passively looking for missed alarm bug every time that we use it. Here&#8217;s the <a href="https://github.com/minotaur-toolkit/minotaur">Minotaur</a> source code and here&#8217;s <a href="https://users.cs.utah.edu/~regehr/minotaur.pdf">a paper about it</a>.</p>
+
+
+
+<p>For every LLVM instruction in the program being optimized, Minotaur tries to find a cheaper way to compute it. It does this by extracting that instruction, and some of its backwards data, control, and memory dependencies into a new LLVM function that returns the value computed by the target instruction. This new function serves as the <em>specification</em> for a program synthesis problem, where the goal is to find a cheaper way to compute the specification. Minotaur uses Alive2 to ensure that the new function refines the old one, and it uses <a href="https://llvm.org/docs/CommandGuide/llvm-mca.html">llvm-mca</a> to ensure that the new function is cheaper to compute than the old one.</p>
+
+
+
+<p>Synthesis works by enumerating a large number of <em>partially symbolic</em> candidates, where instructions are represented concretely, but literal constants are represented symbolically. Zhengyang modified Alive2 in such a way that when a candidate contains at least one symbolic constant, it emits an exists-forall solver query, which asks the solver: &#8220;Do there exist values for the symbolic constants in the candidate, such that the candidate refines the specification?&#8221;</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow"></blockquote>
+
+
+
+<p>The details of Minotaur&#8217;s synthesis procedure don&#8217;t matter too much; the important point is that since there are a huge number of candidates, the vast majority of which do not refine the specification, we end up giving Alive2 many opportunities to miss an alarm. </p>
+
+
+
+<p>But, if Alive2 misses an alarm when it is invoked by Minotaur, how will we know? Well, keep in mind that missing an alarm means that Alive2 claimed that a candidate refined the specification when in fact no refinement relation exists. Since refinement is the correctness criterion for an optimizer, these failures, by definition, lead to miscompilations. Since we routinely use Minotaur to compile large open source programs and then we run their test suites, we should have a decent chance of finding any miscompilations that it introduces.</p>
+
+
+
+<p>We&#8217;ve looked at two different ways, one using randomized search and the other using a small-scale exhaustive search, to look for missed alarm bugs in Alive2. What have we found so far? Not much! It does not look like Alive2 and Z3 are in the habit of missing alarms. This means that it is fulfilling its top-level design goal, which is good, since people actually rely on Alive2 in practice.</p>
+
+
+
+<p>So is this the end of the story? Are we now certain that Alive2 doesn&#8217;t miss alarms? Alas, no, we&#8217;re not sure. My suspicion is that if we really wanted to find missed alarm bugs, we would look at Alive2&#8217;s support for function attributes and similar constructs that neither YARPGen nor Minotaur stress in interesting ways. </p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://blog.regehr.org/archives/2124/feed</wfw:commentRss>
+			<slash:comments>1</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Dataflow Analyses and Compiler Optimizations that Use Them, for Free</title>
+		<link>https://blog.regehr.org/archives/2578</link>
+					<comments>https://blog.regehr.org/archives/2578#comments</comments>
+		
+		<dc:creator><![CDATA[regehr]]></dc:creator>
+		<pubDate>Sat, 20 Apr 2024 21:55:33 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">https://blog.regehr.org/?p=2578</guid>
+
+					<description><![CDATA[Compilers can be improved over time, but this is a slow process. &#8220;Proebsting&#8217;s Law&#8221; is an old joke which suggested that advances in compiler optimization will double the speed of a computation every 18 years &#8212; but if anything this is optimistic. Slow compiler evolution is never a good thing, but this is particularly problematic [&#8230;]]]></description>
+										<content:encoded><![CDATA[
+<p>Compilers can be improved over time, but this is a slow process. &#8220;Proebsting&#8217;s Law&#8221; is an old joke which suggested that advances in compiler optimization will double the speed of a computation every 18 years &#8212; but if anything this is optimistic. Slow compiler evolution is never a good thing, but this is particularly problematic in today&#8217;s environment of rapid innovation in GPUs, TPUs, and other entertaining platforms.</p>
+
+
+
+<p>One of my research group&#8217;s major goals is to create technologies that enable self-improving compilers. Taking humans out of the compiler-improvement loop will make this process orders of magnitude faster, and also the resulting compilers will tend to be correct by construction. One such technology is superoptimization, where we use an expensive search procedure to discover optimizations that are missing from a compiler. Another is <a href="https://users.cs.utah.edu/~regehr/generalization-oopsla24.pdf">generalization</a>, which takes a specific optimization (perhaps, but not necessarily, discovered by a superoptimizer) and turns it into a broadly applicable form that is suitable for inclusion in a production compiler.</p>
+
+
+
+<p>Together with a representative benchmark suite, superoptimization + generalization will result in a fully automated self-improvement loop for one part of an optimizing compiler: the peephole optimizer. In the rest of this piece I&#8217;ll sketch out an expanded version of this self-improvement loop that includes dataflow analyses.</p>
+
+
+
+<p>The goal of a dataflow analysis is to compute useful facts that are true in every execution of the program being compiled. For example, if we can prove that x is always in the range [5..15], then we don&#8217;t need to emit an array bound check when x is used as an index into a 20-element array. This particular dataflow analysis is the integer range analysis and compilers such as GCC and LLVM perform it during every optimizing compile. Another analysis &#8212; one that LLVM leans on particularly heavily &#8212; is &#8220;known bits,&#8221; which tries to prove that individual bits of SSA values are zero or one in all executions.</p>
+
+
+
+<p>Out in the literature we can find a huge number of dataflow analyses, some of which are useful to optimize some kinds of code &#8212; but it&#8217;s hard to know which ones to actually implement. We can try out different ones, but it&#8217;s a lot of work implementing even one new dataflow analysis in a production compiler. The effort can be divided into two major parts. First, implementing the analysis itself, which requires creating an abstract version of each instruction in the compiler&#8217;s IR: these are called dataflow transfer functions. For example, to implement the addition operation for integer ranges, we can use [lo1, hi1] + [lo2, hi2] = [lo1 + lo2, hi1 + hi2] as the transfer function. But even this particularly easy case will become tricker if we have to handle overflows, and then writing a correct and precise transfer function for bitwise operators is much less straightforward. Similarly, consider writing a correct and precise known bits transfer function for multiplication. This is not easy! Then, once we&#8217;ve finished this job, we&#8217;re left with the second piece of work which is to implement optimizations that take advantage of the new dataflow facts.</p>
+
+
+
+<p>Can we automate both of these pieces of work? We can! There&#8217;s an initial bit of work in creating a representation for dataflow facts and formalizing their meaning that cannot be automated, but this is not difficult stuff. Then, to automatically create the dataflow transfer functions, we turn to this <a href="https://pages.cs.wisc.edu/~loris/papers/oopsla22.pdf">very nice paper</a> which synthesizes them basically by squeezing the synthesized code between a hard soundness constraint and a soft precision constraint. Basically, every dataflow analysis ends up making approximations, but these approximations can only be in one direction, or else analysis results can&#8217;t be used to justify compiler optimizations. The paper leaves some work to be done in making this all practical  in a production compiler, but it looks to me like this should mainly be a matter of engineering.</p>
+
+
+
+<p>A property of dataflow transfer functions is that they lose precision across instruction boundaries. We can mitigate this by finding collections of instructions commonly found together (such as those implementing a minimum or maximum operation) and synthesizing a transfer function for the aggregate operation. We can also gain back precision by special-casing the situation where both arguments to an instruction come from the same source. We don&#8217;t tend to do these things when writing dataflow transfer functions by hand, but in an automated workflow they would be no problem at all. Another thing that we&#8217;d like to automate is creating efficient and precise <a href="https://arxiv.org/abs/1309.5146">product operators</a> that allow dataflow analyses to exchange information with each other.</p>
+
+
+
+<p>Given a collection of dataflow transfer functions, creating a dataflow analysis is a matter of plugging them into a generic dataflow framework that applies transfer functions until a fixpoint is reached. This is all old hat. The result of a dataflow analysis is a collection of dataflow facts attached to each instruction in a file that is being compiled.</p>
+
+
+
+<p>To automatically make use of dataflow facts to drive optimizations, we can use a superoptimizer. For example, we taught Souper to use several of LLVM&#8217;s dataflow results. This is easy stuff compared to creating a superoptimizer in the first place: basically, we can reuse the same formalization of the dataflow analysis that we already created in order to synthesize transfer functions. Then, the generalization engine also needs to fully support dataflow analyses; our <a href="https://users.cs.utah.edu/~regehr/generalization-oopsla24.pdf">Hydra</a> tool already does a great job at this, there are plenty of details in the paper.</p>
+
+
+
+<p>Now that we&#8217;ve closed the loop, let&#8217;s ask whether there are interesting dataflow analyses missing from LLVM, that we should implement? Of course I don&#8217;t know for sure, but one such domain that I&#8217;ve long been interested in trying out is &#8220;congruences&#8221; where for a variable v, we try to prove that it always satisfies v = ax+b, for a pair of constants a and b. This sort of domain is useful for tracking values that point into an array of structs, where a is the struct size and b is the offset of one of its fields.</p>
+
+
+
+<p>Our current generation of production compilers, at the implementation level, is somewhat divorced from the mathematical foundations of compilation. In the future we&#8217;ll instead derive parts of compiler implementations &#8212; such as dataflow analyses and peephole optimizations &#8212; directly from these foundations.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://blog.regehr.org/archives/2578/feed</wfw:commentRss>
+			<slash:comments>1</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Why Do Peephole Optimizations Work?</title>
+		<link>https://blog.regehr.org/archives/2485</link>
+					<comments>https://blog.regehr.org/archives/2485#comments</comments>
+		
+		<dc:creator><![CDATA[regehr]]></dc:creator>
+		<pubDate>Wed, 01 Nov 2023 16:23:20 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">https://blog.regehr.org/?p=2485</guid>
+
+					<description><![CDATA[In its original form, a peephole optimization applied to a collection of instructions located close together in a program. For example, in a register transfer language we might find this sequence of instructions: r0 = xor r8, -1 r1 = xor r9, -1 r0 = and r0, r1 Here, assuming the two&#8217;s complement representation, -1 [&#8230;]]]></description>
+										<content:encoded><![CDATA[
+<p>In <a href="https://dl.acm.org/doi/10.1145/364995.365000">its original form</a>, a peephole optimization applied to a collection of instructions located close together in a program. For example, in a register transfer language we might find this sequence of instructions:</p>
+
+
+
+<pre class="wp-block-preformatted">r0 = xor r8, -1
+r1 = xor r9, -1
+r0 = and r0, r1</pre>
+
+
+
+<p>Here, assuming the two&#8217;s complement representation, -1 is just a convenient way to specify a register filled with ones. Following a De Morgan law, a peephole optimization could rewrite this sequence as:</p>
+
+
+
+<pre class="wp-block-preformatted">r0 = or r8, r9
+r0 = xor r0, -1</pre>
+
+
+
+<p>But modern compilers don&#8217;t use RTL as their primary intermediate representation (IR), they&#8217;re more likely to have an SSA-based IR that represents the flow of data between instructions explicitly. You can think of SSA as teasing out a purely functional subset of a program that you write. For example in LLVM IR we might have:</p>
+
+
+
+<pre class="wp-block-preformatted">%x = xor %a, -1
+...
+%y = xor %b, -1
+...
+%z = and %x, %y</pre>
+
+
+
+<p>Here the instructions need not be located near each other, they could even live in different basic blocks; it is only required that %x and %y both <em>dominate</em> %z &#8212; this just means that there&#8217;s no way to get to %z without having run across definitions for both %x and %y. There&#8217;s a bit more to SSA than this, but the rest doesn&#8217;t matter to us right now. Here, again, we could use the De Morgan law to rewrite this computation and reduce the overall instruction count by one:</p>
+
+
+
+<pre class="wp-block-preformatted">%tmp = or %a, %b
+%z = xor %tmp, -1</pre>
+
+
+
+<p>These kinds of localized rewrites are intuitively appealing: they look like they should work. And they do! But let&#8217;s make sure we understand why.</p>
+
+
+
+<p>First, let&#8217;s talk about what a peephole optimization, in isolation, should do. A strong correctness requirement would be that the new code is equivalent to the old code. That is, for all possible values of the inputs to the code that&#8217;s going to be optimized, the unoptimized and optimized code have to have the same observable behavior. Here we have to be careful about what we mean by &#8220;observable behavior&#8221; &#8212; it should include the value actually computed by the code in addition to any side effects, for example on the state of memory. We usually <em>do not want</em> the execution time of the program, nor its code size, to be part of its observable behavior, since preserving those behaviors would preclude all optimizations for speed or size. We also don&#8217;t want microarchitectural effects, such as changes to the state of branch predictors and caches, to be observable; though in certain security-sensitive applications, we might change our minds about this. But anyway, however we define it, equivalence is a stronger criterion than we want optimizations to obey. Rather, we want the optimized code to <em>refine</em> the unoptimized code.</p>
+
+
+
+<p>Refinement roughly means &#8220;take a description of a system and produce a more specific version of that system,&#8221; and it is an ubiquitous concept in programming. We often start with a rough design for a software system and then refine it into a specification, which we then refine into an implementation. A compiler then refines the source-level implementation when it converts it into object code. If the compiler ever produces a non-refinement, this is considered to be a compiler bug. (We can flip this around and say that producing a refinement is the top-level correctness requirement for a compiler.) At the level of the compiler, non-trivial refinements correspond to removing possible behaviors from the code. For example, consider a high-performance parallel sorting algorithm that isn&#8217;t stable: it doesn&#8217;t necessarily preserve the ordering of elements whose sort keys compare the same. Depending on how the parallel execution goes, this algorithm might produce different outputs different times it&#8217;s run, but the different unstably-sorted outputs are all considered to be correct. Now consider a compiler that takes this algorithm and compiles it to a sequential platform, meaning that the entire sorting algorithm runs without concurrency, on a single core. On this platform we would expect that, for a given unsorted input, the sorting algorithm will produce the same (unstable) result every time that it is run. The compiler has eliminated non-determinism, and we generally consider that to be an OK thing for a compiler to do. This is an example of a compiler performing a non-trivial refinement.</p>
+
+
+
+<p>Refinement also happens for sequential code. For example, the size of the &#8220;int&#8221; type in the C++ language is implementation-defined. One C++ compiler might refine an int in the source code to a 32-bit value, whereas a different one might refine it to a 64-bit value. Unspecified behavior in C and C++, such as the order of evaluation of arguments to a function, is also refined into some specific order at compile time.</p>
+
+
+
+<p>For peephole optimizations, refinement is generally about undefined behavior. This isn&#8217;t the evil kind of programmer-facing undefined behavior that we often read about; this is specific to the compiler IR and it allows the compiler to perform interesting optimizations even when, for example, we&#8217;re using LLVM to compile Swift or Rust. <a href="https://users.cs.utah.edu/~regehr/papers/undef-pldi17.pdf">We wrote somewhat extensively about this topic</a> a few years ago. <a href="https://gcc.godbolt.org/z/PjYee78j5">Here&#8217;s an example</a> of LLVM&#8217;s peephole pass &#8220;InstCombine&#8221; performing a non-trivial refinement where it takes an immediate undefined behavior, dividing by zero, and turns it into a function returning LLVM&#8217;s poison value. Then, we can see an LLVM backend <a href="https://gcc.godbolt.org/z/W56jxajsY">further refining the poison value</a> into code that returns whatever value happened to be sitting in w0, which is the register that the AArch64 ABI uses to return a 32-bit integer value. The backend could also have refined this function to return a constant such as zero, but that would have been less efficient.</p>
+
+
+
+<p>So now we hopefully understand what peephole optimizations are supposed to do: the optimized code must refine the original code, in a context where &#8220;refinement&#8221; means something like &#8220;for defined inputs, preserve the behavior of the code; for undefined inputs, feel free to pick a subset of the behaviors.&#8221; A much more precise definition can be found in <a href="https://users.cs.utah.edu/~regehr/alive2-pldi21.pdf">the Alive2 paper</a>. But we still haven&#8217;t figured out why peephole optimizations work. The thing we&#8217;re going to need to do here is show that a refinement at the site of a peephole optimization (that is, buried somewhere deep in the code) leads to a refinement at the whole program level.</p>
+
+
+
+<p>Let&#8217;s start with a function <em>f</em> that contains some peephole-optimizable code. Logically, we&#8217;ll split it into two functions: a tiny little one, <em>o</em>, that contains the instructions that are going to get optimized, and a larger residual function, <em>r</em>, that contains that rest of the code. Composing the two new functions together is equivalent to the original function: <em>f</em> = <em>r</em>(<em>o</em>). Now, by assumption, we have the optimized version of <em>o</em> refining <em>o</em>: that is, <em>o</em> → <em>o&#8217;</em>. (Read <em>o</em> → <em>o&#8217;</em> as &#8220;<em>o</em> is refined by <em>o</em>-prime.&#8221;) To move forward we need to know that refinement is compositional. In other words, if <em>x</em> → <em>y</em> then <em>g</em>(<em>x</em>) →<em> g</em>(<em>y</em>), for some arbitrary function <em>g</em>. We haven&#8217;t formally defined refinement, but any reasonable definition of it will have this property. Compositionality lets us prove that <em>r</em>(<em>o</em>) → <em>r</em>(<em>o</em>&#8216;). And now, since <em>f</em> = <em>r</em>(<em>o</em>), we get f → <em>r</em>(o&#8217;), and that is the function-level version of the result that we wanted in the first place. To get the whole program result we can keep applying the compositionality of refinement. And that&#8217;s why peephole optimizations work!</p>
+
+
+
+<p>[My students Zhengyang Liu and Manasij Mukherjee contributed to this piece. It happened because one time I remarked to Nuno Lopes that I wasn&#8217;t sure I actually understood why peephole optimizations work and he said &#8220;Oh yeah refinement is compositional.&#8221;]</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://blog.regehr.org/archives/2485/feed</wfw:commentRss>
+			<slash:comments>4</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Formal-Methods-Based Bugfinding for LLVM&#8217;s AArch64 Backend</title>
+		<link>https://blog.regehr.org/archives/2265</link>
+					<comments>https://blog.regehr.org/archives/2265#comments</comments>
+		
+		<dc:creator><![CDATA[regehr]]></dc:creator>
+		<pubDate>Mon, 06 Jun 2022 14:58:02 +0000</pubDate>
+				<category><![CDATA[Compilers]]></category>
+		<category><![CDATA[Computer Science]]></category>
+		<category><![CDATA[Software Correctness]]></category>
+		<guid isPermaLink="false">https://blog.regehr.org/?p=2265</guid>
+
+					<description><![CDATA[[This piece is co-authored by Ryan Berger and Stefan Mada (both Utah CS undergrads), by Nader Boushehri, and by John Regehr.] An optimizing compiler traditionally has three main parts: a frontend that translates a source language into an intermediate representation (IR), a &#8220;middle end&#8221; that rewrites IR into better IR, and then a backend that [&#8230;]]]></description>
+										<content:encoded><![CDATA[
+<p>[This piece is co-authored by Ryan Berger and Stefan Mada (both Utah CS undergrads), by Nader Boushehri, and by John Regehr.] </p>
+
+
+
+<p>An optimizing compiler traditionally has three main parts: a frontend that translates a source language into an intermediate representation (IR), a &#8220;middle end&#8221; that rewrites IR into better IR, and then a backend that translates IR into assembly language. My group and our collaborators have spent a lot of time finding and reporting defects in the LLVM compiler&#8217;s middle end optimizers using <a href="https://alive2.llvm.org/ce/">Alive2</a>, a formal methods tool that we created. This piece is about extending that work to cover one of LLVM&#8217;s backends.</p>
+
+
+
+<p>Why is it useful to try to prove that an LLVM backend did the right thing? It turns out that (despite the name) LLVM IR isn&#8217;t all that low-level &#8212; the backends need to do a whole lot of work in order to create efficient object code. In fact, there&#8217;s quite a bit of code in the backends, such as peephole optimizations that clean up local inefficiencies, that ends up duplicating analogous code in the LLVM middle end optimizers. And where there&#8217;s a lot of code, there&#8217;s a lot of potential for bugs.</p>
+
+
+
+<p>The basic job performed by Alive2 is to prove that a function in LLVM IR refines another one, or else to provide a counterexample showing a violation of refinement. To understand &#8220;refinement&#8221; we need to know that due to undefined behaviors, an LLVM function can effectively act non-deterministically. For example, a function that returns a value that it loaded from uninitialized storage could return &#8220;1&#8221; one time we execute it and &#8220;2&#8221; the next time. An LLVM optimization pass is free to turn this function into one that always returns &#8220;1&#8221;. The refinement relation, then, holds when &#8212; for every possible circumstance (values of arguments, values stored in memory, etc.) in which that function could end up being called &#8212; the optimized function exhibits a subset of the behaviors of the original function. Non-trivial refinement, where the behaviors after optimization are a proper subset of the original behaviors, is ubiquitous in practice. If the optimized code contains any behavior not in the unoptimized code, this is a violation of refinement.</p>
+
+
+
+<p>So how can we take a refinement checker for LLVM IR and use it to validate the correctness of an LLVM backend? We accomplish this by lifting the compiled AArch64 code back into Alive2 IR, which is very similar to LLVM IR. Then we check that the lifted IR refines the original code. A number of such binary lifters already exist and the techniques they employ are fairly well-understood: it&#8217;s basically a matter of converting each ARM instruction into one or more Alive2 instructions that implement that instruction, and then putting the resulting code into SSA form. We tried out some of the existing lifters, and for a few reasons chose not to base our project on any of them. First, fuzzing thrives on throughput, but forking and execing an external tool isn&#8217;t fast. Second, we ran into a lot of bugs in some of the lifters we tried &#8212; these bugs impede our work by hiding the LLVM bugs we&#8217;d have hoped to find. And third, we wanted control over the lifted code so we could tailor it to our needs.</p>
+
+
+
+<p>So we wrote a new lifter, basically just by reading about the AArch64 ISA and ABI and implementing them. It&#8217;s very much a work in progress and also it&#8217;s not really general-purpose: it only needs to deal with the specific case of lifting AArch64 that was just generated from some LLVM IR that we have available to us. This allowed us to take some nice little shortcuts: we don&#8217;t have to worry about any instruction that the LLVM backend doesn&#8217;t emit, we get the types of function arguments and return values for free, and we didn&#8217;t need to write a parser for AArch64 assembly language because LLVM already has one.</p>
+
+
+
+<p>Let&#8217;s work through a quick example. Here&#8217;s an LLVM function:</p>
+
+
+
+<pre class="wp-block-preformatted has-small-font-size">define i32 @f(i32) {
+  %c = icmp ult i32 %0, 777
+  br i1 %c, label %t, label %f
+t:
+  %a = add i32 %0, 1
+  ret i32 %a
+f:
+  ret i32 %0
+}</pre>
+
+
+
+<p>If f()&#8217;s argument is unsigned-smaller-than 777, the argument is incremented and returned, otherwise the argument is returned unmodified. The AArch64 backend translates this into:</p>
+
+
+
+<pre class="wp-block-preformatted has-small-font-size">f:
+        cmp     w0, #777
+        cinc    w0, w0, lo
+        ret</pre>
+
+
+
+<p><a href="https://gcc.godbolt.org/z/qf979TrEr">Here&#8217;s this example in Compiler Explorer</a>. Do these three instructions faithfully implement the semantics of the LLVM code? It&#8217;s fairly clear that they do, but we want an automated proof. Here&#8217;s the Alive2 IR that we get from lifting the ARM code:</p>
+
+
+
+<pre class="wp-block-preformatted has-small-font-size">define i32 @f-tgt(i32 X0) {
+f:
+  X0_1 = freeze i32 X0
+  X0_2 = zext i32 X0_1 to i64
+  WZR_2x1 = trunc i64 X0_2 to i32
+  WZR_2x5 = icmp uge i32 WZR_2x1, 777
+  X0_3x1 = trunc i64 X0_2 to i32
+  X0_3x2 = trunc i64 X0_2 to i32
+  X0_3x3 = add i32 X0_3x2, 1
+  X0_3x4 = select i1 WZR_2x5, i32 X0_3x1, i32 X0_3x3
+  ret i32 X0_3x4
+}</pre>
+
+
+
+<p>Does this lifted Alive2 IR refine the original LLVM IR? It does. Alive2 asks Z3 a series of questions and gets back answers that it likes and eventually it prints:</p>
+
+
+
+<pre class="wp-block-preformatted has-small-font-size">Transformation seems to be correct!</pre>
+
+
+
+<p><a href="https://alive2.llvm.org/ce/z/XCpfBu">Here&#8217;s this example online.</a></p>
+
+
+
+<p>The lifted code isn&#8217;t very pretty, what&#8217;s going on? First, the &#8220;freeze&#8221; instruction &#8212; which tames LLVM&#8217;s poison and undef values &#8212; is required because those concepts do not exist at the AArch64 level. Second, there&#8217;s a good bit of extending and truncating going on, this happens because this platform has 64-bit registers but the instructions are only manipulating the bottom 32 bits of these registers. Third, there&#8217;s a bit of unnecessary code; we wrote a rudimentary optimizer for Alive2 IR, but this isn&#8217;t a place where we want to put much complexity, so we don&#8217;t try very hard to clean up the mess left behind by our lifter. The intent of our optimizer is simply to increase readability by removing as many irrelevant instructions as possible. For example, AArch64 assembly sometimes has to build constants using multiple instructions. This LLVM IR:</p>
+
+
+
+<pre class="wp-block-preformatted has-small-font-size">define i64 @f() {
+  ret i64 4183428261488279476
+}</pre>
+
+
+
+<p>turns into this AArch64:</p>
+
+
+
+<pre class="wp-block-preformatted has-small-font-size">f:
+	mov	x0, #49076
+	movk	x0, #52566, lsl #16
+	movk	x0, #34262, lsl #32
+	movk	x0, #14862, lsl #48
+	ret</pre>
+
+
+
+<p>which we lift to this Alive2 IR:</p>
+
+
+
+<pre class="wp-block-preformatted has-small-font-size">define i64 @f-tgt() {
+f:
+  %X0_2x1x0 = add i64 49076, 0
+  %X0_3x1x0 = shl i64 52566, 16
+  %X0_3x2x0 = and i64 %X0_2x1x0, -4294901761
+  %X0_3x3x0 = or i64 %X0_3x2x0, %X0_3x1x0
+  %X0_4x1x0 = shl i64 34262, 32
+  %X0_4x2x0 = and i64 %X0_3x3x0, -281470681743361
+  %X0_4x3x0 = or i64 %X0_4x2x0, %X0_4x1x0
+  %X0_5x1x0 = shl i64 14862, 48
+  %X0_5x2x0 = and i64 %X0_4x3x0, 281474976710655
+  %X0_5x3x0 = or i64 %X0_5x2x0, %X0_5x1x0
+  ret i64 %X0_5x3x0
+}</pre>
+
+
+
+<p>This is no fun to read. However, after some straightforward constant folding, we get this:</p>
+
+
+
+<pre class="wp-block-preformatted has-small-font-size">define i64 @f-tgt() {<br>f:<br>  ret i64 4183428261488279476<br>}</pre>
+
+
+
+<p> If we had lifted AArch64 to LLVM IR, instead of Alive2 IR, we could have gotten a lot of optimizations for free, but we didn&#8217;t do that since we try to avoid trusting LLVM in a tool that is designed to find bugs in LLVM.</p>
+
+
+
+<p>So far we only have half of a fuzzing loop; if we&#8217;re going to look for bugs, we need to push a large number of test cases through the compile-decompile-verify cycle. We do this in three ways. First, using the LLVM unit test suite, which contains about 270,000 functions in LLVM IR. Second, by fuzzing with <a href="https://blog.regehr.org/archives/2148">the mutation engine we recently posted about</a>, using the LLVM unit tests as seeds. Third, using <a href="https://github.com/regehr/opt-fuzz">opt-fuzz</a>, a standalone LLVM generator that John wrote. So far the mutation approach is performing best in terms of finding bugs, probably because opt-fuzz generates a lot of stuff that&#8217;s just too simple to trigger bugs, but also because we&#8217;ve been leaning harder on the mutator. We&#8217;ve already seen several cases where the mutator and opt-fuzz can both find the same bug, which makes us feel warm and fuzzy.</p>
+
+
+
+<p>So what do the bugs we find look like? Last week <a href="https://github.com/llvm/llvm-project/issues/55833">we reported that the AArch64 backend miscompiles this code</a>:</p>
+
+
+
+<pre class="wp-block-preformatted has-small-font-size">define i64 @f(i64) {
+  %2 = lshr i64 %0, 32
+  %3 = shl i64 %2, 16
+  %4 = trunc i64 %3 to i32
+  %5 = ashr exact i32 %4, 16
+  %6 = zext i32 %5 to i64
+  ret i64 %6
+}</pre>
+
+
+
+<p>by translating it to this:</p>
+
+
+
+<pre class="wp-block-preformatted has-small-font-size">_f:
+	sbfx	x0, x0, #32, #16
+	ret</pre>
+
+
+
+<p>The bad behavior is seen both in the most recent release (LLVM 14) and also in the current sources.</p>
+
+
+
+<p>Here are the bugs we&#8217;ve found so far (we&#8217;re not looking for crashes &#8212; these are all miscompilations):</p>
+
+
+
+<ul class="wp-block-list"><li><a href="https://github.com/llvm/llvm-project/issues/55003
+">https://github.com/llvm/llvm-project/issues/55003</a></li><li><a href="https://github.com/llvm/llvm-project/issues/55129
+">https://github.com/llvm/llvm-project/issues/55129</a></li><li><a href="https://github.com/llvm/llvm-project/issues/55150
+">https://github.com/llvm/llvm-project/issues/55150</a></li><li><a href="https://github.com/llvm/llvm-project/issues/55178
+">https://github.com/llvm/llvm-project/issues/55178</a></li><li><a href="https://github.com/llvm/llvm-project/issues/55201
+">https://github.com/llvm/llvm-project/issues/55201</a></li><li><a href="https://github.com/llvm/llvm-project/issues/55271
+">https://github.com/llvm/llvm-project/issues/55271</a></li><li><a href="https://github.com/llvm/llvm-project/issues/55284
+">https://github.com/llvm/llvm-project/issues/55284</a></li><li><a href="https://github.com/llvm/llvm-project/issues/55287
+">https://github.com/llvm/llvm-project/issues/55287</a></li><li><a href="https://github.com/llvm/llvm-project/issues/55296
+">https://github.com/llvm/llvm-project/issues/55296</a></li><li><a href="https://github.com/llvm/llvm-project/issues/55342
+">https://github.com/llvm/llvm-project/issues/55342</a></li><li><a href="https://github.com/llvm/llvm-project/issues/55484
+">https://github.com/llvm/llvm-project/issues/55484</a></li><li><a href="https://github.com/llvm/llvm-project/issues/55490
+">https://github.com/llvm/llvm-project/issues/55490</a></li><li><a href="https://github.com/llvm/llvm-project/issues/55627
+">https://github.com/llvm/llvm-project/issues/55627</a></li><li><a href="https://github.com/llvm/llvm-project/issues/55644">https://github.com/llvm/llvm-project/issues/55644</a></li><li><a href="https://github.com/llvm/llvm-project/issues/55833">https://github.com/llvm/llvm-project/issues/55833</a></li></ul>
+
+
+
+<p>It&#8217;s great to see that a number of these have been fixed already! Note that some of the bugs only happen when <a href="https://www.youtube.com/watch?v=S6SNs2ttdoA">global instruction selection</a> is enabled &#8212; this is not yet enabled by default.</p>
+
+
+
+<p>What have we learned? Perhaps surprisingly, a number of the bugs we found are not ARM-specific, but rather are in shared, non-target-specific LLVM backend code, which means that some of these bugs end up affecting multiple backends. Something else we learned (predictable, in retrospect) is that testing a backend is in an important sense more difficult than testing the middle end. Whereas most middle-end optimizations don&#8217;t care about the bitwidth of the instructions involved, the backends most certainly do care about this: instruction selection will be different at 8 vs 16 vs 32 vs 64 bits, different still at 19 bits, and even more different at 91 bits. So we have to run a lot more test cases through a backend than the middle end to get roughly equivalent coverage, and also we&#8217;re going to need to implement mutations that specifically change bitwidths in a test case. Does anyone actually care if the LLVM backends can deal with non-power-of-2 bitwidths? Turns out yes: in an optimized compile of LLVM itself, using LLVM, every integer width from 1 through 64 can be found. The largest integer that occurs when compiling LLVM using LLVM is 320 bits wide.</p>
+
+
+
+<p>One might ask: Why are we doing bugfinding work? Why not focus all of our effort on developing our tooling to the point where it can prove that application codes of interest are being compiled correctly? There are two answers. The first is personal: bugfinding is a rewarding activity that lets us engage with the LLVM community in ways that we enjoy. In contrast, true formal verification work can feel isolated and also the endpoint is very difficult to reach: real codes invariably contain features that are hostile to formal methods. The final result, if reached, tends to be a bit of a letdown (&#8220;wow, it&#8217;s correct&#8221;). The second reason that we like to do bugfinding work is that it benefits all LLVM users, as opposed to a pure verification effort that benefits only the small subset of users who are willing to put formal methods into their workflow. But, of course, in the long run, translation validation of real codes is something we&#8217;re pursuing.</p>
+
+
+
+<p>The AArch64 lifter is part of our larger program of working towards developer tools that deserve to be trusted. There&#8217;s plenty of work left to do on our lifter, and also some follow-on projects suggest themselves. First, it would be nice to derive our lifter from an existing formal semantics for AArch64 rather than writing it afresh from the documentation. Second, we&#8217;d like to support additional architectures. For example, we think that RISC-V will be pretty easy to support given the infrastructure we now have in place.</p>
+
+
+
+<p>[Our ARM lifter is not yet available on the <a href="https://alive2.llvm.org/ce/">Alive2 Compiler Explorer instance</a>.]</p>
+
+
+
+<p>[This work is sponsored, in part, by <a href="https://www.woven-planet.global/en">Woven Planet</a>]</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://blog.regehr.org/archives/2265/feed</wfw:commentRss>
+			<slash:comments>7</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>High-Throughput, Formal-Methods-Assisted Fuzzing for LLVM</title>
+		<link>https://blog.regehr.org/archives/2148</link>
+		
+		<dc:creator><![CDATA[regehr]]></dc:creator>
+		<pubDate>Tue, 31 May 2022 14:56:41 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">https://blog.regehr.org/?p=2148</guid>
+
+					<description><![CDATA[[This piece is coauthored by Yuyou Fan and John Regehr] Mutation-based fuzzing is based on the idea that new, bug-triggering inputs can often be created by randomly modifying existing, non-bug-triggering inputs. For example, if we wanted to find bugs in a PDF reader, we could grab a bunch of PDF files off the web, mutate [&#8230;]]]></description>
+										<content:encoded><![CDATA[
+<p><em>[This piece is coauthored by <a href="https://spica.cloud/">Yuyou Fan</a> and John Regehr]</em></p>
+
+
+
+<p>Mutation-based fuzzing is based on the idea that new, bug-triggering inputs can often be created by randomly modifying existing, non-bug-triggering inputs. For example, if we wanted to find bugs in a PDF reader, we could grab a bunch of PDF files off the web, mutate them by flipping a few bits or something, and feed the resulting mutants into our fuzzing target and wait for it to crash or otherwise malfunction.</p>
+
+
+
+<p>To exploit this idea for fuzzing LLVM optimization passes, we can plug existing LLVM IR files such as those found in LLVM&#8217;s unit test suite into a workflow like this one:</p>
+
+
+
+<figure class="wp-block-image size-large"><img decoding="async" width="1280" height="448" src="https://blog.regehr.org/wp-content/uploads/2021/10/Screen-Shot-2021-10-10-at-2.33.28-PM-1280x448.png" alt="" class="wp-image-2154" srcset="https://blog.regehr.org/wp-content/uploads/2021/10/Screen-Shot-2021-10-10-at-2.33.28-PM-1280x448.png 1280w, https://blog.regehr.org/wp-content/uploads/2021/10/Screen-Shot-2021-10-10-at-2.33.28-PM-450x158.png 450w, https://blog.regehr.org/wp-content/uploads/2021/10/Screen-Shot-2021-10-10-at-2.33.28-PM-150x53.png 150w, https://blog.regehr.org/wp-content/uploads/2021/10/Screen-Shot-2021-10-10-at-2.33.28-PM-768x269.png 768w, https://blog.regehr.org/wp-content/uploads/2021/10/Screen-Shot-2021-10-10-at-2.33.28-PM-1536x538.png 1536w, https://blog.regehr.org/wp-content/uploads/2021/10/Screen-Shot-2021-10-10-at-2.33.28-PM-2048x717.png 2048w, https://blog.regehr.org/wp-content/uploads/2021/10/Screen-Shot-2021-10-10-at-2.33.28-PM-1568x549.png 1568w" sizes="(max-width: 1280px) 100vw, 1280px" /></figure>
+
+
+
+<p>In other words, we create a fresh test case using mutation, optimize it, and then we use our formal methods tool <a href="https://alive2.llvm.org/ce/">Alive2</a> to either prove that the optimization was correct, or prove that it was buggy. This sort of collaboration between formal and informal methods ends up being powerful and useful!</p>
+
+
+
+<p>The first thing we tried out is <a href="https://gitlab.com/akihe/radamsa">radamsa</a>, an open source mutation engine. The resulting testing loop worked poorly: the vast majority of mutated tests were either semantically identical to the original test case or else were not valid bitcode files. This isn&#8217;t radamsa&#8217;s fault: files in LLVM IR (intermediate representation) have strong validity constraints, making it difficult for a tool that is unaware of the file structure to effect meaningful changes. After running for a few days on a fast machine, we did not discover any bugs this way. It&#8217;s possible that a different domain-independent mutation engine, such as the one found in AFL, would work better, but this doesn&#8217;t seem likely and we didn&#8217;t pursue it. (Related, C-Reduce does a poor job reducing LLVM IR, whereas the domain-specific llvm-reduce is quite good.)</p>
+
+
+
+<p>Next, we wrote a custom mutator for LLVM IR that always generates valid output. To do this, we used existing APIs for things like replacing all uses of an SSA value and computing the SSA dominator tree, in order to avoid generating outputs that violate IR invariants. Mutations that we can do include:</p>
+
+
+
+<ul class="wp-block-list"><li>replacing an instruction with a different one, for example changing left-shift to subtraction</li><li>permuting an instruction&#8217;s operands</li><li>toggling flags attached to instructions such as the &#8220;exact&#8221; flag on division and the &#8220;no unsigned wrap&#8221; flag on addition and subtraction</li><li>toggling various attributes attached to functions and function parameters</li><li>changing constant values</li><li>adding a randomly generated instruction with randomly chosen inputs, and then replacing an SSA use with the value produced by this instruction</li><li>inserting a call to a function and then inlining its body using the LLVM inliner</li></ul>
+
+
+
+<p>Of course you can probably think of additional ways to mutate a function &#8212; and hopefully we&#8217;ll get around to implementing those sooner or later. But this seems like a reasonable start.</p>
+
+
+
+<p>Our original, radamsa-based fuzzing loop was structured as a collection of processes interacting through the filesystem. That setup incurred a lot of overhead due to repeated fork/exec, parse/print, etc. The new fuzzing loop with our custom mutator lives in a single unix process and has much higher fuzzing throughput. Basically, we invoke a program called alive-mutate on an IR file and let it know how long to run, and then it tests as many mutants as possible before reaching its time limit. If we want to fuzz each of the ~7000 unit tests in the <tt>llvm/test/Transforms</tt> directory for 10 minutes, this takes about 36 hours on a 32-core machine. We can create a mutant, optimize it, and prove the optimization correct up to about 16,000 times per second, though the loop can be much slower than this when the file is large or when Z3 has a hard time finding a proof. Here&#8217;s what the throughput looks like for some files randomly chosen from the LLVM unit test suite:</p>
+
+
+
+<figure class="wp-block-image size-full"><img decoding="async" width="640" height="480" src="https://blog.regehr.org/wp-content/uploads/2022/05/Alive-mutateThroughput.png" alt="" class="wp-image-2304" srcset="https://blog.regehr.org/wp-content/uploads/2022/05/Alive-mutateThroughput.png 640w, https://blog.regehr.org/wp-content/uploads/2022/05/Alive-mutateThroughput-450x338.png 450w, https://blog.regehr.org/wp-content/uploads/2022/05/Alive-mutateThroughput-150x113.png 150w" sizes="(max-width: 640px) 100vw, 640px" /></figure>
+
+
+
+<p>Let&#8217;s look at an example of how mutation works. We&#8217;ll start with this function that is found in the LLVM unit tests:</p>
+
+
+
+<pre class="wp-block-preformatted has-extra-small-font-size">declare i8* @bar(i8*) readonly nounwind
+
+define internal i8* @callee_with_explicit_control_flow(i8* %p) alwaysinline {
+  %r = call i8* @bar(i8* %p)
+  %cond = icmp ne i8* %r, null
+  br i1 %cond, label %ret, label %orig
+
+ret:
+  ret i8* %r
+
+orig:
+  ret i8* %p
+}</pre>
+
+
+
+<p><a href="https://alive2.llvm.org/ce/z/BTKnfn">Here you can see</a> how the LLVM optimizer  transforms this code: it replaces the control flow with a ternary &#8220;select&#8221; instruction. Alive2 agrees with LLVM that that optimization is correct.</p>
+
+
+
+<p>Now we invoke alive-mutate, asking it to run for 60 seconds and to dump its results into a directory called &#8220;output&#8221;:</p>
+
+
+
+<pre class="wp-block-preformatted has-extra-small-font-size">$ alive-mutate -t 60 test.ll output
+Unsound found! at 124th copies
+Unsound found! at 140th copies
+Unsound found! at 182th copies
+Unsound found! at 269th copies
+Unsound found! at 557th copies
+program ended
+Summary:
+  818 correct transformations
+  5 incorrect transformations
+  0 failed-to-prove transformations
+  0 Alive2 errors
+$</pre>
+
+
+
+<p>This is telling us that Alive2 believes that 818 mutants were optimized correctly by LLVM and that five were optimized incorrectly. Here&#8217;s one of them:</p>
+
+
+
+<pre class="wp-block-preformatted has-extra-small-font-size">declare i8* @bar(i8*)
+
+define internal i8* @callee_with_explicit_control_flow(i8* %p) {
+  %r = call i8* @bar(i8* %p)
+  %cond = icmp ne i8* %r, %p
+  br i1 %cond, label %ret, label %orig
+
+ret:
+  ret i8* %r
+
+orig:
+  ret i8* %p
+}</pre>
+
+
+
+<p>What changed here? Just the second operand of the icmp instruction, which is testing two pointers for inequality. But now the optimizer does something different, it rewrites the function to this:</p>
+
+
+
+<pre class="wp-block-preformatted has-extra-small-font-size">define i8* @callee_with_explicit_control_flow(i8* %p) {
+  %r = call i8* @bar(i8* %p)
+  ret i8* %r
+}</pre>
+
+
+
+<p>Before we look at why this is incorrect, let&#8217;s make sure we understand what the optimizer is thinking. The mutated function compares two pointers for inequality; if they are unequal it returns %r, if they are equal it returns %p. But if they&#8217;re equal, the optimizer reasons that returning %r is just as good as returning %p. In practice it&#8217;s a bit more complicated than that, a few different passes are involved, but the details aren&#8217;t all that important. The upshot is that <a href="https://alive2.llvm.org/ce/z/t7hQWR">this transformation is perfectly OK when performed on integer code</a>, but it is wrong for pointers because pointers carry provenance, and two arbitrary pointers cannot be interchanged just because they compare as equal. <a href="https://alive2.llvm.org/ce/z/dUei8C">Alive2 will even try to explain this to us if we read its counterexample carefully</a>. What it is telling us is that %p has offset 2 into a memory block of size 0 and that %r has offset 0 into a memory block of size 1. This explains how the pointers can compare as equal: %p is out-of-bounds (perfectly legal in LLVM as long as we don&#8217;t dereference it) and happens to refer to the same location as %r. But these are not interchangeable! In a different situation, this optimization would end up replacing an in-bounds pointer with an out-of-bounds pointer, which is not good; followed by other optimizations, this sort of thing could cascade into an end-to-end miscompile. Alas, this is a long-standing LLVM defect that is known to the community and there&#8217;s no point reporting it. There&#8217;s a bit of a broader lesson about formal methods here, which is that verification is just one small part of the larger enterprise of creating high-quality software. Happily, other bugs that we find and report do get fixed.</p>
+
+
+
+<p>Here are some bugs we found using alive-mutate:</p>
+
+
+
+<ul class="wp-block-list"><li><a href="https://bugs.llvm.org/show_bug.cgi?id=51351
+">https://bugs.llvm.org/show_bug.cgi?id=51351</a></li><li><a href="https://bugs.llvm.org/show_bug.cgi?id=51618">https://bugs.llvm.org/show_bug.cgi?id=51618</a></li><li><a href="https://github.com/llvm/llvm-project/issues/53252
+">https://github.com/llvm/llvm-project/issues/53252</a></li><li><a href="https://github.com/llvm/llvm-project/issues/53218
+">https://github.com/llvm/llvm-project/issues/53218</a></li><li><a href="https://github.com/llvm/llvm-project/issues/55003
+">https://github.com/llvm/llvm-project/issues/55003</a></li><li><a href="https://github.com/llvm/llvm-project/issues/55178
+">https://github.com/llvm/llvm-project/issues/55178</a></li><li><a href="https://github.com/llvm/llvm-project/issues/55201
+">https://github.com/llvm/llvm-project/issues/55201</a></li><li><a href="https://github.com/llvm/llvm-project/issues/55129
+">https://github.com/llvm/llvm-project/issues/55129</a></li><li><a href="https://github.com/llvm/llvm-project/issues/55271
+">https://github.com/llvm/llvm-project/issues/55271</a></li><li><a href="https://github.com/llvm/llvm-project/issues/55284
+">https://github.com/llvm/llvm-project/issues/55284</a></li><li><a href="https://github.com/llvm/llvm-project/issues/55287
+">https://github.com/llvm/llvm-project/issues/55287</a></li><li><a href="https://github.com/llvm/llvm-project/issues/55296
+">https://github.com/llvm/llvm-project/issues/55296</a></li><li><a href="https://github.com/llvm/llvm-project/issues/55342
+">https://github.com/llvm/llvm-project/issues/55342</a></li><li><a href="https://github.com/llvm/llvm-project/issues/55484
+">https://github.com/llvm/llvm-project/issues/55484</a></li><li><a href="https://github.com/llvm/llvm-project/issues/55490
+">https://github.com/llvm/llvm-project/issues/55490</a></li><li><a href="https://github.com/llvm/llvm-project/issues/52884
+">https://github.com/llvm/llvm-project/issues/52884</a></li></ul>
+
+
+
+<p>In summary, alive-mutate&#8217;s hybrid fuzzing and formal verification approach works nicely and is also intellectually satisfying: we push the formal methods aspect as far as it can go, and then back off to randomized methods to explore individual cases in situations where we can&#8217;t yet formally reason about many cases at once.</p>
+
+
+
+<p>So where&#8217;s this work going? We want to deploy it in two ways. First, we should have a few spare machines that just build an LLVM every day and then fuzz it, reporting any new bugs as they show up. The best time to discover a bug is before it gets pushed to the repo, but the second best time is immediately after it lands, while the logic is still fresh in someone&#8217;s mind. This kind of fuzzing offers a good chance to make that happen. Second, we want to use translation validation beyond bug-finding: we should use tools like Alive2 to monitor the compilation of codes whose correctness we care about, in order to ensure that nothing went wrong along the way. This is far more difficult, but we&#8217;re working on it.</p>
+]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>A Close Look at a Spinlock</title>
+		<link>https://blog.regehr.org/archives/2173</link>
+					<comments>https://blog.regehr.org/archives/2173#comments</comments>
+		
+		<dc:creator><![CDATA[regehr]]></dc:creator>
+		<pubDate>Sat, 06 Nov 2021 19:57:06 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">https://blog.regehr.org/?p=2173</guid>
+
+					<description><![CDATA[The spinlock is the most basic mutual exclusion primitive provided by a multiprocessor operating system. Spinlocks need to protect against preemption on the current CPU (typically by disabling interrupts, but we&#8217;ll ignore that aspect in this post) and also against attempts by other cores to concurrently access the critical section (by using atomic memory operations). [&#8230;]]]></description>
+										<content:encoded><![CDATA[
+<p><style type="text/css">
+pre { overflow: none; white-space: pre; font-family: "courier new", courier, monospace; font-size: 70%; font-weight: bold; }
+</style></p>
+<p>The spinlock is the most basic mutual exclusion primitive provided by a multiprocessor operating system. Spinlocks need to protect against preemption on the current CPU (typically by disabling interrupts, but we&#8217;ll ignore that aspect in this post) and also against attempts by other cores to concurrently access the critical section (by using atomic memory operations). As the name implies, attempts to acquire a locked spinlock simply spin: they burn CPU time. Thus, we don&#8217;t want to hold spinlocks for long and we certainly don&#8217;t want to be preempted while holding one.</p></p>
+
+
+
+<p>In the old days, people came up with spinlock implementations that were based on standard memory operations: loads and stores. <a href="https://en.wikipedia.org/wiki/Eisenberg_%26_McGuire_algorithm">Eisenberg &amp; McGuire</a> and the <a href="https://en.wikipedia.org/wiki/Lamport%27s_bakery_algorithm">Lamport Bakery</a> are examples. Modern multicores with weak memory models (including x86 and x86-64) break naive implementations of these algorithms and, while they can be fixed by adding memory fences, the resulting code isn&#8217;t as efficient as what can be accomplished using hardware-supported atomic memory operations that are more powerful than loads and stores, such as <a href="https://en.wikipedia.org/wiki/Test-and-set">test-and-set</a>, <a href="https://en.wikipedia.org/wiki/Compare-and-swap">compare-and-swap</a>, and <a href="https://en.wikipedia.org/wiki/Load-link/store-conditional">load-linked / store-conditional</a>.</p>
+
+
+
+<p>A spinlock does not need to be complicated, we can write a decently portable user-mode one using GCC&#8217;s <a href="https://gcc.gnu.org/onlinedocs/gcc/_005f_005fatomic-Builtins.html">atomic intrinsics</a>:</p>
+
+
+
+<pre class="wp-block-preformatted">struct spin_lock_t {
+  int lock;
+};
+
+void spin_lock(struct spin_lock_t *s) {
+  while (1) {
+    int zero = 0;
+    int one = 1;
+    if (__atomic_compare_exchange(&amp;s-&gt;lock, &amp;zero,
+                                  &amp;one, 0,
+                                  __ATOMIC_SEQ_CST,
+                                  __ATOMIC_SEQ_CST))
+      return;
+  }
+}
+
+void spin_unlock(struct spin_lock_t *s) {
+  int zero = 0;
+  __atomic_store(&amp;s-&gt;lock, &amp;zero, __ATOMIC_SEQ_CST);
+}</pre>
+
+
+
+<p>The idea here is that the lock field holds a zero when the lock is free and a one when it is held. To acquire the lock, we use a compare-and-swap operation to try to change a zero in the lock field into a one &#8212; the key is that the comparison and the swap execute atomically. How the architecture accomplishes this is out of scope for this post! The __ATOMIC_SEQ_CST specifies that we want the strongest possible synchronization behavior from these atomic operations. This, and other aspects of this lock, could be optimized, but this implementation works.</p>
+
+
+
+<p>An issue with this spinlock is that it permits unfairness under contention: if multiple cores are trying to get into a critical section, it is the processor&#8217;s memory subsystem that effectively chooses who gets in. On a random AMD machine that I have, it is easy to see some cores accessing the critical section several times more often than others when contention is heavy. To make access to the critical section more fair, we can create spinlocks that enforce FIFO access. Here&#8217;s a simple way to do that:</p>
+
+
+
+<pre class="wp-block-preformatted">struct ticket_lock_t {
+  unsigned front;
+  unsigned back;
+};
+
+void ticket_lock(struct ticket_lock_t *s) {
+  unsigned ticket =
+    __atomic_add_fetch(&amp;s-&gt;back, 1, __ATOMIC_SEQ_CST) - 1;
+  while (1) {
+    unsigned front;
+    __atomic_load(&amp;s-&gt;front, &amp;front, __ATOMIC_SEQ_CST);
+    if (front == ticket)
+      return;
+  }
+}
+
+void ticket_unlock(struct ticket_lock_t *s) {
+  __atomic_add_fetch(&amp;s-&gt;front, 1, __ATOMIC_SEQ_CST);
+}</pre>
+
+
+
+<p>Here the lock is free when front == back, and the number of threads waiting to enter the critical section is front &#8211; back &#8211; 1. The metaphor is the same as in the Lamport Bakery: threads receive increasing ticket numbers as they request access to the critical section, and they are granted access in order of increasing ticket number. Some experimentation on a largish multicore shows that this spinlock is highly fair, even when contention is high.</p>
+
+
+
+<p>On most platforms, the Linux kernel currently uses a &#8220;queued spinlock&#8221; that has a pretty complicated implementation. It is spread across several files but <a href="https://github.com/torvalds/linux/blob/v5.15/kernel/locking/qspinlock.c">the bulk of the logic is here</a>. The rest of this post will ignore that code, however, and rather focus on Linux&#8217;s spinlock for 32-bit ARM platforms, which has a lot going on that&#8217;s fun to dissect. Here&#8217;s <a href="https://github.com/torvalds/linux/blob/v5.15/arch/arm/include/asm/spinlock.h#L56-L79">the code for acquiring a lock</a>; I&#8217;ll refer to it by line number in the rest of this post. But first, <a href="https://github.com/torvalds/linux/blob/v5.15/arch/arm/include/asm/spinlock_types.h#L11-L24">here&#8217;s the data structure for this spinlock</a>, the code is a bit messy but basically it&#8217;s just saying that we can look at the spinlock data either as a 32-bit int or else as a pair of 16-bit ints; these are going to work in the same way as front and back in the ticket spinlock above. Of course this spinlock will fail if anyone manages to create a machine containing enough 32-bit ARM cores that more than 65535 of them end up contending for the same spinlock. Seems safe enough.</p>
+
+
+
+<p>The <a href="https://github.com/torvalds/linux/blob/v5.15/arch/arm/include/asm/spinlock.h#L62">prefetchw() call at line 62</a> turns into a <a href="https://developer.arm.com/documentation/dui0489/h/arm-and-thumb-instructions/pld--pldw--and-pli">pldw</a> instruction. I don&#8217;t have any idea why it is advantageous to prefetch a value so close to where it is actually needed. [<b>UPDATE:</b> Luke Wren and Paul Khuong pointed out on Twitter that this is to reserve the cache line for writing right off the bat, instead of reserving it for reading and then a bit later reserving it for writing.]</p>
+
+
+
+<p>The <a href="https://github.com/torvalds/linux/blob/v5.15/arch/arm/include/asm/spinlock.h#L64-L71">inline assembly block at lines 64-71</a> is for grabbing a ticket number; it is functionally equivalent to the __atomic_add_fetch() in the ticket lock above. GCC inline assembly is never super easy so let&#8217;s dig in. <a href="https://github.com/torvalds/linux/blob/v5.15/arch/arm/include/asm/spinlock.h#L69">Line 69</a> specifies the outputs of the inline assembly block: it is going to write values into three variables, lockval, newval, and tmp, and these are going to be referred to respectively as %0, %1, and %2 in the assembly code. These are &#8220;virtual registers&#8221; that the compiler will map to physical registers as it sees fit. <a href="https://github.com/torvalds/linux/blob/v5.15/arch/arm/include/asm/spinlock.h#L70">Line 70</a> specifies the inputs to the inline assembly block: the address of the lock struct will be virtual register %3 and the constant 1&lt;&lt;16 will be stored in virtual register %4. Finally, <a href="https://github.com/torvalds/linux/blob/v5.15/arch/arm/include/asm/spinlock.h#L71">line 71</a> specifies the &#8220;clobbers&#8221; for this inline assembly block: machine state not mentioned anywhere else that is going to be overwritten by the assembly. &#8220;cc&#8221; tells the compiler that it may not assume that the condition code flags will have the same values after this block executes that they held on entry. </p>
+
+
+
+<p>Next we have <a href="https://github.com/torvalds/linux/blob/v5.15/arch/arm/include/asm/spinlock.h#L64-L68">five ARM instructions to look at</a>. Together, <a href="https://developer.arm.com/documentation/dht0008/a/ch01s02s01">ldrex and strex are a load-linked / store-conditional pair</a>. This is a quirky but powerful mechanism supporting optimistic concurrency control &#8212; &#8220;optimistic&#8221; because it doesn&#8217;t prevent interference, but rather allows code to detect interference and recover, usually by just trying again, which is what happens here. Ok, into the details. The ldrex from %3 accomplishes two things:</p>
+
+
+
+<ul class="wp-block-list"><li>the 32-bit contents of the lock struct (pointed to by %3) are loaded into virtual register %0, aka lockval</li><li>the memory location containing the lock struct is <a href="https://developer.arm.com/documentation/dht0008/a/arm-synchronization-primitives/exclusive-accesses/exclusive-monitors?lang=en">tagged for exclusive use</a></li></ul>
+
+
+
+<p>Next, lockval is incremented by 1&lt;&lt;16 and the result is stored into newval (virtual register %1). It is easy to prove that this addition does not change the low 16 bits of this value, but rather increments the value stored in the high 16 bits by one. This gives us a new ticket value that will be used to determine when we get access to the critical section.</p>
+
+
+
+<p>Next, the strex instruction either stores newval (%1) back into the lock struct, or doesn&#8217;t, depending on whether anyone has touched the lock struct since we marked it for exclusive use (in practice there are other conditions that can cause loss of exclusivity but they don&#8217;t matter for purposes of this spinlock). Additionally, the success or failure of the store is recorded in tmp (virtual register %2). We&#8217;re not used to seeing an error code for stores to RAM but that&#8217;s exactly how this works. Next, tmp is tested for equality against zero, and finally if tmp is non-zero we branch back to the ldrex, indicating that we lost exclusivity, the store failed, and we need to try this sequence of operations again.</p>
+
+
+
+<p>So what have we seen so far? The five ARM assembly instructions implement a little spin loop that grabs a new ticket value, retrying until this can be done without interference. Since the race window is short, we can hope that the expected number of retries is very close to zero.</p>
+
+
+
+<p><a href="https://github.com/torvalds/linux/blob/v5.15/arch/arm/include/asm/spinlock.h#L73-L76">Lines 73-76</a> are comparatively easy: this is the actual spinlock where we wait for ourselves to be the customer who is currently being served. This happens when &#8220;next&#8221; and &#8220;owner&#8221; are the same value. In the expected (no-contention) case the loop body here never executes. Keep in mind that lockval holds the state of the spinlock struct before we incremented the next field, so a quiescent spinlock would have had those values being the same when we arrived.</p>
+
+
+
+<p>wfe() is a macro for the <a href="https://developer.arm.com/documentation/ka001283/latest">wfe (wait for event) instruction</a>, which puts our core into a low power state until someone tells us it&#8217;s time to wake up &#8212; below we&#8217;ll look at how the unlock code makes that happen. Once awakened, our core uses Linux&#8217;s READ_ONCE() macro to load from the low half of the spinlock struct, which hopefully allows us to escape from the while loop. READ_ONCE() is shorthand for casting a pointer to &#8220;pointer to volatile&#8221; and then loading through that pointer &#8212; this lets the compiler know that it is not allowed to cache the value of &#8220;owner.&#8221; If that happened, this would turn into an infinite loop.</p>
+
+
+
+<p>Finally, the smp_mb() at <a href="https://github.com/torvalds/linux/blob/v5.15/arch/arm/include/asm/spinlock.h#L78">line 78</a> creates a memory barrier instruction that stops memory accesses inside the critical section from being reordered with respect to memory accesses outside of the critical section, from the point of view of other cores in this system.</p>
+
+
+
+<p><a href="https://github.com/torvalds/linux/blob/v5.15/arch/arm/include/asm/spinlock.h#L107-L112">Releasing this spinlock</a> has three parts. First, another memory barrier to stop unfriendly reorderings. Second, increment the &#8220;owner&#8221; part of the spinlock struct. This is going to require three instructions: a load, an add, and a store, and none of these instructions are special synchronization instructions. This is OK because at this point we hold the lock and nobody else is allowed to change the owner. The high half of the word (containing next) can be changed behind our back &#8212; but that doesn&#8217;t matter because we&#8217;re only touching owner using 16-bit load/store instructions. Finally, dsb_sev() turns into a data synchronization barrier (ensuring that everyone can see our update to the owner field) and a sev (signal event) instruction, which causes all cores sleeping on a wfe instruction to wake up and continue executing. And we&#8217;re done!</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://blog.regehr.org/archives/2173/feed</wfw:commentRss>
+			<slash:comments>9</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>llvm-reduce</title>
+		<link>https://blog.regehr.org/archives/2109</link>
+		
+		<dc:creator><![CDATA[regehr]]></dc:creator>
+		<pubDate>Thu, 13 May 2021 16:58:00 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">https://blog.regehr.org/?p=2109</guid>
+
+					<description><![CDATA[Test-case reduction is more or less a necessity when debugging failures of complex programs such as compilers. Automated test-case reduction is useful not only because it allows developers to avoid wasting time reducing inputs by hand, but also because it supports new techniques such as automatically triaging bulk failures seen in the field or during [&#8230;]]]></description>
+										<content:encoded><![CDATA[
+<p>Test-case reduction is more or less a necessity when debugging failures of complex programs such as compilers. Automated test-case reduction is useful not only because it allows developers to avoid wasting time reducing inputs by hand, but also because it supports new techniques such as automatically triaging bulk failures seen in the field or during fuzzing campaigns.</p>
+
+
+
+<p>llvm-reduce is a newish tool for reducing LLVM IR. Structurally, it is similar to C-Reduce, using a reducer core that calls out to a modular collection of reduction passes. Each pass implements a potentially-reducing transformation on LLVM IR, such as removing some instructions, in order to create variants: candidates for further reduction. The core inspects each variant, keeping only the ones that are &#8220;interesting&#8221; according to some user-defined criterion. A module full of LLVM IR might, for example, be interesting if it triggers some assertion violation in a backend.</p>
+
+
+
+<p>In test-case reduction there&#8217;s a tension between creating generic tools that are intended to reduce all kinds of input, and creating specific tools that contain transformations that only work on one kind of input. llvm-reduce is all the way at one end of this spectrum: it can&#8217;t be used to reduce anything other than LLVM IR. This kind of specificity has advantages, such as reducing more rapidly by not creating illegal variants and reducing more effectively by supporting invariant-preserving transformations that are infeasible to perform for tools that don&#8217;t understand the relevant invariants. For example, when removing a parameter from a function, it is necessary to also remove the corresponding argument from each location where that function is called.</p>
+
+
+
+<p>Something that I like quite a bit about llvm-reduce is that its interestingness tests are compatible with C-Reduce&#8217;s, so people can switch between the two tools to see if one of them works better than the other for some particular problem. </p>
+
+
+
+<p>llvm-reduce is part of LLVM, so you will get it for free by building or downloading an LLVM. The implementation is super approachable if you&#8217;re interested in digging into it. You can learn more about this tool from <a href="https://www.youtube.com/watch?v=n1jDj7J9N8c">this talk by its creator</a>, and from <a href="https://llvm.org/docs/HowToSubmitABug.html">this page</a>.</p>
+]]></content:encoded>
+					
+		
+		
+			</item>
+		<item>
+		<title>Responsible and Effective Bugfinding</title>
+		<link>https://blog.regehr.org/archives/2037</link>
+					<comments>https://blog.regehr.org/archives/2037#comments</comments>
+		
+		<dc:creator><![CDATA[regehr]]></dc:creator>
+		<pubDate>Mon, 17 Aug 2020 18:36:43 +0000</pubDate>
+				<category><![CDATA[Computer Science]]></category>
+		<category><![CDATA[Software Correctness]]></category>
+		<guid isPermaLink="false">https://blog.regehr.org/?p=2037</guid>
+
+					<description><![CDATA[NB: This piece is not about responsible disclosure of security issues. For almost as long as people have written code, we have also worked to create methods for finding software defects. Much more recently, it has become common to treat “external bug finding” &#8212; looking for defects in other people’s software &#8212; as an activity [&#8230;]]]></description>
+										<content:encoded><![CDATA[
+<p><strong>NB: This piece is not about responsible disclosure of security issues.</strong></p>
+
+
+
+<p>For almost as long as people have written code, we have also worked to create methods for finding software defects. Much more recently, it has become common to treat “external bug finding” &#8212; looking for defects in other people’s software &#8212; as an activity worth pursuing on its own. Several factors have contributed:</p>
+
+
+
+<ul class="wp-block-list"><li>The amount of software in use has grown massively, and presumably the number of latent bugs has grown with it.</li><li>Since software is increasingly used to monitor and control aspects of our lives, and because systems are often networked, bugs can have more impact than they previously did.</li><li>Cheap computer power for brute-force bug finding is ubiquitously available.</li></ul>
+
+
+
+<p>The <a href="https://github.com/google/oss-fuzz">OSS-Fuzz</a> project is a good example of a successful external bug finding effort; its web page mentions that it “has found over 20,000 bugs in 300 open source projects.”</p>
+
+
+
+<p>This article is about how to conduct an external bug finding effort in a way that is likely to maximize the overall benefit of the project. The high level summary is that this kind of work has to be done carefully, thoughtfully, and in collaboration with the software developers. In contrast, simply throwing a huge pile of bugs over the wall to some project and walking away, is unlikely to do much good. I&#8217;ve not seen a lot written up about this, but&nbsp; “<a href="https://web.stanford.edu/~engler/BLOC-coverity.pdf">A Few Billion Lines of Code Later: Using Static Analysis to Find Bugs in the Real World</a>” is very good and touches on some of the same issues.</p>
+
+
+
+<p>The problem is that there are usually mismatches in costs and incentives between bug finders and project developers. External bug finders would like to find and report as many bugs as possible, and if they have the right technology (like a shiny new fuzzer) it can end up being cheap to find hundreds or thousands of bugs in a large, soft target. Bug finders are motivated altruistically (they want to make the targeted software more reliable by getting lots of bugs fixed) but also selfishly (a bug finding tool or technique is demonstrably powerful if it can find a lot of previously unknown defects). On the other side, developers of the targeted project typically appreciate bugfinding efforts (of course, they too want a reliable system) but for them a huge bug count is undesirable. First, every bug report requires significant attention and effort, usually far more effort than was required to simply find the bug. Second, a large bug count potentially reflects negatively on the project and consequently on its developers.</p>
+
+
+
+<p>In the rest of this post I’ll present some questions that people doing external bug finding work should ask themselves about each bug that they find. The answers, and the process of answering, will help them do their work more responsibly and effectively.</p>
+
+
+
+<h2 class="wp-block-heading">Is the system being tested an appropriate target for external bug finding?</h2>
+
+
+
+<p>This is obvious, but it still needs mentioning: not every code base wants or needs bug reports. There are plenty of throw-aways, research projects, and other code bases out there that have a very small number of users and at most a couple of developers. It is often inappropriate to use this sort of code as a target for external bugfinding work. In contrast, the more users a system has, and the more important its use cases are, the more appropriate a target it becomes. A reasonable bar for external bug finding might be: Does the package manager for your operating system include, by default, a recipe for installing the software you want to test? If not, then perhaps it has not risen to the level where it is a suitable target for external bugfinding.</p>
+
+
+
+<h2 class="wp-block-heading">Is the bug a security vulnerability?</h2>
+
+
+
+<p>This is a completely separate can of worms; if you have found a potential vulnerability, <a href="https://en.wikipedia.org/wiki/Responsible_disclosure">please seek advice elsewhere</a>.</p>
+
+
+
+<h2 class="wp-block-heading">Is the bug already known?</h2>
+
+
+
+<p>A drawback of fuzzers is that they tend to keep rediscovering known bugs. Automated bug triaging techniques exist, but they are far from perfect, especially for bugs that don’t trigger crashes. Furthermore, there’s good reason to believe that perfect automated bug triaging is impossible, since the notion of “distinct bugs” is inherently a human construct. When there is a reasonable possibility that a bug you have discovered is already known and reported, it is best to just sit on your new bug report for a little while. Once the potential duplicates that are already in the bug tracker get fixed, it will be easy to see if your test case still triggers a failure. If so, you can report it. Otherwise, discard it.</p>
+
+
+
+<p>Occasionally, your bug finding technique will come up with a trigger for a known bug that is considerably smaller or simpler than what is currently in the issue tracker. For example, if a web browser contains a race condition that people believe can only be triggered using five threads, and your test case makes it happen using just two threads, then this is an interesting new finding. In this case you should consider appending your test case to the existing issue. </p>
+
+
+
+<h2 class="wp-block-heading">Can you write a convincing bug report?</h2>
+
+
+
+<p>Writing good bug reports is a learned skill that requires significant care and patience. <a href="https://www.softwaretestinghelp.com/how-to-write-good-bug-report/">Here</a> are a <a href="https://developer.mozilla.org/en-US/docs/Mozilla/QA/Bug_writing_guidelines">couple</a> of good resources.</p>
+
+
+
+<p>I only have a few points to add:</p>
+
+
+
+<ul class="wp-block-list"><li>A bug report is not simply a collection of facts, it also forms an argument for why a developer &#8212; who surely already had plans for the day &#8212; should instead work on fixing the defect.</li><li>It is important to put yourself in the developers’ position. If you were reading this report, would you have enough information to act on it? Would you want to?</li><li>Avoid, at all costs, being rude or presumptuous.</li><li>Test cases found by fuzzers can be inherently less compelling to developers than test cases that come from real use cases. First, these test cases often just look funny. Second, developers often believe (no doubt correctly, sometimes) that fuzzer-discovered corner cases will not be triggered by human users. If you are submitting a bug report containing fuzzer-generated input, careful test case reduction must be performed, with an eye not only towards minimality but also towards readability and understandability.</li></ul>
+
+
+
+<p>A major advantage of external bug finding is that since the people performing the testing are presumably submitting a lot of bug reports, they can do a really good job at it. In contrast, regular end users may not submit bug reports very often, and consequently we would not expect them to be as skilled. Treat the ability to write high-quality bug reports as a superpower that enables you and the system&#8217;s developers to collaboratively increase the quality of the code in an efficient and pleasant fashion.</p>
+
+
+
+<h2 class="wp-block-heading">Is the bug important?</h2>
+
+
+
+<p>Developers are almost always willing to fix important bugs that might have serious consequences for their users. On the other hand, they are often happy to delay fixing bugs that they believe are unimportant, so they work on more pressing things. As an external bug finder, it can be hard to tell which kind of bug you have discovered (and the numbers are not on your side: the large majority of bugs are not that important). One way to approach this problem is to look at bugs (both fixed and unfixed) that are already in the bug tracker: what common characteristics can you identify that caused developers to address defects rapidly? What common characteristics can you identify that caused developers to ignore bugs or mark them WONTFIX? You can also open a dialogue with developers: they may be willing to tell you the kinds of bugs they’re interested in, and not interested in. The developers of the CVC4 SMT solver recently added <a href="https://github.com/CVC4/CVC4/wiki/Fuzzing-CVC4">a public document to this effect</a>. I hope that many other projects will follow their lead.</p>
+
+
+
+<p>Common sense is also useful: if the bug requires an obscure or unlikely combination of command-line options to be triggered, then perhaps it doesn’t matter that much. For example, when fuzzing compilers using Csmith we rarely invoked GCC and LLVM with flags other than -O0, -O1, -O2, -Os, and -O3.</p>
+
+
+
+<h2 class="wp-block-heading">Have you tried to fix the bug?</h2>
+
+
+
+<p>In some cases, fixing a bug in software you’re unfamiliar with is impractical because it’s something like a deep race condition in an OS kernel or a subtle emission of incorrect object code by a compiler. Years of specific experience with the system might be required to locate the right place to fix the bug. On the other hand, a lot of bugs end up being easy to fix, including typos, copy-and-paste errors, or incorrect order of arguments to a library call. If you are able to take a few minutes to check if a bug you are reporting is easy to fix, and to suggest a patch if it is, then you can potentially save project developers considerable time and effort. They will appreciate this.</p>
+
+
+
+<h2 class="wp-block-heading">How many open issues do you have in the bug tracker?</h2>
+
+
+
+<p>If you have already reported a few bugs and they have not been fixed (or, worse, have not even been acknowledged), then something is not working. Perhaps the developers are otherwise occupied, or perhaps they don’t find these bugs to be actionable or important. Regardless, at this point it is not helpful to continue reporting bugs. If you haven’t done so already, you might open a dialogue with developers to see what the situation is, or you might simply move on and find bugs in a different code base.</p>
+
+
+
+<h2 class="wp-block-heading">Do the developers trust you?</h2>
+
+
+
+<p>If the developers of the system you’re reporting bugs in have never seen or heard of you, they are very likely to at least take a look at the first issue you submit. If they trust you, because you’ve submitted a number of high-quality bug reports before, they’ll look at it closely and are likely to take it seriously. However, if they actively don’t trust you, for example because you’ve flooded their bug tracker with corner-case issues, then they’re not likely to ever listen to you again, and you probably need to move on to do bug finding somewhere else. Do not let this happen, it makes developers salty and that makes bug finding work more difficult for all of us.</p>
+
+
+
+<h2 class="wp-block-heading">Are your tools open source?</h2>
+
+
+
+<p>Internal bug finding &#8212; where project developers find bugs themselves &#8212; can be superior to external bug finding because developers are more in tune with their own project’s needs and also they can schedule bug finding efforts in such a way that they are most effective, for example after landing a major new feature. Thus, an alternative to external bug finding campaigns is to create good bug finding tools and make them available to developers, preferably as open source software. Drawbacks of this scheme include increasing the software engineering burden on bug-finding researchers (who must now create tools that other people can use, rather than creating tools solely for their own use) and decreasing social and academic credit given to researchers since some of the benefit of their work is now hidden, rather than being quantifiable and out in the open.</p>
+
+
+
+<h2 class="wp-block-heading">Conclusions</h2>
+
+
+
+<p>Although software correctness is at some level a technical problem (either the code implements its specification or it doesn&#8217;t), improving the quality of software is an intensely human activity. Developers and external bug finders are on the same team here, but there’s plenty of potential for friction because their costs and incentives differ. This friction can be reduced if bug finders ask themselves a series of questions listed in this post before submitting bug reports.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://blog.regehr.org/archives/2037/feed</wfw:commentRss>
+			<slash:comments>4</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Alive2 Part 3: Things You Can and Can&#8217;t Do with Undef in LLVM</title>
+		<link>https://blog.regehr.org/archives/1837</link>
+					<comments>https://blog.regehr.org/archives/1837#comments</comments>
+		
+		<dc:creator><![CDATA[regehr]]></dc:creator>
+		<pubDate>Fri, 31 Jul 2020 20:33:05 +0000</pubDate>
+				<category><![CDATA[Compilers]]></category>
+		<category><![CDATA[Computer Science]]></category>
+		<category><![CDATA[Software Correctness]]></category>
+		<guid isPermaLink="false">https://blog.regehr.org/?p=1837</guid>
+
+					<description><![CDATA[[Also see Part 1 and Part 2 in this series.] Let&#8217;s talk about these functions: unsigned add(unsigned x) { return x + x; } unsigned shift(unsigned x) { return x &#60;&#60; 1; } From the point of view of the C and C++ abstract machines, their behavior is equivalent: in a program you&#8217;re writing, you [&#8230;]]]></description>
+										<content:encoded><![CDATA[<style type="text/css">
+html { font-variant-numeric: lining-nums; }<br />
+</style>
+
+
+<p>[Also see <a href="https://blog.regehr.org/archives/1722">Part 1</a> and <a href="https://blog.regehr.org/archives/1737">Part 2</a> in this series.]</p>
+
+
+
+<p>Let&#8217;s talk about these functions: </p>
+
+
+
+<pre class="wp-block-preformatted"><strong>unsigned add(unsigned x) { return x + x; }
+unsigned shift(unsigned x) { return x &lt;&lt; 1; }</strong></pre>
+
+
+
+<p>From the point of view of the C and C++ abstract machines, their behavior is equivalent: in a program you&#8217;re writing, you can always safely substitute add for shift, or shift for add.</p>
+
+
+
+<p>If we compile them to LLVM IR with optimizations enabled, <a href="https://gcc.godbolt.org/z/bGurwr">LLVM will canonicalize both functions to the version containing the shift operator</a>. Although it might seem that this choice is an arbitrary one, it turns out there is a very real difference between these two functions:</p>
+
+
+
+<pre class="wp-block-preformatted"><code>define i32 @add(i32 %0) { 
+  %2 = add i32 %0, %0 
+  ret i32 %2
+}
+define i32 @shift(i32 %0) {
+  %2 = shl i32 %0, 1
+  ret i32 %2
+}</code></pre>
+
+
+
+<p>At the LLVM level, <a href="https://alive2.llvm.org/ce/z/pje5Q7">add can always be replaced by shift</a>, but <a href="https://alive2.llvm.org/ce/z/iR2mfT">it is not generally safe to replace shift with add</a>. (In these linked pages, I&#8217;ve renamed the functions to src and tgt so that Alive2 knows which way the transformation is supposed to go.) </p>
+
+
+
+<p>To understand why add can be replaced by shift, but shift cannot be replaced by add, we need to know that these functions don&#8217;t have 2<sup>32</sup> possible input values, but rather 2<sup>32</sup>+2. Analogously, an LLVM function taking an i1 (Boolean) argument has four possible input values, not the two you were probably expecting. These extra two values, undef and poison, cause a disproportionate amount of trouble because they follow different rules than regular values follow. This post won&#8217;t discuss <a href="https://llvm.org/docs/LangRef.html#poison-values">poison</a> further. <a href="https://llvm.org/docs/LangRef.html#undefined-values">Undef</a> sort of models uninitialized storage: it can resolve to any value of its type. Unless we can specifically prove that an LLVM value, such as the input to a function, cannot be undef, we must assume that it might be undef. Many compiler bugs have been introduced because compiler developers either forgot about this possibility, or else failed to reason about it correctly.</p>
+
+
+
+<p>Let&#8217;s look at some things you&#8217;re allowed to do with undef. You can <a href="https://alive2.llvm.org/ce/z/psNicd">leave it alone</a>:</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" decoding="async" width="764" height="498" src="https://blog.regehr.org/wp-content/uploads/2020/07/Screen-Shot-2020-07-20-at-10.14.44-AM.png" alt="" class="wp-image-1911" srcset="https://blog.regehr.org/wp-content/uploads/2020/07/Screen-Shot-2020-07-20-at-10.14.44-AM.png 764w, https://blog.regehr.org/wp-content/uploads/2020/07/Screen-Shot-2020-07-20-at-10.14.44-AM-450x293.png 450w, https://blog.regehr.org/wp-content/uploads/2020/07/Screen-Shot-2020-07-20-at-10.14.44-AM-150x98.png 150w" sizes="auto, (max-width: 764px) 100vw, 764px" /></figure>
+
+
+
+<p>You can <a href="https://alive2.llvm.org/ce/z/DhPanX">replace it with zero</a>:</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" decoding="async" width="652" height="484" src="https://blog.regehr.org/wp-content/uploads/2020/07/Screen-Shot-2020-07-20-at-10.20.13-AM-1.png" alt="" class="wp-image-1914" srcset="https://blog.regehr.org/wp-content/uploads/2020/07/Screen-Shot-2020-07-20-at-10.20.13-AM-1.png 652w, https://blog.regehr.org/wp-content/uploads/2020/07/Screen-Shot-2020-07-20-at-10.20.13-AM-1-450x334.png 450w, https://blog.regehr.org/wp-content/uploads/2020/07/Screen-Shot-2020-07-20-at-10.20.13-AM-1-150x111.png 150w" sizes="auto, (max-width: 652px) 100vw, 652px" /></figure>
+
+
+
+<p>You can <a href="https://alive2.llvm.org/ce/z/ECRrAS">replace it with any number you choose</a>:</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" decoding="async" width="658" height="494" src="https://blog.regehr.org/wp-content/uploads/2020/07/Screen-Shot-2020-07-20-at-10.20.22-AM.png" alt="" class="wp-image-1915" srcset="https://blog.regehr.org/wp-content/uploads/2020/07/Screen-Shot-2020-07-20-at-10.20.22-AM.png 658w, https://blog.regehr.org/wp-content/uploads/2020/07/Screen-Shot-2020-07-20-at-10.20.22-AM-450x338.png 450w, https://blog.regehr.org/wp-content/uploads/2020/07/Screen-Shot-2020-07-20-at-10.20.22-AM-150x113.png 150w" sizes="auto, (max-width: 658px) 100vw, 658px" /></figure>
+
+
+
+<p>You can <a href="https://alive2.llvm.org/ce/z/3h6bFj">replace it with the set of odd numbers</a>:</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" decoding="async" width="644" height="576" src="https://blog.regehr.org/wp-content/uploads/2020/07/Screen-Shot-2020-07-20-at-10.20.30-AM.png" alt="" class="wp-image-1916" srcset="https://blog.regehr.org/wp-content/uploads/2020/07/Screen-Shot-2020-07-20-at-10.20.30-AM.png 644w, https://blog.regehr.org/wp-content/uploads/2020/07/Screen-Shot-2020-07-20-at-10.20.30-AM-450x402.png 450w, https://blog.regehr.org/wp-content/uploads/2020/07/Screen-Shot-2020-07-20-at-10.20.30-AM-150x134.png 150w" sizes="auto, (max-width: 644px) 100vw, 644px" /></figure>
+
+
+
+<p>You can <a href="https://alive2.llvm.org/ce/z/BK6JPt">take a function that returns [0..15] and replace it by a function that returns [3..10]</a>:</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" decoding="async" width="654" height="610" src="https://blog.regehr.org/wp-content/uploads/2020/07/Screen-Shot-2020-07-20-at-10.20.38-AM.png" alt="" class="wp-image-1917" srcset="https://blog.regehr.org/wp-content/uploads/2020/07/Screen-Shot-2020-07-20-at-10.20.38-AM.png 654w, https://blog.regehr.org/wp-content/uploads/2020/07/Screen-Shot-2020-07-20-at-10.20.38-AM-450x420.png 450w, https://blog.regehr.org/wp-content/uploads/2020/07/Screen-Shot-2020-07-20-at-10.20.38-AM-150x140.png 150w" sizes="auto, (max-width: 654px) 100vw, 654px" /></figure>
+
+
+
+<p>The common pattern here is that the new function returns a subset of the values returned by the old function. This is the essence of <em>refinement</em>, which is what every step of a correct compilation pipeline must do. (Though keep in mind that right now we&#8217;re looking at a particularly simple special case: a pure function that takes no arguments.) So what can&#8217;t you do with undef? This is easy: you can&#8217;t violate refinement. In other words, you can&#8217;t replace a (pure, zero-argument) function with a function that fails to return a subset of the values that is returned by the original one.</p>
+
+
+
+<p>So, for example, you can&#8217;t <a href="https://alive2.llvm.org/ce/z/8VRq8E">take a function that returns [0..15] and replace it by a function that returns [9..16]</a>:</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" decoding="async" width="842" height="1110" src="https://blog.regehr.org/wp-content/uploads/2020/07/Screen-Shot-2020-07-20-at-10.24.04-AM.png" alt="" class="wp-image-1920" srcset="https://blog.regehr.org/wp-content/uploads/2020/07/Screen-Shot-2020-07-20-at-10.24.04-AM.png 842w, https://blog.regehr.org/wp-content/uploads/2020/07/Screen-Shot-2020-07-20-at-10.24.04-AM-341x450.png 341w, https://blog.regehr.org/wp-content/uploads/2020/07/Screen-Shot-2020-07-20-at-10.24.04-AM-114x150.png 114w, https://blog.regehr.org/wp-content/uploads/2020/07/Screen-Shot-2020-07-20-at-10.24.04-AM-768x1012.png 768w" sizes="auto, (max-width: 842px) 100vw, 842px" /></figure>
+
+
+
+<p>As we can see in the counterexample, Alive2 has correctly identified 16 as the problematic output. Returning [9..15] would have been fine, as would any other subset of [0..15].</p>
+
+
+
+<p>When a function takes inputs, the refinement rule is: for every valuation of the inputs, the new function must return a subset of the values returned by the old function. Refinement gets more complicated for functions that touch memory; my colleagues Juneyoung and Nuno will cover that in a different post.</p>
+
+
+
+<p>Now let&#8217;s return to the question from the top of this piece: why can we turn add into shift, but not shift into add? This is because every time an undef is used, the use can result in a different value (<a href="https://en.wikipedia.org/wiki/Static_single_assignment_form">here &#8220;use&#8221; has a precise meaning from SSA</a>). If undef is passed to the shift function, an arbitrary value is left-shifted by one position, resulting in an arbitrary even value being returned. On the other hand, the add function uses the undef value twice. When two different arbitrary values are added together, the result is an arbitrary value. This is a clear failure of refinement because the set of all 32-bit values fails to be a subset of the set of the even numbers in 0..2<sup>32</sup>-1. Why was undef designed this way? It is to give the compiler maximum freedom when translating undef. If LLVM mandated that every use of an undef returned the same value, then it would sometimes be forced to remember that value, in order to follow this rule consistently. The resulting value would sometimes occupy a register, potentially preventing something more useful from being done with that register. As of LLVM 10, this &#8220;remembering&#8221; behavior can be achieved using the freeze instruction. A frozen undef (or poison) value is arbitrary, but consistent. So if we want to transform the shift function into the add function in a way that respects refinement, <a href="https://alive2.llvm.org/ce/z/jGoHFy">we can do it like this</a>:</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" decoding="async" width="660" height="608" src="https://blog.regehr.org/wp-content/uploads/2020/07/Screen-Shot-2020-07-20-at-10.29.44-AM.png" alt="" class="wp-image-1922" srcset="https://blog.regehr.org/wp-content/uploads/2020/07/Screen-Shot-2020-07-20-at-10.29.44-AM.png 660w, https://blog.regehr.org/wp-content/uploads/2020/07/Screen-Shot-2020-07-20-at-10.29.44-AM-450x415.png 450w, https://blog.regehr.org/wp-content/uploads/2020/07/Screen-Shot-2020-07-20-at-10.29.44-AM-150x138.png 150w" sizes="auto, (max-width: 660px) 100vw, 660px" /></figure>
+
+
+
+<p>A general guideline is that an LLVM transformation can decrease the number of uses of a possibly-undef value, or leave the number of uses the same, but it cannot increase the number of uses unless the value is frozen first.</p>
+
+
+
+<p>Instead of adding freeze instructions everywhere, one might ask whether it is possible to avoid undef-related problems by proving that a value cannot possibly be undef. This can be done, and as of recently <a href="https://github.com/llvm/llvm-project/blob/65c63eb69cc157b5bf257d6b91ecd758446ee5a1/llvm/lib/Analysis/ValueTracking.cpp#L4775-L4871">Juneyoung Lee has added a static analysis for this</a>. Alas, it is necessarily pretty conservative, it only reaches the desired conclusion under restricted circumstances.</p>
+
+
+
+<p>Before concluding, it&#8217;s worth recalling that undefined behavior in an IR is not necessarily closely related to the source-level UB. In other words, we can compile a safe language to LLVM IR, and we can also compile C and C++ to IRs lacking undefined behavior. In light of this, we might ask whether undef, and its friend, poison, are worthwhile concepts in a compiler IR at all, given the headaches they cause for compiler developers. On one hand, we can find IR-like languages such as Java bytecode that lack analogous abstractions. On the other hand, as far as actual IRs for heavily optimizing compilers go, I believe all of the major ones have something more or less resembling poison and/or undef. The fact that a number of different compiler teams invented similar concepts suggests that there might be something fundamental going on here. An open question is to what extent these abstractions are worthwhile in an IR for a heavily-optimizing compiler middle-end that is only targeted by safe languages.</p>
+
+
+
+<p>My colleagues and I believe that having both undef and poison in LLVM is overkill, and that undef can and should be removed at some point. This was not true in the past, but we believe that the new freeze instruction, in combination with poison values, provides adequate support for undef&#8217;s use cases.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://blog.regehr.org/archives/1837/feed</wfw:commentRss>
+			<slash:comments>4</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>The Gods Pocket Peak Trail</title>
+		<link>https://blog.regehr.org/archives/1832</link>
+					<comments>https://blog.regehr.org/archives/1832#comments</comments>
+		
+		<dc:creator><![CDATA[regehr]]></dc:creator>
+		<pubDate>Thu, 23 Jul 2020 15:41:01 +0000</pubDate>
+				<category><![CDATA[Outdoors]]></category>
+		<guid isPermaLink="false">https://blog.regehr.org/?p=1832</guid>
+
+					<description><![CDATA[Years ago my friend Derek heard that the Jarbidge Wilderness &#8212; a remote, mountainous area along the Idaho-Nevada border &#8212; is one of the least-visited wilderness areas in the USA, and we&#8217;ve wanted to visit since then. There&#8217;s little good information about this area online, but a book I had sitting around listed The Gods [&#8230;]]]></description>
+										<content:encoded><![CDATA[
+<p>Years ago my friend Derek heard that the Jarbidge Wilderness &#8212; a remote, mountainous area along the Idaho-Nevada border &#8212; is one of the least-visited wilderness areas in the USA, and we&#8217;ve wanted to visit since then. There&#8217;s little good information about this area online, but a book I had sitting around listed The Gods Pocket Peak Trail, and we hoped to connect up to some other routes in the area to make a loop. The trailhead for this route is above 9000 feet, but then the trail immediately drops a thousand feet, climbs a thousand feet, and sort of keeps on doing this. The views and microclimates are amazing but it&#8217;s tiring walking. </p>
+
+
+
+<p>We left Salt Lake City in the morning, and about four hours later turned off of US 93 in Rogerson, NV. Our trailhead was near the (abandoned) Pole Creek Ranger Station:<a href="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02174.jpg"><img decoding="async" src="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02174.jpg"></a> We started walking by mid-afternoon with good weather and good views:
+<a href="https://blog.regehr.org/extra_files/jarbidge-2020/DSC01966.jpg"><img decoding="async" src="https://blog.regehr.org/extra_files/jarbidge-2020/DSC01966.jpg"></a>
+<a href="https://blog.regehr.org/extra_files/jarbidge-2020/DSC01967.jpg"><img decoding="async" src="https://blog.regehr.org/extra_files/jarbidge-2020/DSC01967.jpg"></a>
+<a href="https://blog.regehr.org/extra_files/jarbidge-2020/DSC01973.jpg"><img decoding="async" src="https://blog.regehr.org/extra_files/jarbidge-2020/DSC01973.jpg"></a>
+</p>
+
+
+
+<p> We camped about five miles down the trail on a ridge that had a few trees for shelter and some moderately flat spots to camp. Here&#8217;s Derek&#8217;s tent as we&#8217;re getting ready to sleep: <a href="https://blog.regehr.org/extra_files/jarbidge-2020/DSC01990.jpg"><img decoding="async" src="https://blog.regehr.org/extra_files/jarbidge-2020/DSC01990.jpg"></a> Gods Pocket Peak in the morning light: <a href="https://blog.regehr.org/extra_files/jarbidge-
+2020/DSC01991.jpg"><img decoding="async" src="https://blog.regehr.org/extra_files/jarbidge-2020/DSC01991.jpg"></a> After coffee we started a long traverse of the eastern slopes of Gods Pocket Peak and Divide Peak, and then crossed the upper parts of several forks of Camp Creek. Views were outstanding but we kept losing and finding the trail, and progress was overall not super fast.  <a href="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02003.jpg"><img decoding="async" src="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02003.jpg"></a> <a href="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02005.jpg"><img decoding="async" src="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02005.jpg"></a> <a href="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02006.jpg"><img decoding="async" src="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02006.jpg"></a> We ended up beneath the imposing Marys River Peak: <a href="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02019.jpg"><img decoding="async" src="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02019.jpg"></a> at a 9300&#8242; pass overlooking the East Fork of the Jarbidge River, roughly 12 miles from the trailhead. <a href="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02023.jpg"><img decoding="async" src="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02023.jpg"></a> <a href="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02030.jpg"><img decoding="async" src="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02030.jpg"></a> From here we wanted to follow a trail I&#8217;d seen in some old online imagery, but the descent on the south side of the pass was very steep and loose, and we could see no signs at all of a trail that went in the direction we wanted to go. Since it was getting late and we didn&#8217;t feel like bushwhacking, we turned around and went back to an excellent campsite we had passed earlier in the afternoon. At this point we knew the rest of the trip was straightforward, so we put our whisky flasks into a convenient snowbank and relaxed.</p>
+
+
+
+<p><p>Next day, we returned to the trailhead, another tiring day of uphill and downhill hiking. And, of course, when walking a faded trail in reverse, you lose the trail exactly the same number of times, but in totally different locations, so we had a decent amount of hunting around for where the trail picked up again. <a href="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02041-Pano.jpg"><img decoding="async" src="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02041-Pano.jpg"></a> The final uphill slog to the trailhead hurt.<a href="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02051.jpg"><img decoding="async" src="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02051.jpg"></a> </p> <p>Obligatory selfie on reaching the truck: <a href="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02070.jpg"><img decoding="async" src="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02070.jpg"></a> We could have just headed out right then, but we had beer, a great car camp site, and we didn&#8217;t feel like a long drive in the dark so we spent the night. </p> <p>Setting up to eat dinner and watch the sunset:<a href="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02078.jpg"><img decoding="async" src="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02078.jpg"></a></p> <p><a href="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02081.jpg"><img decoding="async" src="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02081.jpg"></a></p> <p>It got cold pretty fast:<a href="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02086.jpg"><img decoding="async" src="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02086.jpg"></a></p> <p><a href="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02087.jpg"><img decoding="async" src="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02087.jpg"></a></p> <p>This is why we leave our houses. <a href="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02096.jpg"><img decoding="async" src="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02096.jpg"></a></p> <p><a href="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02119.jpg"><img decoding="async" src="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02119.jpg"></a></p> <p><a href="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02132.jpg"><img decoding="async" src="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02132.jpg"></a></p> <p> Morning light on the main ridge of the Jarbidge Range was good. <a href="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02157.jpg"><img decoding="async" src="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02157.jpg"></a></p> <p><a href="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02166.jpg"><img decoding="async" src="https://blog.regehr.org/extra_files/jarbidge-2020/DSC02166.jpg"></a></p></p>
+
+
+
+<p>Mid-July was a good time to be in Jarbidge: there was plenty of water around, but not so much that stream crossings were difficult. The first day and night were a bit warm, but after that temperatures were great. We saw oddly little wildlife: no snakes, no frogs, not many birds, and no mammals larger than a marmot. There was plenty of deer and elk scat around, however. Our first campsite had mosquitoes, though they were not particularly bothersome, and we didn&#8217;t have any bugs after that, except that I managed to find a patch of ticks while hiking off trail through some dense vegetation. Who expects ticks in Nevada?</p>
+
+
+
+<p>The Gods Pocket Peak Trail gave the impression of having been well maintained up until a few decades ago. Major trail junctions were marked with signs, but most of the signs were faded to near illegibility and many had fallen over. The trail is excellent for long stretches, but then parts have eroded completely away or have been covered by plants to the point that it&#8217;s basically gone. We were happy to have a map I had traced from Google Earth imagery: each time we lost the trail, the GPS made it pretty easy to find again. We didn&#8217;t see any evidence of recent camping activity, such as the fire rings or areas cleared of fallen wood. One of the reasons I&#8217;m posting this trip report is that I think this area could use some more foot traffic: this might keep the trail usable for a few more years.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://blog.regehr.org/archives/1832/feed</wfw:commentRss>
+			<slash:comments>2</slash:comments>
+		
+		
+			</item>
+	</channel>
+</rss>
