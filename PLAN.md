@@ -83,7 +83,7 @@ production code but no test is a defect — reopen the box.
         every distinct `pubDate`/`updated` shape found in `fixtures/snapshots/`.
       - Rung: unit
 
-- [ ] **T06 — `RssParser` (RSS 2.0/0.9x). TDD.** Channel + item extraction,
+- [x] **T06 — `RssParser` (RSS 2.0/0.9x). TDD.** Channel + item extraction,
       `content:encoded`, `dc:date`, `dc:creator`, enclosures, GUID fallback chain.
       - Done: unit tests over ≥6 hand-written malformed-and-valid RSS documents green;
         never throws on truncated/mismatched-tag input.

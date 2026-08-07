@@ -64,3 +64,10 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
   date** (parseLenient does not disable that check) — so normalization strips the
   weekday and rewrites alpha zones (`UT`/`EST`/`PDT`/…) to offsets. Plausibility floor
   is 2000-01-01 (below → null, so the caller falls back); >now+24h clamps to now.
+- 2026-08-07 — T06 done: `RssParser` (19 tests). Shared parser plumbing lives in
+  `data/parse/FeedXml.kt` (lenient XML parse, priority-ordered direct-child lookup,
+  plainText/resolveUrl/stableGuid) — T07/T08 reuse it, so it is not RssParser-private.
+  Child lookup is **direct children only**: a truncated doc nests the next `<item>`
+  inside the previous one, and a descendant search misattributes fields. Lookup honours
+  the *argument* order, not document order (`content:encoded` before `description`).
+  jsoup keeps namespace prefixes in `tagName()` ("dc:creator"), so no NS config needed.
