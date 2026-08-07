@@ -92,9 +92,8 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
   belongs to the reader, not the feed. It returns the count of genuinely new entries,
   which is what T15's "refetch inserts zero rows" assertion reads.
 - 2026-08-07 — T13 done: `EntryRepository` read state (15 tests; suite now 247, 0 failures).
-  Two things the UI tasks must not rediscover: `observeUnreadCountsByFeed()` is a Room 2.6
-  `@MapColumn` multimap over `GROUP BY`, so a **fully-read source is absent from the map,
-  not 0** — T22's drawer must read `counts[feedId] ?: 0`. And `EntryDao.setRead` chunks ids
-  at 900 because SQLite caps `IN (…)` host variables at 999; call it, never `setReadForIds`.
-  Undo is a token holding the exact ids that call flipped, so it cannot resurrect an entry
-  read before or after the batch. `readAt` comes from an injected `java.time.Clock`.
+  `observeUnreadCountsByFeed()` is a Room 2.6 `@MapColumn` multimap over `GROUP BY`, so a
+  **fully-read source is absent from the map, not 0** — T22's drawer needs `counts[id] ?: 0`.
+  `EntryDao.setRead` chunks ids at 900 (SQLite caps `IN (…)` variables at 999); call it,
+  never `setReadForIds`. Undo is a token holding the exact ids that call flipped, so it
+  cannot resurrect an entry read before or after it; `readAt` comes from an injected `Clock`.
