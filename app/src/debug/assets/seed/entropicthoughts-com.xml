@@ -1,0 +1,1114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0"
+	xmlns:content="http://purl.org/rss/1.0/modules/content/"
+	xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:atom="http://www.w3.org/2005/Atom"
+	xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+	xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+	xmlns:georss="http://www.georss.org/georss"
+        xmlns:geo="http://www.w3.org/2003/01/geo/wgs84_pos#"
+        xmlns:media="http://search.yahoo.com/mrss/"><channel>
+<title>Entropic Thoughts</title>
+<atom:link href="https://entropicthoughts.com/feed.xml" rel="self" type="application/rss+xml" />
+<link>https://entropicthoughts.com/</link>
+<description><![CDATA[]]></description>
+<language>en</language>
+<pubDate>Wed, 05 Aug 2026 07:11:00 +0200</pubDate>
+<lastBuildDate>Wed, 05 Aug 2026 07:11:00 +0200</lastBuildDate>
+<generator>Emacs 30.2 Org-mode 10.0-pre</generator>
+<webMaster>a@xkqr.org (kqr)</webMaster>
+<image>
+<url>https://entropicthoughts.com/image/favicon/favicon-48x48.png</url>
+<title>Entropic Thoughts</title>
+<link>https://entropicthoughts.com/</link>
+</image>
+
+<item>
+<title>Purely functional digital circuit simulator (SICP 3.3)</title>
+<link>https://entropicthoughts.com/sicp-3-3-pure-digital-circuit-simulator</link>
+<author>a@xkqr.org (kqr)</author>
+<guid isPermaLink="false">https://entropicthoughts.com/sicp-3-3-pure-digital-circuit-simulator</guid>
+<pubDate>Wed, 05 Aug 2026 00:00:00 +0200</pubDate>
+<category><![CDATA[programming]]></category>
+<description><![CDATA[
+<div id="orgf4a15a1" class="figure">
+<p>
+</p>
+</div>
+
+
+<p>
+I have a copy of SICP, or as it is also known, <i>The Wizard
+Book</i>. This book is widely praised, but I can&rsquo;t take the
+time to work my way through all of it. Instead, I&rsquo;m going to occasionally jump
+into the parts of it that look interesting.
+</p>
+
+
+
+<p>
+Since last week, are in the process of simulating a digital circuit. The reason
+this is interesting is the solution in SICP uses hidden mutable state and
+message-passing to make the code object-oriented. It even uses a mutable global
+variable for scheduling! We managed to replicate all of that in Haskell, but now
+we want to refactor the solution to be easier to work with.
+</p>
+
+
+
+<p>
+If we are going to manage the simulation in a pure functional manner, we still
+have to contend with the fact that during simulation, wires are objects with a
+fixed identity. A wire does not become a different wire just because its signal
+changes – the same wire is still hooked up to the same gates. Wires need to
+maintain their identity somehow.
+</p>
+
+
+<p><a href="https://entropicthoughts.com/sicp-3-3-pure-digital-circuit-simulator">(Continue reading the full article on the web.)</a></p>
+]]></description>
+</item>
+<item>
+<title>Digital circuit simulator in Haskell (SICP 3.3)</title>
+<link>https://entropicthoughts.com/sicp-3-3-digital-circuit-simulator-in-haskell</link>
+<author>a@xkqr.org (kqr)</author>
+<guid isPermaLink="false">https://entropicthoughts.com/sicp-3-3-digital-circuit-simulator-in-haskell</guid>
+<pubDate>Mon, 27 Jul 2026 00:00:00 +0200</pubDate>
+<category><![CDATA[programming]]></category>
+<description><![CDATA[
+<div id="org0b5d67d" class="figure">
+<p>
+</p>
+</div>
+
+
+<p>
+I have a copy of SICP, or as it is also known, <i>The Wizard
+Book</i>. This book is widely praised, but I can&rsquo;t take the
+time to work my way through all of it. Instead, I&rsquo;m going to occasionally jump
+into the parts of it that look interesting.
+</p>
+
+
+
+<p>
+In the previous two installations of this series, we looked at ways of
+implementing generic functions. In the first one, by tagging values and
+dispatching operations on tags. In the second case, by filling a mutable table
+of operation–tag pairs. We saw how these are roughly equivalent to the existing
+Haskell features of sum types and type classes.
+</p>
+
+
+
+<p>
+Now we&rsquo;ll simulate a digital circuit. The reason this is interesting is that the
+solution in SICP uses hidden mutable state and message-passing to make the
+code object-oriented. It even uses a mutable global variable for scheduling! I
+wasn&rsquo;t sure if it would be possible to replicate that in Haskell, but as we&rsquo;ll
+see, it can get incredibly close.
+</p>
+
+
+<p><a href="https://entropicthoughts.com/sicp-3-3-digital-circuit-simulator-in-haskell">(Continue reading the full article on the web.)</a></p>
+]]></description>
+</item>
+<item>
+<title>Kuiper Q-Q plot: are these the same?</title>
+<link>https://entropicthoughts.com/kuiper-q-q-plot</link>
+<author>a@xkqr.org (kqr)</author>
+<guid isPermaLink="false">https://entropicthoughts.com/kuiper-q-q-plot</guid>
+<pubDate>Tue, 21 Jul 2026 00:00:00 +0200</pubDate>
+<category><![CDATA[statistics]]></category>
+<description><![CDATA[
+<div id="org459062e" class="figure">
+<p>
+</p>
+</div>
+
+
+<p>
+When we tried to get an intuition for the differences in distribution functions,
+we learned that children subjected to a treatment had greater variation in their
+score than the reference group.
+</p>
+
+
+
+
+<div id="org5c6ca8c" class="figure">
+<p>
+</p>
+</div>
+
+
+<p><a href="https://entropicthoughts.com/kuiper-q-q-plot">(Continue reading the full article on the web.)</a></p>
+]]></description>
+</item>
+<item>
+<title>Intuition for distribution differences</title>
+<link>https://entropicthoughts.com/distribution-differences</link>
+<author>a@xkqr.org (kqr)</author>
+<guid isPermaLink="false">https://entropicthoughts.com/distribution-differences</guid>
+<pubDate>Tue, 14 Jul 2026 00:00:00 +0200</pubDate>
+<category><![CDATA[statistics]]></category>
+<description><![CDATA[
+<div id="orgbcaa5a0" class="figure">
+<p>
+</p>
+</div>
+
+
+<p>
+Imagine every person in a country is assigned some sort of score, and a higher
+score is better. I can&rsquo;t share the specifics around the score I&rsquo;m investigating
+right now, but on the population level it is collected
+by a government agency. Here&rsquo;s the distribution of these scores for the
+population in my country.
+</p>
+
+
+
+
+<div id="org45c81d3" class="figure">
+<p>
+</p>
+</div>
+
+
+<p><a href="https://entropicthoughts.com/distribution-differences">(Continue reading the full article on the web.)</a></p>
+]]></description>
+</item>
+<item>
+<title>A full body MRI earns you a year of smoking</title>
+<link>https://entropicthoughts.com/full-body-mri-earns-you-a-base-jump</link>
+<author>a@xkqr.org (kqr)</author>
+<guid isPermaLink="false">https://entropicthoughts.com/full-body-mri-earns-you-a-base-jump</guid>
+<pubDate>Tue, 07 Jul 2026 00:00:00 +0200</pubDate>
+<category><![CDATA[statistics]]></category>
+<description><![CDATA[
+<div id="orga2a9207" class="figure">
+<p>
+</p>
+</div>
+
+
+<p>
+Alternative titles:
+</p>
+
+
+
+<ul class="org-ul">
+<li>… earns you a high-risk pregnancy</li>
+<li>… earns you an ascent of Matterhorn</li>
+<li>… earns you 10,000 km on a motorcycle</li>
+<li>… earns you two BASE jumps</li>
+<li>… earns you a day on the frontline in Ukraine</li>
+</ul>
+
+
+
+<p>
+These are all about equivalent to the risk of one year of smoking.
+</p>
+
+
+<p><a href="https://entropicthoughts.com/full-body-mri-earns-you-a-base-jump">(Continue reading the full article on the web.)</a></p>
+]]></description>
+</item>
+<item>
+<title>Data-directed programming in Haskell (SICP 2.4.3)</title>
+<link>https://entropicthoughts.com/sicp-2-4-data-directed-programming-in-haskell</link>
+<author>a@xkqr.org (kqr)</author>
+<guid isPermaLink="false">https://entropicthoughts.com/sicp-2-4-data-directed-programming-in-haskell</guid>
+<pubDate>Tue, 30 Jun 2026 00:00:00 +0200</pubDate>
+<category><![CDATA[haskell]]></category>
+<description><![CDATA[
+<div id="orgedcc5b1" class="figure">
+<p>
+</p>
+</div>
+
+
+<p>
+I have a copy of SICP, or as it is also known, <i>The Wizard
+Book</i>. This book is widely praised, but I can&rsquo;t take the
+time to work my way through all of it. Instead, I&rsquo;m going to occasionally jump
+into the parts of it that look interesting. Last week, we looked at tagged data
+in Haskell. The authors of SICP weren&rsquo;t convinced that&rsquo;s the best approach, so
+they move on to data-directed programming. We&rsquo;ll do the same.
+</p>
+
+
+
+
+<p>
+Complex numbers can be stored in their rectangular form, with a real
+and an imaginary part. They can also be stored in polar form, where there&rsquo;s a
+magnitude and an angle. Whichever way a complex number is stored, we would like
+to be able to query it for all of these four quantities:
+</p>
+
+
+
+<ul class="org-ul">
+<li>The real coordinate in the rectangular form of the complex number.</li>
+<li>The imaginary coordinate in the rectangular form.</li>
+<li>The magnitude in the polar form.</li>
+<li>The angle in the polar form.</li>
+</ul>
+
+
+<p><a href="https://entropicthoughts.com/sicp-2-4-data-directed-programming-in-haskell">(Continue reading the full article on the web.)</a></p>
+]]></description>
+</item>
+<item>
+<title>Tagged data in Haskell (SICP 2.4.2)</title>
+<link>https://entropicthoughts.com/sicp-2-4-tagged-data-in-haskell</link>
+<author>a@xkqr.org (kqr)</author>
+<guid isPermaLink="false">https://entropicthoughts.com/sicp-2-4-tagged-data-in-haskell</guid>
+<pubDate>Tue, 23 Jun 2026 00:00:00 +0200</pubDate>
+<category><![CDATA[haskell]]></category>
+<description><![CDATA[
+<div id="orgdfd873a" class="figure">
+<p>
+</p>
+</div>
+
+
+<p>
+I have a copy of SICP, or as it is also known, <i>The Wizard
+Book</i>. This book is widely praised, but I can&rsquo;t take the
+time to work my way through all of it. However, sometimes I jump into parts of
+it that look interesting. Today, we&rsquo;ll see how to support multiple
+representations of data through tagging.
+</p>
+
+
+
+<p>
+This article is written in Haskell throughout, but at the start it will look a
+lot like the Lisp code in SICP. I have intentionally tried to recreate the
+SICP solution as closely as possible, including dynamic typing and all. See
+the appendix if you&rsquo;re curious how it works.
+</p>
+
+
+
+<p>
+Complex numbers can be stored in their rectangular form, where there&rsquo;s a real
+and an imaginary part. They can also be stored in polar form, where there&rsquo;s a
+magnitude and an angle. The authors ask us to imagine that two people have been
+working on a library for mathematics, but ended up choosing different ways to
+store complex numbers. How can they write their code so that they don&rsquo;t have to
+agree on one way to store the data?
+</p>
+
+
+<p><a href="https://entropicthoughts.com/sicp-2-4-tagged-data-in-haskell">(Continue reading the full article on the web.)</a></p>
+]]></description>
+</item>
+<item>
+<title>GLM 5.2 playing text adventures</title>
+<link>https://entropicthoughts.com/glm-5-2-playing-text-adventures</link>
+<author>a@xkqr.org (kqr)</author>
+<guid isPermaLink="false">https://entropicthoughts.com/glm-5-2-playing-text-adventures</guid>
+<pubDate>Thu, 18 Jun 2026 00:00:00 +0200</pubDate>
+<category><![CDATA[ai]]></category>
+<description><![CDATA[
+<div id="org345ea99" class="figure">
+<p>
+</p>
+</div>
+
+
+<p>
+I&rsquo;ve heard some buzz around the new GLM 5.2 open-weights model. They say it&rsquo;s
+very capable! I won&rsquo;t run a full comparison benchmark, but I have some credits
+sloshing around on OpenRouter so I figured I might compare GLM 5.2 to the
+similarly-priced Gemini 3 Flash, and see where things land.
+</p>
+
+
+
+<p>
+This uses the same setup as the previous benchmark: each LLM gets a few
+attempts at playing the game, with each attempt being limited to a fixed budget
+of around $0.15. The LLM doesn&rsquo;t know it, but the harness tracks achievements
+for each game, and counts how many the LLM earns in each attempt.
+</p>
+
+
+
+<p>
+Here are the number of attempts for each game in this run.
+</p>
+
+
+<p><a href="https://entropicthoughts.com/glm-5-2-playing-text-adventures">(Continue reading the full article on the web.)</a></p>
+]]></description>
+</item>
+<item>
+<title>Lean, not backpressure</title>
+<link>https://entropicthoughts.com/lean-not-backpressure</link>
+<author>a@xkqr.org (kqr)</author>
+<guid isPermaLink="false">https://entropicthoughts.com/lean-not-backpressure</guid>
+<pubDate>Tue, 16 Jun 2026 00:00:00 +0200</pubDate>
+<category><![CDATA[systems]]></category>
+<category><![CDATA[management]]></category>
+<category><![CDATA[organisations]]></category>
+<category><![CDATA[ai]]></category>
+<description><![CDATA[
+<div id="org8004be3" class="figure">
+<p>
+</p>
+</div>
+
+
+<p>
+Lucas Costa has written a good article on how to build systems that can handle
+code-generating robots. Unfortunately, when calling it <i>backpressure</i>, he used
+the wrong metaphor.
+</p>
+
+
+
+<p>
+Backpressure is about signaling to upstream processes that they are running too
+fast and need to slow down. The suggestions presented by Costa are mostly about
+signaling to the upstream process that it needs to do things <i>differently</i>,
+rather than just slow down. This has more to do with ensuring sufficient
+<i>quality</i> is sent downstream, rather than <i>quantity</i>.
+</p>
+
+
+
+<p>
+This irked me. As I was reading, I was searching for the right analogy. I kept
+coming back to <i>lean manufacturing</i>. The more famous half of the lean philosophy
+is waste reduction. The other half is about managing the unstable input of
+people. That&rsquo;s what we&rsquo;re interested in here.
+</p>
+
+
+<p><a href="https://entropicthoughts.com/lean-not-backpressure">(Continue reading the full article on the web.)</a></p>
+]]></description>
+</item>
+<item>
+<title>LLMs and almost good code</title>
+<link>https://entropicthoughts.com/llms-and-almost-good-code</link>
+<author>a@xkqr.org (kqr)</author>
+<guid isPermaLink="false">https://entropicthoughts.com/llms-and-almost-good-code</guid>
+<pubDate>Tue, 09 Jun 2026 00:00:00 +0200</pubDate>
+<category><![CDATA[ai]]></category>
+<category><![CDATA[programming]]></category>
+<description><![CDATA[
+<div id="orge5c2067" class="figure">
+<p>
+</p>
+</div>
+
+
+<p>
+TL;DR: My new prior is that top-of-the-line LLMs working on <i>easy</i> tasks
+generate code that is maybe 10 % more complicated than necessary. I also think
+we accept this complexity too easily, because it comes from code that is <i>right
+here</i>, <i>right now</i>, solving an immediate problem. This may have consequences
+for maintenance in the long term.
+</p>
+
+
+
+<p>
+The background to this discovery was that I needed to do some CRUD plumbing in
+a work project. It was a simple change that mostly mirrored existing
+functionality. This is a perfect fit for LLMs, in my experience, so I used a
+frontier model to generate the code for it. The change ended up being a total of
+just over 200 lines, mostly additions.
+</p>
+
+
+
+<p>
+The part of the generated code we&rsquo;ll talk about is a 24-line function that
+converts an arbitrary (user-supplied) string to a safe HTTP header
+value.
+</p>
+
+
+<p><a href="https://entropicthoughts.com/llms-and-almost-good-code">(Continue reading the full article on the web.)</a></p>
+]]></description>
+</item>
+<item>
+<title>Is the Monaco Grand Prix decided at qualifying?</title>
+<link>https://entropicthoughts.com/is-monaco-decided-at-qualifying</link>
+<author>a@xkqr.org (kqr)</author>
+<guid isPermaLink="false">https://entropicthoughts.com/is-monaco-decided-at-qualifying</guid>
+<pubDate>Tue, 02 Jun 2026 00:00:00 +0200</pubDate>
+<category><![CDATA[statistics]]></category>
+<description><![CDATA[
+<div id="orgdb54678" class="figure">
+<p>
+</p>
+</div>
+
+
+<p>
+A Formula One driver triggered my fact-checkitis. They claimed that
+</p>
+
+
+
+<blockquote>
+<p>
+Winning the Monaco Grand Prix in Monte Carlo is determined nine out of ten times
+by which position one starts in.
+</p>
+</blockquote>
+
+
+
+<p>
+That makes intuitive sense, because the Monte Carlo track is a narrow street
+track with few opportunities for overtakes. But … really? Is that an
+off-the-cuff remark or an accurate statistical prediction of the race?
+</p>
+
+
+<p><a href="https://entropicthoughts.com/is-monaco-decided-at-qualifying">(Continue reading the full article on the web.)</a></p>
+]]></description>
+</item>
+<item>
+<title>90 % of the t distribution</title>
+<link>https://entropicthoughts.com/ninety-percent-of-the-t-distribution</link>
+<author>a@xkqr.org (kqr)</author>
+<guid isPermaLink="false">https://entropicthoughts.com/ninety-percent-of-the-t-distribution</guid>
+<pubDate>Tue, 26 May 2026 00:00:00 +0200</pubDate>
+<category><![CDATA[forecasting]]></category>
+<category><![CDATA[statistics]]></category>
+<description><![CDATA[
+<div id="org8876c07" class="figure">
+<p>
+</p>
+</div>
+
+
+<p>
+William Sealy Gosset was great. He improved beer at Guinness by using the
+statistics that existed at the time. Not happy with that, he invented new
+statistics to brew even better beer. The things he invented are used all over
+the place now, but Guinness wanted to keep him a secret weapon, so they made him
+publish his results under the fake name <i>Student</i>.
+</p>
+
+
+
+<p>
+One thing Gosset realised is that it is wrong to compute 90 % confidence
+intervals for the mean by taking the standard deviation of the sample, and
+<i>assume a normal distribution</i>, like-a-so:
+</p>
+
+
+
+<p>
+\[\hat{\mu} \pm 1.645 \hat{\sigma}\]
+</p>
+
+
+<p><a href="https://entropicthoughts.com/ninety-percent-of-the-t-distribution">(Continue reading the full article on the web.)</a></p>
+]]></description>
+</item>
+<item>
+<title>The stock market returns 4 %</title>
+<link>https://entropicthoughts.com/stock-market-returns-4-percent</link>
+<author>a@xkqr.org (kqr)</author>
+<guid isPermaLink="false">https://entropicthoughts.com/stock-market-returns-4-percent</guid>
+<pubDate>Thu, 21 May 2026 00:00:00 +0200</pubDate>
+<category><![CDATA[economy]]></category>
+<description><![CDATA[
+<div id="orge05687e" class="figure">
+<p>
+</p>
+</div>
+
+
+<p>
+People assume all sorts of wild stock market returns when they make their
+financial calculations. Here are some numbers that show up on web searches:
+</p>
+
+
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">6 %</td>
+<td class="org-left">8.4 %</td>
+<td class="org-left">10 %</td>
+<td class="org-left">10.1 %</td>
+<td class="org-left">11.3 %</td>
+<td class="org-left">11.5 %</td>
+<td class="org-left">13.6 %</td>
+<td class="org-left">16 %</td>
+</tr>
+</tbody>
+</table>
+
+
+
+<p>
+These are all correctly computed under their respective assumptions, but they
+are very misleading because whatever those assumptions were, they&rsquo;re not
+relevant for most calculations. You should assume 4 % in your calculations.
+Here&rsquo;s one way to arrive at that:
+</p>
+
+
+<p><a href="https://entropicthoughts.com/stock-market-returns-4-percent">(Continue reading the full article on the web.)</a></p>
+]]></description>
+</item>
+<item>
+<title>Pythagorean Addition</title>
+<link>https://entropicthoughts.com/pythagorean-addition</link>
+<author>a@xkqr.org (kqr)</author>
+<guid isPermaLink="false">https://entropicthoughts.com/pythagorean-addition</guid>
+<pubDate>Tue, 19 May 2026 00:00:00 +0200</pubDate>
+<category><![CDATA[statistics]]></category>
+<category><![CDATA[maths]]></category>
+<category><![CDATA[life]]></category>
+<description><![CDATA[
+<div id="org71164ca" class="figure">
+<p>
+</p>
+</div>
+
+
+<p>
+TL;DR: Instead of labouriously computing \(c = \sqrt{a^2 + b^2}\), we can
+mentally calculate using the <i>alpha-max plus beta-min</i> algorithm, by estimating
+</p>
+
+
+
+<p>
+\[\hat{c} = \mathrm{max}\left(a,  0.9a + 0.5b \right)\]
+</p>
+
+
+
+<p>
+and this will be very close to the actual \(c\). This is useful for adding up
+sources of variance, or figuring out radiuses, or other such things.
+</p>
+
+
+<p><a href="https://entropicthoughts.com/pythagorean-addition">(Continue reading the full article on the web.)</a></p>
+]]></description>
+</item>
+<item>
+<title>Regatta Starting Stations – Chi-squared Continued</title>
+<link>https://entropicthoughts.com/regatta-starting-stations</link>
+<author>a@xkqr.org (kqr)</author>
+<guid isPermaLink="false">https://entropicthoughts.com/regatta-starting-stations</guid>
+<pubDate>Tue, 12 May 2026 00:00:00 +0200</pubDate>
+<category><![CDATA[statistics]]></category>
+<description><![CDATA[
+<div id="orga7c48b1" class="figure">
+<p>
+</p>
+</div>
+
+
+<p>
+In the Henley Royal Regatta two teams at a time propel their boats up a river
+and compete to be first to go a distance. Teams get assigned to their starting
+stations – <i>Berkshire</i> or <i>Buckinghamshire</i> – at random. From there, it is a
+straight shot up the river, with the lane from each starting station being
+seemingly identical.
+</p>
+
+
+
+<p>
+I didn&rsquo;t know any of this, but a reader reached out some time ago because they
+had noticed something odd about this, and they wanted to borrow me as a sounding
+board. Here&rsquo;s the odd thing: the team that starts from the Berkshire station has
+won 53.5 % of the 7555 races in the historic data this reader looked at. This is
+highly unexpected. <i>If</i> teams are assigned at random, <i>and</i> the starting
+stations are practically equal, then the starting station of the winning team
+should be a coin flip.
+</p>
+
+
+
+<p>
+If we flip 7555 coins, we would never have as many as 53.5 % come up heads.
+</p>
+
+
+<p><a href="https://entropicthoughts.com/regatta-starting-stations">(Continue reading the full article on the web.)</a></p>
+]]></description>
+</item>
+<item>
+<title>Article previews in RSS</title>
+<link>https://entropicthoughts.com/article-previews-in-rss</link>
+<author>a@xkqr.org (kqr)</author>
+<guid isPermaLink="false">https://entropicthoughts.com/article-previews-in-rss</guid>
+<pubDate>Thu, 07 May 2026 00:00:00 +0200</pubDate>
+<category><![CDATA[meta]]></category>
+<category><![CDATA[emacs]]></category>
+<description><![CDATA[
+<div id="org0f445ca" class="figure">
+<p>
+</p>
+</div>
+
+
+<p>
+Since about three years past time immemorial, the RSS feed for this site has
+been very anaemic. It had article titles and dates, and that was it. Many
+readers have requested that I include the full article in the feed, or at least
+a preview, but I&rsquo;ve always put it off because it has sounded difficult to
+accomplish technically.
+</p>
+
+
+
+<p>
+The way the RSS feed for this site is generated is in two steps:
+</p>
+
+
+
+<ol class="org-ol">
+<li>First a little loop in Emacs Lisp runs through the first few items of a
+sorted and filtered list of files belonging to this project. This loop
+constructs an org-element syntax tree for the RSS feed, and renders it out
+to a temporary file as an Org mode file.</li>
+<li>Then the regular Org exporting framework takes over and exports that file as
+an RSS file using the ox-rss backend.</li>
+</ol>
+
+
+<p><a href="https://entropicthoughts.com/article-previews-in-rss">(Continue reading the full article on the web.)</a></p>
+]]></description>
+</item>
+<item>
+<title>Fizz Buzz Through Monoids</title>
+<link>https://entropicthoughts.com/fizzbuzz-through-monoids</link>
+<author>a@xkqr.org (kqr)</author>
+<guid isPermaLink="false">https://entropicthoughts.com/fizzbuzz-through-monoids</guid>
+<pubDate>Tue, 05 May 2026 00:00:00 +0200</pubDate>
+<category><![CDATA[haskell]]></category>
+<category><![CDATA[programming]]></category>
+<description><![CDATA[
+<div id="org1738f3f" class="figure">
+<p>
+</p>
+</div>
+
+
+<p>
+Some decade ago I read a good implementation of fizzbuzz. What set it apart was
+its excellent modularity. The original article is no longer on the
+web, but this is my
+reconstruction:
+</p>
+
+
+
+<label class="input">In[1]:</label><div class="org-src-container">
+<pre class="src src-haskell"><code>module Main where
+
+import Control.Monad (guard)
+import Data.Foldable (for_)
+import Data.Maybe (fromMaybe)
+
+fizzbuzz i =
+  fromMaybe (show i) . mconcat $
+    [ "fizz" &lt;$ guard (rem i 3 == 0)
+    , "buzz" &lt;$ guard (rem i 5 == 0)
+    ]
+
+main =
+  for_ [1..100] $
+    putStrLn . fizzbuzz
+</code></pre>
+</div>
+
+
+
+<p>
+The great thing about this implementation is that when we get the natural
+change in requirements – that we are supposed to print &ldquo;zork&rdquo; for multiples of
+seven – we can accommodate that change <i>by simply adding the line that does so</i>:
+</p>
+
+
+<p><a href="https://entropicthoughts.com/fizzbuzz-through-monoids">(Continue reading the full article on the web.)</a></p>
+]]></description>
+</item>
+<item>
+<title>Understanding systems</title>
+<link>https://entropicthoughts.com/understanding-systems</link>
+<author>a@xkqr.org (kqr)</author>
+<guid isPermaLink="false">https://entropicthoughts.com/understanding-systems</guid>
+<pubDate>Tue, 28 Apr 2026 00:00:00 +0200</pubDate>
+<category><![CDATA[learning]]></category>
+<category><![CDATA[life]]></category>
+<description><![CDATA[
+<div id="orgb05ff46" class="figure">
+<p>
+</p>
+</div>
+
+
+<p>
+Some time ago I read an article on what makes a good tutor. It explicated
+many of the things I do when tutoring, so obviously I thought it was a great
+article. When I had a side gig as a private tutor, I covered mostly maths and
+physics, so that&rsquo;s how I&rsquo;ll frame things in this article. The same thing applies
+to other fields too, but it might be harder the further away from maths they
+are.
+</p>
+
+
+
+<p>
+The main thrust of the lost article (as I remember it) was that effective tutors
+are highly empathetic to the level of motivation of their student, and they
+quickly adjust the lesson to that. That&rsquo;s it. That&rsquo;s the main thing good tutors
+do differently. If motivation decreases, they switch to lighter content, or even
+transition into non-lesson conversation. If motivation increases, they ramp up
+the difficulty of the lesson. Tutoring is, say, 80 % motivation management.
+</p>
+
+
+
+<p>
+Okay, but that undersells it a little. Lesson difficulty is not fixed for any
+topic; it depends on the student. Annoyingly, it even depends on the student&rsquo;s
+level of motivation! The tutor must somehow know what is going to be difficult
+and what is going to be easy for their student, in every specific situation.
+</p>
+
+
+<p><a href="https://entropicthoughts.com/understanding-systems">(Continue reading the full article on the web.)</a></p>
+]]></description>
+</item>
+<item>
+<title>Spaced Repetition: Beginner Guide/FAQ</title>
+<link>https://entropicthoughts.com/spaced-repetition-beginner-guide-faq</link>
+<author>a@xkqr.org (kqr)</author>
+<guid isPermaLink="false">https://entropicthoughts.com/spaced-repetition-beginner-guide-faq</guid>
+<pubDate>Tue, 21 Apr 2026 00:00:00 +0200</pubDate>
+<category><![CDATA[life]]></category>
+<category><![CDATA[learning]]></category>
+<description><![CDATA[
+<div id="org245c3c1" class="figure">
+<p>
+</p>
+</div>
+
+
+<p>
+Spaced repetition is best introduced in the words of Gwern: it is
+</p>
+
+
+
+<blockquote>
+<p>
+a mechanical golem that will never forget, and never let us forget whatever we
+chose to.
+</p>
+</blockquote>
+
+
+
+<p>
+If this was a medical treatment or lessons from a personal coach, it would be
+priced so that only high-ranking politicians, CEOs of big companies, and
+Silicon Valley programmers could afford it. But spaced repetition is available
+to anyone, at a cost of only teens of minutes a day. More people ought to use
+it, but some do not because they harbour misunderstandings about it. Today,
+we&rsquo;ll clear some of these up.
+</p>
+
+
+<p><a href="https://entropicthoughts.com/spaced-repetition-beginner-guide-faq">(Continue reading the full article on the web.)</a></p>
+]]></description>
+</item>
+<item>
+<title>Object Oriented Programming in Ada</title>
+<link>https://entropicthoughts.com/object-oriented-programming-in-ada</link>
+<author>a@xkqr.org (kqr)</author>
+<guid isPermaLink="false">https://entropicthoughts.com/object-oriented-programming-in-ada</guid>
+<pubDate>Tue, 14 Apr 2026 00:00:00 +0200</pubDate>
+<category><![CDATA[ada]]></category>
+<description><![CDATA[
+<div id="org0bbeb4b" class="figure">
+<p>
+</p>
+</div>
+
+
+<p>
+Ada is <i>incredibly</i> well designed. One way this shows is that it takes the big,
+monolithic features of other languages and breaks them down into their
+constituent parts, so we can choose which portions of those features we want.
+The example I often reach for to explain this is <i>object-oriented programming</i>.
+</p>
+
+
+
+<p>
+I never truly understood object-oriented programming until I learned Ada, which
+breaks down object-oriented programming into separate features, like
+</p>
+
+
+
+<ul class="org-ul">
+<li>encapsulation,</li>
+<li>reuse,</li>
+<li>inheritance,</li>
+<li>abstract interfaces,</li>
+<li>type extension, and</li>
+<li>dynamic dispatch.</li>
+</ul>
+
+
+<p><a href="https://entropicthoughts.com/object-oriented-programming-in-ada">(Continue reading the full article on the web.)</a></p>
+]]></description>
+</item>
+<item>
+<title>Readership maths skills</title>
+<link>https://entropicthoughts.com/readership-math-skills</link>
+<author>a@xkqr.org (kqr)</author>
+<guid isPermaLink="false">https://entropicthoughts.com/readership-math-skills</guid>
+<pubDate>Tue, 07 Apr 2026 00:00:00 +0200</pubDate>
+<category><![CDATA[maths]]></category>
+<category><![CDATA[meta]]></category>
+<description><![CDATA[
+<div id="orgcf3ec7d" class="figure">
+<p>
+</p>
+</div>
+
+
+<p>
+Many of you get notified of new articles via RSS, and some of you stay tuned
+through the email newsletter. The email subscribers have, in the past three
+weeks, answered a survey on their understanding of maths topics. I asked three
+questions of increasing difficulty:
+</p>
+
+
+
+<ol class="org-ol">
+<li>How advanced maths have you formally studied?</li>
+<li>How advanced maths are you still comfortable using?</li>
+<li>How advanced maths do you know well enough to teach someone else?</li>
+</ol>
+
+
+<p><a href="https://entropicthoughts.com/readership-math-skills">(Continue reading the full article on the web.)</a></p>
+]]></description>
+</item>
+<item>
+<title>The MVC Mistake</title>
+<link>https://entropicthoughts.com/mvc-mistake</link>
+<author>a@xkqr.org (kqr)</author>
+<guid isPermaLink="false">https://entropicthoughts.com/mvc-mistake</guid>
+<pubDate>Tue, 31 Mar 2026 00:00:00 +0200</pubDate>
+<category><![CDATA[programming]]></category>
+<description><![CDATA[
+<div id="org2b93268" class="figure">
+<p>
+</p>
+</div>
+
+
+<p>
+Creating abstractions should not be left to beginners. Richard Gabriel says puts
+it well::
+</p>
+
+
+
+<blockquote>
+<p>
+Abstractions must be carefully and expertly designed, especially when reuse or
+compression is intended. However, because abstractions are designed in a
+particular context and for a particular purpose, it is hard to design them while
+anticipating all purposes and forgetting all purposes, which is the hallmark of
+the well-designed abstractions.
+</p>
+</blockquote>
+
+
+
+<p>
+This is one of my favourite quotes on abstraction, because &ldquo;anticipating all
+purposes and forgetting all purposes&rdquo; so aptly summarises how a good abstraction
+is made. I was reminded of this when I read the first sentence of issue 34 of
+Frontend at Scale, where it is phrased as &ldquo;how to care about anything without
+caring about everything&rdquo;.
+</p>
+
+
+<p><a href="https://entropicthoughts.com/mvc-mistake">(Continue reading the full article on the web.)</a></p>
+]]></description>
+</item>
+<item>
+<title>Lines of code are useful</title>
+<link>https://entropicthoughts.com/lines-of-code</link>
+<author>a@xkqr.org (kqr)</author>
+<guid isPermaLink="false">https://entropicthoughts.com/lines-of-code</guid>
+<pubDate>Tue, 24 Mar 2026 00:00:00 +0100</pubDate>
+<category><![CDATA[programming]]></category>
+<description><![CDATA[
+<div id="orga4e9c7a" class="figure">
+<p>
+</p>
+</div>
+
+
+<p>
+The internet is full of people dismissing <i>lines of code</i> as a measurement.
+People say things like
+</p>
+
+
+
+<blockquote>
+<p>
+Lines of code written has been firmly established over the decades as a largely
+meaningless metric.
+</p>
+</blockquote>
+
+
+
+<p>
+and
+</p>
+
+
+<p><a href="https://entropicthoughts.com/lines-of-code">(Continue reading the full article on the web.)</a></p>
+]]></description>
+</item>
+<item>
+<title>Esqueleto Tutorial</title>
+<link>https://entropicthoughts.com/esqueleto-tutorial</link>
+<author>a@xkqr.org (kqr)</author>
+<guid isPermaLink="false">https://entropicthoughts.com/esqueleto-tutorial</guid>
+<pubDate>Tue, 17 Mar 2026 00:00:00 +0100</pubDate>
+<category><![CDATA[sql]]></category>
+<category><![CDATA[haskell]]></category>
+<description><![CDATA[
+<div id="orgeba16d7" class="figure">
+<p>
+</p>
+</div>
+
+
+<p>
+When interacting with databases in Haskell, we use a library called <i>Persistent</i>
+to create mappings between database content and Haskell data types. This library
+can also query for records and update them, as long as the operations involved
+are <i>very</i> basic.
+</p>
+
+
+
+<p>
+Once operations become more complicated, we turn to <i>Esqueleto</i>, a lower-level
+library which reuses <i>Persistent</i> data mappings but let us write nearly raw
+SQL queries. The main difference between raw SQL and Esqueleto is that
+Esqueleto is type safe, meaning the compiler will complain if we write invalid
+Esqueleto queries. If we accidentally try to cram a <code>varchar</code> column into an
+<code>UTCTime</code> field in a Haskell object, the <i>compiler</i> will let us know. Not the
+pager going off at 3 AM.
+</p>
+
+
+
+<p>
+Another strength of Esqueleto is that it is, in a sense, plain Haskell code.
+This is also its drawback. I have long struggled with learning to write
+Esqueleto fluently. Some colleagues suggested that maybe the problem is I don&rsquo;t
+practice writing it enough. So I picked up an arbitrary SQL tutorial I found on
+the web, and followed it but writing Esqueleto instead.
+</p>
+
+
+<p><a href="https://entropicthoughts.com/esqueleto-tutorial">(Continue reading the full article on the web.)</a></p>
+]]></description>
+</item>
+<item>
+<title>Are LLMs not getting better?</title>
+<link>https://entropicthoughts.com/no-swe-bench-improvement</link>
+<author>a@xkqr.org (kqr)</author>
+<guid isPermaLink="false">https://entropicthoughts.com/no-swe-bench-improvement</guid>
+<pubDate>Thu, 12 Mar 2026 00:00:00 +0100</pubDate>
+<category><![CDATA[ai]]></category>
+<description><![CDATA[
+<div id="org01b9c5f" class="figure">
+<p>
+</p>
+</div>
+
+
+<p>
+I was reading the METR article on how LLM code passes test much more often
+than it is of mergeable quality. They look at the performance of LLMs doing
+programming when the success criterion is &ldquo;passes all tests&rdquo; and compare it to
+when the success criterion is &ldquo;would get approved by the maintainer&rdquo;.
+Unsurprisingly, LLM performance is much worse under the more stringent success
+criterion. Their 50 % success horizon moves from 50 minutes down to 8 minutes.
+</p>
+
+
+
+<p>
+As part of this they have included figures such as this one:
+</p>
+
+
+
+
+<div id="org3dc8da3" class="figure">
+<p>
+</p>
+</div>
+
+
+<p><a href="https://entropicthoughts.com/no-swe-bench-improvement">(Continue reading the full article on the web.)</a></p>
+]]></description>
+</item>
+</channel>
+</rss>

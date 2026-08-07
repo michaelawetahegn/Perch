@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+
+        <!--
+          Debug-only startup hook: fills a fresh install with the bundled snapshots so
+          screenshots have something real to show. Merged into the debug manifest only,
+          which is why `PerchApp` carries no seeding branch at all.
+        -->
+        <provider
+            android:name=".debug.DebugSeedProvider"
+            android:authorities="${applicationId}.debugseed"
+            android:exported="false" />
+
+    </application>
+
+</manifest>

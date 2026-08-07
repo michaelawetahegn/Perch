@@ -263,7 +263,7 @@ production code but no test is a defect — reopen the box.
         the correct SAF intents.
       - Rung: unit
 
-- [ ] **T28 — Debug seed data.** Bundle ~8 varied snapshots into
+- [x] **T28 — Debug seed data.** Bundle ~8 varied snapshots into
       `app/src/debug/assets/seed/` and pre-seed them on first run of the **debug** build
       only, so screenshots always show realistic content.
       - Done: `assembleDebug` green; a Robolectric test asserts the debug seeder inserts

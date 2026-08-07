@@ -1,0 +1,1724 @@
+<?xml version="1.0"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+ <channel> 
+    <title>Fabien Sanglard</title>
+<atom:link href="https://fabiensanglard.net/rss.xml" rel="self" type="application/rss+xml" />
+  <link>https://fabiensanglard.net</link>
+  <description>Chronicles of software wizardry</description>
+  <language>en-us</language>
+
+<item>
+    <title>Jurassic Park computers in excruciating detail</title>
+   <guid>https://fabiensanglard.net/jurrasic_park_computers/index.html</guid>
+   <link>https://fabiensanglard.net/jurrasic_park_computers/index.html</link>
+   <pubDate>13 Jul 2026 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+    <title>A dock that finally wakes up reliably</title>
+   <guid>https://fabiensanglard.net/tb4/index.html</guid>
+   <link>https://fabiensanglard.net/tb4/index.html</link>
+   <pubDate>11 Jul 2026 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+    <title>Don't you mean extinct?</title>
+   <guid>https://fabiensanglard.net/extinct/index.html</guid>
+   <link>https://fabiensanglard.net/extinct/index.html</link>
+   <pubDate>10 Jul 2026 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+    <title>The art and engineering of Silpheed</title>
+   <guid>https://fabiensanglard.net/silpheed/index.html</guid>
+   <link>https://fabiensanglard.net/silpheed/index.html</link>
+   <pubDate>01 Jun 2026 00:00:00 +0000</pubDate>
+</item>
+
+
+<item>
+    <title>Magic the Gathering format: Fun 40</title>
+   <guid>https://fabiensanglard.net/mtg/fun/index.html</guid>
+   <link>https://fabiensanglard.net/mtg/fun/index.html</link>
+   <pubDate>20 May 2026 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+    <title>How Michael Abrash doubled Quake framerate</title>
+   <guid>https://fabiensanglard.net/quake_asm_optimizations/index.html</guid>
+   <link>https://fabiensanglard.net/quake_asm_optimizations/index.html</link>
+   <pubDate>14 Feb 2026 00:00:00 +0000</pubDate>
+</item>
+
+
+<item>
+    <title>Let's compile Quake like it's 1997!</title>
+   <guid>https://fabiensanglard.net/compile_like_1997/index.html</guid>
+   <link>https://fabiensanglard.net/compile_like_1997/index.html</link>
+   <pubDate>05 Feb 2026 00:00:00 +0000</pubDate>
+</item>
+
+
+<item>
+    <title>Is QSpy still cool? Let's play QuakeWorld!</title>
+   <guid>https://fabiensanglard.net/quakeworld/index.html</guid>
+   <link>https://fabiensanglard.net/quakeworld/index.html</link>
+   <pubDate>16 Jan 2026 00:00:00 +0000</pubDate>
+</item>
+
+
+<item>
+    <title>Building a 1997 Quake PC: Benchmarking GLquake</title>
+   <guid>https://fabiensanglard.net/quake_pc/glquake/index.html</guid>
+   <link>https://fabiensanglard.net/quake_pc/glquake/index.html</link>
+   <pubDate>14 Jan 2026 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+    <title>Building a 1997 Quake PC: Benchmarking Vquake</title>
+   <guid>https://fabiensanglard.net/quake_pc/vquake/index.html</guid>
+   <link>https://fabiensanglard.net/quake_pc/vquake/index.html</link>
+   <pubDate>13 Jan 2026 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+    <title>Building a 1997 Quake PC: Benchmarking Quake</title>
+   <guid>https://fabiensanglard.net/quake_pc/quake/index.html</guid>
+   <link>https://fabiensanglard.net/quake_pc/quake/index.html</link>
+   <pubDate>12 Jan 2026 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+    <title>Building a 1997 Quake PC!</title>
+   <guid>https://fabiensanglard.net/quake_pc/index.html</guid>
+   <link>https://fabiensanglard.net/quake_pc/index.html</link>
+   <pubDate>08 Jan 2026 00:00:00 +0000</pubDate>
+</item>
+
+
+<item>
+    <title>Why WinQuake exists and how it works</title>
+   <guid>https://fabiensanglard.net/winquake/index.html</guid>
+   <link>https://fabiensanglard.net/winquake/index.html</link>
+   <pubDate>03 Dec 2025 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+    <title>Quake Engine Indicators</title>
+   <guid>https://fabiensanglard.net/quake_indicators/index.html</guid>
+   <link>https://fabiensanglard.net/quake_indicators/index.html</link>
+   <pubDate>24 Nov 2025 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+    <title>How quake.exe got its TCP/IP stack</title>
+   <guid>https://fabiensanglard.net/quake_chunnel/index.html</guid>
+   <link>https://fabiensanglard.net/quake_chunnel/index.html</link>
+   <pubDate>17 Nov 2025 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+    <title>Building my childhood dream PC</title>
+   <guid>https://fabiensanglard.net/2168/index.html</guid>
+   <link>https://fabiensanglard.net/2168/index.html</link>
+   <pubDate>18 May 2025 00:00:00 +0000</pubDate>
+</item>
+
+
+<item>
+    <title>Why fastDoom is fast</title>
+   <guid>https://fabiensanglard.net/fastdoom/index.html</guid>
+   <link>https://fabiensanglard.net/fastdoom/index.html</link>
+   <pubDate>04 Mar 2025 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+    <title>Watching sunsets</title>
+   <guid>https://fabiensanglard.net/sunset/index.html</guid>
+   <link>https://fabiensanglard.net/sunset/index.html</link>
+   <pubDate>18 Aug 2024 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+    <title>SNES: Sprites and backgrounds rendering</title>
+   <guid>https://fabiensanglard.net/snes_ppus_why/index.html</guid>
+   <link>https://fabiensanglard.net/snes_ppus_why/index.html</link>
+   <pubDate>09 Aug 2024 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+    <title>How the SNES Graphics System works</title>
+   <guid>https://fabiensanglard.net/snes_ppus_how/index.html</guid>
+   <link>https://fabiensanglard.net/snes_ppus_how/index.html</link>
+   <pubDate>09 Aug 2024 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+    <title>Carving the Super Nintendo Video System</title>
+   <guid>https://fabiensanglard.net/snes_video/index.html</guid>
+   <link>https://fabiensanglard.net/snes_video/index.html</link>
+   <pubDate>29 Jul 2024 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+    <title>Inside the Super Nintendo cartridges</title>
+   <guid>https://fabiensanglard.net/snes_carts/index.html</guid>
+   <link>https://fabiensanglard.net/snes_carts/index.html</link>
+   <pubDate>21 Apr 2024 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+    <title>The evolution of the Super Nintendo motherboard</title>
+   <guid>https://fabiensanglard.net/snes_mobos/index.html</guid>
+   <link>https://fabiensanglard.net/snes_mobos/index.html</link>
+   <pubDate>8 Apr 2024 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+    <title>The hearts of the Super Nintendo</title>
+   <guid>https://fabiensanglard.net/snes_hearts/index.html</guid>
+   <link>https://fabiensanglard.net/snes_hearts/index.html</link>
+   <pubDate>1 Apr 2024 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+    <title>How the DevTeam conquered the iPhone</title>
+   <guid>https://fabiensanglard.net/iSummer/index.html</guid>
+   <link>https://fabiensanglard.net/iSummer/index.html</link>
+   <pubDate>21 Jan 2024 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+    <title>Why Android developers no longer need Windows USB drivers</title>
+   <guid>https://fabiensanglard.net/android_windows_driver/index.html</guid>
+   <link>https://fabiensanglard.net/android_windows_driver/index.html</link>
+   <pubDate>30 Dec 2023 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+    <title>How Apple's Pro Display XDR takes Thunderbolt 3 to its limit</title>
+   <guid>https://fabiensanglard.net/xdr/index.html</guid>
+   <link>https://fabiensanglard.net/xdr/index.html</link>
+   <pubDate>23 Nov 2023 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+    <title>The bash book to rule them all</title>
+   <guid>https://fabiensanglard.net/bash/index.html</guid>
+   <link>https://fabiensanglard.net/bash/index.html</link>
+   <pubDate>08 Nov 2023 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+    <title>0x4 reasons to write and publish</title>
+   <guid>https://fabiensanglard.net/blog/index.html</guid>
+   <link>https://fabiensanglard.net/blog/index.html</link>
+   <pubDate>07 Nov 2023 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+    <title>Forty years of programming</title>
+   <guid>https://fabiensanglard.net/40/index.html</guid>
+   <link>https://fabiensanglard.net/40/index.html</link>
+   <pubDate>08 Oct 2023 00:00:00 +0000</pubDate>
+</item>
+
+
+<item>
+    <title>Exploring Command-line space time</title>
+   <guid>https://fabiensanglard.net/st/index.html</guid>
+   <link>https://fabiensanglard.net/st/index.html</link>
+   <pubDate>26 Sep 2023 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+    <title>Ode to the M1</title>
+   <guid>https://fabiensanglard.net/m1/index.html</guid>
+   <link>https://fabiensanglard.net/m1/index.html</link>
+   <pubDate>12 Aug 2023 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+    <title>mDNS Primer</title>
+   <guid>https://fabiensanglard.net/mdns/index.html</guid>
+   <link>https://fabiensanglard.net/mdns/index.html</link>
+   <pubDate>11 Aug 2023 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+    <title>Commander Keen: Adaptive Tile Scrolling</title>
+   <guid>https://fabiensanglard.net/ega/index.html</guid>
+   <link>https://fabiensanglard.net/ega/index.html</link>
+   <pubDate>27 Jul 2023 00:00:00 +0000</pubDate>
+</item>
+
+
+<item>
+    <title>10NES</title>
+   <guid>https://fabiensanglard.net/10nes/index.html</guid>
+   <link>https://fabiensanglard.net/10nes/index.html</link>
+   <pubDate>18 Jul 2023 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+    <title>Good Vibrations</title>
+   <guid>https://fabiensanglard.net/happy/index.html</guid>
+   <link>https://fabiensanglard.net/happy/index.html</link>
+   <pubDate>17 Jun 2023 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+	<title>Driving Compilers</title>
+   <guid>https://fabiensanglard.net/dc/index.html</guid>
+   <link>https://fabiensanglard.net/dc/index.html</link>
+   <pubDate>03 May 2023 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+   <title>The Joy of Computer History Books</title>
+   <guid>https://fabiensanglard.net/joy/index.html</guid>
+   <link>https://fabiensanglard.net/joy/index.html</link>
+   <pubDate>01 Apr 2023 00:00:00 +0000</pubDate>
+</item>
+
+
+<item>
+   <title>All you may need is HTML</title>
+   <guid>https://fabiensanglard.net/html/index.html</guid>
+   <link>https://fabiensanglard.net/html/index.html</link>
+   <pubDate>02 Mar 2023 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+   <title>Mjolnir</title>
+   <guid>https://fabiensanglard.net/mjolnir/index.html</guid>
+   <link>https://fabiensanglard.net/mjolnir/index.html</link>
+   <pubDate>23 Jan 2023 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+   <title>A Linux evening...</title>
+   <guid>https://fabiensanglard.net/a_linux_evening/index.html</guid>
+   <link>https://fabiensanglard.net/a_linux_evening/index.html</link>
+   <pubDate>16 Dec 2022 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+   <title>Books update</title>
+   <guid>https://fabiensanglard.net/three_books_update/index.html</guid>
+   <link>https://fabiensanglard.net/three_books_update/index.html</link>
+   <pubDate>15 Dec 2022 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+   <title>The Book Of CP-System, paper version</title>
+   <guid>https://fabiensanglard.net/cpsb_paper/index.html</guid>
+   <link>https://fabiensanglard.net/cpsb_paper/index.html</link>
+   <pubDate>22 Nov 2022 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+   <title>CCPS: A CPS-1 SDK</title>
+   <guid>https://fabiensanglard.net/ccps/index.html</guid>
+   <link>https://fabiensanglard.net/ccps/index.html</link>
+   <pubDate>25 Sep 2022 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+   <title>The Book Of CP-System</title>
+   <guid>https://fabiensanglard.net/cpsb/index.html</guid>
+   <link>https://fabiensanglard.net/cpsb/index.html</link>
+   <pubDate>25 Sep 2022 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+   <title>The Beautiful Diablo 2 Resurrected machine</title>
+   <guid>https://fabiensanglard.net/d2r/index.html</guid>
+   <link>https://fabiensanglard.net/d2r/index.html</link>
+   <pubDate>08 May 2022 00:00:00 +0000</pubDate>
+</item>
+
+<item>
+   <title>USB Cheat Sheet</title>
+   <guid>https://fabiensanglard.net/usbcheat/index.html</guid>
+   <link>https://fabiensanglard.net/usbcheat/index.html</link>
+   <pubDate>05 May 2022 00:00:00 +0000</pubDate>
+</item>
+
+ <item>
+   <title>CPS-1: GFX system internals</title>
+   <guid>https://fabiensanglard.net/cps1_gfx/index.html</guid>
+   <link>https://fabiensanglard.net/cps1_gfx/index.html</link>
+   <pubDate>20 Feb 2022 00:00:00 +0000</pubDate>
+</item>
+
+ <item>
+   <title>Street Fighter 2: Sound System Internals</title>
+   <guid>https://fabiensanglard.net/sf2_sound_system/index.html</guid>
+   <link>https://fabiensanglard.net/sf2_sound_system/index.html</link>
+   <pubDate>15 Jan 2022 00:00:00 +0000</pubDate>
+</item>
+
+ <item>
+   <title>Street Fighter 2: Subtile accurate animation</title>
+   <guid>https://fabiensanglard.net/sf2_health_bar/index.html</guid>
+   <link>https://fabiensanglard.net/sf2_health_bar/index.html</link>
+   <pubDate>24 Dec 2021 00:00:00 +0000</pubDate>
+</item>
+
+ <item>
+   <title>Street Fighter 2: Spin when you can't</title>
+   <guid>https://fabiensanglard.net/sf2_spin/index.html</guid>
+   <link>https://fabiensanglard.net/sf2_spin/index.html</link>
+   <pubDate>24 Dec 2021 00:00:00 +0000</pubDate>
+</item>
+
+ <item>
+   <title>Street Fighter 2: The World Warrier</title>
+   <guid>https://fabiensanglard.net/sf2_warrier/index.html</guid>
+   <link>https://fabiensanglard.net/sf2_warrier/index.html</link>
+   <pubDate>23 Dec 2021 00:00:00 +0000</pubDate>
+</item>
+
+ <item>
+   <title>Following Street Fighter 2 paper trails</title>
+   <guid>https://fabiensanglard.net/sf2_sheets/index.html</guid>
+   <link>https://fabiensanglard.net/sf2_sheets/index.html</link>
+   <pubDate>22 Dec 2021 00:00:00 +0000</pubDate>
+</item>
+
+ <item>
+   <title>Observing my cellphone switch towers</title>
+   <guid>https://fabiensanglard.net/lte/index.html</guid>
+   <link>https://fabiensanglard.net/lte/index.html</link>
+   <pubDate>15 May 2021 00:00:00 +0000</pubDate>
+</item>
+
+ <item>
+   <title>Game Engine Black Book: DOOM, Korean Edition</title>
+   <guid>https://fabiensanglard.net/gebbdk/index.html</guid>
+   <link>https://fabiensanglard.net/gebbdk/index.html</link>
+   <pubDate>05 Apr 2021 00:00:00 +0000</pubDate>
+</item>
+
+ <item>
+   <title>The confusing world of USB</title>
+   <guid>https://fabiensanglard.net/nousb/index.html</guid>
+   <link>https://fabiensanglard.net/nousb/index.html</link>
+   <pubDate>10 Jan 2021 00:00:00 +0000</pubDate>
+</item>
+
+ <item>
+   <title>The beautiful silent thunderbolt-3 PC</title>
+   <guid>https://fabiensanglard.net/tb3/index.html</guid>
+   <link>https://fabiensanglard.net/tb3/index.html</link>
+   <pubDate>22 Dec 2020 00:00:00 +0000</pubDate>
+</item>
+
+ <item>
+   <title>These are called opportunities</title>
+   <guid>https://fabiensanglard.net/silicone/index.html</guid>
+   <link>https://fabiensanglard.net/silicone/index.html</link>
+   <pubDate>12 Nov 2020 00:00:00 +0000</pubDate>
+</item>
+
+ <item>
+   <title>Game Engine Black Book: Wolfenstein 3D, Korean Edition</title>
+   <guid>https://fabiensanglard.net/gebbk/index.html</guid>
+   <link>https://fabiensanglard.net/gebbk/index.html</link>
+   <pubDate>30 Oct 2020 00:00:00 +0000</pubDate>
+</item>
+
+ <item>
+   <title>WHEN 13.3 &gt; 14</title>
+   <guid>https://fabiensanglard.net/aspect_ratio/index.html</guid>
+   <link>https://fabiensanglard.net/aspect_ratio/index.html</link>
+   <pubDate>12 Oct 2020 00:00:00 +0000</pubDate>
+</item>
+
+ <item>
+   <title>Switching to Lenovo Carbon X1</title>
+   <guid>https://fabiensanglard.net/carbon/index.html</guid>
+   <link>https://fabiensanglard.net/carbon/index.html</link>
+   <pubDate>02 Oct 2020 00:00:00 +0000</pubDate>
+</item>
+
+ <item>
+   <title>Discret 11, the French TV encryption of the 80's</title>
+   <guid>https://fabiensanglard.net/discret11/index.html</guid>
+   <link>https://fabiensanglard.net/discret11/index.html</link>
+   <pubDate>07 Jun 2020 00:00:00 +0000</pubDate>
+</item>
+
+ <item>
+   <title>A tale of Ghosts'n Goblins'n Crocos</title>
+   <guid>https://fabiensanglard.net/cpc/index.html</guid>
+   <link>https://fabiensanglard.net/cpc/index.html</link>
+   <pubDate>30 May 2020 00:00:00 +0000</pubDate>
+</item>
+
+ <item>
+   <title>Revisiting the postcard pathtracer</title>
+   <guid>https://fabiensanglard.net/revisiting_the_pathtracer/index.html</guid>
+   <link>https://fabiensanglard.net/revisiting_the_pathtracer/index.html</link>
+   <pubDate>18 May 2020 00:00:00 +0000</pubDate>
+</item>
+
+ <item>
+         <title>0x10 rules</title>
+         <guid>https://fabiensanglard.net/ilike/index.html</guid>
+         <link>https://fabiensanglard.net/ilike/index.html</link>
+    <pubDate>7 May 2020 00:00:00 +0000</pubDate>
+</item>
+
+ <item>
+         <title>An history of NVidia Stream Multiprocessor</title>
+         <guid>https://fabiensanglard.net/cuda/index.html</guid>
+         <link>https://fabiensanglard.net/cuda/index.html</link>
+    <pubDate>2 May 2020 00:00:00 +0000</pubDate>
+</item>
+
+ <item>
+         <title>Revisiting the Businesscard Raytracer</title>
+         <guid>https://fabiensanglard.net/revisiting_the_businesscard_raytracer/index.html</guid>
+         <link>https://fabiensanglard.net/revisiting_the_businesscard_raytracer/index.html</link>
+    <pubDate>1 May 2020 00:00:00 +0000</pubDate>
+</item>
+
+ <item>
+         <title>The Making Of Stunt Island</title>
+         <guid>https://fabiensanglard.net/stunt_island/index.html</guid>
+         <link>https://fabiensanglard.net/stunt_island/index.html</link>
+         <description>
+             How Stunt Island from IBM PC was programmed back in 1992!
+         </description>
+    <pubDate>21 Apr 2020 00:00:00 +0000</pubDate>
+</item>
+
+ <item>
+         <title>The Polygons of DOOM: PSX</title>
+         <guid>https://fabiensanglard.net/doom_psx/index.html</guid>
+         <link>https://fabiensanglard.net/doom_psx/index.html</link>
+         <description>
+             How DOOM was implemented on PlayStation 1! 
+         </description>
+    <pubDate>26 Mar 2020 00:00:00 +0000</pubDate>
+</item>
+
+
+ <item>
+         <title>The Polygons of Another World: Jaguar</title>
+         <guid>https://fabiensanglard.net/another_world_polygons_Jaguar/index.html</guid>
+         <link>https://fabiensanglard.net/another_world_polygons_Jaguar/index.html</link>
+         <description>
+             How Another World was implemented as a passion project on Jaguar! 
+         </description>
+    <pubDate>13 Mar 2020 00:00:00 +0000</pubDate>
+</item>
+
+ <item>
+         <title>The beautiful machine</title>
+         <guid>https://fabiensanglard.net/the_beautiful_machine/index.html</guid>
+         <link>https://fabiensanglard.net/the_beautiful_machine/index.html</link>
+         <description>
+             20 years later, I have built an other PC!
+         </description>
+    <pubDate>6 Mar 2020 00:00:00 +0000</pubDate>
+</item>
+
+ <item>
+         <title>The Polygons of Another World: GBA</title>
+         <guid>https://fabiensanglard.net/another_world_polygons_GBA/index.html</guid>
+         <link>https://fabiensanglard.net/another_world_polygons_GBA/index.html</link>
+         <description>
+             How Another World was implemented on Game Boy Advance! 
+         </description>
+    <pubDate>26 Jan 2020 00:00:00 +0000</pubDate>
+</item> 
+
+ <item>
+         <title>The Polygons of Another World: SNES</title>
+         <guid>https://fabiensanglard.net/another_world_polygons_SNES/index.html</guid>
+         <link>https://fabiensanglard.net/another_world_polygons_SNES/index.html</link>
+         <description>
+             How Another World was implemented on Super Nintendo! 
+         </description>
+    <pubDate>19 Jan 2020 00:00:00 +0000</pubDate>
+</item> 
+
+ <item>
+         <title>The Polygons of Another World: Genesis</title>
+         <guid>https://fabiensanglard.net/another_world_polygons_Genesis/index.html</guid>
+         <link>https://fabiensanglard.net/another_world_polygons_Genesis/index.html</link>
+         <description>
+             How Another World was implemented on Sega Genesis/Megadrive! 
+         </description>
+    <pubDate>05 Jan 2020 00:00:00 +0000</pubDate>
+</item> 
+
+ <item>
+         <title>The Polygons of Another World: PC DOC</title>
+         <guid>https://fabiensanglard.net/another_world_polygons_PC_DOS/index.html</guid>
+         <link>https://fabiensanglard.net/another_world_polygons_PC_DOS/index.html</link>
+         <description>
+             How Another World was implemented on PC DOS! 
+         </description>
+    <pubDate>04 Jan 2020 00:00:00 +0000</pubDate>
+</item> 
+
+ <item>
+         <title>The Polygons of Another World: Atari ST</title>
+         <guid>https://fabiensanglard.net/another_world_polygons_atariST/index.html</guid>
+         <link>https://fabiensanglard.net/another_world_polygons_atariST/index.html</link>
+         <description>
+             How Another World was implemented on Atari ST! 
+         </description>
+    <pubDate>03 Jan 2020 00:00:00 +0000</pubDate>
+</item> 
+
+ <item>
+         <title>The Polygons of Another World: Amiga</title>
+         <guid>https://fabiensanglard.net/another_world_polygons_amiga500/index.html</guid>
+         <link>https://fabiensanglard.net/another_world_polygons_amiga500/index.html</link>
+         <description>
+            How Another World was implemented on Amiga! 
+         </description>
+    <pubDate>02 Jan 2020 00:00:00 +0000</pubDate>
+</item> 
+
+ <item>
+         <title>The Polygons of Another World</title>
+         <guid>https://fabiensanglard.net/another_world_polygons/index.html</guid>
+         <link>https://fabiensanglard.net/another_world_polygons/index.html</link>
+         <description>
+            Let's kick off the year with a series about Another World! 
+         </description>
+    <pubDate>01 Jan 2020 00:00:00 +0000</pubDate>
+</item> 
+
+
+ <item>
+         <title>Strike Commander: Interview with Frank Savage</title>
+         <guid>https://fabiensanglard.net/sc_podcast/index.html</guid>
+         <link>https://fabiensanglard.net/sc_podcast/index.html</link>
+         <description>
+             There is a playful way to study the architecture of computers of the past. Find a piece of software you know well and try to find out how it was ported to these machine you don't...
+         </description>
+    <pubDate>03 Dec 2019 00:00:00 +0000</pubDate>
+</item> 
+
+ <item>
+         <title>A trip down NBA Jam graphics pipeline</title>
+         <guid>https://fabiensanglard.net/nbajamte/index.html</guid>
+         <link>https://fabiensanglard.net/nbajamte/index.html</link>
+         <description>
+             I took some time to study how NBA Jam arcade cabinet worked. Here is what I learned.        
+         </description>
+    <pubDate>28 Oct 2019 00:00:00 +0000</pubDate>
+</item> 
+
+
+ <item>
+         <title>Game Engine Black Book update</title>
+         <guid>https://fabiensanglard.net/gebb/index.html</guid>
+         <link>https://fabiensanglard.net/gebb/index.html</link>
+         <description>
+             The Game Engine Black Books have been updated. Free pdfs, high-quality prints, and source code are available.         
+         </description>
+    <pubDate>17 May 2019 00:00:00 +0000</pubDate>
+</item> 
+
+
+ <item>
+         <title>The story of the 3dfx Voodoo 1</title>
+         <guid>https://fabiensanglard.net/3dfx_sst1/index.html</guid>
+         <link>https://fabiensanglard.net/3dfx_sst1/index.html</link>
+         <description>
+             The story of how the 3dfx Voodoo 1 which ruled 3D gaming from 1996 to 1998.          
+         </description>
+    <pubDate>04 Apr 2019 00:00:00 +0000</pubDate>
+</item> 
+
+ <item>
+         <title>The story of the Rendition Vérité 1000</title>
+         <guid>https://fabiensanglard.net/vquake/index.html</guid>
+         <link>https://fabiensanglard.net/vquake/index.html</link>
+         <description>
+             The story of how the Rendition v1000 briefly rule the Quake world.          
+         </description>
+    <pubDate>01 Apr 2019 00:00:00 +0000</pubDate>
+</item> 
+
+ <item>
+         <title>How DOOM fire was made</title>
+         <guid>https://fabiensanglard.net/doom_fire_psx/</guid>
+         <link>https://fabiensanglard.net/doom_fire_psx/</link>
+         <description>
+             How the playstation and Nintendo 64 version of DOOM implemented fire.          
+         </description>
+    <pubDate>28 Dec 2018 00:00:00 +0000</pubDate>
+</item> 
+
+
+
+ <item>
+         <title>Deciphering the postcard sized raytracer</title>
+         <guid>https://fabiensanglard.net/postcard_pathtracer/</guid>
+         <link>https://fabiensanglard.net/postcard_pathtracer/</link>
+         <description>
+             How Andrew Kensler did it again and authored a breathtaking path tracer fitting on a postcard.          
+         </description>
+    <pubDate>24 Dec 2018 00:00:00 +0000</pubDate>
+</item> 
+
+ <item>
+         <title>How the Dreamcast copy protection was defeated</title>
+         <guid>https://fabiensanglard.net/dreamcast_hacking/</guid>
+         <link>https://fabiensanglard.net/dreamcast_hacking</link>
+         <description>
+             How the Dreamcast copy protection was defeated!           
+         </description>
+    <pubDate>11 Dec 2018 00:00:00 +0000</pubDate>
+</item> 
+
+ <item>
+         <title>Game Engine Black Book: DOOM</title>
+         <guid>https://fabiensanglard.net/gebbdoom/</guid>
+         <link>https://fabiensanglard.net/gebbdoom</link>
+         <description>
+             The Game Engine Black Book: DOOM is out!           
+         </description>
+    <pubDate>10 Dec 2018 00:00:00 +0000</pubDate>
+</item> 
+
+
+ <item>
+         <title>Game Engine Black Book: Wolfenstein 3D, 2nd Edition</title>
+         <guid>https://fabiensanglard.net/gebbwolf3d/</guid>
+         <link>https://fabiensanglard.net/gebbwolf3d</link>
+         <description>
+             The second edition of the Game Engine Black Book: Wolfenstein 3D is out.           
+         </description>
+    <pubDate>6 Dec 2018 00:00:00 +0000</pubDate>
+</item> 
+
+ <item>
+         <title>Bloated</title>
+         <guid>https://fabiensanglard.net/bloated/</guid>
+         <link>https://fabiensanglard.net/bloated</link>
+         <description>
+             It used to happen sporadicly but now it is a daily experience.           
+         </description>
+    <pubDate>23 Sep 2018 01:08:45 +0000</pubDate>
+</item> 
+
+
+
+   <item>
+         <title>Game Engine Black Book Postmortem</title>
+         <guid>https://fabiensanglard.net/Game_Engine_Black_Book_Release/index.php</guid>
+         <link>https://fabiensanglard.net/Game_Engine_Black_Book_Release/index.php</link>
+         <description>
+             
+             &lt;img src=&quot;https://fabiensanglard.net/Game_Engine_Black_Book_Release/gebb.png &quot;/&gt; &lt;br/&gt;
+             &lt;br/&gt;
+             
+
+I am pleased to announce that the Game Engine Black Book about Wolfenstein 3D has shipped. It is 316 pages, full color and made of three parts describing the hardware of the 1991, id Software tools, and the game engine internals. You can read a preview on Google Books and buy it here: &lt;br/&gt;
+&lt;br/&gt;
+Amazon.com (.fr, .de, .co.uk, .ca,...).&lt;br/&gt;
+Google Play Books for web browsers, Android devices, and iOS devices.&lt;br/&gt;
+&lt;br/&gt;
+It took me three years to complete this project. It had its fair share of heavy winds and bumpy roads. I thought it could benefit some writers in the making to give a postmortem and share what I learned in the process.
+              &lt;br/&gt;
+              &lt;br/&gt;
+             &lt;a href=&quot;https://fabiensanglard.net/fizzlefade/index.php&quot;&gt; More...&lt;/a&gt;
+             
+             
+         </description>
+    <pubDate>07 Sep 2017 01:08:45 +0000</pubDate>
+</item> 
+
+   <item>
+         <title>FizzleFade</title>
+         <guid>https://fabiensanglard.net/fizzlefade/index.php</guid>
+         <link>https://fabiensanglard.net/fizzlefade/index.php</link>
+         <description>
+             
+             &lt;img src=&quot;https://fabiensanglard.net/fizzlefade/die.gif&quot;/&gt; &lt;br/&gt;
+             &lt;br/&gt;
+             
+
+I enjoy reading a lot of source code and after 15 years in the field I feel like I have seen my fair share. Even with a full-time job, I still try to spare evenings here and there to read. I don't see myself every stopping. It is always an opportunity to learn new things to follow somebody's mind process.&lt;br/&gt;
+&lt;br/&gt;
+Every once in a while I come across a solution to a problem that is so elegant, and so creative that there is no other word but "beautiful" to describe it. Q_rsqrt, better knows as "Inverse Square Root" and popularized by Quake 3, definitely belong to the family of breathtaking wizardry. While I was working on the Game Engine Black Book: Wolfenstein 3D I came across an other one: Fizzlefade.&lt;br/&gt;
+&lt;br/&gt;
+Fizzlefade is the name of the function in charge of fading from a scene to an other in Wolfenstein 3D. What it does is turn the pixels of the screen to a solid color, only one at a time, seemingly at random.&lt;br/&gt;
+&lt;br/&gt;
+              &lt;br/&gt;
+              &lt;br/&gt;
+             &lt;a href=&quot;https://fabiensanglard.net/fizzlefade/index.php&quot;&gt; More...&lt;/a&gt;
+             
+             
+         </description>
+    <pubDate>28 Aug 2017 01:08:45 +0000</pubDate>
+</item> 
+
+
+   <item>
+         <title>Game Engine Black Book ReleaseDate</title>
+         <guid>https://fabiensanglard.net/Game_Engine_Black_Book_Release_Date/index.php</guid>
+         <link>https://fabiensanglard.net/Game_Engine_Black_Book_Release_Date/index.php</link>
+         <description>
+             
+             &lt;img src=&quot;https://fabiensanglard.net/Game_Engine_Black_Book_Release_Date/gebb_proto.png&quot;/&gt; &lt;br/&gt;
+             &lt;br/&gt;
+             
+
+How was Wolfenstein 3D made and what were the secrets of its speed? How did id Software manage to turn a machine designed to display static images for word processing and spreadsheet applications into the best gaming platform in the world, capable of running games at seventy frames per seconds? If you have ever asked yourself these questions, Game Engine Black Book is for you.&lt;br/&gt;
+&lt;br/&gt;
+This is an engineering book. You will not find much prose in it (the author’s English is broken anyway.) Instead, this book has only bit of text and plenty of drawings attempting to describe in great detail the Wolfenstein 3D game engine and its hardware, the IBM PC with an Intel 386 CPU and a VGA graphic card.&lt;br/&gt;
+
+              &lt;br/&gt;
+              &lt;br/&gt;
+             &lt;a href=&quot;https://fabiensanglard.net/Game_Engine_Black_Book_Release_Date/index.php&quot;&gt; More...&lt;/a&gt;
+             
+             
+         </description>
+    <pubDate>7 Aug 2017 01:08:45 +0000</pubDate>
+</item> 
+
+
+
+   <item>
+         <title>Let's compile like it's 1992</title>
+         <guid>https://fabiensanglard.net/Compile_Like_Its_1992/index.php</guid>
+         <link>https://fabiensanglard.net/Compile_Like_Its_1992/index.php</link>
+         <description>
+             I have been tinkering with the vanilla source code of Wolfenstein 3D from 1992. Even though it is more than 20 years old: It still compile and here is how to do it (with plenty of screenshots).
+         </description>
+    <pubDate>10 Aug 2014 01:08:45 +0000</pubDate>
+</item> 
+
+
+
+   <item>
+         <title>Game Engine Black Books</title>
+         <guid>https://fabiensanglard.net/Game_Engine_Black_Book/index.php</guid>
+         <link>https://fabiensanglard.net/Game_Engine_Black_Book/index.php</link>
+         <description>
+             I am almost done with the first volume of what I hope will become a serie called "Game Engine Black Book". Each book would take further what I tried to do with my articles: Explain simply, yet in great details, a legendary game engine. For the first one I decided to go with Wolfenstein 3D.
+             </description>
+    <pubDate>07 Aug 2014 01:08:45 +0000</pubDate>
+</item> 
+
+
+
+  <item>
+         <title>Trespasser: Jurassic Park CG Source Code Review</title>
+         <guid>https://fabiensanglard.net/trespasser/index.php</guid>
+         <link>https://fabiensanglard.net/trespasser/index.php</link>
+         <description>
+             
+             &lt;img src=&quot;https://fabiensanglard.net/trespasser/trespasser.png&quot;/&gt; &lt;br/&gt;
+             &lt;br/&gt;
+             
+
+           Jurassic Park: Trespasser is an unique piece of software: It is a game that has managed to reach both infamous and cult status.&lt;br/&gt;
+&lt;br/&gt;
+Released in October 1998 after a three years development cycle, it was unanimously destroyed by critics. But it did not fail by much and managed to grow an impressive mass of fans that wrote editors, released patches, reverse-engineered the assets, added features, produced new dinosaurs, levels and even started a remake. 20 years later, bloggers still write about it and the post-mortem by Richard Wyckoff is one of the most fascinating behind-the-scene tale I have ever read.&lt;br/&gt;
+&lt;br/&gt;
+From a technology standing point, Trespasser engine is a milestone in the history of realtime CG: It demonstrated that physics and outdoor environments were indeed possible.&lt;br/&gt;
+&lt;br/&gt;
+During my exploration, I found a special flavor of C++ that was representative of the game final result: Genius and Talent ultimately impaired by ambition and it's resulting complexity.
+
+              &lt;br/&gt;
+              &lt;br/&gt;
+             &lt;a href=&quot;https://fabiensanglard.net/trespasser/index.php&quot;&gt; More...&lt;/a&gt;
+             
+             
+         </description>
+    <pubDate>10 Jun 2014 01:08:45 +0000</pubDate>
+</item> 
+
+
+
+ <item>
+         <title>Git Source Code Review</title>
+         <guid>https://fabiensanglard.net/git_code_review/index.php</guid>
+         <link>https://fabiensanglard.net/git_code_review/index.php</link>
+         <description>
+             
+             &lt;img src=&quot;https://fabiensanglard.net/git_code_review/git_blue_print.png&quot;/&gt; &lt;br/&gt;
+             &lt;br/&gt;
+             
+
+            Since its release in December 2005, git has taken over the software industry. In combination with GitHub it is now a powerful tool to publish and share code: From big teams (linux kernel, id Software, Epic Unreal) to single individual (Prince of Persia, Another world, Rick Dangerous), many have adopted it as their main SCM.&lt;br/&gt;
+&lt;br/&gt;
+I wanted to get a better understanding of the "stupid content tracker" and see how it was built so I spent a few weeks in my spare time reading the source code. I found it tiny, tidy, well-documented and overall pleasant to read.&lt;br/&gt;
+&lt;br/&gt;
+As usual I have compiled my notes into an article, maybe it will encourage some of us to read more source code and become better engineers.&lt;br/&gt;
+
+              &lt;br/&gt;
+              &lt;br/&gt;
+             &lt;a href=&quot;https://fabiensanglard.net/git_code_review/index.php&quot;&gt; More...&lt;/a&gt;
+             
+             
+         </description>
+    <pubDate>30 Mar 2014 01:08:45 +0000</pubDate>
+</item>
+
+
+
+
+   <item>
+         <title>The Computer Graphics Library</title>
+         <guid>https://fabiensanglard.net/Computer_Graphics_Principles_and_Practices/index.php</guid>
+         <link>https://fabiensanglard.net/Computer_Graphics_Principles_and_Practices/index.php</link>
+         <description>
+             
+             &lt;img src=&quot;https://fabiensanglard.net/Computer_Graphics_Principles_and_Practices/cgpp.png&quot;/&gt; &lt;br/&gt;
+             &lt;br/&gt;
+             
+
+             Back in the 90s, one book was ubiquitous in the world of Computer Graphics. Commonly called "The CG Bible", Computer Graphics: Principles and Practice gathered a huge part of the knowledge of the time. It was commonly referenced by the best programmers of that era in interviews and articles. By 1998, the book popularity had been acknowledged with a Front Line Award. &lt;br/&gt;
+              &lt;br/&gt;
+              &lt;br/&gt;
+             &lt;a href=&quot;https://fabiensanglard.net/Computer_Graphics_Principles_and_Practices/index.php&quot;&gt; More...&lt;/a&gt;
+             
+             
+         </description>
+    <pubDate>12 Mar 2014 01:08:45 +0000</pubDate>
+</item>
+
+
+
+
+
+
+
+   <item>
+         <title>Algorithms and Data structures books: One size doesn't fit them all</title>
+         <guid>https://fabiensanglard.net/algorithms_and_datastructures/index.php</guid>
+         <link>https://fabiensanglard.net/algorithms_and_datastructures/index.php</link>
+         <description>
+             Over the years running this moderately popular website, I have been asked many times what is the best book about Algorithms and Data Structures. The answer is always "It depends" ! 
+It depends on how the programmer's brain works and what kind of notation he is comfortable with. There are many flavors of mindset out there but it usually comes down to Mathematics and Illustrations...
+         </description>
+    <pubDate>14 Feb 2014 01:08:45 +0000</pubDate>
+</item>
+
+
+  
+  
+
+ <item>
+         <title>Reverse Engineer Strike Commander</title>
+         <guid>https://fabiensanglard.net/reverse_engineering_strike_commander/index.php</guid>
+         <link>https://fabiensanglard.net/reverse_engineering_strike_commander/index.php</link>
+         <description>
+             
+             &lt;img src=&quot;https://fabiensanglard.net/reverse_engineering_strike_commander/icon_plane.png&quot;/&gt; &lt;br/&gt;
+             &lt;br/&gt;
+             
+
+             Back in the early 90s, one company was on the bleeding edge of PC gaming: Origin Systems. Their motto was "We Create Words" and boy did they deliver: With the Ultima series, Crusader series and Wing Commander series, they consistently took gamer's breath away.&lt;br/&gt;
+&lt;br/&gt;
+One of them took four years and more than a million man hours to complete: Strike Commander. The famous flight simulator had its own 3D engine called RealSpace which pioneered many of what we take for granted today: Texture Mapping, Gouraud Shading, Level of Details and Dithered colors.&lt;br/&gt;
+&lt;br/&gt;
+My old dream was to play the game with a Virtual Reality device. With the Oculus Rift that fantasy came one step closer to reality. But when it turned out the source code had been lost and would never be released, I decided to reverse engineer it.&lt;br/&gt;
+              &lt;br/&gt;
+             &lt;a href=&quot;https://fabiensanglard.net/reverse_engineering_strike_commander/index.php&quot;&gt; More...&lt;/a&gt;
+             
+             
+         </description>
+    <pubDate>22 Jan 2013 01:08:45 +0000</pubDate>
+</item>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+ <item>
+         <title>Learning Legendary Hardware</title>
+         <guid>https://fabiensanglard.net/learning_legendary_hardware/index.php</guid>
+         <link>https://fabiensanglard.net/learning_legendary_hardware/index.php</link>
+         <description>
+             
+             &lt;img src=&quot;https://fabiensanglard.net/learning_legendary_hardware/boing_tag2.png&quot;/&gt; &lt;br/&gt;
+             &lt;br/&gt;
+             
+
+             If you love software, you also try to understand the hardware to the deep down. It is not an easy task : There are many great programming books but few that explains hardware very well (as Michael Abrash once wrote: the Intel Documentation is "slightly more fun to read than the phone book"). In my quest for knowledge, I found two hardware books to be outstanding:&lt;br/&gt;
+             &lt;br/&gt;
+Code: The Hidden Language of Computer Hardware and Software.&lt;br/&gt;
+Computer Organization and Design.&lt;br/&gt;
+&lt;br/&gt;
+Those books are good for "current" hardware but there is a lot to learn from previous generations. The cult machine That Wouldn't Die, the Amiga with its elegant co-processor architecture is a vivid example.&lt;br/&gt;
+              &lt;br/&gt;
+             &lt;a href=&quot;https://fabiensanglard.net/learning_legendary_hardware/index.php&quot;&gt; More...&lt;/a&gt;
+             
+             
+         </description>
+    <pubDate>Mon, 07 Oct 2013 01:08:45 +0000</pubDate>
+</item>
+
+
+
+
+ <item>
+         <title>Decyphering the Business Card Raytracer</title>
+         <guid>https://fabiensanglard.net/rayTracing_back_of_business_card/index.php</guid>
+         <link>https://fabiensanglard.net/rayTracing_back_of_business_card/index.php</link>
+         <description>
+             
+             &lt;img src=&quot;https://fabiensanglard.net/rayTracing_back_of_business_card/businessCard_RayTracer.png&quot;/&gt; &lt;br/&gt;
+             &lt;br/&gt;
+             
+I recently came across Paul Heckbert's business card raytracer. For those that have never heard of it: It is a very famous challenge in the Computer Graphics field that started on May 4th, 1984 via a post on comp.graphics by Paul Heckbert ( More about this in his article "A Minimal Ray Tracer" from the book Graphics Gems IV).&lt;br/&gt;
+&lt;br/&gt;
+The goal was to produce the source code for a raytracer...that would fit on the back of a business card.&lt;br/&gt;
+&lt;br/&gt;
+Andrew Kensler's version is mesmerizing and one of the greatest hack that I have seen. Since I am curious, I decided to deconstruct it: Here is what I understood.&lt;br/&gt;  
+            &lt;br/&gt;
+              &lt;br/&gt;
+             &lt;a href=&quot;https://fabiensanglard.net/more_doom3_documentation/index.php&quot;&gt; More...&lt;/a&gt;
+             
+             
+         </description>
+    <pubDate>Sat, 21 Sep 2013 01:08:45 +0000</pubDate>
+</item>
+
+
+
+ <item>
+         <title>More Doom III BFG Documentation</title>
+         <guid>https://fabiensanglard.net/more_doom3_documentation/index.php</guid>
+         <link>https://fabiensanglard.net/more_doom3_documentation/index.php</link>
+         <description>
+id Software developer Jan Paul Van Waveren (a.k.a Mr Elusive) is sharing some more of the knowledge gained while working on Doom 3 BFG. This part focuses highly on the choice of data-structures and how paramount cacheline are to performances.
+         </description>
+    <pubDate>Wed, 04 Sep 2013 01:08:45 +0000</pubDate>
+</item>
+
+
+
+
+
+
+ <item>
+         <title>Doom III BFG Documentation</title>
+         <guid>https://fabiensanglard.net/doom3_documentation/index.php</guid>
+         <link>https://fabiensanglard.net/doom3_documentation/index.php</link>
+         <description>
+             
+             &lt;img src=&quot;https://fabiensanglard.net/doom3_documentation/doom_documentation.png&quot;/&gt; &lt;br/&gt;
+             &lt;br/&gt;
+             
+id Software developer Jan Paul Van Waveren (a.k.a Mr Elusive) send me his technical notes about Doom 3 BFG. I was especially interested in the "Compute vs. Memory" section which confirms that CPU are now so fast that it is often better to calculate something than fetch it from RAM.&lt;br/&gt;
+&lt;br/&gt;
+Jan Paul was also kind enough to share a list of all the publications related to idTech4 engine (see bottom of this page).&lt;br/&gt;        
+            &lt;br/&gt;
+              &lt;br/&gt;
+             &lt;a href=&quot;https://fabiensanglard.net/doom3_documentation/index.php&quot;&gt; More...&lt;/a&gt;
+             
+             
+         </description>
+    <pubDate>Sat, 31 Aug 2013 01:08:45 +0000</pubDate>
+</item>
+
+
+
+ <item>
+         <title>Second Reality Code Review</title>
+         <guid>https://fabiensanglard.net/second_reality/index.php</guid>
+         <link>https://fabiensanglard.net/second_reality/index.php</link>
+         <description>
+             
+             &lt;img src=&quot;https://fabiensanglard.net/second_reality/second_reality.png&quot;/&gt; &lt;br/&gt;
+             &lt;br/&gt;
+             
+On July 23, 2013 the source code of Second Reality was released. Like many, I was eager to look at the internals of a demo that inspired me so much over the last 20 years. &lt;br/&gt;
+ &lt;br/&gt;
+I was expecting a monolithic mess of assembly but instead I found a surprisingly elaborated architecture, mixing several languages in an elegant way. The code is something like I had never seen before that perfectly represents two essential aspects of demomaking : &lt;br/&gt;
+ &lt;br/&gt;
+Team work. &lt;br/&gt;
+Obfuscation. &lt;br/&gt;
+ &lt;br/&gt;
+As usual I have cleaned up my notes into an article: I hope it will save some a few hours and maybe inspire others to read more source code and become better engineers. &lt;br/&gt;            
+            &lt;br/&gt;
+              &lt;br/&gt;
+             &lt;a href=&quot;https://fabiensanglard.net/second_reality/index.php&quot;&gt; More...&lt;/a&gt;
+             
+             
+         </description>
+    <pubDate>Fri, 16 Aug 2013 01:08:45 +0000</pubDate>
+</item>
+
+
+
+
+ <item>
+         <title>Prince Of Persia Code Review</title>
+         <guid>https://fabiensanglard.net/prince_of_persia/index.php</guid>
+         <link>https://fabiensanglard.net/prince_of_persia/index.php</link>
+         <description>
+             On Apr 17, 2012 Jordan Mechner released the source code of Prince of Persia. I immediately took at look at it!
+         </description>
+         <pubDate>Fri, 14 Jun 2013 01:08:45 +0000</pubDate>
+     </item>
+
+
+
+
+ <item>
+         <title>Doom3 BFG Code Review</title>
+         <guid>https://fabiensanglard.net/doom3_bfg/index.php</guid>
+         <link>https://fabiensanglard.net/doom3_bfg/index.php</link>
+         <description>
+             
+             &lt;img src=&quot;https://fabiensanglard.net/doom3_bfg/doom3_bfg_small.jpg&quot;/&gt; &lt;br/&gt;
+             &lt;br/&gt;
+             
+             On November 26, 2012 id Software released the source code of Doom 3 BFG edition (only one month after the game hit the stores). The 10 years old idTech 4 engine has been updated with some of the technology found in idTech 5 (the game engine running Rage) and it was an interesting reading session.&lt;br/&gt;
+            
+            &lt;br/&gt;
+              &lt;br/&gt;
+             &lt;a href=&quot;https://fabiensanglard.net/doom3_bfg/index.php&quot;&gt; More...&lt;/a&gt;
+             
+             
+         </description>
+         <pubDate>Thu, 23 May 2013 01:08:45 +0000</pubDate>
+     </item>
+
+
+
+
+
+
+
+
+
+
+
+      <item>
+         <title>Duke Nukem 3D Code Review</title>
+         <guid>https://fabiensanglard.net/duke3d/index.php</guid>
+         <link>https://fabiensanglard.net/duke3d/index.php</link>
+         <description>
+             
+             &lt;img src=&quot;https://fabiensanglard.net/duke3d/duke3d.png&quot;/&gt; &lt;br/&gt;
+             &lt;br/&gt;
+             
+             Since I left my job at Amazon I have spent a lot of time reading great source code. Having exhausted the insanely good idSoftware pool, the next thing to read was one of the greatest game of all time : Duke Nukem 3D and the engine powering it named "Build".&lt;br/&gt;
+&lt;br/&gt;
+It turned out to be a difficult experience: The engine delivered great value and ranked high in terms of speed, stability and memory consumption but my enthousiasm met a source code controversial in terms of organization, best practices and comments/documentation. This reading session taught me a lot about code legacy and what helps a software live long.
+&lt;br/&gt;
+As usual I cleaned up my notes into an article. I hope it will inspire some of us to read more source code and become better engineers.&lt;br/&gt;
+&lt;br/&gt;
+            
+            &lt;br/&gt;
+              &lt;br/&gt;
+             &lt;a href=&quot;https://fabiensanglard.net/duke3d/index.php&quot;&gt; More...&lt;/a&gt;
+             
+             
+         </description>
+         <pubDate>Thu, 17 Jan 2013 01:08:45 +0000</pubDate>
+     </item>
+
+     
+     <item>
+         <title>The best Tech books</title>
+         <guid>https://fabiensanglard.net/books_recommendations/index.php</guid>
+         <link>https://fabiensanglard.net/books_recommendations/index.php</link>
+         <description>
+             
+             &lt;img src=&quot;https://fabiensanglard.net/books_recommendations/books.png&quot;/&gt; &lt;br/&gt;
+             &lt;br/&gt;
+             
+            To be a good Software Engineer can mean different things depending on what one is trying to achieve. But if you are after any kind of performances, to use the best algorithms is not enough: you must have a solid knowledge of the specific stack your program is relying on. . &lt;br/&gt;
+              &lt;br/&gt;
+             
+             
+             I have gathered here the few books I consider to be masterpiece in order to master most stacks. Two for each level. &lt;br/&gt;
+              &lt;br/&gt;
+             &lt;a href=&quot;https://fabiensanglard.net/books_recommendations/index.php&quot;&gt; More...&lt;/a&gt;
+             
+             
+         </description>
+         <pubDate>Thu, 17 Jan 2013 01:08:45 +0000</pubDate>
+     </item>
+     
+     
+     
+     <item>
+         <title>Game timers: Issues and solutions</title>
+         <guid>https://fabiensanglard.net/timer_and_framerate/index.php</guid>
+         <link>https://fabiensanglard.net/timer_and_framerate/index.php</link>
+         <description>
+             
+             &lt;img src=&quot;https://fabiensanglard.net/timer_and_framerate/time.png&quot;/&gt; &lt;br/&gt;
+             &lt;br/&gt;
+             
+             When I started game programming I ran into an issue common to most aspiring game developers: The naive infinite loop resulted in many problems (among then difficulties to record a game session properly) that led the game design to feature convoluted and confusing "fixes" ./&gt; &lt;br/&gt;
+             /&gt; &lt;br/&gt;
+             Since I came up with a simple solution in my last engine (SHMUP: An iOS / Android / MacOS X / Windows Shoot'em Up) I wanted to share it here:/&gt; &lt;br/&gt;
+             /&gt; &lt;br/&gt;
+             Maybe it will save a few hours to someone :) !/&gt; &lt;br/&gt;
+             /&gt; &lt;br/&gt;
+             &lt;br/&gt;
+             &lt;br/&gt;
+             .&lt;a href=&quot;https://fabiensanglard.net/timer_and_framerate/index.php&quot;&gt; More...&lt;/a&gt;
+             
+             
+         </description>
+         <pubDate>Tue, 25 Dec 2012 01:08:45 +0000</pubDate>
+     </item>
+     
+     
+     
+     
+     <item>                                                                                                                                     
+         <title>Oculus RIFT development</title>
+         <guid>https://fabiensanglard.net/vr_headset/index.php</guid>                                                               
+         <link>https://fabiensanglard.net/vr_headset/index.php</link>                                                               
+         <description>
+             
+             &lt;img src=&quot;https://fabiensanglard.net/vr_headset/vr_headset_icon.png&quot;/&gt; &lt;br/&gt; 
+             &lt;br/&gt;
+             
+             Virtual Reality headsets have been consistently disappointing for several decades. Three reasons come to mind in order to explain this state of things:&lt;br/&gt; 
+             &lt;br/&gt; 
+             &lt;ul&gt; 
+             &lt;li&gt; The hardware is expensive: The latest Sony HMZ-T1 is 799$.&lt;/li&gt;
+             &lt;li&gt;The hardware is not good enough: The motion sensor, screen latency and screen limited Field of View are unable to provide a feeling of immersion.&lt;/li&gt;
+             &lt;li&gt;The software is non-existent: No major studio has ever supported VR Headsets.&lt;/li&gt;
+             &lt;/ul&gt; 
+             &lt;br/&gt; 
+             But things are about to change thanks to a device that is going to be released this month via kickstarter funding: the Oculus rift.&lt;br/&gt; 
+             
+             
+            
+             
+             
+             &lt;br/&gt;  
+             &lt;br/&gt;                                                                                                                                  
+             .&lt;a href=&quot;https://fabiensanglard.net/vr_headset/index.php&quot;&gt; More...&lt;/a&gt;   
+             
+             
+         </description>                                                                                                                               
+         <pubDate>Sat, 30 Jun 2012 01:08:45 +0000</pubDate>                                                                                         
+     </item>      
+     
+     
+     
+     <item>                                                                                                                                     
+         <title>Quake 3Source Code Review</title>                                                                                       
+         <guid>https://fabiensanglard.net/quake3/index.php</guid>                                                               
+         <link>https://fabiensanglard.net/quake3/index.php</link>                                                               
+         <description>
+             
+             &lt;img src=&quot;https://fabiensanglard.net/quake3/quake3_icon.jpg&quot;/&gt; &lt;br/&gt; 
+             &lt;br/&gt;
+             
+             Since I had one week before my next contract I decided to finish my "cycle of id". After Doom, Doom Iphone, Quake1, Quake2, Wolfenstein iPhone and Doom3 I decided to read the last codebase I did not review yet:&lt;br/&gt; 
+             &lt;br/&gt;
+             idTech3 the 3D engine that powers Quake III and Quake Live. &lt;br/&gt;
+             &lt;br/&gt;
+             
+             &lt;br/&gt;  
+             &lt;br/&gt;                                                                                                                                  
+             .&lt;a href=&quot;https://fabiensanglard.net/quake3/index.php&quot;&gt; More...&lt;/a&gt;   
+             
+             
+         </description>                                                                                                                               
+         <pubDate>Sat, 30 Jun 2012 01:08:45 +0000</pubDate>                                                                                         
+     </item>       
+     
+     
+     
+     
+
+       <item>                                                                                                                                     
+         <title>Doom3 Source Code Review</title>                                                                                       
+         <guid>https://fabiensanglard.net/doom3/index.php</guid>                                                               
+         <link>https://fabiensanglard.net/doom3/index.php</link>                                                               
+         <description>
+         
+         &lt;img src=&quot;https://fabiensanglard.net/doom3/icons/doom3_icon_desaturated.png&quot;/&gt; &lt;br/&gt; 
+         
+         
+         On November 23, 2011 id Software maintained the tradition and released the source code of their previous engine. This time is was the turn of idTech4 which powered Prey, 
+         Quake 4 and of course Doom 3. Within hours the GitHub repository was forked more than 400 times and people started to look at the game internal mechanisms/port the engine on other platforms. 
+         I also jumped on it and promptly completed the Mac OS X Intel version which John Carmack kindly advertised.&lt;br/&gt;
+         &lt;br/&gt;
+         In terms of clarity and comments this is the best code release from id Software after Doom iPhone codebase (which is more recent and hence better commented). I highly recommend everybody to read, build and experiment with it.&lt;br/&gt;
+        &lt;br/&gt;
+         &lt;br/&gt;
+         Here are my notes regarding what I understood. As usual I have cleaned them up: I hope it will save someone a few hours and I also hope it will motivate some of us to read more code and become better programmers.&lt;br/&gt;
+
+
+
+         
+                                       
+         </description>                                                                                                                               
+         <pubDate>Fri, 08 Jun 2012 01:08:45 +0000</pubDate>                                                                                         
+     </item>  
+  
+  
+  
+  
+  
+     
+     <item>                                                                                                                                     
+         <title>Cracking Kevin Mitnick's Ghost In Tthe Wires Paperback Edition</title>                                                                                       
+         <guid>https://fabiensanglard.net/Ghost_in_the_Wires_Paperback/index.php</guid>                                                               
+         <link>https://fabiensanglard.net/Ghost_in_the_Wires_Paperback/index.php</link>                                                               
+         <description>&lt;img src=&quot;https://fabiensanglard.net/Ghost_in_the_Wires/icon.jpg&quot;/&gt; &lt;br/&gt;       
+             &lt;br/&gt;                                                                                                                                    
+             
+             
+           I received yesterday a copy of Ghost In The Wire Paperback edition. Kevin Mitnick seems to have updated all of the challenges found at the beginning of each chapters. Since they are all available on book.google.com preview I don't think it is a big deal to publish and discuss our solutions here.&lt;br/&gt; 
+             
+             &lt;br/&gt;  
+             &lt;br/&gt;                                                                                                                                  
+             .&lt;a href=&quot;https://fabiensanglard.net/Ghost_in_the_Wires_Paperback/index.php&quot;&gt; More...&lt;/a&gt;                                
+         </description>                                                                                                                               
+         <pubDate>Wed, 09 May 2012 01:08:45 +0000</pubDate>                                                                                         
+     </item>  
+     
+
+     
+     
+     
+     <item>                                                                                                                                     
+         <title>Be A Donor</title>                                                                                       
+         <guid>https://fabiensanglard.net/gift_of_life/index.php</guid>                                                               
+         <link>https://fabiensanglard.net/gift_of_life/index.php</link>                                                               
+         <description>&lt;img src=&quot;https://fabiensanglard.net/gift_of_life/gol.png&quot;/&gt; &lt;br/&gt;       
+             &lt;br/&gt;                                                                                                                                    
+             
+             
+             This is probably the proudest moment of my Computer Science career so far: On April 17th, 2012 the Government of Ontario released the Mobile Website I designed and implemented for the major part of 2011. Beadonor.ca allows you reinforce your decision to be an organ donor. I feel honored and privileged to have been able to contribute to such a noble cause.&lt;br/&gt;  
+             &lt;br/&gt; 
+             Many people are unaware of it but to become an organ donor is all about making sure your relatives will follow your decision when we are gone. An organ donor card...and actually any piece of paper that you may generate or sign while your are alive is NOT enough to allow organ donation. Your relative will have the last word: Even if you have an organ donor card it is important to also register online in order to help your family know what your views were in this regard.&lt;br/&gt; 
+             &lt;br/&gt; 
+             Hopefully with this additional testimony more lives will be saved: Words can hardly express how happy I am to be a little gear in this beautiful machine. &lt;br/&gt; 
+             
+             &lt;br/&gt;  
+             &lt;br/&gt;                                                                                                                                  
+             .&lt;a href=&quot;https://fabiensanglard.net/gift_of_life/index.php&quot;&gt; More...&lt;/a&gt;                                
+         </description>                                                                                                                               
+         <pubDate>Sun, 22 Apr 2012 01:08:45 +0000</pubDate>                                                                                         
+     </item>  
+     
+
+
+  
+  <item>                                                                                                                                     
+   <title>SSD reboot your thinking</title>                                                                                       
+  <guid>https://fabiensanglard.net/ssd/index.php</guid>                                                               
+  <link>https://fabiensanglard.net/ssd/index.php</link>                                                               
+   <description>How SDD drives took my breath away...                                
+</description>                                                                                                                               
+   <pubDate>Sat, 17 Mar 2012 01:08:45 +0000</pubDate>                                                                                         
+ </item>  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+  <item>                                                                                                                                     
+   <title>Android Shmup</title>                                                                                       
+  <guid>https://fabiensanglard.net/shmup_android/index.php</guid>                                                               
+  <link>https://fabiensanglard.net/shmup_android/index.php</link>                                                               
+   <description>&lt;img src=&quot;https://fabiensanglard.net/shmup_android/shmup_android.png&quot;/&gt; &lt;br/&gt;       
+&lt;br/&gt;                                                                                                                                    
+
+Six months ago I released the source code of "SHMUP": a modest indie 3D shoot'em up designed for iOS. Since it did honorably on the Apple Appstore I offered anyone to port it to Android Appmarket for a 50/50 revenues split. Two developers consecutively took on the challenge only to give up a few weeks later.&lt;br/&gt;  
+&lt;br/&gt;  
+So I downloaded the Native Development Kit from Google and I did it myself. I completed the port this weekend and even released a free version.&lt;br/&gt;  
+&lt;br/&gt;  
+The codebase runs on Windows, iOS, MacOS X and Android in one click. Here it is.&lt;br/&gt;  
+&lt;br/&gt;  
+&lt;br/&gt;                                                                                                                                  
+.&lt;a href=&quot;https://fabiensanglard.net/shmup_android/index.php&quot;&gt; More...&lt;/a&gt;                                
+</description>                                                                                                                               
+   <pubDate>Thu, 23 Feb 2012 01:08:45 +0000</pubDate>                                                                                         
+ </item>
+
+
+
+
+<item>                                                                                                                                     
+   <title>Another World Code Review</title>                                                                                       
+  <guid>https://fabiensanglard.net/anotherWorld_code_review/index.php</guid>                                                               
+  <link>https://fabiensanglard.net/anotherWorld_code_review/index.php</link>                                                               
+   <description>&lt;img src=&quot;https://fabiensanglard.net/anotherWorld_code_review/mainImage.jpg&quot;/&gt; &lt;br/&gt;       
+&lt;br/&gt;                                                                                                                                    
+
+
+I spent two weeks reading and reverse engineering further the source code of Another World (Out Of This World in North America). I based my work on Gregory Montoir's binary to C++ initial reverse engineering from the DOS executable.&lt;br/&gt;
+&lt;br/&gt;                                                                                                                                                                                                                                            
+I was amazed to discover an elegant system based on a virtual machine interpreting bytecode in realtime and generating fullscreen vectorial cinematic in order to produce one of the best game of all time.&lt;br/&gt;                                 
+&lt;br/&gt;                                                                                                                                                                                                                                            
+All this shipping on a 1.44MB floppy disk and running within 600KB of RAM: Not bad for 1991 ! As usual I cleaned up my notes, it may save a few hours to someone.&lt;br/&gt;                                                                           
+                                                                                                                                             
+
+
+
+
+
+
+&lt;br/&gt;                                                                                                                                  
+.&lt;a href=&quot;https://fabiensanglard.net/anotherWorld_code_review/index.php&quot;&gt; More...&lt;/a&gt;                                
+</description>                                                                                                                               
+   <pubDate>Sun, 27 Nov 2011 01:08:45 +0000</pubDate>                                                                                         
+ </item>                                                                                                                                     
+  
+
+<item>
+   <title>Progressive playback: An atom story</title>
+  <guid>https://fabiensanglard.net/mobile_progressive_playback/index.php</guid>
+  <link>https://fabiensanglard.net/mobile_progressive_playback/index.php</link>
+   <description>&lt;img src=&quot;https://fabiensanglard.net/mobile_progressive_playback/exploded-andy-small.jpg&quot;/&gt; &lt;br/&gt;
+&lt;br/&gt;
+
+I have been doing a lot of work with video containers recently, especially figuring out interoperability between iOS/Android and optimizing progressive playback. In particular it seems Android devices fail to perform progressive playback on certain files while iOS and VLC succeed:&lt;br/&gt;
+&lt;br/&gt;
+Why ?&lt;br/&gt;
+&lt;br/&gt;
+As usual understanding things to the deep down proved extremely worthy. &lt;br/&gt;
+         &lt;br/&gt;
+&lt;br/&gt;
+.&lt;a href=&quot;https://fabiensanglard.net/mobile_progressive_playback/index.php&quot;&gt; More...&lt;/a&gt;
+</description>
+   <pubDate>Sun, 27 Nov 2011 01:08:45 +0000</pubDate>
+ </item>  
+
+
+<item>
+   <title>How to build Doom3 on Mac OS X with XCode</title>
+  <guid>https://fabiensanglard.net/doom3_macosx/index.php</guid>
+  <link>https://fabiensanglard.net/doom3_macosx/index.php</link>
+   <description>&lt;img src=&quot;https://fabiensanglard.net/doom3_macosx/doom3_macosx.jpg&quot;/&gt; &lt;br/&gt;
+&lt;br/&gt;
+The source code of Doom3 has been released three days ago :) ! I have started to read it and I will probably write a code review if enough people are interested.&lt;br/&gt;
+      &lt;br/&gt;
+      According to the README.txt  the source code is building well with Visual Studio 2010 but it is not building at all on Mac OS X with XCode 4.0 ( it is actually very broken :( !).&lt;br/&gt;
+      &lt;br/&gt;
+      Here are the instructions to get it to run...but if you just want to download Doom3 source code for Xcode 4:&lt;br/&gt;
+      &lt;br/&gt;
+      I uploaded it on github.
+      
+        &lt;br/&gt;
+         
+&lt;br/&gt;
+.&lt;a href=&quot;https://fabiensanglard.net/doom3_macosx/index.php&quot;&gt; More...&lt;/a&gt;
+</description>
+   <pubDate>Fri, 25 Nov 2011 01:08:45 +0000</pubDate>
+ </item>  
+ 
+
+
+
+
+  
+<item>
+   <title>Quake 2 Source Code Review</title>
+  <guid>https://fabiensanglard.net/quake2/index.php</guid>
+  <link>https://fabiensanglard.net/quake2/index.php</link>
+   <description>&lt;img src=&quot;https://fabiensanglard.net/quake2/quake2_icon.jpg&quot;/&gt; &lt;br/&gt;
+
+         I spent about a month in my spare time reading the source code of Quake II. It was a wonderful learning 
+         experience since one major improvement in idTech3 engine was to unify Quake 1, Quake World and QuakeGL 
+         into one beautiful code architecture. The way modularity was achieved even though the C programming language 
+         doesn't feature polymorphism was especially interesting.
+         
+&lt;br/&gt;
+.&lt;a href=&quot;https://fabiensanglard.net/quake2/index.php&quot;&gt; More...&lt;/a&gt;
+</description>
+   <pubDate>Tue, 20 Sep 2011 01:08:45 +0000</pubDate>
+ </item>  
+ 
+   
+  
+  
+<item>
+   <title>Solving Ghost in The Wire codes</title>
+  <guid>https://fabiensanglard.net/Ghost_in_the_Wires/index.php2</guid>
+  <link>https://fabiensanglard.net/Ghost_in_the_Wires/index.php</link>
+   <description>&lt;img src=&quot;https://fabiensanglard.net/Ghost_in_the_Wires/icon.jpg&quot;/&gt; &lt;br/&gt;
+
+         100% completed: All codes from kevin mitnick book (&quot;Ghost in The Wires&quot;) have been broken.
+         
+&lt;br/&gt;
+.&lt;a href=&quot;https://fabiensanglard.net/Ghost_in_the_Wires/index.php&quot;&gt; More...&lt;/a&gt;
+</description>
+   <pubDate>Sun, 11 Sep 2011 01:08:45 +0000</pubDate>
+ </item>  
+  
+   
+  
+<item>
+   <title>Solving Ghost in The Wire codes</title>
+  <guid>https://fabiensanglard.net/Ghost_in_the_Wires/index.php</guid>
+  <link>https://fabiensanglard.net/Ghost_in_the_Wires/index.php</link>
+   <description>&lt;img src=&quot;https://fabiensanglard.net/Ghost_in_the_Wires/icon.jpg&quot;/&gt; &lt;br/&gt;
+
+         I received today my copy of Kevin Mitnick's book: Ghost in The Wires. It is a great read so far. But even more interesting are the cyphered sentences at the beginning of each chapters. I am trying to solve all of them but if you can contribute, comment or send me an email !
+         
+&lt;br/&gt;
+.&lt;a href=&quot;https://fabiensanglard.net/Ghost_in_the_Wires/index.php&quot;&gt; More...&lt;/a&gt;
+</description>
+   <pubDate>Thu, 8 Sep 2011 01:36:45 +0000</pubDate>
+ </item>  
+  
+  
+  
+<item>
+   <title>Hacker Monthly publication</title>
+  <guid>https://fabiensanglard.net/hackerMonthly/index.php</guid>
+  <link>https://fabiensanglard.net/hackerMonthly/index.php</link>
+   <description>&lt;img src=&quot;https://fabiensanglard.net/hackerMonthly/hackerMonthly.jpg&quot;/&gt; &lt;br/&gt;
+
+         Hacker Monthly July edition has published my article in which I described the internals of Doom engine.. &lt;br/&gt;
+  
+&lt;br/&gt;
+.&lt;a href=&quot;https://fabiensanglard.net/hackerMonthly/index.php&quot;&gt; More...&lt;/a&gt;
+</description>
+   <pubDate>Fri, 15 Jul 2011 01:36:45 +0000</pubDate>
+ </item>  
+
+
+
+<item>
+   <title>SHMUP Source Code</title>
+  <guid>https://fabiensanglard.net/shmup_source_code/index.php</guid>
+  <link>https://fabiensanglard.net/shmup_source_code/index.php</link>
+   <description>&lt;img src=&quot;https://fabiensanglard.net/shmup_source_code/source_code.png&quot;/&gt; &lt;br/&gt;
+
+         I have decided to release the full source code of &quot;Shmup&quot; a shoot'em up 3D engine specially designed for mobile platform and released on iOS in 2010. The game and engine are fairly inspired of Ikaruga, the legendary shmup from the 1999 DreamCast. Anything you saw in Ikaruga, this engine can do it too.&lt;br/&gt;
+	The license is GPL which mean you have to release the source code of what you produce with it. Note that the &lt;code&gt;data&lt;/code&gt; folder is provided so you can play with it but you are not free to redistribute it and I remain the owner of the content (except for the song from Future Crew that was licensed). &lt;br/&gt;
+	
+&lt;br/&gt;
+.&lt;a href=&quot;https://fabiensanglard.net/shmup_source_code/index.php&quot;&gt; More...&lt;/a&gt;
+</description>
+   <pubDate>Thu, 30 Jun 2011 01:36:45 -0600</pubDate>
+ </item>  
+ 
+   
+
+<item>
+   <title>Polygon Codec</title>
+  <guid>https://fabiensanglard.net/polygon_codec/index.php</guid>
+  <link>https://fabiensanglard.net/polygon_codec/index.php</link>
+   <description>&lt;img src=&quot;https://fabiensanglard.net/polygon_codec/polyCodec.png&quot;/&gt; &lt;br/&gt;
+
+          Back in the summer of 2009 I was working on a 3D engine that would power my next game: A 3D shoot'em up a la Ikaruga. The target was the very first iPhone (now called iPhone 2G). Despite being impressive on paper (600Mhz with dedicated GPU), the hardware had several issues and the lack of dedicated VRAM was a huge bottleneck.&lt;br/&gt; 
+      &lt;br/&gt;
+      Unwilling to settle for anything less than 60 frames per second I became obsessed with saving bandwidth and I tried different approach until an idea proved to be not so bad...but I had to dive in the four dimensionnal world of homogeneous coordinates to make it work.
+
+&lt;br/&gt;
+.&lt;a href=&quot;https://fabiensanglard.net/polygon_codec/index.php&quot;&gt; More...&lt;/a&gt;
+</description>
+   <pubDate>Sun, 26 Jun 2011 15:36:45 -0600</pubDate>
+ </item>  
+
+
+
+
+
+<item>
+   <title>dEngine Source Code Released</title>
+  <guid>https://fabiensanglard.net/dEngineSourceCodeRelease/index.php</guid>
+  <link>https://fabiensanglard.net/dEngineSourceCodeRelease/index.php</link>
+   <description>&lt;img src=&quot;https://fabiensanglard.net/dEngine/dEngine.jpg&quot;/&gt; &lt;br/&gt;
+I've decided to release the source code of the OpenGS ES 1.0/2.0 renderers I wrote in the summer of 2009 nicknamed "dEngine". It was the first renderer to feature Shadow Mapping and Bump Mapping on iPhone at the time. Note that shadow mapping was achieve by packing the depth informations in a color texture but now you have access to GL_OES_depth_texture so you should be able to gain so more speed.&lt;br/&gt;
+&lt;br/&gt;
+I consider it a good tutorial for OpenGL ES 2.0, you can read about bump-mapping and shadow-mapping with a fun example from a Doom 3 level.&lt;br/&gt;
+&lt;br/&gt;
+The OpenGL ES 2.0 renderer feature uber-shaders: Depending on the material currently renderered a shader is recompiled on the fly in order to avoid branching.&lt;br/&gt;
+&lt;br/&gt;
+Enjoy: &lt;br/&gt;
+&lt;br/&gt;
+.&lt;a href=&quot;https://fabiensanglard.net/dEngineSourceCodeRelease/index.php&quot;&gt; More...&lt;/a&gt;
+</description>
+   <pubDate>Thu, 28 Apr 2011 15:36:45 -0600</pubDate>
+ </item>   
+
+
+
+<item>
+   <title>To generate 60fps videos on iOS</title>
+  <guid>https://fabiensanglard.net/shmup_generate_videos/index.php</guid>
+  <link>https://fabiensanglard.net/shmup_generate_videos/index.php</link>
+   <description>&lt;img src=&quot;https://fabiensanglard.net/shmup_generate_videos/video_icon.jpg&quot;/&gt; &lt;br/&gt;
+Back in winter 2009 I was working pretty hard on the 3D engine that would power my next iPhone/iPad game: &lt;a href=&quot;https://itunes.apple.com/us/app/shmup/id337663605?mt=8&quot;&gt;"SHMUP"&lt;/a&gt;. To demo the work in progress required to generate videos, a task far from being trivial on a smartphone: Slow CPU/GPU, Little RAM, no TV output, no storage space, no real multitasking. Hence I had the idea to have the engine generate its own videos. This is how I did it, maybe it will inspire someone..&lt;a href=&quot;https://fabiensanglard.net/shmup_generate_videos/&quot;&gt; More...&lt;/a&gt;
+</description>
+   <pubDate>Mon, 21 Feb 2011 15:36:45 -0600</pubDate>
+ </item>   
+  
+<item>
+   <title>To become a good C programmer</title>
+  <guid>https://fabiensanglard.net/c/index.php</guid>
+  <link>https://fabiensanglard.net/c/index.php</link>
+   <description>&lt;img src=&quot;https://fabiensanglard.net/c/c2.jpeg&quot;/&gt; &lt;br/&gt;
+Every once in a while I receive an email from a fellow programmer asking me what language I used for one of my games and how I learned it. Hence, I thought it may help a few people to list here the best things to read about C. If you know of other gems, please email me or add a comment at the bottom of the page.&lt;a href=&quot;https://fabiensanglard.net/c/index.php&quot;&gt; More...&lt;/a&gt;
+</description>
+   <pubDate>Wed, 02 Feb 2011 15:36:45 -0600</pubDate>
+ </item> 
+
+<item>
+   <title>SHMUP Lite</title>
+  <guid>https://fabiensanglard.net/shmupLite/</guid>
+  <link>https://fabiensanglard.net/shmupLite/</link>
+   <description>&lt;img src=&quot;https://fabiensanglard.net/shmupLite/shmupLite.jpg&quot;/&gt; &lt;br/&gt;
+I have decided to release a free version of &lt;a href="https://fabiensanglard.net/shmup/"&gt;"SHMUP"&lt;/a&gt;. It is called &lt;a href="https://itunes.apple.com/app/shmup-lite/id407588246?mt=8"&gt;"SHMUP Lite"&lt;/a&gt; and the only limitation is that you can only play the first level for free, if you want to continue further you have to go for the full version.
+</description>
+   <pubDate>Sun, 19 Dec 2010 15:36:45 -0600</pubDate>
+ </item> 
+
+<item>
+   <title>All about the fillrate</title>
+  <guid>https://fabiensanglard.net/fillrate_issues/</guid>
+  <link>https://fabiensanglard.net/fillrate_issues/</link>
+   <description>&lt;img src=&quot;https://fabiensanglard.net/fillrate_issues/bladeInfinity.jpg&quot;/&gt; &lt;br/&gt;I bought "Blade infinity" yesterday. The game is a lot of fun and has the ability to satisfy both people looking for instant fun and people wishing for a long game while collecting powerful items. At $5.99 it is a bargain, a must have not only for the gameplay but also for its graphical breakthrough, just like Rage HD.&lt;br/&gt;
+&lt;br/&gt;
+The game programmer in me really wanted to understand the engine and I was especially interested to see the game being released as a universal binary running on iPhone 3GS, iPhone4 and iPad. Those three devices have different capabilities but down the line it is often about managing the fillrate.</description>
+   <pubDate>Sat, 11 Dec 2010 15:36:45 -0600</pubDate>
+ </item> 
+
+<item>
+   <title>Tracing the baseband</title>
+  <guid>https://fabiensanglard.net/cellphoneModem/index.php</guid>
+  <link>https://fabiensanglard.net/cellphoneModem/index.php</link>
+   <description>&lt;img src=&quot;https://fabiensanglard.net/cellphoneModem/androIphone.jpg&quot;/&gt; &lt;br/&gt; I  was reading an article on planetbeing's blog the other day and my curiosity was tipped off when he mentioned that phones don't run only one operating system but two. I decided to learn a bit how all this really works and here are my notes with the source code associated. Hopefully it will help someone investigating the subject..</description>
+   <pubDate>Thu, 27 May 2010 12:08:27 -0600</pubDate>
+ </item> 
+
+
+<item>
+   <title>Doom iPhone  code review</title>
+  <guid>https://fabiensanglard.net/doomIphone/index.php</guid>
+  <link>https://fabiensanglard.net/doomIphone/index.php</link>
+   <description>&lt;img src=&quot;https://fd.fabiensanglard.net/doomIphone/doomiPhoneEngine.jpg&quot;/&gt; &lt;br/&gt; I took some time away from programming something I hope will become a really good shmup and read the source code of Doom for iPhone. I was very interested in finding out how a pixel oriented engine made the transition to openGL. Here are my notes, as usual I got a bit carried away with the drawings.</description>
+   <pubDate>Mon, 1 Feb 2010 00:33:27 -0400</pubDate>
+ </item> 
+
+<item>
+   <title>Doom engine 1993 code review</title>
+  <guid>https://fabiensanglard.net/doomIphone/doomClassicRenderer.php</guid>
+  <link>https://fabiensanglard.net/doomIphone/doomClassicRenderer.php</link>
+   <description>&lt;img src=&quot;https://fabiensanglard.net/doomIphone/doomClassic.jpg&quot;/&gt; &lt;br/&gt; Before studying the iPhone version, it was important for me to understand how Doom engine WAS performing rendition back in 1993. After all the OpenGL port must reuse the same data from the WAD archive. Here are my notes about Doom 1993 renderer, maybe it will help someone to dive in.</description>
+   <pubDate>Wed, 13 Jan 2010 00:33:27 -0400</pubDate>
+ </item>   
+    
+<item>
+   <title>Don't learn Assembly on Mac OS X</title>
+  <guid>https://fabiensanglard.net/macosxassembly/index.php</guid>
+  <link>https://fabiensanglard.net/macosxassembly/index.php</link>
+   <description>&lt;img src=&quot;https://fabiensanglard.net/macosxassembly/macosxassembly.jpg&quot;/&gt; &lt;br/&gt; I had to do some low level work with Mac OS X snow-leopard using my MacBookPro CoreDuo2. I learned plenty regarding GAS for i386 and x86_64 but I would not recommend this setup to learn assembly. I think Apple's specific would discourage a beginner and impair ability to use code samples found in most books. I would rather recommend a IBM T42 with Linux Ubuntu.</description>
+   <pubDate>Thu, 31 Dec 2009 00:33:27 -0400</pubDate>
+ </item>  
+  
+<item>
+   <title>Apple iPhone Tech Talk 2009 tricks and treats</title>
+  <guid>https://fabiensanglard.net/appleTechTalk2009/index.php</guid>
+  <link>https://fabiensanglard.net/appleTechTalk2009/index.php</link>
+   <description>&lt;img src=&quot;https://fabiensanglard.net/appleTechTalk2009/appleTechTalk2009.jpg&quot;/&gt; &lt;br/&gt; Today I took a day off from work to attend the iPhone Apple Tech Talk 2009 in Toronto. I learned a few cool things and though I should share it with the two lost developers that may stumble on this page. I haven't had time to test and verify all of this so as usual: Do your own testing and trust nobody!.</description>
+   <pubDate>Thu, 03 Dec 2009 00:33:27 -0400</pubDate>
+ </item>
+
+
+<item>
+   <title>iPhone 3D engine programming part 1</title>
+  <guid>https://fabiensanglard.net/dEngine/index.php</guid>
+  <link>https://fabiensanglard.net/dEngine/index.php</link>
+   <description>&lt;img src=&quot;https://fabiensanglard.net/dEngine/dEngine.jpg&quot;/&gt; &lt;br/&gt; Pumped up by the tremendous success of Fluid (4,000,000+ downloads) and Fluid 2 (50,000+ downloads), I started two month ago to write a real game for iPhone: Here is a modest report of my experience in the process.</description>
+   <pubDate>Mon, 19 Oct 2009 00:33:27 -0400</pubDate>
+ </item>
+  
+ <item>
+   <title>Armadillo Space T-shirt</title>
+   <link>https://fabiensanglard.net/armadilloSpace/index.php</link>
+   <guid>https://fabiensanglard.net/armadilloSpace/index.php</guid>
+   <description>&lt;img src=&quot;https://fabiensanglard.net/armadilloSpace/armadilloSpace.jpg&quot;/&gt; &lt;br/&gt;Finally received my Armadillo Space T-Shirt and mug. I recommend them !</description>
+   <pubDate>Wed, 14 Oct 2009 00:33:27 -0400</pubDate>
+ </item>
+
+<item>
+   <title>Fluid speed issues!</title>
+   <guid>https://fabiensanglard.net/fluide/index.php</guid>
+   <link>https://fabiensanglard.net/fluide/index.php</link>
+   <description>&lt;img src=&quot;https://fabiensanglard.net/fluide/fluide.jpg&quot;/&gt; &lt;br/&gt;Fluid v1.3 is too fast on 3GX iPhones ;( ! I will released a fix tonight !</description>
+   <pubDate>Mon, 29 Jun 2009 00:33:27 -0400</pubDate>
+ </item>
+
+<item>
+   <title>Fluid2 RELEASED ! Fluid 1 now at 3,000,000 downloads !!</title>
+   <guid>https://fabiensanglard.net/fluide/index.php/</guid>
+   <link>https://fabiensanglard.net/fluide/index.php</link>
+   <description>&lt;img src=&quot;https://fabiensanglard.net/fluide/fluide.jpg&quot;/&gt; &lt;br/&gt;Fluid 2 was released today with plenty of news features, check it out !</description>
+   <pubDate>Tue, 9 Jun 2009 00:33:27 -0400</pubDate>
+</item>
+
+<item>
+   <title>Fluid: 1,000,000 downloads !!</title>
+   <guid>https://fabiensanglard.net/fluide/././index.php</guid>
+   <link>https://fabiensanglard.net/fluide/index.php</link>
+   <description>&lt;img src=&quot;https://fabiensanglard.net/fluide/fluide.jpg&quot;/&gt; &lt;br/&gt;Version 1.1 is a HUGE success, I've just posted revision 1.2 and started working on 1.3 and 2.0 ! Stay tuned !</description>
+   <pubDate>Thu, 14 May 2009 00:33:27 -0400</pubDate>
+  
+</item>
+
+<item>
+   <title>Fluid v1.1 up and coming...</title>
+      <guid>https://fabiensanglard.net/fluide/./././index.php</guid>
+   <link>https://fabiensanglard.net/fluide/index.php</link>
+   <description>&lt;img src=&quot;https://fabiensanglard.net/fluide/fluide.jpg&quot;/&gt; &lt;br/&gt;Fluid version 1.1 will be released next week. Zen music and changing background...</description>
+   <pubDate>Sat, 9 May 2009 00:33:27 -0400</pubDate>
+</item>
+  
+<item>
+   <title>Wolfenstein 3D for iPhone code review</title>
+   <guid>https://www.fabiensanglard.net/wolf3d/index.php</guid>
+   <link>https://www.fabiensanglard.net/wolf3d/index.php</link>
+   <description>&lt;img src=&quot;https://fabiensanglard.net/wolf3d/wold3Dthumb.jpg&quot;/&gt; &lt;br/&gt;For once, developers were able to read the source code of an id software product just a few days after its release. I spent a week in my spare time reading the internal of the Wolfenstein 3D for iPhone engine. It is by far the cleanest and easiest id source code release to date.
+</description>
+	<pubDate>Sat, 9 May 2009 00:33:27 -0400</pubDate>
+</item>	
+  
+<item>
+   <title>Fluide</title>
+    <guid>https://fabiensanglard.net/fluide/././././index.php</guid>
+   <link>https://fabiensanglard.net/fluide/index.php</link>
+   <description>Fluid tech demo released on iPhone !!!</description>
+   <pubDate>Wed, 15 Apr 2009 00:33:27 -0400</pubDate>
+</item>	
+  
+<item>
+   <title>BumpMapping hell</title>
+   <guid>https://fabiensanglard.net/bumpMapping/index.php</guid>
+   <link>https://fabiensanglard.net/bumpMapping/index.php</link>
+   <description></description>
+   <pubDate>Wed, 4 Mar 2009 00:33:27 -0400</pubDate>
+</item>	 
+  
+ </channel>
+</rss>
+    
