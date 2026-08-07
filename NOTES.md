@@ -28,9 +28,6 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
 
 ## Log
 
-- 2026-08-07 — T01–T03 done (toolchain, skeleton, Windows emulator; everything durable
-  about them is in CLAUDE.md §Environment). One gotcha worth keeping: Truth's package is
-  `com.google.common.truth`, **not** `com.google.truth`.
 - 2026-08-07 — T04 done: `scripts/harvest.sh` (re-runnable) → 42 manifest rows,
   **39 snapshots** (19 MB); homepage HTML for the four auto-discovery cases is in
   `fixtures/homepages/` — T11 needs it. **3 exclusions:**
@@ -54,18 +51,11 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
 - 2026-08-07 — T09 done: `FeedCorpusTest` (78 tests = 39 snapshots × 2), green with no
   production change. Parameterized per feed; `requestUrl` from `manifest.tsv` so relative
   links resolve as they will live; the parameter list `check`s ≥35 snapshots so it cannot
-  go vacuous. Every corpus entry has a **non-null** `publishedAt`, so the contract asserts
-  non-null — the `fetchedAt` fallback stays T15's responsibility.
-- 2026-08-07 — T10 done: `HtmlSanitizer` (16 tests; suite now 208, 0 failures). jsoup's
-  `Cleaner` + a from-scratch `Safelist` does the allowlist, and **`addProtocols` is also
-  what resolves relative URLs** — jsoup rewrites a protocol-restricted attribute to its
-  absolute form, so no manual `resolveUrl` pass is needed. Two things Cleaner alone gets
-  wrong: it *unwraps* a disallowed element and keeps its children (right for `<div>`,
-  wrong for `<script>`), so those go first; and a refused URL leaves the element behind,
-  so `a:not([href])` is unwrapped and `img:not([src])` removed after.
-  Tracking pixels must go **before** cleaning — `width`/`height` are not allowlisted.
-  `sanitize` → null when nothing renderable survives. Parsers still hand out raw
-  `contentHtml`; sanitizing is T15/T25's call.
+  go vacuous.
+- 2026-08-07 — T10 done: `HtmlSanitizer` (16 tests). jsoup's `Cleaner` + a from-scratch
+  `Safelist`, and **`addProtocols` is also what resolves relative URLs** — jsoup rewrites
+  a protocol-restricted attribute to its absolute form, so no manual `resolveUrl` pass is
+  needed. `sanitize` → null when nothing renderable survives.
 - 2026-08-07 — T11 done: `FeedDiscovery` (13 tests; suite now 221, 0 failures). xania.org
   **does** declare its feed — the `<link>` is split across two lines, which is why
   `harvest.sh`'s line-based grep missed it and fell through to `/feed` → redirect to
@@ -93,8 +83,18 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
   cannot resurrect an entry read before or after it; `readAt` comes from an injected `Clock`.
 - 2026-08-07 — T14 done: `data/net/FeedFetcher` + `PerchHttp` (16 tests; suite now 263, 0
   failures). `FeedFetcher` **is** T11's `PageFetcher`, so discovery and refresh share one
-  client; the adapter drops the message, so T15 must call the 3-arg `fetch`. The 8 MiB cap
-  is checked against `Content-Length` *and* the stream, because a chunked response declares
-  no length. **`PerchHttp`'s disk cache does not fight conditional GET**: OkHttp bypasses its
+  client. The 8 MiB cap is checked against `Content-Length` *and* the stream, because a
+  chunked response declares no length. **`PerchHttp`'s disk cache does not fight conditional GET**: OkHttp bypasses its
   cache for any request already carrying `If-None-Match`/`If-Modified-Since` — verified, do
   not re-derive. `client(cacheDir = null)` skips the cache for tests.
+- 2026-08-07 — T15 done: `data/repo/FeedRepository` (14 tests; suite now 277, 0 failures).
+  `refresh(feedId)` / `refreshAll()` → `Updated(newEntries)` | `Unchanged` | `Failed(msg)`.
+  **Sanitizing moved here**: parsers still hand out raw `contentHtml`, but what reaches
+  the DB is already `HtmlSanitizer`-clean plus a summary, so T25's renderer never sees
+  feed-authored markup. Three things a later task must not undo: every feed write goes
+  through `mutate()`, which **re-reads the row** — a fetch takes seconds and a rename can
+  land mid-flight, so writing back the pre-fetch snapshot silently reverts it (there is a
+  test). Retention says "still in the body" as `fetchedAt < refreshStart`, not a guid
+  list, so it needs no `IN (…)` and has no 999-variable ceiling. And a redirect only moves
+  `feedUrl` if no other feed already owns it — `feedUrl` is uniquely indexed, so two
+  subscriptions converging would otherwise abort the refresh (T16 owns the merge).

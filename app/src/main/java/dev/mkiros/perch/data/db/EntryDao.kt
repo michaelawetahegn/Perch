@@ -79,6 +79,32 @@ abstract class EntryDao {
         ids.chunked(MAX_IDS_PER_STATEMENT).forEach { setReadForIds(it, isRead, readAt) }
     }
 
+    // ---- retention ------------------------------------------------------------
+
+    /**
+     * SPEC.md §7's 30-day sweep: drop read articles that have aged out, but never one the
+     * feed is still listing.
+     *
+     * "Still listing" is expressed as [fetchedBefore] rather than as a list of surviving
+     * guids: a refresh stamps every entry in the body with the current `fetchedAt`, so
+     * anything the body still carries is newer than the moment that refresh began, and a
+     * feed with a thousand entries needs no `IN (…)` clause to say so.
+     *
+     * @return how many rows were pruned.
+     */
+    @Query(
+        """
+        DELETE FROM entries
+        WHERE feedId = :feedId AND isRead = 1
+          AND publishedAt < :publishedBefore AND fetchedAt < :fetchedBefore
+        """,
+    )
+    abstract suspend fun deleteReadOlderThan(
+        feedId: Long,
+        publishedBefore: Long,
+        fetchedBefore: Long,
+    ): Int
+
     @Insert
     abstract suspend fun insert(entry: EntryEntity): Long
 

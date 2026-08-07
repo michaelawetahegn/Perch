@@ -152,7 +152,7 @@ production code but no test is a defect — reopen the box.
         9 MiB body each map to `Failure` with a human-readable message.
       - Rung: unit
 
-- [ ] **T15 — `FeedRepository.refresh()`. TDD.** fetch → parse → dedupe by guid →
+- [x] **T15 — `FeedRepository.refresh()`. TDD.** fetch → parse → dedupe by guid →
       upsert → update feed health (`lastError`, `consecutiveFailures`, timestamps).
       Concurrency 4, per-feed isolation, 30-day read-entry retention.
       - Done: tests green: refreshing the same snapshot twice inserts **zero** new rows
