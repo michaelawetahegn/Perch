@@ -27,7 +27,7 @@ production code but no test is a defect — reopen the box.
         platform-tools, android-35, build-tools 35.0.0; `maestro -v` prints a version.
       - Rung: build
 
-- [ ] **T02 — Project skeleton, green build.** Gradle 8.11.1 wrapper, AGP 8.7.3, Kotlin
+- [x] **T02 — Project skeleton, green build.** Gradle 8.11.1 wrapper, AGP 8.7.3, Kotlin
       2.1.0, version catalog exactly per SPEC.md §2, single `:app` module, package
       `dev.mkiros.perch`, minSdk 26 / compileSdk 35, Compose enabled, Room+KSP wired,
       one trivial Compose screen, one trivial passing unit test, `.gitignore`.

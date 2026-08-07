@@ -49,4 +49,9 @@ screenshots via Robolectric on the JVM, and T01–T28 + T31 never touch a device
 
 - 2026-08-07 — bootstrap: SPEC/DESIGN/PLAN/CLAUDE/loop.sh/device.sh/fixtures created.
 - 2026-08-07 — T01 done: JDK 17.0.20, SDK (platform-tools 37.0.1, android-35,
-  build-tools 35.0.0, emulator 37.1.11), Maestro 2.8.0. Next: T02.
+  build-tools 35.0.0, emulator 37.1.11), Maestro 2.8.0.
+- 2026-08-07 — T02 done: skeleton builds clean (`test assembleDebug` exit 0, 1 test).
+  Wrapper generated from a one-off Gradle 8.11.1 unzipped to `/tmp` (no system gradle);
+  `./gradlew` is self-sufficient now. Truth's package is `com.google.common.truth`,
+  **not** `com.google.truth`. Room/KSP are wired (deps + `room.schemaLocation`) but no
+  `@Database` exists yet, so KSP is unexercised until T12. Next: T03.
