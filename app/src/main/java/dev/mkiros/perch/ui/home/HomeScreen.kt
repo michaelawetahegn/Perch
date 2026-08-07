@@ -1,9 +1,12 @@
 package dev.mkiros.perch.ui.home
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,6 +18,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -49,9 +53,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -69,9 +75,9 @@ import kotlinx.coroutines.launch
  * The list is the unified unread inbox: every source, newest first, one row shape for all
  * forty-two of them. Its four states (§7) are all here — skeleton on first load, one of
  * two empty states depending on *why* it is empty, and the list itself. Selecting a source
- * in the drawer narrows the same list and retitles the bar. Adding a source is T23,
- * long-press rename/remove is T24, pull-to-refresh and the error banners are T26; each
- * attaches to a slot this file already defines. No FAB, deliberately.
+ * in the drawer narrows the same list and retitles the bar; long-pressing one offers
+ * rename and remove. Pull-to-refresh and the error banners are T26 and attach to slots
+ * this file already defines. No FAB, deliberately.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -88,6 +94,14 @@ fun HomeScreen(
     val scope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     var addingSource by rememberSaveable { mutableStateOf(false) }
+    // Which source a dialog is about is held as an id, not as the item: the item is a
+    // snapshot of a row that a refresh rewrites underneath us, and resolving it against
+    // the current state means a source that disappears takes its dialog with it.
+    var actionsForId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var renamingId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var removingId by rememberSaveable { mutableStateOf<Long?>(null) }
+
+    fun sourceOf(id: Long?) = uiState.sources.firstOrNull { it.id == id }
 
     fun select(feedId: Long?) {
         viewModel.selectSource(feedId)
@@ -107,6 +121,7 @@ fun HomeScreen(
                 state = uiState,
                 totalUnread = totalUnread,
                 onSelectSource = ::select,
+                onSourceActions = { actionsForId = it },
                 onAddSource = ::addSource,
                 onOpenSettings = {
                     scope.launch { drawerState.close() }
@@ -163,6 +178,44 @@ fun HomeScreen(
                 onDismiss = { addingSource = false },
             )
         }
+
+        sourceOf(actionsForId)?.let { source ->
+            SourceActionsDialog(
+                sourceTitle = source.title,
+                onRename = {
+                    actionsForId = null
+                    renamingId = source.id
+                },
+                onRemove = {
+                    actionsForId = null
+                    removingId = source.id
+                },
+                onDismiss = { actionsForId = null },
+            )
+        }
+
+        sourceOf(renamingId)?.let { source ->
+            RenameSourceDialog(
+                customTitle = source.customTitle,
+                publishedTitle = source.publishedTitle,
+                onConfirm = { name ->
+                    renamingId = null
+                    viewModel.renameSource(source.id, name)
+                },
+                onDismiss = { renamingId = null },
+            )
+        }
+
+        sourceOf(removingId)?.let { source ->
+            RemoveSourceDialog(
+                sourceTitle = source.title,
+                onConfirm = {
+                    removingId = null
+                    viewModel.removeSource(source.id)
+                },
+                onDismiss = { removingId = null },
+            )
+        }
     }
 }
 
@@ -173,7 +226,8 @@ fun HomeScreen(
  * A source that failed its last refresh trades its icon for a `⚠` in `error` — the
  * affordance only; the message and the retry are T26's banner. A source with nothing
  * unread stays listed showing 0 rather than disappearing, because the drawer is the
- * subscription list, not a second inbox.
+ * subscription list, not a second inbox. Long-pressing a source offers rename and remove
+ * (T24) — see [SourceRow].
  *
  * The whole sheet scrolls: forty-two sources do not fit on a phone.
  */
@@ -182,6 +236,7 @@ private fun SourceDrawer(
     state: HomeUiState,
     totalUnread: Int,
     onSelectSource: (Long?) -> Unit,
+    onSourceActions: (Long) -> Unit,
     onAddSource: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
@@ -204,35 +259,11 @@ private fun SourceDrawer(
                 HorizontalDivider(modifier = Modifier.padding(Dimens.md))
             }
             state.sources.forEach { source ->
-                NavigationDrawerItem(
-                    icon = {
-                        if (source.hasError) {
-                            Icon(
-                                imageVector = Icons.Default.Warning,
-                                contentDescription =
-                                    stringResource(R.string.drawer_source_error),
-                                tint = MaterialTheme.colorScheme.error,
-                            )
-                        } else {
-                            Icon(Icons.Default.RssFeed, contentDescription = null)
-                        }
-                    },
-                    label = {
-                        Text(
-                            text = source.title,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    },
-                    badge = {
-                        Text(
-                            text = source.unreadCount.toString(),
-                            modifier = Modifier.testTag(HomeTestTags.sourceBadge(source.id)),
-                        )
-                    },
+                SourceRow(
+                    source = source,
                     selected = state.selectedFeedId == source.id,
-                    onClick = { onSelectSource(source.id) },
-                    modifier = Modifier.padding(horizontal = Dimens.md),
+                    onSelect = { onSelectSource(source.id) },
+                    onLongPress = { onSourceActions(source.id) },
                 )
             }
             HorizontalDivider(modifier = Modifier.padding(Dimens.md))
@@ -251,6 +282,74 @@ private fun SourceDrawer(
                 modifier = Modifier.padding(horizontal = Dimens.md),
             )
         }
+    }
+}
+
+/**
+ * One source in the drawer.
+ *
+ * Hand-built rather than a [NavigationDrawerItem] for one reason: §5 puts rename and
+ * remove behind a long press, and the Material item answers taps only — wrapping it would
+ * not help, because its own `clickable` consumes the gesture before any parent sees it.
+ * The metrics are copied from it so the row still lines up with "All unread" above and
+ * "Add source" below.
+ *
+ * The semantics are merged so the row, not its label, is the node that carries both
+ * actions — which is also what lets a test long-press it.
+ */
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun SourceRow(
+    source: SourceUiItem,
+    selected: Boolean,
+    onSelect: () -> Unit,
+    onLongPress: () -> Unit,
+) {
+    val container =
+        if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent
+    val content =
+        if (selected) {
+            MaterialTheme.colorScheme.onSecondaryContainer
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .padding(horizontal = Dimens.md)
+            .fillMaxWidth()
+            .height(Dimens.drawerRowHeight)
+            .clip(CircleShape)
+            .background(container)
+            .combinedClickable(onClick = onSelect, onLongClick = onLongPress)
+            .semantics(mergeDescendants = true) {}
+            .padding(horizontal = Dimens.drawerRowPadding),
+    ) {
+        if (source.hasError) {
+            Icon(
+                imageVector = Icons.Default.Warning,
+                contentDescription = stringResource(R.string.drawer_source_error),
+                tint = MaterialTheme.colorScheme.error,
+            )
+        } else {
+            Icon(Icons.Default.RssFeed, contentDescription = null, tint = content)
+        }
+        Spacer(modifier = Modifier.width(Dimens.drawerRowGap))
+        Text(
+            text = source.title,
+            style = MaterialTheme.typography.labelLarge,
+            color = content,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f),
+        )
+        Text(
+            text = source.unreadCount.toString(),
+            style = MaterialTheme.typography.labelLarge,
+            color = content,
+            modifier = Modifier.testTag(HomeTestTags.sourceBadge(source.id)),
+        )
     }
 }
 

@@ -66,6 +66,15 @@ object Dimens {
     /** Icon glyphs sit at 20dp inside a [touchTarget]-sized hit area. */
     val icon = 20.dp
 
+    /**
+     * A drawer source row (§5): 56dp tall and fully rounded, matching the Material
+     * drawer items above and below it. It is hand-built rather than a
+     * `NavigationDrawerItem` only because it also has to answer a long press.
+     */
+    val drawerRowHeight = 56.dp
+    val drawerRowPadding = lg
+    val drawerRowGap = md
+
     /** The spinner a primary button becomes while it is working. §5. */
     val buttonSpinner = 18.dp
 

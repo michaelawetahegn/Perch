@@ -18,12 +18,16 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 /**
  * One row of the source drawer (DESIGN.md §5).
  *
- * @param title the display name — the reader's rename if there is one, otherwise the
- *   title the feed publishes for itself.
+ * @param publishedTitle the title the feed publishes for itself — what the next refresh
+ *   overwrites, and what a cleared rename falls back to.
+ * @param customTitle the reader's rename, or null. Both halves are carried separately
+ *   because T24's rename dialog needs to tell them apart: it edits the rename and offers
+ *   the published title as what emptying the field restores.
  * @param unreadCount zero is a real value here: a fully-read source stays in the drawer
  *   showing 0, it does not vanish.
  * @param hasError the source's last refresh failed, which the drawer renders as `⚠`.
@@ -31,10 +35,14 @@ import kotlinx.coroutines.flow.stateIn
  */
 data class SourceUiItem(
     val id: Long,
-    val title: String,
+    val publishedTitle: String,
+    val customTitle: String?,
     val unreadCount: Int,
     val hasError: Boolean,
-)
+) {
+    /** What the drawer and the app bar actually show. */
+    val title: String get() = customTitle?.takeIf { it.isNotBlank() } ?: publishedTitle
+}
 
 /**
  * What home is showing (DESIGN.md §7's four states, minus the ones nothing can produce
@@ -67,7 +75,7 @@ data class HomeUiState(
  */
 class HomeViewModel(
     entries: EntryRepository,
-    feeds: FeedRepository,
+    private val feeds: FeedRepository,
     clock: Clock,
 ) : ViewModel() {
 
@@ -97,7 +105,8 @@ class HomeViewModel(
         val items = sources.map { feed ->
             SourceUiItem(
                 id = feed.id,
-                title = feed.customTitle?.takeIf { it.isNotBlank() } ?: feed.title,
+                publishedTitle = feed.title,
+                customTitle = feed.customTitle,
                 unreadCount = counts[feed.id] ?: 0,
                 hasError = feed.lastError != null,
             )
@@ -119,6 +128,24 @@ class HomeViewModel(
     /** Filters the list to one source, or back to the unified inbox with null. */
     fun selectSource(feedId: Long?) {
         selectedFeedId.value = feedId
+    }
+
+    /**
+     * Renames a source for display (T24). A blank [name] clears the rename rather than
+     * blanking the label — the repository stores null and the drawer falls back to the
+     * feed's own title.
+     */
+    fun renameSource(feedId: Long, name: String) {
+        viewModelScope.launch { feeds.rename(feedId, name) }
+    }
+
+    /**
+     * Unsubscribes, taking the source's entries with it (T24). The filter is not cleared
+     * here: [uiState] resolves the selection against the sources it just read, so the row
+     * vanishing is already what drops the filter, whoever removed it.
+     */
+    fun removeSource(feedId: Long) {
+        viewModelScope.launch { feeds.remove(feedId) }
     }
 
     companion object {

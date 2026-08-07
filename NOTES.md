@@ -97,3 +97,12 @@ in a script or in CLAUDE.md.
   `ModalBottomSheet` *does* compose and expose its nodes under Robolectric. But the drawer's
   "Add source" row is composed even while the drawer is shut, so it collides by text with the
   empty state's button — tag one of them, as T24's dialogs will also have to.
+- 2026-08-07 — T24 done: long-press rename/remove (debug 370, release 335, 0 failures).
+  `NavigationDrawerItem` answers taps only and its own `clickable` eats the gesture, so source
+  rows are a hand-built `SourceRow` (`combinedClickable` + `semantics(mergeDescendants)`); its
+  metrics are `Dimens.drawerRow*`. `SourceUiItem` now carries `publishedTitle`/`customTitle`
+  separately (`title` is derived) because rename edits one and falls back to the other.
+  **Two test traps:** a drawer row and the app bar can hold the same text, so match rows with
+  `filterToOne(hasClickAction())`, never bare `onNodeWithText`; and the dialogs leave the drawer
+  open behind them — re-calling `openDrawer()` then leaves nodes `assertIsDisplayed`-false, so
+  either assert straight away or close the drawer by selecting something.

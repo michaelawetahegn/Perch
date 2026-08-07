@@ -216,7 +216,7 @@ production code but no test is a defect — reopen the box.
         discovered then added; garbage URL shows the inline error and adds nothing.
       - Rung: unit
 
-- [ ] **T24 — Remove (confirm) + rename (dialog).** Long-press affordance in the drawer.
+- [x] **T24 — Remove (confirm) + rename (dialog).** Long-press affordance in the drawer.
       - Done: Robolectric tests: confirm dialog appears; cancel is a no-op; confirm
         removes the source and its entries; rename updates the drawer label only.
       - Rung: unit

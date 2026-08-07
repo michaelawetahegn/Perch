@@ -5,12 +5,17 @@ import androidx.activity.ComponentActivity
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.filterToOne
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.test.performTextClearance
+import androidx.compose.ui.test.performTextReplacement
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
@@ -282,6 +287,136 @@ class HomeScreenTest {
         compose.onNodeWithTag(HomeTestTags.TITLE).assertTextEquals("Source One")
     }
 
+    // ---- rename and remove, from a long press in the drawer (T24) -----------------
+
+    @Test
+    fun `long-pressing a source offers rename and remove`() {
+        seedFeed(title = "Source One")
+
+        showHome()
+        longPressInDrawer("Source One")
+
+        compose.onNodeWithTag(SourceActionTestTags.RENAME).assertIsDisplayed()
+        compose.onNodeWithTag(SourceActionTestTags.REMOVE).assertIsDisplayed()
+    }
+
+    @Test
+    fun `removing a source asks before it does anything`() {
+        seedFeed(title = "Source One")
+
+        showHome()
+        longPressInDrawer("Source One")
+        tap(SourceActionTestTags.REMOVE)
+
+        compose.onNodeWithTag(SourceActionTestTags.REMOVE_CONFIRM).assertIsDisplayed()
+        assertThat(feedTitles()).containsExactly("Source One")
+    }
+
+    @Test
+    fun `cancelling the removal leaves the source and its entries alone`() {
+        val one = seedFeed(title = "Source One")
+        seedEntry(feedId = one, title = "Only in one")
+
+        showHome()
+        longPressInDrawer("Source One")
+        tap(SourceActionTestTags.REMOVE)
+        tap(SourceActionTestTags.CANCEL)
+
+        compose.onNodeWithTag(SourceActionTestTags.REMOVE_CONFIRM).assertDoesNotExist()
+        assertThat(feedTitles()).containsExactly("Source One")
+        assertThat(entryTitles()).containsExactly("Only in one")
+    }
+
+    @Test
+    fun `confirming the removal takes the source's entries with it`() {
+        val one = seedFeed(title = "Source One")
+        val two = seedFeed(title = "Source Two")
+        seedEntry(feedId = one, title = "Only in one")
+        seedEntry(feedId = two, title = "Only in two")
+
+        showHome()
+        longPressInDrawer("Source One")
+        tap(SourceActionTestTags.REMOVE)
+        tap(SourceActionTestTags.REMOVE_CONFIRM)
+        awaitState { state -> state.sources.none { it.title == "Source One" } }
+
+        assertThat(feedTitles()).containsExactly("Source Two")
+        assertThat(entryTitles()).containsExactly("Only in two")
+    }
+
+    @Test
+    fun `removing the source being filtered on drops the filter`() {
+        val one = seedFeed(title = "Source One")
+        val two = seedFeed(title = "Source Two")
+        seedEntry(feedId = one, title = "Only in one")
+        seedEntry(feedId = two, title = "Only in two")
+
+        showHome()
+        selectInDrawer("Source One")
+        longPressInDrawer("Source One")
+        tap(SourceActionTestTags.REMOVE)
+        tap(SourceActionTestTags.REMOVE_CONFIRM)
+        awaitState { it.selectedTitle == null }
+
+        compose.onNodeWithTag(HomeTestTags.TITLE).assertTextEquals("Unread")
+        // Close the drawer the long press left open, then look at the list itself.
+        selectInDrawer("All unread", expectedTitle = null)
+        compose.onNodeWithText("Only in two").assertIsDisplayed()
+        compose.onNodeWithText("Only in one").assertDoesNotExist()
+    }
+
+    @Test
+    fun `renaming a source relabels the drawer without touching the feed's own title`() {
+        val one = seedFeed(title = "nullprogram.com")
+        seedEntry(feedId = one, title = "Practical libc-free threading")
+
+        showHome()
+        longPressInDrawer("nullprogram.com")
+        tap(SourceActionTestTags.RENAME)
+        compose.onNodeWithTag(SourceActionTestTags.RENAME_FIELD)
+            .performTextReplacement("Chris Wellons")
+        tap(SourceActionTestTags.RENAME_CONFIRM)
+        awaitState { state -> state.sources.any { it.title == "Chris Wellons" } }
+
+        // The drawer is still open behind the dialog, so the relabelled row is on screen.
+        compose.onNodeWithText("Chris Wellons").assertIsDisplayed()
+        compose.onNodeWithText("nullprogram.com").assertDoesNotExist()
+        // The rename is display-only: the parsed title is what the next refresh
+        // overwrites, and what clearing the rename falls back to.
+        val feed = feeds().single()
+        assertThat(feed.customTitle).isEqualTo("Chris Wellons")
+        assertThat(feed.title).isEqualTo("nullprogram.com")
+    }
+
+    @Test
+    fun `cancelling the rename dialog changes nothing`() {
+        seedFeed(title = "nullprogram.com")
+
+        showHome()
+        longPressInDrawer("nullprogram.com")
+        tap(SourceActionTestTags.RENAME)
+        compose.onNodeWithTag(SourceActionTestTags.RENAME_FIELD)
+            .performTextReplacement("Chris Wellons")
+        tap(SourceActionTestTags.CANCEL)
+
+        assertThat(feeds().single().customTitle).isNull()
+        compose.onNodeWithText("nullprogram.com").assertIsDisplayed()
+    }
+
+    @Test
+    fun `emptying the rename field restores the title the feed publishes`() {
+        seedFeed(title = "nullprogram.com", customTitle = "Chris Wellons")
+
+        showHome()
+        longPressInDrawer("Chris Wellons")
+        tap(SourceActionTestTags.RENAME)
+        compose.onNodeWithTag(SourceActionTestTags.RENAME_FIELD).performTextClearance()
+        tap(SourceActionTestTags.RENAME_CONFIRM)
+        awaitState { state -> state.sources.any { it.title == "nullprogram.com" } }
+
+        assertThat(feeds().single().customTitle).isNull()
+    }
+
     // ---- harness ---------------------------------------------------------------
 
     private fun openDrawer() {
@@ -303,12 +438,48 @@ class HomeScreenTest {
      */
     private fun selectInDrawer(label: String, expectedTitle: String? = label) {
         openDrawer()
-        compose.onNodeWithText(label).performSemanticsAction(SemanticsActions.OnClick)
+        drawerRow(label).performSemanticsAction(SemanticsActions.OnClick)
         awaitState { it.selectedTitle == expectedTitle }
+    }
+
+    /**
+     * Opens the drawer and long-presses a source, the way a reader reaches rename and
+     * remove. Same reason as [selectInDrawer] for driving the semantics action directly.
+     */
+    private fun longPressInDrawer(label: String) {
+        openDrawer()
+        drawerRow(label).performSemanticsAction(SemanticsActions.OnLongClick)
+        compose.waitForIdle()
+    }
+
+    /**
+     * The drawer row carrying [label], as opposed to the app bar showing the same name —
+     * which it does whenever the source being long-pressed is also the one being filtered
+     * on. The row is the only one of the two that answers a click.
+     */
+    private fun drawerRow(label: String) =
+        compose.onAllNodesWithText(label).filterToOne(hasClickAction())
+
+    /**
+     * Taps a dialog button. The dialogs are in their own window rather than inside the
+     * drawer sheet, but the same semantics route works and does not depend on where the
+     * dialog happens to lay out.
+     */
+    private fun tap(testTag: String) {
+        compose.onNodeWithTag(testTag).performSemanticsAction(SemanticsActions.OnClick)
+        compose.waitForIdle()
     }
 
     /** A drawer badge is inside the item's merged semantics, so it needs the raw tree. */
     private fun badge(testTag: String) = compose.onNodeWithTag(testTag, useUnmergedTree = true)
+
+    private fun feeds() = runBlocking { database.feedDao().observeAll().first() }
+
+    private fun feedTitles() = feeds().map { it.title }
+
+    private fun entryTitles() = runBlocking {
+        database.entryDao().observeAll().first().map { it.title }
+    }
 
     /**
      * Waits for a *later* database emission, in wall-clock time.

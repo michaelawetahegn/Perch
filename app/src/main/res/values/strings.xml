@@ -24,6 +24,19 @@
     <!-- Content description of the ⚠ beside a source whose last refresh failed. -->
     <string name="drawer_source_error">Not updating</string>
 
+    <!-- Drawer: long-press a source to rename or remove it (DESIGN.md §5) -->
+    <string name="source_action_rename">Rename</string>
+    <string name="source_action_remove">Remove</string>
+    <string name="source_rename_title">Rename source</string>
+    <string name="source_rename_label">Display name</string>
+    <!-- Clearing the field restores the name the feed publishes for itself. -->
+    <string name="source_rename_hint">Leave empty to use %1$s</string>
+    <string name="source_rename_confirm">Save</string>
+    <string name="source_remove_title">Remove %1$s?</string>
+    <string name="source_remove_body">Its entries go too. This cannot be undone.</string>
+    <string name="source_remove_confirm">Remove</string>
+    <string name="action_cancel">Cancel</string>
+
     <!-- Add source (DESIGN.md §5): paste, resolve, confirm, commit -->
     <string name="drawer_add_source">Add source</string>
     <string name="add_source_title">Add a source</string>
