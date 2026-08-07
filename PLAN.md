@@ -109,7 +109,7 @@ production code but no test is a defect — reopen the box.
         all snapshots.
       - Rung: unit
 
-- [ ] **T10 — `HtmlSanitizer` + plain-text summary. TDD.** Allowlist per SPEC.md §5,
+- [x] **T10 — `HtmlSanitizer` + plain-text summary. TDD.** Allowlist per SPEC.md §5,
       relative→absolute URL resolution, tracking-pixel drop, entity decoding, title
       de-HTML-ing, ≤300-char snippet on a word boundary.
       - Done: ≥12 cases green incl. `<script>` stripped, `onclick` stripped,

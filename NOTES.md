@@ -31,27 +31,17 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
 - 2026-08-07 — T01 done: JDK 17.0.20, SDK (platform-tools 37.0.1, android-35,
   build-tools 35.0.0, emulator 37.1.11), Maestro 2.8.0.
 - 2026-08-07 — T02 done: skeleton builds clean (`test assembleDebug` exit 0, 1 test).
-  Wrapper generated from a one-off Gradle 8.11.1 unzipped to `/tmp` (no system gradle);
-  `./gradlew` is self-sufficient now. Truth's package is `com.google.common.truth`,
-  **not** `com.google.truth`. Room/KSP are wired (deps + `room.schemaLocation`) but no
+  Truth's package is `com.google.common.truth`, **not** `com.google.truth`.
+  Room/KSP are wired (deps + `room.schemaLocation`) but no
   `@Database` exists yet, so KSP is unexercised until T12.
 - 2026-08-07 — T03 done: Windows SDK (cmdline-tools 15859902, platform-tools, emulator,
   `system-images;android-35;google_apis;x86_64`), AVD `perch`, booted headless.
-  Cold first boot ≈ 11 min; budget 15 min (`BOOT_TIMEOUT=900`). Gotchas, all now
-  encoded in scripts so no future session re-derives them:
-  · `avdmanager create avd -d pixel_6` fails (no `devices.xml` without a `platforms`
-    package) — create the AVD with **no** `-d`, which defaults to a 320x640 screen.
-  · So `device.sh` now applies `wm size 1080x1920` + `wm density 420` on every boot.
-    `wm size` clamps to the AVD's 1:2 physical aspect, so asking for 1080x2400 yields
-    1080x1920. At 320x640 a screenshot is ~5 KB and trips the >10 KB blank-guard.
-  · License acceptance: copy `~/Android/Sdk/licenses/*` to the Windows SDK. Piping
-    `y` into `sdkmanager.bat --licenses` through interop does not work.
-  · One bad package name makes `sdkmanager` install **nothing** — quote
-    `system-images;...` inside a `.bat`, not on the interop command line.
+  Cold first boot ≈ 11 min; budget 15 min (`BOOT_TIMEOUT=900`). The AVD has no `-d`
+  profile (320x640), so `device.sh` forces `wm size 1080x1920` + `wm density 420` on
+  every boot — below that a screenshot is ~5 KB and trips the blank-guard.
 - 2026-08-07 — T04 done: `scripts/harvest.sh` (re-runnable) → 42 manifest rows,
-  **39 snapshots** in `fixtures/snapshots/`, 19 MB total. Homepage HTML for the four
-  auto-discovery cases is kept in `fixtures/homepages/` — T11 needs it.
-  **3 exclusions:**
+  **39 snapshots** (19 MB); homepage HTML for the four auto-discovery cases is in
+  `fixtures/homepages/` — T11 needs it. **3 exclusions:**
   · `danluu.com` (11.1 MB) and `googleprojectzero.blogspot.com` → `projectzero.google`
     (13.2 MB) — both exceed SPEC.md §6's 8 MiB body cap, so the app would reject them
     live; the corpus must not contain feeds T09 requires to parse but T14 must refuse.
@@ -98,4 +88,13 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
   the floor mutated to `now-1h` fails all 39 date cases (verified once, then reverted).
   Every corpus entry has a **non-null** `publishedAt`, so the contract asserts non-null —
   the `fetchedAt` fallback is untested by the corpus and stays T15's responsibility.
-  **This is the standing contract; a later task may not weaken it.**
+- 2026-08-07 — T10 done: `HtmlSanitizer` (16 tests; suite now 208, 0 failures). jsoup's
+  `Cleaner` + a from-scratch `Safelist` does the allowlist, and **`addProtocols` is also
+  what resolves relative URLs** — jsoup rewrites a protocol-restricted attribute to its
+  absolute form, so no manual `resolveUrl` pass is needed. Two things Cleaner alone gets
+  wrong: it *unwraps* a disallowed element and keeps its children (right for `<div>`,
+  wrong for `<script>`), so those go first; and a refused URL leaves the element behind,
+  so `a:not([href])` is unwrapped and `img:not([src])` removed after.
+  Tracking pixels must go **before** cleaning — `width`/`height` are not allowlisted.
+  `sanitize` → null when nothing renderable survives. Parsers still hand out raw
+  `contentHtml`; sanitizing is T15/T25's call.
