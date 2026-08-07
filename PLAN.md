@@ -174,7 +174,7 @@ production code but no test is a defect — reopen the box.
         duplicated; malformed OPML returns a typed error, never throws.
       - Rung: unit
 
-- [ ] **T18 — `RefreshWorker` + scheduling. TDD (work-testing).** Periodic work per
+- [x] **T18 — `RefreshWorker` + scheduling. TDD (work-testing).** Periodic work per
       SPEC.md §7, `NetworkType.CONNECTED`, backoff, 6h floor after 5 failures.
       - Done: `TestListenableWorkerBuilder` runs the worker to `Result.success()`
         against a MockWebServer feed and the DB shows the new entries; interval change

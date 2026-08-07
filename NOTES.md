@@ -98,3 +98,12 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
   refresh afterwards. Identity is `feedUrl` (same feed under two folders → one add, one
   duplicate). An outline counts as `invalid` only if it claims to be a source (`xmlUrl`
   present, or `type=rss|atom|feed`); anything else is a folder, even an empty one.
+- 2026-08-07 — T18 done: `work/RefreshWorker.kt` + `work/WorkScheduler.kt` (14 tests; suite
+  now 322, 0 failures). The worker calls the **new** `FeedRepository.refreshDue()`, not
+  `refreshAll()` — that is where §7's "5 failures → 6h floor" lives, and manual pull-to-refresh
+  (T26) must keep using `refreshAll`/`refresh(id)` so a pull still polls a sick source.
+  Retry policy: partial failure is a **success** (per-feed `lastError` already tells the
+  drawer); only an all-failed pass retries, capped at 3 attempts. `WorkScheduler.setInterval`
+  (UPDATE, T27's) vs `ensureScheduled` (KEEP, startup) — startup must never UPDATE or it
+  resets the reader's interval every launch. **`PerchApp` now builds db/http/`FeedRepository`
+  lazily** to feed `PerchWorkerFactory`; T20 moves exactly those into `di/AppContainer`.

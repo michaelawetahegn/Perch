@@ -206,6 +206,26 @@ class FeedRepository(
     /** Refreshes every source, at most [concurrency] in flight, failures isolated. */
     suspend fun refreshAll(): RefreshReport = refresh(feedDao.getAll())
 
+    /**
+     * Refreshes every source the background pass is allowed to poll right now.
+     *
+     * This is [refreshAll] minus the sources that keep failing: SPEC.md §7 puts a feed
+     * that has failed [SICK_AFTER] times in a row on a [SICK_FLOOR] floor until it
+     * succeeds, so a host that has been down for a week costs one request every six
+     * hours instead of one every hour. Manual refresh deliberately does not go through
+     * here — a user pulling to refresh is asking for exactly this feed, now.
+     */
+    suspend fun refreshDue(): RefreshReport {
+        val now = clock.millis()
+        return refresh(feedDao.getAll().filter { it.isDue(now) })
+    }
+
+    private fun FeedEntity.isDue(now: Long): Boolean {
+        if (consecutiveFailures < SICK_AFTER) return true
+        val last = lastFetchedAt ?: return true
+        return now - last >= SICK_FLOOR.toMillis()
+    }
+
     /** Refreshes one source. Returns [FeedRefreshOutcome.Failed] if it no longer exists. */
     suspend fun refresh(feedId: Long): FeedRefreshOutcome {
         val feed = feedDao.findById(feedId)
@@ -365,5 +385,11 @@ class FeedRepository(
 
         /** SPEC.md §7: read entries are kept this long, unread ones forever. */
         val RETENTION: Duration = Duration.ofDays(30)
+
+        /** SPEC.md §7: this many failures in a row and the source is polled sparingly. */
+        const val SICK_AFTER = 5
+
+        /** SPEC.md §7: how sparingly. */
+        val SICK_FLOOR: Duration = Duration.ofHours(6)
     }
 }
