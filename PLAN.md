@@ -138,7 +138,7 @@ production code but no test is a defect — reopen the box.
         committed.
       - Rung: unit
 
-- [ ] **T13 — Read state & unread counts. TDD.** Mark read/unread, mark-all-read in
+- [x] **T13 — Read state & unread counts. TDD.** Mark read/unread, mark-all-read in
       scope with undo, per-source + total unread counts as SQL `COUNT` Flows.
       - Done: Turbine tests assert counts update reactively; mark-all-read affects only
         the scoped feed; undo restores the exact prior set.

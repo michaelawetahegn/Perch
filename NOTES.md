@@ -35,9 +35,8 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
 ## Log
 
 - 2026-08-07 — T01–T03 done (toolchain, skeleton, Windows emulator; everything durable
-  about them is in CLAUDE.md §Environment). Two gotchas worth keeping: Truth's package is
-  `com.google.common.truth`, **not** `com.google.truth`; Room/KSP are wired but no
-  `@Database` exists yet, so KSP is unexercised until T12.
+  about them is in CLAUDE.md §Environment). One gotcha worth keeping: Truth's package is
+  `com.google.common.truth`, **not** `com.google.truth`.
 - 2026-08-07 — T04 done: `scripts/harvest.sh` (re-runnable) → 42 manifest rows,
   **39 snapshots** (19 MB); homepage HTML for the four auto-discovery cases is in
   `fixtures/homepages/` — T11 needs it. **3 exclusions:**
@@ -92,3 +91,10 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
   the existing row's id forward, and preserves `isRead`/`readAt`/`isStarred` — read state
   belongs to the reader, not the feed. It returns the count of genuinely new entries,
   which is what T15's "refetch inserts zero rows" assertion reads.
+- 2026-08-07 — T13 done: `EntryRepository` read state (15 tests; suite now 247, 0 failures).
+  Two things the UI tasks must not rediscover: `observeUnreadCountsByFeed()` is a Room 2.6
+  `@MapColumn` multimap over `GROUP BY`, so a **fully-read source is absent from the map,
+  not 0** — T22's drawer must read `counts[feedId] ?: 0`. And `EntryDao.setRead` chunks ids
+  at 900 because SQLite caps `IN (…)` host variables at 999; call it, never `setReadForIds`.
+  Undo is a token holding the exact ids that call flipped, so it cannot resurrect an entry
+  read before or after the batch. `readAt` comes from an injected `java.time.Clock`.

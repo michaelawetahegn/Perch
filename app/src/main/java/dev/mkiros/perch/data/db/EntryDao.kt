@@ -33,6 +33,52 @@ abstract class EntryDao {
     @Query("SELECT COUNT(*) FROM entries")
     abstract suspend fun countAll(): Int
 
+    // ---- read state -----------------------------------------------------------
+
+    /** The unified inbox badge. */
+    @Query("SELECT COUNT(*) FROM entries WHERE isRead = 0")
+    abstract fun observeUnreadCount(): Flow<Int>
+
+    /**
+     * The per-source drawer badges.
+     *
+     * `GROUP BY` has no row to emit for a source whose entries are all read, so a fully
+     * read feed is **absent** from the map, not mapped to 0. Read it as `counts[id] ?: 0`.
+     */
+    @Query(
+        """
+        SELECT feedId, COUNT(*) AS unreadCount FROM entries
+        WHERE isRead = 0 GROUP BY feedId
+        """,
+    )
+    abstract fun observeUnreadCountsByFeed():
+        Flow<Map<@MapColumn("feedId") Long, @MapColumn("unreadCount") Int>>
+
+    /** Unread ids, optionally scoped to one source. `null` means every source. */
+    @Query(
+        """
+        SELECT id FROM entries
+        WHERE isRead = 0 AND (:feedId IS NULL OR feedId = :feedId)
+        ORDER BY id
+        """,
+    )
+    abstract suspend fun unreadIds(feedId: Long?): List<Long>
+
+    @Query("UPDATE entries SET isRead = :isRead, readAt = :readAt WHERE id IN (:ids)")
+    abstract suspend fun setReadForIds(ids: List<Long>, isRead: Boolean, readAt: Long?)
+
+    /**
+     * Flips read state for a batch of ids.
+     *
+     * SQLite binds every id in an `IN (…)` clause as its own host variable and stops at
+     * 999, so a mark-all-read over a busy inbox has to be chunked. Doing it here rather
+     * than at the call site means no caller can forget.
+     */
+    @Transaction
+    open suspend fun setRead(ids: List<Long>, isRead: Boolean, readAt: Long?) {
+        ids.chunked(MAX_IDS_PER_STATEMENT).forEach { setReadForIds(it, isRead, readAt) }
+    }
+
     @Insert
     abstract suspend fun insert(entry: EntryEntity): Long
 
@@ -72,5 +118,10 @@ abstract class EntryDao {
             }
         }
         return inserted
+    }
+
+    private companion object {
+        /** SQLite's 999-variable ceiling, less headroom for the other bound arguments. */
+        const val MAX_IDS_PER_STATEMENT = 900
     }
 }
