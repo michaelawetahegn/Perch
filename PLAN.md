@@ -221,7 +221,7 @@ production code but no test is a defect — reopen the box.
         removes the source and its entries; rename updates the drawer label only.
       - Rung: unit
 
-- [ ] **T25a — `ArticleBlock` lowering. TDD. Pure JVM, no Compose.** Sanitized HTML →
+- [x] **T25a — `ArticleBlock` lowering. TDD. Pure JVM, no Compose.** Sanitized HTML →
       `List<ArticleBlock>` per SPEC.md §5, in `data/parse/ArticleLowering.kt`. This is
       the normalization layer: it is what makes 42 sources render identically, so it
       carries the burden, not the renderer. Implements the "normalization rules the

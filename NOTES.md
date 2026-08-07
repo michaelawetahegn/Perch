@@ -12,10 +12,8 @@ in a script or in CLAUDE.md.
   `WHPX(10.0.19045) is installed and usable.`). Every path/JDK/wrapper this implies lives
   in CLAUDE.md §Environment — do not re-record it here.
 - Windows gateway from WSL: `172.18.144.1` (only if interop fails and adb must go TCP).
-- **2026-08-07 — host froze (session #11). Cause: host memory, not any task's code.**
-  Fixed in `.wslconfig` (7 GB + `autoMemoryReclaim=gradual`), `gradle.properties` (caps —
-  see CLAUDE.md) and `loop.sh` (`reclaim()` between sessions). **The `.wslconfig` half needs
-  a `wsl --shutdown` that has not happened yet** — until then loop-side reclaim is all of it.
+- **2026-08-07 — host froze on memory (session #11); fixed in `.wslconfig`, `gradle.properties`
+  and `loop.sh`. The `.wslconfig` half still needs a `wsl --shutdown` that has not happened.**
 
 ## Log
 
@@ -81,13 +79,10 @@ in a script or in CLAUDE.md.
   never reaches a node inside the opened drawer sheet**, on screen and carrying `OnClick` though
   it is; drive it with `performSemanticsAction(...)`. The filter is one SQL predicate
   (`observeUnreadListItems(feedId)`, null = every source); an id no longer in `sources` drops it.
-- 2026-08-07 — T23 done: `ui/source/{PastedUrl,AddSourceViewModel,AddSourceSheet}.kt` (debug 362,
-  release 335, 0 failures). **The sheet owns paste normalization** — `example.com` and `feed://`
-  become https here; the repository still refuses to guess. Confirm-then-commit is literally the
-  button's two calls: `resolve` spends the round trip, `add` spends nothing more. A
-  `ModalBottomSheet` *does* compose and expose its nodes under Robolectric. But the drawer's
-  "Add source" row is composed even while the drawer is shut, so it collides by text with the
-  empty state's button — tag one of them, as T24's dialogs will also have to.
+- 2026-08-07 — T23 done: `ui/source/{PastedUrl,AddSourceViewModel,AddSourceSheet}.kt`. **The sheet
+  owns paste normalization** — `example.com` and `feed://` become https here; the repository still
+  refuses to guess. A `ModalBottomSheet` composes and exposes its nodes under Robolectric, but the
+  drawer's shut "Add source" row still collides by text with the empty state's button — tag one.
 - 2026-08-07 — T24 done: long-press rename/remove (debug 370, release 335, 0 failures).
   `NavigationDrawerItem` answers taps only and its own `clickable` eats the gesture, so source
   rows are a hand-built `SourceRow` (`combinedClickable` + `semantics(mergeDescendants)`); its
@@ -97,3 +92,8 @@ in a script or in CLAUDE.md.
   `filterToOne(hasClickAction())`, never bare `onNodeWithText`; and the dialogs leave the drawer
   open, so a second `openDrawer()` leaves nodes `assertIsDisplayed`-false — assert at once
   instead, or close the drawer by selecting something.
+- 2026-08-07 — T25a done: `data/parse/{ArticleBlock,ArticleLowering}.kt` (debug 395, release 360,
+  0 failures). Input **must** be `HtmlSanitizer` output; the mapper's tag sets cover that whole
+  allowlist, so `ArticleLoweringCorpusTest` asserts **0/2644 `Unsupported`** — stricter than T32
+  gate 2's ≤2%, and the assertion names the offending tags. Chrome regexes are whole-block
+  matches (a real sentence opening "Share this…" survives), so **T25 must not re-strip anything**.
