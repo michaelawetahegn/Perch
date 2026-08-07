@@ -1,0 +1,52 @@
+# Perch fixture sources — PROMPT.md §7.
+# One URL per line. Lines starting with '#' and blank lines are ignored.
+# Some entries are direct feed URLs; some are homepages requiring auto-discovery
+# (<link rel="alternate">). That asymmetry is intentional — it tests SPEC.md §5.
+
+# ── Compilers, PL, systems ───────────────────────────────────────────────────
+https://fabiensanglard.net/rss.xml
+https://simonwillison.net/atom/everything/
+https://blog.llvm.org/index.xml
+https://blog.rust-lang.org/feed.xml
+https://v8.dev/blog.atom
+https://nullprogram.com/feed/
+https://eli.thegreenplace.net/feeds/all.atom.xml
+https://blog.regehr.org/feed
+https://bernsteinbear.com/feed.xml
+https://fasterthanli.me/index.xml
+https://lemire.me/blog/feed/
+https://devblogs.microsoft.com/oldnewthing/feed
+https://lexi-lambda.github.io/feeds/all.atom.xml
+https://xania.org
+https://danluu.com/atom.xml
+https://jvns.ca/atom.xml
+https://rachelbythebay.com/w/atom.xml
+https://ciechanow.ski/atom.xml
+https://www.hillelwayne.com
+
+# ── Reverse engineering & security ───────────────────────────────────────────
+https://googleprojectzero.blogspot.com/feeds/posts/default
+https://blog.trailofbits.com/feed/
+https://research.checkpoint.com/feed/
+https://security.googleblog.com/feeds/posts/default
+https://research.nccgroup.com
+https://www.hexacorn.com/blog/feed/
+https://krebsonsecurity.com/feed/
+https://secret.club/feed.xml
+https://blog.ret2.io/feed.xml
+https://doar-e.github.io/feeds/rss.xml
+https://0xdf.gitlab.io/feed.xml
+
+# ── Quant, math + money + programming ────────────────────────────────────────
+https://robotwealth.com/feed
+https://financial-hacker.com/feed
+https://quantocracy.com/feed/
+https://moontower.substack.com/feed
+https://possiblywrong.wordpress.com/feed/
+https://entropicthoughts.com/feed.xml
+https://quantpedia.com/feed/
+https://qoppac.blogspot.com/feeds/posts/default
+https://epchan.blogspot.com/feeds/posts/default
+https://alphaarchitect.com/feed/
+https://allocatesmartly.com/feed/
+https://gwern.net
