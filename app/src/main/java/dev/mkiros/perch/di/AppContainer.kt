@@ -8,6 +8,7 @@ import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.repo.EntryRepository
 import dev.mkiros.perch.data.repo.FeedRepository
 import dev.mkiros.perch.data.repo.OpmlRepository
+import dev.mkiros.perch.data.settings.SettingsStore
 import okhttp3.OkHttpClient
 import java.time.Clock
 
@@ -31,6 +32,11 @@ class AppContainer(
      * a container without a shadow network. [create] supplies the real one.
      */
     val connectivity: ConnectivityMonitor = ConnectivityMonitor.AlwaysOnline,
+    /**
+     * Defaults to a store that keeps nothing, for the same reason [connectivity] defaults
+     * to "online": a test about the reading list should not have to own a settings file.
+     */
+    val settings: SettingsStore = SettingsStore.inMemory(),
 ) {
 
     val feeds: FeedRepository by lazy {
@@ -57,6 +63,7 @@ class AppContainer(
                 database = PerchDatabase.build(app),
                 httpClient = PerchHttp.client(app.cacheDir),
                 connectivity = ConnectivityMonitor.system(app),
+                settings = SettingsStore.create(app),
             )
         }
     }

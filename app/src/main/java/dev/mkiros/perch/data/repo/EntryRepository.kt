@@ -18,17 +18,22 @@ class EntryRepository(
 ) {
 
     /**
-     * The home reading list: every unread entry, newest first, each already carrying its
-     * source's display name (DESIGN.md §5).
+     * The home reading list, newest first, each row already carrying its source's display
+     * name (DESIGN.md §5).
      *
      * This is the whole paging story. Room re-emits the list on any write, `LazyColumn`
      * composes only the rows on screen, and a reader with 42 sources has a list measured
      * in hundreds — a paging library here would buy latency, not headroom.
      *
      * @param feedId the drawer's per-source filter; null is every source.
+     * @param includeRead Settings' "show read entries"; false is the unread inbox.
      */
+    fun observeEntries(feedId: Long? = null, includeRead: Boolean = false): Flow<List<EntryListItem>> =
+        entryDao.observeListItems(feedId, includeRead).distinctUntilChanged()
+
+    /** The unread inbox — [observeEntries] as home reads it by default. */
     fun observeUnreadEntries(feedId: Long? = null): Flow<List<EntryListItem>> =
-        entryDao.observeUnreadListItems(feedId).distinctUntilChanged()
+        observeEntries(feedId, includeRead = false)
 
     /** Total unread, for the inbox badge. */
     fun observeTotalUnreadCount(): Flow<Int> =

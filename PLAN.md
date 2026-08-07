@@ -256,7 +256,7 @@ production code but no test is a defect — reopen the box.
         + undo restores the exact prior unread set.
       - Rung: unit
 
-- [ ] **T27 — Settings screen.** OPML import/export via SAF, refresh interval, theme
+- [x] **T27 — Settings screen.** OPML import/export via SAF, refresh interval, theme
       (Light/Dark/System), "show read entries", about + APK version.
       - Done: Robolectric tests: interval change persists to DataStore and re-enqueues
         work; theme toggle recomposes to the other scheme; export/import launchers fire

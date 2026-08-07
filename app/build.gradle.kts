@@ -36,6 +36,8 @@ android {
 
     buildFeatures {
         compose = true
+        // Settings' About line reads BuildConfig.VERSION_NAME (T27).
+        buildConfig = true
     }
 
     testOptions {

@@ -25,11 +25,14 @@ abstract class EntryDao {
     abstract fun observeByFeed(feedId: Long): Flow<List<EntryEntity>>
 
     /**
-     * The home list (DESIGN.md §5): unread only, newest first, joined to its source so a
-     * row never has to look its feed up.
+     * The home list (DESIGN.md §5): newest first, joined to its source so a row never has
+     * to look its feed up.
      *
      * Reading an entry drops it out of this flow, which is exactly what an unread inbox
-     * should do. T27's "show read entries" adds the variant that keeps them.
+     * should do — until Settings' "show read entries" (T27) says otherwise, which is
+     * [includeRead]. That is a predicate in the query rather than a filter in the UI for
+     * the same reason [feedId] is: a read entry the list is not showing should not be
+     * loaded, counted, or held in a `LazyColumn`'s item list at all.
      *
      * @param feedId the drawer's per-source filter; null is the unified inbox. Filtering
      *   in SQL rather than in the UI keeps the "which rows exist" question in one place,
@@ -41,11 +44,11 @@ abstract class EntryDao {
                e.imageUrl AS imageUrl, e.publishedAt AS publishedAt, e.isRead AS isRead,
                COALESCE(NULLIF(TRIM(f.customTitle), ''), f.title) AS sourceTitle
         FROM entries e JOIN feeds f ON f.id = e.feedId
-        WHERE e.isRead = 0 AND (:feedId IS NULL OR e.feedId = :feedId)
+        WHERE (:includeRead OR e.isRead = 0) AND (:feedId IS NULL OR e.feedId = :feedId)
         ORDER BY e.publishedAt DESC, e.id DESC
         """,
     )
-    abstract fun observeUnreadListItems(feedId: Long?): Flow<List<EntryListItem>>
+    abstract fun observeListItems(feedId: Long?, includeRead: Boolean): Flow<List<EntryListItem>>
 
     @Query("SELECT * FROM entries WHERE id = :id")
     abstract suspend fun findById(id: Long): EntryEntity?

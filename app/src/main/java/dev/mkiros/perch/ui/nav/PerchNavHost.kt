@@ -8,6 +8,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -21,6 +22,7 @@ import dev.mkiros.perch.ui.article.ArticleViewModel
 import dev.mkiros.perch.ui.home.HomeScreen
 import dev.mkiros.perch.ui.home.HomeViewModel
 import dev.mkiros.perch.ui.settings.SettingsScreen
+import dev.mkiros.perch.ui.settings.SettingsViewModel
 import dev.mkiros.perch.ui.source.AddSourceViewModel
 
 /** Every destination in the app. There are three; there will not be more. */
@@ -92,7 +94,13 @@ fun PerchNavHost(
         }
 
         composable(Routes.SETTINGS) {
-            SettingsScreen(onBack = { navController.popBackStack() })
+            // The context is only ever used to reach WorkManager, and the factory keeps
+            // the application one — a ViewModel outliving this composition is the point.
+            val context = LocalContext.current
+            SettingsScreen(
+                viewModel = viewModel(factory = SettingsViewModel.factory(container, context)),
+                onBack = { navController.popBackStack() },
+            )
         }
     }
 }

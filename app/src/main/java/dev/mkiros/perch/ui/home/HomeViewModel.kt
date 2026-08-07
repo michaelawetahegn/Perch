@@ -9,6 +9,7 @@ import dev.mkiros.perch.data.net.ConnectivityMonitor
 import dev.mkiros.perch.data.repo.EntryRepository
 import dev.mkiros.perch.data.repo.FeedRepository
 import dev.mkiros.perch.data.repo.MarkAllReadUndo
+import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.di.AppContainer
 import java.time.Clock
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -105,6 +107,7 @@ class HomeViewModel(
     private val feeds: FeedRepository,
     clock: Clock,
     connectivity: ConnectivityMonitor = ConnectivityMonitor.AlwaysOnline,
+    settings: SettingsStore = SettingsStore.inMemory(),
 ) : ViewModel() {
 
     /** Total unread, for the drawer's "All unread" row and the bar's subtitle. */
@@ -113,15 +116,20 @@ class HomeViewModel(
 
     private val selectedFeedId = MutableStateFlow<Long?>(null)
 
+    /** Settings' "show read entries" (T27). Flipping it re-queries; it never filters here. */
+    private val showReadEntries: Flow<Boolean> =
+        settings.settings.map { it.showReadEntries }.distinctUntilChanged()
+
     /**
-     * The list, re-queried per selection. The selected id is carried *out* of the
-     * `flatMapLatest` alongside the rows it produced, so a selection change can never
-     * leave the app bar showing the new source over the old source's entries.
+     * The list, re-queried per selection and per "show read entries". The selected id is
+     * carried *out* of the `flatMapLatest` alongside the rows it produced, so a selection
+     * change can never leave the app bar showing the new source over the old source's
+     * entries.
      */
     @OptIn(ExperimentalCoroutinesApi::class)
     private val filteredEntries: Flow<Pair<Long?, List<EntryListItem>>> =
-        selectedFeedId.flatMapLatest { feedId ->
-            entries.observeUnreadEntries(feedId).map { feedId to it }
+        combine(selectedFeedId, showReadEntries, ::Pair).flatMapLatest { (feedId, showRead) ->
+            entries.observeEntries(feedId, includeRead = showRead).map { feedId to it }
         }
 
     /** Drives the pull indicator only — a refresh never replaces what is already readable. */
@@ -288,6 +296,7 @@ class HomeViewModel(
                     feeds = container.feeds,
                     clock = container.clock,
                     connectivity = container.connectivity,
+                    settings = container.settings,
                 )
             }
         }

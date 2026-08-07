@@ -9,6 +9,7 @@ import dev.mkiros.perch.data.db.FeedDao
 import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.db.entity.FeedEntity
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -276,7 +277,50 @@ class EntryRepositoryTest {
         assertThat(unreadIds()).hasSize(1_200)
     }
 
+    // ---- show read entries (T27) -----------------------------------------------
+
+    @Test
+    fun `the reading list drops an entry once it is read`() = runTest {
+        val a = feeds.insert(feed("https://a.example/feed"))
+        insertEntry(a, "a1")
+        val a2 = insertEntry(a, "a2")
+
+        repo.setRead(a2, isRead = true)
+
+        assertThat(titles(includeRead = false)).containsExactly("Entry a1")
+    }
+
+    @Test
+    fun `showing read entries keeps them in the list, still marked read`() = runTest {
+        val a = feeds.insert(feed("https://a.example/feed"))
+        insertEntry(a, "a1")
+        val a2 = insertEntry(a, "a2")
+        repo.setRead(a2, isRead = true)
+
+        val listed = repo.observeEntries(includeRead = true).first()
+
+        assertThat(listed.map { it.title }).containsExactly("Entry a1", "Entry a2")
+        // The row still has to be able to draw itself differently: "shown" is not "unread".
+        assertThat(listed.single { it.title == "Entry a2" }.isRead).isTrue()
+    }
+
+    @Test
+    fun `showing read entries still respects the per-source filter`() = runTest {
+        val a = feeds.insert(feed("https://a.example/feed"))
+        val b = feeds.insert(feed("https://b.example/feed"))
+        val a1 = insertEntry(a, "a1")
+        insertEntry(b, "b1")
+        repo.setRead(a1, isRead = true)
+
+        val listed = repo.observeEntries(feedId = a, includeRead = true).first()
+
+        assertThat(listed.map { it.title }).containsExactly("Entry a1")
+    }
+
     // ---- fixtures --------------------------------------------------------------
+
+    private suspend fun titles(includeRead: Boolean): List<String> =
+        repo.observeEntries(includeRead = includeRead).first().map { it.title }
 
     private suspend fun unreadIds(): List<Long> = entries.unreadIds(feedId = null)
 

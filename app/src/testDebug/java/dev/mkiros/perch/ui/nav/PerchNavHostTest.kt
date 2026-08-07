@@ -3,6 +3,7 @@ package dev.mkiros.perch.ui.nav
 import android.content.Context
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -80,7 +81,7 @@ class PerchNavHostTest {
         navigateTo(Routes.article(entryId))
 
         assertThat(currentRoute()).isEqualTo(Routes.ARTICLE)
-        compose.onNodeWithText("A standardized reading surface").assertExists()
+        awaitText("A standardized reading surface")
     }
 
     @Test
@@ -122,6 +123,24 @@ class PerchNavHostTest {
 
     private fun currentRoute(): String? = navController.currentDestination?.route
 
+    /**
+     * Waits for [text] in wall-clock time.
+     *
+     * Arriving at the article route is synchronous; the article is not — `ArticleViewModel`
+     * reads the entry on Room's executor, so the first composition after `navigate` draws
+     * an empty screen. `compose.waitUntil` cannot be used to wait for it: it advances only
+     * the *virtual* clock, so it spins without ever letting that executor run.
+     */
+    private fun awaitText(text: String) {
+        val deadline = System.currentTimeMillis() + TIMEOUT_MS
+        while (System.currentTimeMillis() < deadline) {
+            compose.waitForIdle()
+            if (compose.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()) return
+            Thread.sleep(POLL_MS)
+        }
+        throw AssertionError("timed out waiting for \"$text\"")
+    }
+
     /** Returns the new entry's id. */
     private fun seedOneEntry(title: String): Long = runBlocking {
         val feedId = database.feedDao().insert(
@@ -155,5 +174,10 @@ class PerchNavHostTest {
                 fetchedAt = 1_700_000_000_000L,
             ),
         )
+    }
+
+    private companion object {
+        const val TIMEOUT_MS = 5_000L
+        const val POLL_MS = 25L
     }
 }

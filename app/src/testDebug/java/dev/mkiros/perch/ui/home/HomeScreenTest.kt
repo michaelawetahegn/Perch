@@ -361,7 +361,7 @@ class HomeScreenTest {
         compose.onNodeWithTag(HomeTestTags.TITLE).assertTextEquals("Unread")
         // Close the drawer the long press left open, then look at the list itself.
         selectInDrawer("All unread", expectedTitle = null)
-        compose.onNodeWithText("Only in two").assertIsDisplayed()
+        awaitDisplayed("Only in two")
         compose.onNodeWithText("Only in one").assertDoesNotExist()
     }
 
@@ -498,6 +498,25 @@ class HomeScreenTest {
             Thread.sleep(POLL_MS)
         }
         throw AssertionError("timed out; last state was ${viewModel.uiState.value}")
+    }
+
+    /**
+     * Waits for [text] to be on screen and *unobscured*, in wall-clock time.
+     *
+     * Distinct from [awaitState]: the state can already say what a test is waiting for
+     * while the drawer that was covering the list is still animating shut, and a node
+     * behind the scrim exists without being displayed. Selecting "All unread" after a
+     * dialog is exactly that case — the filter was already null, so there is no state
+     * change left to wait on.
+     */
+    private fun awaitDisplayed(text: String) {
+        val deadline = System.currentTimeMillis() + TIMEOUT_MS
+        while (System.currentTimeMillis() < deadline) {
+            compose.waitForIdle()
+            runCatching { compose.onNodeWithText(text).assertIsDisplayed() }.onSuccess { return }
+            Thread.sleep(POLL_MS)
+        }
+        compose.onNodeWithText(text).assertIsDisplayed()
     }
 
     private fun idOf(title: String): Long = runBlocking {
