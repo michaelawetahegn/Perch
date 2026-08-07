@@ -15,7 +15,10 @@ cd "$(dirname "$0")"
 PROMPT="Read CLAUDE.md and continue"
 LOG="loop.log"
 SLEEP_BETWEEN=${SLEEP_BETWEEN:-30}        # pause between normal sessions (s)
-LIMIT_SLEEP=${LIMIT_SLEEP:-1800}          # nap on usage/rate limit (s) = 30 min
+LIMIT_SLEEP=${LIMIT_SLEEP:-600}           # nap on usage/rate limit (s) = 10 min.
+                                          # A limited session fails instantly and costs
+                                          # no quota, so probing often is nearly free and
+                                          # picks work back up soon after the reset.
 SESSION_TIMEOUT=${SESSION_TIMEOUT:-7200}  # hard cap on one session (s) = 2 h
 STALL_LIMIT=${STALL_LIMIT:-3}             # consecutive no-commit sessions before stop
 BOOT_TIMEOUT=${BOOT_TIMEOUT:-900}         # emulator boot cap (s); WHPX-accelerated on Windows
@@ -50,7 +53,11 @@ blocked()   { count_matching '^- \[BLOCKED'; }
 head_sha()  { git rev-parse HEAD 2>/dev/null || echo none; }
 
 # A limit message means "come back later", not "the project failed".
-LIMIT_RE='usage limit|rate limit|limit reached|too many requests|quota exceeded|429|overloaded_error'
+# Keep this generous. A limit phrasing that is NOT matched here gets counted as a
+# stall, and three of those stop the loop — which is exactly what happened on
+# 2026-08-07 to "You've hit your session limit · resets 3pm". Under-matching costs a
+# whole run; over-matching costs one wasted nap.
+LIMIT_RE='usage limit|rate limit|limit reached|session limit|hit your [a-z0-9-]* ?limit|limit will reset|resets [0-9]|too many requests|quota exceeded|429|overloaded_error'
 hit_limit() {                       # $1 = session output file, $2 = session exit code
   tail -c 8000 "$1" | grep -qiE "$LIMIT_RE" && return 0
   # "try again" alone is noisy; only trust it when the session actually failed.
