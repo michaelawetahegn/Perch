@@ -13,15 +13,9 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
 - Windows 10 Pro 19045.6466 · WSL 2.7.11 · kernel 6.18.33.2 · Ubuntu userland.
 - Host: Intel i7-4790K (4c/8t, VT-x + EPT ✔), 15.9 GB RAM, 65 GB free on `C:`.
 - WSL VM: 4 CPUs, 9 GB RAM, 899 GB free on `/`.
-- System `java` = **OpenJDK 8**; Temurin **17.0.20** now at `~/.jdks/temurin-17`.
-- `/dev/kvm` absent and will stay absent — Win10 has no WSL2 nested virtualization.
-  The emulator runs Windows-side under WHPX; do not chase KVM inside WSL.
-- WSL SDK at `~/Android/Sdk` (T01). Windows SDK at `C:\Android\Sdk` (T03). No physical device.
-- WHPX **enabled** (human did the reboot). `emulator -accel-check` →
-  `WHPX(10.0.19045) is installed and usable.`
-- Windows-side **JDK 17** at `C:\jdk17` (Temurin 17.0.20). Required: `sdkmanager.bat` /
-  `avdmanager.bat` need it, and T30's Maestro will too. Helper wrappers that set
-  `JAVA_HOME`+`ANDROID_HOME` live at `C:\perch-stage\sdk.bat` and `avd.bat`.
+- No physical device. WHPX **enabled** (human did the reboot); `emulator -accel-check` →
+  `WHPX(10.0.19045) is installed and usable.` Every path/JDK/wrapper this implies now lives
+  in CLAUDE.md §Environment — do not re-record it here.
 - Windows gateway from WSL: `172.18.144.1` (only needed if the interop bridge fails
   and adb has to go over TCP instead).
 - **2026-08-07 — host froze (session #11). Cause: host memory, not any task's code.**
