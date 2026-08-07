@@ -68,6 +68,14 @@ Do not skip ahead, do not do two tasks, do not refactor code the task doesn't to
   adb server and the Windows one will fight over the same emulator.
 - Windows SDK lives at `C:\Android\Sdk` (`/mnt/c/Android/Sdk`); Windows-visible scratch
   is `C:\perch-stage`. Drive Windows tooling from WSL with `cmd.exe` / `powershell.exe`.
+  Installed by T03: cmdline-tools `latest`, platform-tools, emulator,
+  `system-images;android-35;google_apis;x86_64`, AVD `perch`. **WHPX is enabled** — the
+  emulator is hardware-accelerated; cold boot ≈ 11 min.
+- **Windows also needs its own JDK 17** (`C:\jdk17`, Temurin) — `sdkmanager.bat`,
+  `avdmanager.bat` and Maestro-on-Windows are Java tools and there is no system Java on
+  the Windows side. Never invoke them bare over interop; use the wrappers
+  `C:\perch-stage\sdk.bat` / `avd.bat`, which set `JAVA_HOME` and `ANDROID_HOME` first.
+  `cmd.exe` cannot cd into a `\\wsl.localhost\…` UNC path — `cd /mnt/c` before interop.
 - **Keep the emulator running between sessions.** Do not kill it. If it is wedged:
   `./scripts/device.sh reboot`, then log it.
 - **Screenshots do not need the emulator.** Prefer Robolectric native graphics

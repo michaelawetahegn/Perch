@@ -35,7 +35,7 @@ production code but no test is a defect — reopen the box.
         `app/build/outputs/apk/debug/app-debug.apk`.
       - Rung: build
 
-- [ ] **T03 — Emulator on the Windows side + WSL bridge.** `/dev/kvm` is absent and
+- [x] **T03 — Emulator on the Windows side + WSL bridge.** `/dev/kvm` is absent and
       **cannot** be obtained (Windows 10 → no WSL nested virtualization). So the
       emulator runs on Windows, accelerated by WHPX, driven from WSL via
       `scripts/device.sh` — read that script's header before starting; it already

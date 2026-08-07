@@ -8,40 +8,20 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
 
 ---
 
-## ACTION REQUIRED (human, one-time, ~2 min + reboot)
-
-**Enable Windows Hypervisor Platform.** Measured 2026-08-07:
-`HypervisorPlatform = Disabled`, `VirtualMachinePlatform = Enabled`,
-`Microsoft-Hyper-V-Hypervisor = Enabled`. WHPX is the one the Android emulator needs.
-
-In an **Administrator** PowerShell on Windows:
-
-```powershell
-dism.exe /Online /Enable-Feature /FeatureName:HypervisorPlatform /All /NoRestart
-Restart-Computer
-```
-
-(Or: Turn Windows features on or off → tick **Windows Hypervisor Platform**.)
-
-Verify afterwards from WSL: `./scripts/device.sh check` should print `✔ WHPX enabled`.
-
-**Do not chase `/dev/kvm` inside WSL — it is impossible on this host.** WSL2 nested
-virtualization is a Windows 11 feature; this box is Windows 10 Pro 19045. The emulator
-therefore runs on the *Windows* side (accelerated by WHPX) and is driven from WSL
-through `scripts/device.sh`. Gradle, tests and git stay in WSL.
-
-Until WHPX is on, T30 (Maestro) is the only task that truly suffers. T29 captures its
-screenshots via Robolectric on the JVM, and T01–T28 + T31 never touch a device.
-
 ## Environment facts (measured at bootstrap, 2026-08-07)
 
 - Windows 10 Pro 19045.6466 · WSL 2.7.11 · kernel 6.18.33.2 · Ubuntu userland.
 - Host: Intel i7-4790K (4c/8t, VT-x + EPT ✔), 15.9 GB RAM, 65 GB free on `C:`.
 - WSL VM: 4 CPUs, 9 GB RAM, 899 GB free on `/`.
 - System `java` = **OpenJDK 8**; Temurin **17.0.20** now at `~/.jdks/temurin-17`.
-- `/dev/kvm` absent and will stay absent (see above).
-- WSL SDK installed at `~/Android/Sdk` (T01). No Windows SDK yet (that is T03).
-  No physical device.
+- `/dev/kvm` absent and will stay absent — Win10 has no WSL2 nested virtualization.
+  The emulator runs Windows-side under WHPX; do not chase KVM inside WSL.
+- WSL SDK at `~/Android/Sdk` (T01). Windows SDK at `C:\Android\Sdk` (T03). No physical device.
+- WHPX **enabled** (human did the reboot). `emulator -accel-check` →
+  `WHPX(10.0.19045) is installed and usable.`
+- Windows-side **JDK 17** at `C:\jdk17` (Temurin 17.0.20). Required: `sdkmanager.bat` /
+  `avdmanager.bat` need it, and T30's Maestro will too. Helper wrappers that set
+  `JAVA_HOME`+`ANDROID_HOME` live at `C:\perch-stage\sdk.bat` and `avd.bat`.
 - Windows gateway from WSL: `172.18.144.1` (only needed if the interop bridge fails
   and adb has to go over TCP instead).
 
@@ -54,4 +34,18 @@ screenshots via Robolectric on the JVM, and T01–T28 + T31 never touch a device
   Wrapper generated from a one-off Gradle 8.11.1 unzipped to `/tmp` (no system gradle);
   `./gradlew` is self-sufficient now. Truth's package is `com.google.common.truth`,
   **not** `com.google.truth`. Room/KSP are wired (deps + `room.schemaLocation`) but no
-  `@Database` exists yet, so KSP is unexercised until T12. Next: T03.
+  `@Database` exists yet, so KSP is unexercised until T12.
+- 2026-08-07 — T03 done: Windows SDK (cmdline-tools 15859902, platform-tools, emulator,
+  `system-images;android-35;google_apis;x86_64`), AVD `perch`, booted headless.
+  Cold first boot ≈ 11 min; budget 15 min (`BOOT_TIMEOUT=900`). Gotchas, all now
+  encoded in scripts so no future session re-derives them:
+  · `avdmanager create avd -d pixel_6` fails (no `devices.xml` without a `platforms`
+    package) — create the AVD with **no** `-d`, which defaults to a 320x640 screen.
+  · So `device.sh` now applies `wm size 1080x1920` + `wm density 420` on every boot.
+    `wm size` clamps to the AVD's 1:2 physical aspect, so asking for 1080x2400 yields
+    1080x1920. At 320x640 a screenshot is ~5 KB and trips the >10 KB blank-guard.
+  · License acceptance: copy `~/Android/Sdk/licenses/*` to the Windows SDK. Piping
+    `y` into `sdkmanager.bat --licenses` through interop does not work.
+  · One bad package name makes `sdkmanager` install **nothing** — quote
+    `system-images;...` inside a `.bat`, not on the interop command line.
+  Next: T04 (fixture harvest).

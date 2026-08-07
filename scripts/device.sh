@@ -31,7 +31,10 @@ STAGE_UNIX=${STAGE_UNIX:-/mnt/c/perch-stage}         # Windows-visible scratch d
 STAGE_WIN=${STAGE_WIN:-'C:\perch-stage'}
 AVD=${AVD:-perch}
 BOOT_TIMEOUT=${BOOT_TIMEOUT:-900}                    # 15 min is generous once WHPX is on
-SCREEN_SIZE=${SCREEN_SIZE:-540x1200}
+SCREEN_SIZE=${SCREEN_SIZE:-1080x1920}                # AVD default is 320x640 — far too small.
+SCREEN_DENSITY=${SCREEN_DENSITY:-420}                # 1080x1920 @420dpi = 411x731dp, a normal phone.
+                                                     # `wm size` clamps to the AVD's 1:2 physical
+                                                     # aspect, so 1080x2400 lands as 1080x1920 anyway.
 
 ADB="$WIN_SDK_UNIX/platform-tools/adb.exe"
 EMU="$WIN_SDK_UNIX/emulator/emulator.exe"
@@ -97,6 +100,7 @@ cmd_boot() {
     sleep 10
   done
   _adb shell wm size "$SCREEN_SIZE" >/dev/null 2>&1
+  _adb shell wm density "$SCREEN_DENSITY" >/dev/null 2>&1
   _adb shell settings put global window_animation_scale 0 >/dev/null 2>&1
   _adb shell settings put global transition_animation_scale 0 >/dev/null 2>&1
   _adb shell settings put global animator_duration_scale 0 >/dev/null 2>&1
@@ -146,6 +150,7 @@ cmd_reboot() {
     sleep 10
   done
   _adb shell wm size "$SCREEN_SIZE" >/dev/null 2>&1
+  _adb shell wm density "$SCREEN_DENSITY" >/dev/null 2>&1
   echo "device.sh: rebooted in $(( $(date +%s) - t0 ))s"
 }
 
