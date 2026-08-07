@@ -42,19 +42,15 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
   **The corpus contains zero RSS 1.0 feeds** (39/39 `<rss>`/`<feed>`), so RDF is covered
   only by hand-written docs — the corpus test will never exercise it.
   `FeedParser` decides the format from an **8 KiB prefix scan**, not a parse tree, which
-  is what makes the 5 MB-of-noise case ~ms. Charset: XML declaration → HTTP `charset` →
-  UTF-8, and an unknown charset name falls through to UTF-8 rather than failing the feed.
+  is what makes the 5 MB-of-noise case ~ms.
 - 2026-08-07 — T09 done: `FeedCorpusTest` = 39 snapshots × 2; it `check`s ≥35 exist, so it
   cannot go vacuous.
 - 2026-08-07 — T10 done: `HtmlSanitizer` (16 tests). jsoup `Cleaner` + a from-scratch `Safelist`;
   **`addProtocols` is also what resolves relative URLs**, so no manual `resolveUrl` pass exists.
-- 2026-08-07 — T11 done: `FeedDiscovery` (13 tests; suite now 221, 0 failures). Attribute
-  order, `rel` token lists and `type` parameters all vary between sites, and xania.org even
-  splits its `<link>` across two lines — hence jsoup, never a regex. Why declared URLs are
-  trusted unfetched but path guesses are not is in the class's KDoc.
-- 2026-08-07 — T12 done: Room schema v1 + DAOs (11 tests; suite now 232, 0 failures).
-  Schema exported to `app/schemas/…PerchDatabase/1.json` (committed). No `@TypeConverter`s
-  exist and none are needed — every §4 column is SQLite-native, dates are epoch millis.
+- 2026-08-07 — T11 done: `FeedDiscovery` (13 tests). Why declared URLs are trusted unfetched
+  but path guesses are not is in the class's KDoc.
+- 2026-08-07 — T12 done: Room schema v1 + DAOs. No `@TypeConverter`s exist or are needed —
+  every §4 column is SQLite-native, dates are epoch millis.
   **Do not use Room's `@Upsert` for entries.** It recovers from the unique-index conflict
   by updating on the *primary key*, which is still 0 on a freshly parsed entry, so the row
   is silently dropped. `EntryDao.upsertAll` instead matches on `(feedId, guid)`, carries
@@ -67,31 +63,25 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
   `EntryDao.setRead` chunks ids at 900 (SQLite caps `IN (…)` variables at 999); call it,
   never `setReadForIds`. Undo is a token holding the exact ids that call flipped, so it
   cannot resurrect an entry read before or after it; `readAt` comes from an injected `Clock`.
-- 2026-08-07 — T14 done: `data/net/FeedFetcher` + `PerchHttp` (16 tests; suite now 263, 0
-  failures). `FeedFetcher` **is** T11's `PageFetcher`, so discovery and refresh share one
-  client. The 8 MiB cap is checked against `Content-Length` *and* the stream, because a
-  chunked response declares no length. **`PerchHttp`'s disk cache does not fight conditional GET**: OkHttp bypasses its
-  cache for any request already carrying `If-None-Match`/`If-Modified-Since` — verified, do
-  not re-derive. `client(cacheDir = null)` skips the cache for tests.
-- 2026-08-07 — T15 done: `data/repo/FeedRepository` (14 tests; suite now 277, 0 failures).
-  `refresh(feedId)` / `refreshAll()` → `Updated(newEntries)` | `Unchanged` | `Failed(msg)`.
-  **Sanitizing moved here**: parsers still hand out raw `contentHtml`, but what reaches
-  the DB is already `HtmlSanitizer`-clean plus a summary, so T25's renderer never sees
-  feed-authored markup. Three things a later task must not undo: every feed write goes
-  through `mutate()`, which **re-reads the row** — a fetch takes seconds and a rename can
-  land mid-flight, so writing back the pre-fetch snapshot silently reverts it (there is a
-  test). Retention says "still in the body" as `fetchedAt < refreshStart`, not a guid
-  list, so it needs no `IN (…)` and has no 999-variable ceiling. And a redirect only moves
-  `feedUrl` if no other feed already owns it — `feedUrl` is uniquely indexed, so two
-  subscriptions converging would otherwise abort the refresh (T16 owns the merge).
-- 2026-08-07 — T16 done: add/remove/rename on `FeedRepository` (23 tests in that class;
-  suite now 286, 0 failures). `resolve(url) → SourceResolution` (`Resolved` |
-  `AlreadySubscribed` | `NoFeedFound` | `Unreachable`), then `add(Resolved)`. The split is
-  DESIGN.md §5's confirm-before-commit, and it is also why adding a source costs **one**
-  fetch, not two: `Resolved` carries the parsed feed, so `add` writes those entries without
-  refetching. Duplicates are caught twice — on the pasted URL before any fetch, and on the
-  post-redirect final URL — and `add` is idempotent on `feedUrl`. **Paste normalization is
-  deliberately not here**: `example.com` is rejected as unreachable, and T23's sheet owns it.
+- 2026-08-07 — T14 done: `data/net/FeedFetcher` + `PerchHttp` (16 tests). `FeedFetcher` **is**
+  T11's `PageFetcher`, so discovery and refresh share one client. The 8 MiB cap is checked
+  against `Content-Length` *and* the stream (a chunked response declares no length).
+  **`PerchHttp`'s disk cache does not fight conditional GET**: OkHttp bypasses its cache for
+  any request already carrying `If-None-Match`/`If-Modified-Since` — verified, do not
+  re-derive. `client(cacheDir = null)` skips the cache for tests.
+- 2026-08-07 — T15 done: `data/repo/FeedRepository` (14 tests). **Sanitizing moved here**:
+  parsers still hand out raw `contentHtml`, but what reaches the DB is already
+  `HtmlSanitizer`-clean plus a summary, so T25's renderer never sees feed-authored markup.
+  Three things a later task must not undo: every feed write goes through `mutate()`, which
+  **re-reads the row** — a fetch takes seconds and a rename can land mid-flight, so writing
+  back the pre-fetch snapshot silently reverts it (there is a test). Retention says "still
+  in the body" as `fetchedAt < refreshStart`, not a guid list, so it has no 999-variable
+  ceiling. And a redirect only moves `feedUrl` if no other feed already owns it — it is
+  uniquely indexed, so two subscriptions converging would otherwise abort the refresh.
+- 2026-08-07 — T16 done: add/remove/rename on `FeedRepository` (23 tests). `resolve(url) →
+  SourceResolution`, then `add(Resolved)` — DESIGN.md §5's confirm-before-commit, and also
+  why adding costs **one** fetch: `Resolved` carries the parsed feed. **Paste normalization
+  is deliberately not here**: `example.com` is rejected as unreachable, T23's sheet owns it.
 - 2026-08-07 — T17 done: `data/opml/Opml.kt` + `data/repo/OpmlRepository.kt` (22 tests; suite
   now 308, 0 failures). Import **fetches nothing**: rows land with null validators and null
   `lastFetchedAt` — the "never polled" state T18's worker collects, and T27 owns the single
