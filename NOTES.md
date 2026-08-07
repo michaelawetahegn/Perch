@@ -97,3 +97,10 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
   `EntryDao.setRead` chunks ids at 900 (SQLite caps `IN (…)` variables at 999); call it,
   never `setReadForIds`. Undo is a token holding the exact ids that call flipped, so it
   cannot resurrect an entry read before or after it; `readAt` comes from an injected `Clock`.
+- 2026-08-07 — T14 done: `data/net/FeedFetcher` + `PerchHttp` (16 tests; suite now 263, 0
+  failures). `FeedFetcher` **is** T11's `PageFetcher`, so discovery and refresh share one
+  client; the adapter drops the message, so T15 must call the 3-arg `fetch`. The 8 MiB cap
+  is checked against `Content-Length` *and* the stream, because a chunked response declares
+  no length. **`PerchHttp`'s disk cache does not fight conditional GET**: OkHttp bypasses its
+  cache for any request already carrying `If-None-Match`/`If-Modified-Since` — verified, do
+  not re-derive. `client(cacheDir = null)` skips the cache for tests.

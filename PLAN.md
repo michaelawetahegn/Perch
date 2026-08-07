@@ -144,7 +144,7 @@ production code but no test is a defect — reopen the box.
         the scoped feed; undo restores the exact prior set.
       - Rung: unit
 
-- [ ] **T14 — HTTP layer + conditional GET. TDD (MockWebServer).** `FeedFetcher`
+- [x] **T14 — HTTP layer + conditional GET. TDD (MockWebServer).** `FeedFetcher`
       returning `NotModified | Success(bytes, etag, lastModified, finalUrl) | Failure`.
       - Done: MockWebServer tests green: 200 stores ETag/Last-Modified; the follow-up
         request carries `If-None-Match`/`If-Modified-Since`; 304 → `NotModified` with
