@@ -31,31 +31,26 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
     live; the corpus must not contain feeds T09 requires to parse but T14 must refuse.
   · `research.nccgroup.com` — no longer publishes a feed anywhere (no `<link rel=alternate>`,
     every path guess soft-404s to HTML). T11's negative case; T32 must record it as dead.
-- 2026-08-07 — T05–T08 done: `DateParser` (29), `RssParser` (19), `AtomParser` (24),
-  `RdfParser` (21) + `FeedParser` dispatch (20). Everything they learned is now pinned by
-  those tests; what a *future* task still needs to know: shared plumbing lives in
-  `data/parse/FeedXml.kt` (lenient parse, direct-child + local-name lookup, `plainText`,
-  `resolveUrl`, `stableGuid`, `leadImageUrl`) — reuse it rather than reparsing.
-  Date floor is 2000-01-01 (below → null, caller falls back); >now+24h clamps to now.
-  **The corpus contains zero RSS 1.0 feeds** (39/39 `<rss>`/`<feed>`), so RDF is covered
-  only by hand-written docs — the corpus test will never exercise it. `FeedParser` decides
-  the format from an **8 KiB prefix scan**, not a parse tree — that is why 5 MB of noise is ~ms.
-- 2026-08-07 — T09 done: `FeedCorpusTest` = 39 snapshots × 2; it `check`s ≥35 exist, so it
-  cannot go vacuous.
-- 2026-08-07 — T10 done: `HtmlSanitizer` (16 tests). jsoup `Cleaner` + from-scratch `Safelist`;
+- 2026-08-07 — T05–T09 done: the four parsers + `FeedParser` dispatch, and `FeedCorpusTest`
+  (39 snapshots × 2; it `check`s ≥35 exist, so it cannot go vacuous). What a *future* task
+  still needs: shared plumbing lives in `data/parse/FeedXml.kt` (lenient parse, direct-child +
+  local-name lookup, `plainText`, `resolveUrl`, `stableGuid`, `leadImageUrl`) — reuse it rather
+  than reparsing. Date floor is 2000-01-01 (below → null, caller falls back); >now+24h clamps to
+  now. **The corpus contains zero RSS 1.0 feeds**, so RDF is covered only by hand-written docs.
+  `FeedParser` picks the format from an **8 KiB prefix scan**, not a parse tree — that is why
+  5 MB of noise is ~ms.
+- 2026-08-07 — T10 done: `HtmlSanitizer` (16 tests). jsoup `Cleaner` + a from-scratch `Safelist`;
   **`addProtocols` also resolves relative URLs**, so no manual `resolveUrl` pass exists.
-- 2026-08-07 — T12 done: Room schema v1 + DAOs. No `@TypeConverter`s exist or are needed —
-  every §4 column is SQLite-native, dates are epoch millis. **No Room `@Upsert` for entries** —
-  it resolves the unique-index conflict by updating on the *primary key*, still 0 on a freshly
-  parsed entry, so the row is silently dropped. `EntryDao.upsertAll` matches on `(feedId, guid)`,
-  carries the existing id forward, and preserves `isRead`/`readAt`/`isStarred` — read state
-  belongs to the reader, not the feed. It returns the count of genuinely new entries, which is
-  what T15's "refetch inserts zero rows" assertion reads.
-- 2026-08-07 — T13 done: `EntryRepository` read state (15 tests; suite now 247, 0 failures).
+- 2026-08-07 — T12 done: Room schema v1 + DAOs. No `@TypeConverter`s are needed — every §4
+  column is SQLite-native, dates are epoch millis. **No Room `@Upsert` for entries**: it resolves
+  the unique-index conflict on the *primary key*, still 0 on a freshly parsed entry, so the row
+  is silently dropped. `EntryDao.upsertAll` matches on `(feedId, guid)`, carries the existing id
+  forward, preserves `isRead`/`readAt`/`isStarred`, and returns the count of genuinely new rows —
+  which is what T15's "refetch inserts zero rows" assertion reads.
+- 2026-08-07 — T13 done: `EntryRepository` read state (15 tests).
   `observeUnreadCountsByFeed()` is a Room 2.6 `@MapColumn` multimap over `GROUP BY`, so a
   **fully-read source is absent from the map, not 0** — T22's drawer needs `counts[id] ?: 0`.
-  `EntryDao.setRead` chunks ids at 900 (SQLite caps `IN (…)` variables at 999); call it,
-  never `setReadForIds`. Undo is a token holding the exact ids that call flipped, so it
+  `EntryDao.setRead` chunks ids at 900 (SQLite caps `IN (…)`); call it, never `setReadForIds`. Undo is a token holding the exact ids that call flipped, so it
   cannot resurrect an entry read before or after it; `readAt` comes from an injected `Clock`.
 - 2026-08-07 — T14 done: `data/net/FeedFetcher` + `PerchHttp` (16 tests). `FeedFetcher` **is**
   T11's `PageFetcher`, so discovery and refresh share one client. The 8 MiB cap is checked
@@ -97,3 +92,9 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
   kept out of `PerchTypography` (sans) so furniture cannot render serif by accident — T25 reads
   `ArticleType`. **Standing grep gate: no `Color(0x`, `N.dp`, `N.sp` outside `ui/theme/`.**
   `PerchTheme(dynamicColor = false)` pins the fallback scheme — T29/T32 need it to be deterministic.
+- 2026-08-07 — T20 done: `di/AppContainer` + `ui/nav/PerchNavHost` + Home/Article/Settings shells
+  (4 nav tests; debug 326, release 322, 0 failures). **Compose UI tests must live in
+  `app/src/testDebug/`** — `ui-test-manifest` is a `debugImplementation`, so `ComponentActivity`
+  is missing from the release manifest and `./gradlew test` (both variants) fails there.
+  Screens receive dependencies only via `XxxViewModel.factory(container)` — nothing looks up a
+  singleton, which is what lets a test compose any route over an in-memory DB.

@@ -190,7 +190,7 @@ production code but no test is a defect — reopen the box.
         `.dp` literals in feature packages (grep-checked), or `TODO(` in `ui/`.
       - Rung: build
 
-- [ ] **T20 — App scaffold + navigation.** `MainActivity`, `PerchNavHost`, routes
+- [x] **T20 — App scaffold + navigation.** `MainActivity`, `PerchNavHost`, routes
       `home` / `article/{entryId}` / `settings`, drawer shell, `AppContainer` wired,
       ViewModels constructed from it.
       - Done: `assembleDebug` green; a Robolectric nav test asserts each route composes

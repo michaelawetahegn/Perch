@@ -1,6 +1,7 @@
 package dev.mkiros.perch.data.repo
 
 import dev.mkiros.perch.data.db.EntryDao
+import dev.mkiros.perch.data.db.entity.EntryEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import java.time.Clock
@@ -25,6 +26,9 @@ class EntryRepository(
      */
     fun observeUnreadCountsByFeed(): Flow<Map<Long, Int>> =
         entryDao.observeUnreadCountsByFeed().distinctUntilChanged()
+
+    /** One entry by id, or null if the source was removed or retention collected the row. */
+    suspend fun find(entryId: Long): EntryEntity? = entryDao.findById(entryId)
 
     /** Marking unread forgets when it was read; there is no half-read state to keep. */
     suspend fun setRead(entryId: Long, isRead: Boolean) {
