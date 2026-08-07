@@ -100,7 +100,7 @@ production code but no test is a defect — reopen the box.
         input returns Failure in < 2s without OOM.
       - Rung: unit
 
-- [ ] **T09 — Corpus test (standing).** `FeedCorpusTest` iterates every file in
+- [x] **T09 — Corpus test (standing).** `FeedCorpusTest` iterates every file in
       `fixtures/snapshots/` and asserts: parses to Success, feed title non-blank,
       ≥1 entry, and for **every** entry — title non-blank, link absolute-http(s) or null,
       `publishedAt` in `[2000-01-01, now+24h]`, guid non-blank and unique within the feed.

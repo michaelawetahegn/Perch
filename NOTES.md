@@ -91,3 +91,11 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
   what keeps the pathological-input case well under its 2 s budget. Charset order is
   XML declaration → HTTP `charset` → UTF-8; an unknown charset name falls through to
   UTF-8 rather than failing the feed.
+- 2026-08-07 — T09 done: `FeedCorpusTest` (78 tests = 39 snapshots × 2), **green with no
+  production change** — T05–T08 already satisfied it. Parameterized per feed so a failure
+  names the feed; `requestUrl` comes from `manifest.tsv` so relative links resolve as they
+  will live. Guarded against going vacuous: the parameter list `check`s ≥35 snapshots, and
+  the floor mutated to `now-1h` fails all 39 date cases (verified once, then reverted).
+  Every corpus entry has a **non-null** `publishedAt`, so the contract asserts non-null —
+  the `fetchedAt` fallback is untested by the corpus and stays T15's responsibility.
+  **This is the standing contract; a later task may not weaken it.**
