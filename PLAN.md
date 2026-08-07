@@ -35,22 +35,33 @@ production code but no test is a defect — reopen the box.
         `app/build/outputs/apk/debug/app-debug.apk`.
       - Rung: build
 
-- [ ] **T03 — Emulator bring-up.** `/dev/kvm` is **absent** on this host (see NOTES.md
-      ACTION REQUIRED). Re-check it first — if it appeared, use
-      `system-images;android-35;google_apis;x86_64`; if still absent, try the x86_64
-      image unaccelerated, and if that fails, `…;google_apis;arm64-v8a`.
-      Create AVD `perch`, boot headless
-      (`-no-window -no-audio -no-boot-anim -gpu swiftshader_indirect`), wait for
-      `sys.boot_completed` with a **45-minute hard cap**, then `adb shell wm size 540x1200`
-      and prove the pipeline with `adb exec-out screencap -p > /tmp/hello.png`.
-      Record the boot time in NOTES.md.
-      - Done: `adb shell getprop sys.boot_completed` = `1` AND the T02 APK installs,
-        launches, and produces a non-blank PNG > 10 KB.
-      - **If this task BLOCKs:** that is survivable and expected without KVM. Mark it
-        `[BLOCKED: …]`, log it, and **continue to T04** — everything through T28 is
-        verified by JVM/Robolectric tests and needs no emulator. Only T29 (polish) and
-        T30 (Maestro) depend on it; if still blocked when they come up, mark them
-        BLOCKED too and finish T31 so a working APK still ships.
+- [ ] **T03 — Emulator on the Windows side + WSL bridge.** `/dev/kvm` is absent and
+      **cannot** be obtained (Windows 10 → no WSL nested virtualization). So the
+      emulator runs on Windows, accelerated by WHPX, driven from WSL via
+      `scripts/device.sh` — read that script's header before starting; it already
+      encodes the whole bridge.
+      Steps: `./scripts/device.sh check`; install the Windows SDK by unzipping
+      `commandlinetools-win-*.zip` to `C:\Android\Sdk\cmdline-tools\latest`
+      (drive it with `cmd.exe`/`powershell.exe` from WSL — no GUI, no Android Studio),
+      then `sdkmanager.bat` for `platform-tools`, `emulator`,
+      `system-images;android-35;google_apis;x86_64`; `avdmanager.bat create avd -n perch`;
+      `./scripts/device.sh boot`.
+      **Only ever touch the device through `scripts/device.sh`** — a WSL-side adb server
+      and the Windows adb server will fight over the same emulator.
+      Record the boot time and the accelerator in use (`emulator -accel-check`) in NOTES.md.
+      - Done: `./scripts/device.sh check` exits 0 with `✔ WHPX enabled` and a booted
+        device; `./scripts/device.sh install app/build/outputs/apk/debug/app-debug.apk`
+        succeeds; `./scripts/device.sh screenshot /tmp/hello.png` prints a byte count
+        (it self-verifies PNG magic and non-blankness).
+      - **If this task BLOCKs:** survivable, keep going. Mark it `[BLOCKED: …]`, log it,
+        and **continue to T04**. T01–T28 and T31 are verified by JVM/Robolectric tests
+        with no device at all, and T29 captures screenshots on the JVM. Only T30
+        (Maestro) hard-depends on this; if still blocked at T30, mark T30 BLOCKED and
+        finish T31 so a working APK still ships.
+      - **If WHPX is disabled** (the human hasn't done the NOTES.md ACTION REQUIRED
+        yet): do not wait and do not retry in a loop — mark this task
+        `[BLOCKED: WHPX disabled, awaiting host reboot]` and move to T04. A later
+        session re-runs `check` and unblocks it.
       - Rung: screenshot
 
 - [ ] **T04 — Fixture harvest.** For each URL in `fixtures/feeds.txt`: `curl -L`
@@ -236,19 +247,32 @@ production code but no test is a defect — reopen the box.
 
 ## Phase 4 — Polish & ship
 
-- [ ] **T29 — Consolidated design-polish pass (screenshot-driven).** Requires T03.
+- [ ] **T29 — Consolidated design-polish pass (screenshot-driven).** **No device
+      needed.** Render real pixels on the JVM with Robolectric native graphics:
+      `@GraphicsMode(NATIVE)`, `testOptions.unitTests.isIncludeAndroidResources = true`,
+      `composeTestRule.onRoot().captureToImage()` → PNG in `screenshots/`. Seconds per
+      capture, deterministic, and it works whether or not T03 succeeded.
       Capture **home (dark), home (light), drawer, article, add-source sheet, empty
-      state** — six screenshots. Critique each against the DESIGN.md §9 checklist, fix,
-      re-capture. **Max 2 critique-fix iterations**, then log residual items to NOTES.md
-      and check the box.
-      - Done: six screenshots in `screenshots/`, and every §9 line either passes or has
-        a one-line residual note in NOTES.md.
-      - Rung: screenshot
+      state** — six screenshots, seeded from the T28 fixture data. Then *look at them*
+      and critique each against the DESIGN.md §9 checklist, fix, re-capture.
+      **Max 2 critique-fix iterations**, then log residual items to NOTES.md and check
+      the box. If the Robolectric capture path fails twice, fall back to
+      `./scripts/device.sh screenshot` (needs T03) rather than burning a third attempt.
+      - Done: six PNGs in `screenshots/`, each > 10 KB and visually inspected; every
+        §9 line either passes or has a one-line residual note in NOTES.md.
+      - Rung: screenshot (JVM-rendered)
 
-- [ ] **T30 — Maestro regression flow.** Requires T03. `maestro/regression.yaml`:
-      add source → refresh → open entry (read) → back → filter by source → mark all
-      read → remove source (confirm) → OPML export.
-      - Done: `maestro test maestro/regression.yaml` exits 0 on a clean install.
+- [ ] **T30 — Maestro regression flow.** Requires T03 (this is the one genuinely
+      device-bound task). `maestro/regression.yaml`: add source → refresh → open entry
+      (read) → back → filter by source → mark all read → remove source (confirm) →
+      OPML export.
+      Maestro must reach the **Windows** adb server. Preferred: install Maestro on
+      Windows and run it via interop against a staged copy of the flow
+      (`./scripts/device.sh stage maestro/`). Fallback: WSL Maestro pointed at the
+      Windows adb server over TCP (`adb.exe -a -P 5037 nodaemon server` on Windows,
+      then `ADB_SERVER_SOCKET=tcp:172.18.144.1:5037`). Record which one worked in
+      NOTES.md so no future session re-derives it.
+      - Done: the Maestro run exits 0 on a clean install of the current APK.
       - Rung: maestro
 
 - [ ] **T31 — Ship.** Remove `fallbackToDestructiveMigration()` and add a real migration

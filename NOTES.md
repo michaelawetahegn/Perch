@@ -8,35 +8,43 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
 
 ---
 
-## ACTION REQUIRED (human, one-time — the loop works without it, just slower)
+## ACTION REQUIRED (human, one-time, ~2 min + reboot)
 
-`/dev/kvm` is **absent** in this WSL2 instance, so the Android emulator runs
-unaccelerated on 4 cores: boots take tens of minutes and may fail outright. Nothing in
-tasks T01–T28 or T31 needs it (all verification is JVM + Robolectric), but T29
-(screenshot polish) and T30 (Maestro) do.
+**Enable Windows Hypervisor Platform.** Measured 2026-08-07:
+`HypervisorPlatform = Disabled`, `VirtualMachinePlatform = Enabled`,
+`Microsoft-Hyper-V-Hypervisor = Enabled`. WHPX is the one the Android emulator needs.
 
-To fix, on the **Windows** side create/edit `C:\Users\<you>\.wslconfig`:
+In an **Administrator** PowerShell on Windows:
 
-```ini
-[wsl2]
-nestedVirtualization=true
-memory=12GB
-processors=6
+```powershell
+dism.exe /Online /Enable-Feature /FeatureName:HypervisorPlatform /All /NoRestart
+Restart-Computer
 ```
 
-then run `wsl --shutdown` in PowerShell and reopen the shell. Verify with
-`ls -l /dev/kvm`. (Requires Windows 11 / recent Windows 10 + WSL2. On Intel hosts also
-confirm VT-x is on in firmware; on AMD, SVM.) If `/dev/kvm` appears, T03 will pick the
-accelerated x86_64 image automatically.
+(Or: Turn Windows features on or off → tick **Windows Hypervisor Platform**.)
+
+Verify afterwards from WSL: `./scripts/device.sh check` should print `✔ WHPX enabled`.
+
+**Do not chase `/dev/kvm` inside WSL — it is impossible on this host.** WSL2 nested
+virtualization is a Windows 11 feature; this box is Windows 10 Pro 19045. The emulator
+therefore runs on the *Windows* side (accelerated by WHPX) and is driven from WSL
+through `scripts/device.sh`. Gradle, tests and git stay in WSL.
+
+Until WHPX is on, T30 (Maestro) is the only task that truly suffers. T29 captures its
+screenshots via Robolectric on the JVM, and T01–T28 + T31 never touch a device.
 
 ## Environment facts (measured at bootstrap, 2026-08-07)
 
-- WSL2, kernel 6.18.33.2-microsoft-standard-WSL2, Ubuntu userland.
+- Windows 10 Pro 19045.6466 · WSL 2.7.11 · kernel 6.18.33.2 · Ubuntu userland.
+- Host: Intel i7-4790K (4c/8t, VT-x + EPT ✔), 15.9 GB RAM, 65 GB free on `C:`.
+- WSL VM: 4 CPUs, 9 GB RAM, 899 GB free on `/`.
 - System `java` = **OpenJDK 8** → T01 installs Temurin 17; Gradle must use 17.
-- 4 CPUs, 9 GB RAM, 899 GB free on `/`.
-- No Android SDK installed yet. No physical device.
+- `/dev/kvm` absent and will stay absent (see above).
+- No Android SDK yet, in WSL or on Windows. No physical device.
+- Windows gateway from WSL: `172.18.144.1` (only needed if the interop bridge fails
+  and adb has to go over TCP instead).
 
 ## Log
 
-- 2026-08-07 — bootstrap session: SPEC/DESIGN/PLAN/CLAUDE/loop.sh/fixtures created.
+- 2026-08-07 — bootstrap: SPEC/DESIGN/PLAN/CLAUDE/loop.sh/device.sh/fixtures created.
   Nothing built yet. Next: T01.

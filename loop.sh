@@ -18,15 +18,18 @@ SLEEP_BETWEEN=${SLEEP_BETWEEN:-30}        # pause between normal sessions (s)
 LIMIT_SLEEP=${LIMIT_SLEEP:-1800}          # nap on usage/rate limit (s) = 30 min
 SESSION_TIMEOUT=${SESSION_TIMEOUT:-7200}  # hard cap on one session (s) = 2 h
 STALL_LIMIT=${STALL_LIMIT:-3}             # consecutive no-commit sessions before stop
-BOOT_TIMEOUT=${BOOT_TIMEOUT:-2700}        # emulator boot cap (s) = 45 min (no KVM here)
+BOOT_TIMEOUT=${BOOT_TIMEOUT:-900}         # emulator boot cap (s); WHPX-accelerated on Windows
 AVD=${AVD:-perch}
 REBOOT_EVERY=${REBOOT_EVERY:-86400}       # nightly adb reboot as insurance (s)
 REBOOT_STAMP=".loop_last_reboot"
 
 # Claude Code needs JDK 17 on PATH for any Gradle work; system java is 8.
+# ANDROID_HOME here is the WSL-side SDK used by Gradle (platforms + build-tools only).
+# The emulator/adb live in the WINDOWS SDK and are reached via scripts/device.sh.
 export ANDROID_HOME="${ANDROID_HOME:-$HOME/Android/Sdk}"
 export ANDROID_SDK_ROOT="$ANDROID_HOME"
-export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$ANDROID_HOME/cmdline-tools/latest/bin:$HOME/.maestro/bin:$PATH"
+export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$HOME/.maestro/bin:$PATH"
+export AVD
 [ -d "$HOME/.jdks/temurin-17" ] && export JAVA_HOME="$HOME/.jdks/temurin-17" && export PATH="$JAVA_HOME/bin:$PATH"
 
 # ── plumbing ─────────────────────────────────────────────────────────────────
@@ -55,34 +58,26 @@ hit_limit() {                       # $1 = session output file, $2 = session exi
   return 1
 }
 
-emulator_online() {
-  command -v adb >/dev/null 2>&1 || return 1
-  [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = "1" ]
-}
+# The emulator lives on the Windows side (no nested virt on Windows 10 → no /dev/kvm
+# in WSL). scripts/device.sh owns every detail of that bridge; the loop just asks.
+DEV=./scripts/device.sh
+
+emulator_online() { [ -x "$DEV" ] && BOOT_TIMEOUT=1 "$DEV" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r\n' | grep -qx 1; }
 
 boot_emulator() {
-  command -v emulator >/dev/null 2>&1 || { say "emulator not installed yet (T01/T03 pending) — skipping"; return 0; }
-  emulator -list-avds 2>/dev/null | grep -qx "$AVD" || { say "AVD '$AVD' not created yet (T03 pending) — skipping"; return 0; }
+  [ -x "$DEV" ] || { say "scripts/device.sh missing — skipping emulator"; return 0; }
+  if ! "$DEV" check >/dev/null 2>&1; then
+    say "device bridge not ready yet (T03 pending, or WHPX still disabled — see NOTES.md). Continuing; nothing before T30 needs it."
+    "$DEV" check 2>&1 | sed 's/^/         /' | tee -a "$LOG" >/dev/null
+    return 0
+  fi
   emulator_online && { say "emulator already up"; return 0; }
-
-  say "booting AVD '$AVD' headless (no KVM on this host — this can take a long time)…"
-  adb start-server >/dev/null 2>&1
-  nohup emulator -avd "$AVD" -no-window -no-audio -no-boot-anim \
-        -gpu swiftshader_indirect -no-snapshot-save >>emulator.log 2>&1 &
-  local t0 now
-  t0=$(date +%s)
-  while :; do
-    emulator_online && break
-    now=$(date +%s)
-    if [ $((now - t0)) -ge "$BOOT_TIMEOUT" ]; then
-      say "!! emulator did not boot within ${BOOT_TIMEOUT}s — continuing anyway (non-visual tasks don't need it)"
-      return 1
-    fi
-    sleep 15
-  done
-  adb shell wm size 540x1200 >/dev/null 2>&1
-  say "emulator booted in $(( $(date +%s) - t0 ))s"
-  date +%s > "$REBOOT_STAMP"
+  say "booting the Windows-side emulator…"
+  if BOOT_TIMEOUT="$BOOT_TIMEOUT" "$DEV" boot 2>&1 | tee -a "$LOG" | tail -1; then
+    date +%s > "$REBOOT_STAMP"
+  else
+    say "!! emulator boot failed — continuing anyway (only T30 needs it)"
+  fi
 }
 
 maybe_nightly_reboot() {
@@ -92,15 +87,7 @@ maybe_nightly_reboot() {
   now=$(date +%s)
   [ $((now - last)) -lt "$REBOOT_EVERY" ] && return 0
   say "nightly emulator reboot (insurance against adb/emulator drift)"
-  adb reboot >/dev/null 2>&1
-  sleep 10
-  adb wait-for-device >/dev/null 2>&1
-  local t0; t0=$(date +%s)
-  while ! emulator_online; do
-    [ $(( $(date +%s) - t0 )) -ge "$BOOT_TIMEOUT" ] && { say "!! reboot did not complete in time"; break; }
-    sleep 15
-  done
-  adb shell wm size 540x1200 >/dev/null 2>&1
+  "$DEV" reboot 2>&1 | tail -1 | tee -a "$LOG" >/dev/null
   echo "$now" > "$REBOOT_STAMP"
 }
 

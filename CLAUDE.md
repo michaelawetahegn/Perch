@@ -52,15 +52,21 @@ Do not skip ahead, do not do two tasks, do not refactor code the task doesn't to
 - `ANDROID_HOME=$HOME/Android/Sdk`, also `ANDROID_SDK_ROOT`. `local.properties` must
   contain `sdk.dir=/home/michael/Android/Sdk` (it is gitignored — recreate it if a
   build complains about a missing SDK).
-- **`/dev/kvm` is absent** → the emulator is unaccelerated and slow (minutes, possibly
-  tens of minutes, to boot). Never assume a fast boot. Always use a timeout and log the
-  elapsed time. See the ACTION REQUIRED item in NOTES.md for the one-time host fix.
-- Emulator launch: `emulator -avd perch -no-window -no-audio -no-boot-anim -gpu
-  swiftshader_indirect -no-snapshot-save &`, then `adb wait-for-device` and poll
-  `adb shell getprop sys.boot_completed`. Keep `adb shell wm size 540x1200` so
-  screenshots stay small.
-- **Keep the emulator running between sessions.** Do not kill it. If `adb` is wedged:
-  `adb kill-server && adb start-server`, then reboot the emulator, then log it.
+- **The emulator runs on WINDOWS, not in WSL.** This is Windows 10, so WSL2 has no
+  nested virtualization and `/dev/kvm` will never exist — do not waste a session
+  chasing it. The Windows-side emulator is WHPX-accelerated. Gradle, tests and git
+  stay in WSL.
+- **All device access goes through `scripts/device.sh`** (`check`, `boot`, `install`,
+  `screenshot`, `shell`, `adb`, `stage`, `reboot`). Read its header once; it handles
+  path translation and verifies screenshots. **Never run a WSL-side `adb`** — a Linux
+  adb server and the Windows one will fight over the same emulator.
+- Windows SDK lives at `C:\Android\Sdk` (`/mnt/c/Android/Sdk`); Windows-visible scratch
+  is `C:\perch-stage`. Drive Windows tooling from WSL with `cmd.exe` / `powershell.exe`.
+- **Keep the emulator running between sessions.** Do not kill it. If it is wedged:
+  `./scripts/device.sh reboot`, then log it.
+- **Screenshots do not need the emulator.** Prefer Robolectric native graphics
+  (`@GraphicsMode(NATIVE)` + `captureToImage()`) — seconds, deterministic, JVM-only.
+  The device is only genuinely required for Maestro (T30).
 - 4 cores / 9 GB RAM. Gradle: `org.gradle.jvmargs=-Xmx3g`, `org.gradle.parallel=true`,
   `org.gradle.caching=true`. Do not run Gradle and an emulator boot concurrently.
 - Never run an interactive command. Everything must be non-interactive
