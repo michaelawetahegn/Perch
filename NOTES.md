@@ -58,3 +58,9 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
   · `research.nccgroup.com` — no longer publishes a feed anywhere. Homepage has zero
     `<link rel=alternate>` and /feed /feed/ /rss.xml /atom.xml /index.xml /feed.xml /rss/
     all soft-404 to the same 116 KB HTML page (HTTP 200). Kept as T11's negative case.
+- 2026-08-07 — T05 done: `DateParser` (29 tests). Corpus holds 1126 distinct date
+  strings in 7 shapes, all ≥2014, all parse. `RFC_1123_DATE_TIME` handles a missing
+  weekday / 1-digit day / missing seconds, but **rejects a weekday that contradicts the
+  date** (parseLenient does not disable that check) — so normalization strips the
+  weekday and rewrites alpha zones (`UT`/`EST`/`PDT`/…) to offsets. Plausibility floor
+  is 2000-01-01 (below → null, so the caller falls back); >now+24h clamps to now.

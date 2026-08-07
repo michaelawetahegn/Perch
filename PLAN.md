@@ -76,7 +76,7 @@ production code but no test is a defect — reopen the box.
 
 ## Phase 1 — Parsing (pure JVM, TDD, no Android)
 
-- [ ] **T05 — `DateParser`. TDD.** RFC-822 + all its broken variants, ISO-8601/RFC-3339,
+- [x] **T05 — `DateParser`. TDD.** RFC-822 + all its broken variants, ISO-8601/RFC-3339,
       the junk formats present in the corpus. Fallback chain and clamping per SPEC.md §5.
       - Done: ≥20 table-driven cases green incl. missing leading zero, `UT`/`GMT`/`EST`,
         `Z` vs `+00:00`, millis, wrong weekday, empty string, future date clamped, and
