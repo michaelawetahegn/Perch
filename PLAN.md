@@ -197,7 +197,7 @@ production code but no test is a defect — reopen the box.
         without crashing and back from `article` returns to `home`.
       - Rung: unit
 
-- [ ] **T21 — Home: unified unread list.** `EntryRow` per DESIGN.md §5, newest first,
+- [x] **T21 — Home: unified unread list.** `EntryRow` per DESIGN.md §5, newest first,
       paging via Flow, skeleton/empty states, scroll position preserved.
       - Done: Robolectric Compose tests assert row content (title/snippet/source·time)
         and ordering from a seeded DB; empty state renders "Add your first source" with

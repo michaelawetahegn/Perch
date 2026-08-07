@@ -18,6 +18,8 @@ import java.time.Duration
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
@@ -100,6 +102,13 @@ class FeedRepository(
     private val concurrency: Int = MAX_IN_FLIGHT,
     private val discovery: FeedDiscovery = FeedDiscovery(fetcher, parser),
 ) {
+
+    /**
+     * How many sources are subscribed, reactively. An empty reading list means one thing
+     * with zero sources and another with forty (DESIGN.md §7), and this is how home
+     * tells them apart.
+     */
+    fun observeSourceCount(): Flow<Int> = feedDao.observeCount().distinctUntilChanged()
 
     // ---- subscribing -----------------------------------------------------------
 

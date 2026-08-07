@@ -49,4 +49,11 @@ interface FeedDao {
 
     @Query("SELECT COUNT(*) FROM feeds")
     suspend fun countAll(): Int
+
+    /**
+     * How many sources exist, reactively — what tells an empty reading list whether to
+     * say "add your first source" or "you're all caught up" (DESIGN.md §7).
+     */
+    @Query("SELECT COUNT(*) FROM feeds")
+    fun observeCount(): Flow<Int>
 }

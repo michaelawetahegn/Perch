@@ -23,23 +23,18 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
 
 ## Log
 
-- 2026-08-07 — T04 done: `scripts/harvest.sh` (re-runnable) → 42 manifest rows,
-  **39 snapshots** (19 MB); homepage HTML for the four auto-discovery cases is in
-  `fixtures/homepages/` — T11 needs it. **3 exclusions:**
-  · `danluu.com` (11.1 MB) and `googleprojectzero.blogspot.com` → `projectzero.google`
-    (13.2 MB) — both exceed SPEC.md §6's 8 MiB body cap, so the app would reject them
-    live; the corpus must not contain feeds T09 requires to parse but T14 must refuse.
-  · `research.nccgroup.com` — no longer publishes a feed anywhere (no `<link rel=alternate>`,
-    every path guess soft-404s to HTML). T11's negative case; T32 must record it as dead.
-- 2026-08-07 — T05–T09 done: the four parsers + `FeedParser` dispatch, and `FeedCorpusTest`
-  (39 snapshots × 2; it `check`s ≥35 exist, so it cannot go vacuous). What a *future* task
-  still needs: shared plumbing lives in `data/parse/FeedXml.kt` (lenient parse, direct-child +
-  local-name lookup, `plainText`, `resolveUrl`, `stableGuid`, `leadImageUrl`) — reuse it rather
-  than reparsing. Date floor is 2000-01-01 (below → null, caller falls back); >now+24h clamps to
-  now. **The corpus contains zero RSS 1.0 feeds**, so RDF is covered only by hand-written docs.
-  `FeedParser` picks the format from an **8 KiB prefix scan**, not a parse tree — that is why
-  5 MB of noise is ~ms.
-- 2026-08-07 — T10 done: `HtmlSanitizer` (16 tests). jsoup `Cleaner` + a from-scratch `Safelist`;
+- 2026-08-07 — T04 done: 42 manifest rows, **39 snapshots** (19 MB) via `scripts/harvest.sh`;
+  homepage HTML for the auto-discovery cases is in `fixtures/homepages/`. **3 exclusions T32
+  must record:** `danluu.com` (11.1 MB) and `projectzero.google` (13.2 MB) exceed SPEC.md §6's
+  8 MiB body cap, so the app would refuse them live; `research.nccgroup.com` publishes no feed
+  anywhere (no `<link rel=alternate>`, every path guess soft-404s to HTML) — it is dead.
+- 2026-08-07 — T05–T09 done: four parsers + `FeedParser` dispatch + `FeedCorpusTest`
+  (39 snapshots × 2; it `check`s ≥35 exist, so it cannot go vacuous). Shared plumbing lives in
+  `data/parse/FeedXml.kt` (lenient parse, direct-child + local-name lookup, `plainText`,
+  `resolveUrl`, `stableGuid`, `leadImageUrl`) — reuse it rather than reparsing. Date floor is
+  2000-01-01 (below → null, caller falls back); >now+24h clamps to now. **Zero RSS 1.0 feeds in
+  the corpus.** `FeedParser` picks format from an **8 KiB prefix scan**, so 5 MB of noise is ~ms.
+- 2026-08-07 — T10 done: `HtmlSanitizer`. jsoup `Cleaner` + a from-scratch `Safelist`;
   **`addProtocols` also resolves relative URLs**, so no manual `resolveUrl` pass exists.
 - 2026-08-07 — T12 done: Room schema v1 + DAOs. No `@TypeConverter`s are needed — every §4
   column is SQLite-native, dates are epoch millis. **No Room `@Upsert` for entries**: it resolves
@@ -47,26 +42,24 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
   is silently dropped. `EntryDao.upsertAll` matches on `(feedId, guid)`, carries the existing id
   forward, preserves `isRead`/`readAt`/`isStarred`, and returns the count of genuinely new rows —
   which is what T15's "refetch inserts zero rows" assertion reads.
-- 2026-08-07 — T13 done: `EntryRepository` read state (15 tests).
-  `observeUnreadCountsByFeed()` is a Room 2.6 `@MapColumn` multimap over `GROUP BY`, so a
-  **fully-read source is absent from the map, not 0** — T22's drawer needs `counts[id] ?: 0`.
-  `EntryDao.setRead` chunks ids at 900 (SQLite caps `IN (…)`); call it, never `setReadForIds`. Undo is a token holding the exact ids that call flipped, so it
-  cannot resurrect an entry read before or after it; `readAt` comes from an injected `Clock`.
-- 2026-08-07 — T14 done: `data/net/FeedFetcher` + `PerchHttp` (16 tests). `FeedFetcher` **is**
-  T11's `PageFetcher`, so discovery and refresh share one client. The 8 MiB cap is checked
-  against `Content-Length` *and* the stream (a chunked response declares no length).
+- 2026-08-07 — T13 done: `EntryRepository` read state. `observeUnreadCountsByFeed()` is a
+  `@MapColumn` multimap over `GROUP BY`, so a **fully-read source is absent from the map, not
+  0** — T22's drawer needs `counts[id] ?: 0`. `EntryDao.setRead` chunks ids at 900 (SQLite caps
+  `IN (…)`); call it, never `setReadForIds`. Undo holds the exact ids that one call flipped, so
+  it cannot resurrect an entry read before or after it; `readAt` comes from an injected `Clock`.
+- 2026-08-07 — T14 done: `data/net/FeedFetcher` + `PerchHttp` (16 tests). The 8 MiB cap is
+  checked against `Content-Length` *and* the stream (a chunked response declares no length).
   **`PerchHttp`'s disk cache does not fight conditional GET**: OkHttp bypasses its cache for
   any request already carrying `If-None-Match`/`If-Modified-Since` — verified, do not
   re-derive. `client(cacheDir = null)` skips the cache for tests.
-- 2026-08-07 — T15 done: `data/repo/FeedRepository` (14 tests). **Sanitizing moved here**:
-  parsers still hand out raw `contentHtml`, but what reaches the DB is already
-  `HtmlSanitizer`-clean plus a summary, so T25's renderer never sees feed-authored markup.
-  Three things a later task must not undo: every feed write goes through `mutate()`, which
-  **re-reads the row** — a fetch takes seconds and a rename can land mid-flight, so writing
-  back the pre-fetch snapshot silently reverts it (there is a test). Retention says "still
-  in the body" as `fetchedAt < refreshStart`, not a guid list, so it has no 999-variable
-  ceiling. And a redirect only moves `feedUrl` if no other feed already owns it — it is
-  uniquely indexed, so two subscriptions converging would otherwise abort the refresh.
+- 2026-08-07 — T15 done: `data/repo/FeedRepository`. **Sanitizing moved here**: parsers still
+  hand out raw `contentHtml`, but what reaches the DB is already `HtmlSanitizer`-clean plus a
+  summary, so T25's renderer never sees feed-authored markup. Three things a later task must
+  not undo: every feed write goes through `mutate()`, which **re-reads the row** — a fetch takes
+  seconds and a rename can land mid-flight, so writing back the pre-fetch snapshot silently
+  reverts it (there is a test). Retention says "still in the body" as `fetchedAt < refreshStart`,
+  not a guid list, so it has no 999-variable ceiling. And a redirect only moves `feedUrl` if no
+  other feed owns it — it is uniquely indexed, so two converging subscriptions would abort it.
 - 2026-08-07 — T16 done: add/remove/rename on `FeedRepository` (23 tests). `resolve(url) →
   SourceResolution`, then `add(Resolved)` — DESIGN.md §5's confirm-before-commit, and also
   why adding costs **one** fetch: `Resolved` carries the parsed feed. **Paste normalization
@@ -92,9 +85,16 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
   kept out of `PerchTypography` (sans) so furniture cannot render serif by accident — T25 reads
   `ArticleType`. **Standing grep gate: no `Color(0x`, `N.dp`, `N.sp` outside `ui/theme/`.**
   `PerchTheme(dynamicColor = false)` pins the fallback scheme — T29/T32 need it to be deterministic.
-- 2026-08-07 — T20 done: `di/AppContainer` + `ui/nav/PerchNavHost` + Home/Article/Settings shells
-  (4 nav tests; debug 326, release 322, 0 failures). **Compose UI tests must live in
-  `app/src/testDebug/`** — `ui-test-manifest` is a `debugImplementation`, so `ComponentActivity`
-  is missing from the release manifest and `./gradlew test` (both variants) fails there.
-  Screens receive dependencies only via `XxxViewModel.factory(container)` — nothing looks up a
+- 2026-08-07 — T20 done: `di/AppContainer` + `ui/nav/PerchNavHost` + screen shells. **Compose UI
+  tests must live in `app/src/testDebug/`** — `ui-test-manifest` is a `debugImplementation`, so
+  `ComponentActivity` is missing from the release manifest and `./gradlew test` fails there.
+  Screens get dependencies only via `XxxViewModel.factory(container)`; nothing looks up a
   singleton, which is what lets a test compose any route over an in-memory DB.
+- 2026-08-07 — T21 done: home's unread list (debug 340, release 329, 0 failures). The list is
+  one SQL join, `EntryDao.observeUnreadListItems() → EntryListItem`, so a row never looks its
+  feed up and no article body is loaded to draw a list. **Read entries drop out of that flow** —
+  T27's "show read entries" adds the variant, it does not filter in the UI. **No paging library:**
+  Room Flow + `LazyColumn` *is* the paging. `HomeUiState.nowMillis` comes from the injected
+  `Clock`, which is what makes `RelativeTime` ("3h ago", English-only, no resources) assertable.
+  The two empty states are told apart by `FeedRepository.observeSourceCount()`; each wants an
+  action button that only T23 (add source) and T27 (show read) can wire.

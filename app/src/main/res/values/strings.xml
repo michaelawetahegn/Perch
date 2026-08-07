@@ -7,6 +7,17 @@
     <string name="home_empty_no_entries">Nothing here yet</string>
     <string name="action_open_sources">Open sources</string>
 
+    <!-- Home: the entry list -->
+    <!-- Source name · relative time, the metadata line under a row's snippet. -->
+    <string name="home_entry_meta">%1$s · %2$s</string>
+
+    <!-- Home: empty states, one per cause (DESIGN.md §7) -->
+    <string name="home_empty_no_sources_title">Add your first source</string>
+    <string name="home_empty_no_sources_body">Paste a feed or a site address and Perch will follow it.</string>
+    <string name="home_empty_all_read_title">You\'re all caught up</string>
+    <string name="home_empty_all_read_body">New entries land here after the next refresh.</string>
+    <string name="home_empty_no_entries_body">This source has not published anything yet.</string>
+
     <!-- Drawer -->
     <string name="drawer_all_unread">All unread</string>
     <string name="drawer_settings">Settings</string>

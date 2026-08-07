@@ -43,6 +43,26 @@ object Dimens {
     /** The unread dot on a list row. §2 — the one coloured thing on a row. */
     val unreadDot = sm
 
+    /**
+     * The gutter the dot sits in. Reserved on read rows too, so a row does not shift
+     * sideways the moment it is read.
+     */
+    val unreadGutter = lg
+
+    /** The optional lead image on a list row. §5 — trailing, square, cropped. */
+    val thumbnail = 64.dp
+
+    /** Empty states: one centred icon above the copy. §7. */
+    val emptyIcon = 48.dp
+
+    /** Empty-state copy stops short of the screen edges rather than centring on air. */
+    val emptyContentWidth = 280.dp
+
+    /** Skeleton rows (§7): a title bar and a shorter metadata bar, on `surfaceContainer`. */
+    val skeletonTitle = lg
+    val skeletonMeta = md
+    val skeletonCorner = xs
+
     /** Icon glyphs sit at 20dp inside a [touchTarget]-sized hit area. */
     val icon = 20.dp
 

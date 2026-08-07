@@ -1,6 +1,7 @@
 package dev.mkiros.perch.data.repo
 
 import dev.mkiros.perch.data.db.EntryDao
+import dev.mkiros.perch.data.db.EntryListItem
 import dev.mkiros.perch.data.db.entity.EntryEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -15,6 +16,17 @@ class EntryRepository(
     private val entryDao: EntryDao,
     private val clock: Clock,
 ) {
+
+    /**
+     * The home reading list: every unread entry, newest first, each already carrying its
+     * source's display name (DESIGN.md §5).
+     *
+     * This is the whole paging story. Room re-emits the list on any write, `LazyColumn`
+     * composes only the rows on screen, and a reader with 42 sources has a list measured
+     * in hundreds — a paging library here would buy latency, not headroom.
+     */
+    fun observeUnreadEntries(): Flow<List<EntryListItem>> =
+        entryDao.observeUnreadListItems().distinctUntilChanged()
 
     /** Total unread, for the inbox badge. */
     fun observeTotalUnreadCount(): Flow<Int> =

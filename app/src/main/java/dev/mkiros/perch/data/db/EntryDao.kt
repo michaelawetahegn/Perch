@@ -24,6 +24,25 @@ abstract class EntryDao {
     @Query("SELECT * FROM entries WHERE feedId = :feedId ORDER BY publishedAt DESC, id DESC")
     abstract fun observeByFeed(feedId: Long): Flow<List<EntryEntity>>
 
+    /**
+     * The home list (DESIGN.md §5): unread only, newest first, joined to its source so a
+     * row never has to look its feed up.
+     *
+     * Reading an entry drops it out of this flow, which is exactly what an unread inbox
+     * should do. T27's "show read entries" adds the variant that keeps them.
+     */
+    @Query(
+        """
+        SELECT e.id AS id, e.feedId AS feedId, e.title AS title, e.summary AS summary,
+               e.imageUrl AS imageUrl, e.publishedAt AS publishedAt, e.isRead AS isRead,
+               COALESCE(NULLIF(TRIM(f.customTitle), ''), f.title) AS sourceTitle
+        FROM entries e JOIN feeds f ON f.id = e.feedId
+        WHERE e.isRead = 0
+        ORDER BY e.publishedAt DESC, e.id DESC
+        """,
+    )
+    abstract fun observeUnreadListItems(): Flow<List<EntryListItem>>
+
     @Query("SELECT * FROM entries WHERE id = :id")
     abstract suspend fun findById(id: Long): EntryEntity?
 
