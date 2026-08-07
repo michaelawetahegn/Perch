@@ -21,6 +21,8 @@
     <!-- Drawer -->
     <string name="drawer_all_unread">All unread</string>
     <string name="drawer_settings">Settings</string>
+    <!-- Content description of the ⚠ beside a source whose last refresh failed. -->
+    <string name="drawer_source_error">Not updating</string>
 
     <!-- Article -->
     <string name="action_back">Back</string>

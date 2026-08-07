@@ -2,10 +2,15 @@ package dev.mkiros.perch.ui.home
 
 import android.content.Context
 import androidx.activity.ComponentActivity
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
@@ -18,6 +23,7 @@ import dev.mkiros.perch.ui.theme.PerchTheme
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Before
@@ -27,8 +33,9 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 /**
- * The unified unread list (T21): what a row says, what order rows come in, and what the
- * screen says when there is nothing to show.
+ * The unified unread list (T21) and the source drawer around it (T22): what a row says,
+ * what order rows come in, what the screen says when there is nothing to show, and what
+ * selecting a source does to both the list and the bar.
  *
  * "Now" is a fixed [Clock] rather than the wall clock, so `3h ago` is an assertion and
  * not a race. Everything is seeded straight into an in-memory database — the screen is
@@ -45,6 +52,7 @@ class HomeScreenTest {
 
     private lateinit var database: PerchDatabase
     private lateinit var container: AppContainer
+    private lateinit var viewModel: HomeViewModel
 
     private val now = Instant.parse("2026-08-07T12:00:00Z")
     private val clock = Clock.fixed(now, ZoneOffset.UTC)
@@ -151,10 +159,155 @@ class HomeScreenTest {
         compose.onNodeWithText("Add your first source").assertDoesNotExist()
     }
 
+    // ---- the source drawer and its filter (T22) ----------------------------------
+
+    @Test
+    fun `selecting a source lists only its entries and retitles the bar`() {
+        val one = seedFeed(title = "Source One")
+        val two = seedFeed(title = "Source Two")
+        val three = seedFeed(title = "Source Three")
+        seedEntry(feedId = one, title = "Only in one")
+        seedEntry(feedId = two, title = "Only in two")
+        seedEntry(feedId = three, title = "Only in three")
+
+        showHome()
+        selectInDrawer("Source Two")
+
+        compose.onNodeWithText("Only in two").assertIsDisplayed()
+        compose.onNodeWithText("Only in one").assertDoesNotExist()
+        compose.onNodeWithText("Only in three").assertDoesNotExist()
+        compose.onNodeWithTag(HomeTestTags.TITLE).assertTextEquals("Source Two")
+    }
+
+    @Test
+    fun `a filtered source shows under the name the reader gave it`() {
+        val renamed = seedFeed(title = "nullprogram.com", customTitle = "Chris Wellons")
+        seedEntry(feedId = renamed, title = "Practical libc-free threading")
+
+        showHome()
+        selectInDrawer("Chris Wellons")
+
+        compose.onNodeWithTag(HomeTestTags.TITLE).assertTextEquals("Chris Wellons")
+    }
+
+    @Test
+    fun `going back to all unread clears the filter`() {
+        val one = seedFeed(title = "Source One")
+        val two = seedFeed(title = "Source Two")
+        seedEntry(feedId = one, title = "Only in one")
+        seedEntry(feedId = two, title = "Only in two")
+
+        showHome()
+        selectInDrawer("Source Two")
+        selectInDrawer("All unread", expectedTitle = null)
+
+        compose.onNodeWithText("Only in one").assertIsDisplayed()
+        compose.onNodeWithText("Only in two").assertIsDisplayed()
+        compose.onNodeWithTag(HomeTestTags.TITLE).assertTextEquals("Unread")
+    }
+
+    @Test
+    fun `each drawer row is badged with that source's unread count`() {
+        val two = seedFeed(title = "Two Unread")
+        val one = seedFeed(title = "One Unread")
+        val none = seedFeed(title = "Nothing Unread")
+        seedEntry(feedId = two, title = "first")
+        seedEntry(feedId = two, title = "second")
+        seedEntry(feedId = one, title = "third")
+        seedEntry(feedId = none, title = "fourth", readAt = now.toEpochMilli())
+
+        showHome()
+        openDrawer()
+
+        badge(HomeTestTags.ALL_UNREAD_BADGE).assertTextEquals("3")
+        badge(HomeTestTags.sourceBadge(two)).assertTextEquals("2")
+        badge(HomeTestTags.sourceBadge(one)).assertTextEquals("1")
+        // A fully-read source stays in the drawer at 0 rather than dropping out of it.
+        badge(HomeTestTags.sourceBadge(none)).assertTextEquals("0")
+    }
+
+    @Test
+    fun `a source whose last refresh failed is marked in the drawer`() {
+        val healthy = seedFeed(title = "Healthy")
+        seedFeed(title = "Broken", lastError = "Connection reset")
+        seedEntry(feedId = healthy, title = "Something to read")
+
+        showHome()
+        openDrawer()
+
+        compose.onNodeWithText("Broken").assertIsDisplayed()
+        compose.onNodeWithContentDescription("Not updating").assertIsDisplayed()
+    }
+
+    @Test
+    fun `reading the last unread entry of a filtered source leaves the source listed`() {
+        val one = seedFeed(title = "Source One")
+        seedFeed(title = "Source Two")
+        seedEntry(feedId = one, title = "Only in one")
+
+        showHome()
+        selectInDrawer("Source One")
+        runBlocking { container.entries.setRead(entryId = idOf("Only in one"), isRead = true) }
+        awaitState { it.entries.isEmpty() }
+
+        compose.onNodeWithText("You're all caught up").assertIsDisplayed()
+        compose.onNodeWithTag(HomeTestTags.TITLE).assertTextEquals("Source One")
+    }
+
     // ---- harness ---------------------------------------------------------------
 
+    private fun openDrawer() {
+        compose.onNodeWithContentDescription("Open sources").performClick()
+        compose.waitForIdle()
+    }
+
+    /**
+     * Selecting goes through the item's own `OnClick` semantics rather than an injected
+     * tap: under Robolectric a synthesised touch does not reach a node inside the opened
+     * drawer sheet, even though the node is on screen and carries the action. This still
+     * runs the real composable's handler, the view model, and the Room query behind it.
+     */
+
+    /**
+     * Opens the drawer and taps a row by its label, the way a reader filters. Selecting
+     * re-runs the list query off the main thread, so this waits for the state the
+     * assertions are about rather than for the click.
+     */
+    private fun selectInDrawer(label: String, expectedTitle: String? = label) {
+        openDrawer()
+        compose.onNodeWithText(label).performSemanticsAction(SemanticsActions.OnClick)
+        awaitState { it.selectedTitle == expectedTitle }
+    }
+
+    /** A drawer badge is inside the item's merged semantics, so it needs the raw tree. */
+    private fun badge(testTag: String) = compose.onNodeWithTag(testTag, useUnmergedTree = true)
+
+    /**
+     * Waits for a *later* database emission, in wall-clock time.
+     *
+     * [androidx.compose.ui.test.junit4.ComposeTestRule.waitUntil] only advances Compose's
+     * virtual clock, and re-querying Room hops onto its query executor — a genuine
+     * background thread under Robolectric — so a virtual-time spin can idle out the whole
+     * timeout without that thread ever getting scheduled. The first emission is not
+     * affected (composing the screen costs real time); every emission after it is.
+     */
+    private fun awaitState(predicate: (HomeUiState) -> Boolean) {
+        val deadline = System.currentTimeMillis() + TIMEOUT_MS
+        while (System.currentTimeMillis() < deadline) {
+            compose.waitForIdle()
+            if (predicate(viewModel.uiState.value)) return
+            Thread.sleep(POLL_MS)
+        }
+        throw AssertionError("timed out; last state was ${viewModel.uiState.value}")
+    }
+
+    private fun idOf(title: String): Long = runBlocking {
+        database.entryDao().observeAll().first().first { it.title == title }.id
+    }
+
+
     private fun showHome(onOpenEntry: (Long) -> Unit = {}) {
-        val viewModel = HomeViewModel(
+        viewModel = HomeViewModel(
             entries = container.entries,
             feeds = container.feeds,
             clock = clock,
@@ -178,7 +331,11 @@ class HomeScreenTest {
     private fun topOf(text: String): Float =
         compose.onNodeWithText(text).fetchSemanticsNode().positionInRoot.y
 
-    private fun seedFeed(title: String, customTitle: String? = null): Long = runBlocking {
+    private fun seedFeed(
+        title: String,
+        customTitle: String? = null,
+        lastError: String? = null,
+    ): Long = runBlocking {
         database.feedDao().insert(
             FeedEntity(
                 feedUrl = "https://example.com/${title.hashCode()}/feed.xml",
@@ -190,7 +347,7 @@ class HomeScreenTest {
                 lastModified = null,
                 lastFetchedAt = null,
                 lastSuccessAt = null,
-                lastError = null,
+                lastError = lastError,
                 addedAt = 0L,
             ),
         )
@@ -226,5 +383,6 @@ class HomeScreenTest {
         const val HOUR = 3_600L
         const val DAY = 24 * HOUR
         const val TIMEOUT_MS = 5_000L
+        const val POLL_MS = 10L
     }
 }

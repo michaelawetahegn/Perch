@@ -30,6 +30,10 @@ abstract class EntryDao {
      *
      * Reading an entry drops it out of this flow, which is exactly what an unread inbox
      * should do. T27's "show read entries" adds the variant that keeps them.
+     *
+     * @param feedId the drawer's per-source filter; null is the unified inbox. Filtering
+     *   in SQL rather than in the UI keeps the "which rows exist" question in one place,
+     *   so a filtered list re-emits on a write the same way the unified one does.
      */
     @Query(
         """
@@ -37,11 +41,11 @@ abstract class EntryDao {
                e.imageUrl AS imageUrl, e.publishedAt AS publishedAt, e.isRead AS isRead,
                COALESCE(NULLIF(TRIM(f.customTitle), ''), f.title) AS sourceTitle
         FROM entries e JOIN feeds f ON f.id = e.feedId
-        WHERE e.isRead = 0
+        WHERE e.isRead = 0 AND (:feedId IS NULL OR e.feedId = :feedId)
         ORDER BY e.publishedAt DESC, e.id DESC
         """,
     )
-    abstract fun observeUnreadListItems(): Flow<List<EntryListItem>>
+    abstract fun observeUnreadListItems(feedId: Long?): Flow<List<EntryListItem>>
 
     @Query("SELECT * FROM entries WHERE id = :id")
     abstract suspend fun findById(id: Long): EntryEntity?

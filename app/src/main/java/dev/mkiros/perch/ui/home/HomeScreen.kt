@@ -14,13 +14,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Inbox
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.RssFeed
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -43,8 +46,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.mkiros.perch.R
@@ -56,9 +61,10 @@ import kotlinx.coroutines.launch
  *
  * The list is the unified unread inbox: every source, newest first, one row shape for all
  * forty-two of them. Its four states (§7) are all here — skeleton on first load, one of
- * two empty states depending on *why* it is empty, and the list itself. The source rows
- * and per-source filter are T22, adding a source is T23, pull-to-refresh and the error
- * banners are T26; each attaches to a slot this file already defines. No FAB, deliberately.
+ * two empty states depending on *why* it is empty, and the list itself. Selecting a source
+ * in the drawer narrows the same list and retitles the bar. Adding a source is T23,
+ * long-press rename/remove is T24, pull-to-refresh and the error banners are T26; each
+ * attaches to a slot this file already defines. No FAB, deliberately.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,38 +80,39 @@ fun HomeScreen(
     val scope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
+    fun select(feedId: Long?) {
+        viewModel.selectSource(feedId)
+        scope.launch { drawerState.close() }
+    }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         modifier = modifier,
         drawerContent = {
-            ModalDrawerSheet {
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Inbox, contentDescription = null) },
-                    label = { Text(stringResource(R.string.drawer_all_unread)) },
-                    badge = { Text(totalUnread.toString()) },
-                    selected = true,
-                    onClick = { scope.launch { drawerState.close() } },
-                    modifier = Modifier.padding(horizontal = Dimens.md),
-                )
-                HorizontalDivider(modifier = Modifier.padding(Dimens.md))
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                    label = { Text(stringResource(R.string.drawer_settings)) },
-                    selected = false,
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                        onOpenSettings()
-                    },
-                    modifier = Modifier.padding(horizontal = Dimens.md),
-                )
-            }
+            SourceDrawer(
+                state = uiState,
+                totalUnread = totalUnread,
+                onSelectSource = ::select,
+                onOpenSettings = {
+                    scope.launch { drawerState.close() }
+                    onOpenSettings()
+                },
+            )
         },
     ) {
         Scaffold(
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             topBar = {
                 TopAppBar(
-                    title = { Text(stringResource(R.string.home_title_unread)) },
+                    title = {
+                        Text(
+                            text = uiState.selectedTitle
+                                ?: stringResource(R.string.home_title_unread),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.testTag(HomeTestTags.TITLE),
+                        )
+                    },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(
@@ -132,6 +139,97 @@ fun HomeScreen(
             }
         }
     }
+}
+
+/**
+ * The source drawer (DESIGN.md §5): the unified inbox, then one row per source with its
+ * unread count, then settings.
+ *
+ * A source that failed its last refresh trades its icon for a `⚠` in `error` — the
+ * affordance only; the message and the retry are T26's banner. A source with nothing
+ * unread stays listed showing 0 rather than disappearing, because the drawer is the
+ * subscription list, not a second inbox.
+ *
+ * The whole sheet scrolls: forty-two sources do not fit on a phone.
+ */
+@Composable
+private fun SourceDrawer(
+    state: HomeUiState,
+    totalUnread: Int,
+    onSelectSource: (Long?) -> Unit,
+    onOpenSettings: () -> Unit,
+) {
+    ModalDrawerSheet {
+        Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+            NavigationDrawerItem(
+                icon = { Icon(Icons.Default.Inbox, contentDescription = null) },
+                label = { Text(stringResource(R.string.drawer_all_unread)) },
+                badge = {
+                    Text(
+                        text = totalUnread.toString(),
+                        modifier = Modifier.testTag(HomeTestTags.ALL_UNREAD_BADGE),
+                    )
+                },
+                selected = state.selectedFeedId == null,
+                onClick = { onSelectSource(null) },
+                modifier = Modifier.padding(horizontal = Dimens.md),
+            )
+            if (state.sources.isNotEmpty()) {
+                HorizontalDivider(modifier = Modifier.padding(Dimens.md))
+            }
+            state.sources.forEach { source ->
+                NavigationDrawerItem(
+                    icon = {
+                        if (source.hasError) {
+                            Icon(
+                                imageVector = Icons.Default.Warning,
+                                contentDescription =
+                                    stringResource(R.string.drawer_source_error),
+                                tint = MaterialTheme.colorScheme.error,
+                            )
+                        } else {
+                            Icon(Icons.Default.RssFeed, contentDescription = null)
+                        }
+                    },
+                    label = {
+                        Text(
+                            text = source.title,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    },
+                    badge = {
+                        Text(
+                            text = source.unreadCount.toString(),
+                            modifier = Modifier.testTag(HomeTestTags.sourceBadge(source.id)),
+                        )
+                    },
+                    selected = state.selectedFeedId == source.id,
+                    onClick = { onSelectSource(source.id) },
+                    modifier = Modifier.padding(horizontal = Dimens.md),
+                )
+            }
+            HorizontalDivider(modifier = Modifier.padding(Dimens.md))
+            NavigationDrawerItem(
+                icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+                label = { Text(stringResource(R.string.drawer_settings)) },
+                selected = false,
+                onClick = onOpenSettings,
+                modifier = Modifier.padding(horizontal = Dimens.md),
+            )
+        }
+    }
+}
+
+/**
+ * Handles for the few nodes whose text is ambiguous on screen — the selected source's
+ * name is in the bar *and* in the drawer, and two sources can share an unread count.
+ */
+object HomeTestTags {
+    const val TITLE = "home:title"
+    const val ALL_UNREAD_BADGE = "home:all-unread:badge"
+
+    fun sourceBadge(feedId: Long) = "home:source:$feedId:badge"
 }
 
 /**

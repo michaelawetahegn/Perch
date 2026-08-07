@@ -110,6 +110,12 @@ class FeedRepository(
      */
     fun observeSourceCount(): Flow<Int> = feedDao.observeCount().distinctUntilChanged()
 
+    /**
+     * Every subscribed source in drawer order (DESIGN.md §5). Carries the whole row, so
+     * the drawer can render its own health — `lastError` is what the `⚠` is drawn from.
+     */
+    fun observeSources(): Flow<List<FeedEntity>> = feedDao.observeAll().distinctUntilChanged()
+
     // ---- subscribing -----------------------------------------------------------
 
     /**

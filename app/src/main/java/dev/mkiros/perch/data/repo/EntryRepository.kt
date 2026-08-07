@@ -24,9 +24,11 @@ class EntryRepository(
      * This is the whole paging story. Room re-emits the list on any write, `LazyColumn`
      * composes only the rows on screen, and a reader with 42 sources has a list measured
      * in hundreds — a paging library here would buy latency, not headroom.
+     *
+     * @param feedId the drawer's per-source filter; null is every source.
      */
-    fun observeUnreadEntries(): Flow<List<EntryListItem>> =
-        entryDao.observeUnreadListItems().distinctUntilChanged()
+    fun observeUnreadEntries(feedId: Long? = null): Flow<List<EntryListItem>> =
+        entryDao.observeUnreadListItems(feedId).distinctUntilChanged()
 
     /** Total unread, for the inbox badge. */
     fun observeTotalUnreadCount(): Flow<Int> =

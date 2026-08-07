@@ -204,7 +204,7 @@ production code but no test is a defect — reopen the box.
         zero sources and "You're all caught up" with zero unread.
       - Rung: unit
 
-- [ ] **T22 — Source drawer + per-source filter.** Source list with unread counts,
+- [x] **T22 — Source drawer + per-source filter.** Source list with unread counts,
       error `⚠` affordance, selecting a source filters the list and retitles the bar.
       - Done: Robolectric test: seed 3 feeds, select #2, assert only #2's entries are
         listed and the title is #2's display name; counts match the DB.
