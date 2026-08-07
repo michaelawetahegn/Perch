@@ -47,38 +47,17 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
   · `research.nccgroup.com` — no longer publishes a feed anywhere. Homepage has zero
     `<link rel=alternate>` and /feed /feed/ /rss.xml /atom.xml /index.xml /feed.xml /rss/
     all soft-404 to the same 116 KB HTML page (HTTP 200). Kept as T11's negative case.
-- 2026-08-07 — T05 done: `DateParser` (29 tests). `RFC_1123_DATE_TIME` tolerates a missing
-  weekday / 1-digit day / missing seconds but **rejects a weekday that contradicts the
-  date** (parseLenient does not disable that check) — so normalization strips the weekday
-  and rewrites alpha zones (`UT`/`EST`/`PDT`/…) to offsets. Floor 2000-01-01 (below →
-  null, caller falls back); >now+24h clamps to now.
-- 2026-08-07 — T06 done: `RssParser` (19 tests). Shared parser plumbing lives in
-  `data/parse/FeedXml.kt` (lenient XML parse, priority-ordered direct-child lookup,
-  plainText/resolveUrl/stableGuid) — T07/T08 reuse it, so it is not RssParser-private.
-  Child lookup is **direct children only**: a truncated doc nests the next `<item>`
-  inside the previous one, and a descendant search misattributes fields. Lookup honours
-  the *argument* order, not document order (`content:encoded` before `description`).
-  jsoup keeps namespace prefixes in `tagName()` ("dc:creator"), so no NS config needed.
-- 2026-08-07 — T07 done: `AtomParser` (24 tests). Corpus shapes that drove it: `rel`
-  before *and* after `href`, `<link>` with **no rel** (spec says that means alternate),
-  and `self`/`edit`/`replies`/`enclosure` links on the same entry — so link choice is
-  "rel is alternate-or-absent, prefer `type=text/html`", never "first `<link>`".
-  `published` outranks `updated` (updated moves on every edit and would resurface old
-  posts). `content type=xhtml` is unwrapped from its scaffolding `<div>`; `type=text` is
-  escaped; a **missing** type is treated as markup, not text as the spec says — feeds
-  that omit it put escaped HTML there. `xml:base` on feed/entry is honoured (3 feeds use it).
-- 2026-08-07 — T08 done: `RdfParser` (21 tests) + `FeedParser` dispatch (20 tests).
-  **The corpus contains zero RSS 1.0 feeds** (39/39 are `<rss>` or `<feed>`), so RDF is
-  covered only by hand-written docs — T09 will not exercise it.
-  RSS 1.0's `<item>`s are siblings of `<channel>`, not children, and its `rdf:` prefix is
-  document-chosen, so `FeedXml` gained local-name lookups (`localName`,
-  `childElementsNamed`, `attrNamed`); `leadImageUrl` moved there too (RSS+RDF share it).
-  Identity is `rdf:about` (kept verbatim — it names the item, it need not be openable).
-  `FeedParser` finds the root by scanning an **8 KiB prefix** (skipping PIs/comments/
-  doctype) instead of building a tree: 5 MB of HTML or noise is refused in ~ms, which is
-  what keeps the pathological-input case well under its 2 s budget. Charset order is
-  XML declaration → HTTP `charset` → UTF-8; an unknown charset name falls through to
-  UTF-8 rather than failing the feed.
+- 2026-08-07 — T05–T08 done: `DateParser` (29), `RssParser` (19), `AtomParser` (24),
+  `RdfParser` (21) + `FeedParser` dispatch (20). Everything they learned is now pinned by
+  those tests; what a *future* task still needs to know: shared plumbing lives in
+  `data/parse/FeedXml.kt` (lenient parse, direct-child + local-name lookup, `plainText`,
+  `resolveUrl`, `stableGuid`, `leadImageUrl`) — reuse it rather than reparsing.
+  Date floor is 2000-01-01 (below → null, caller falls back); >now+24h clamps to now.
+  **The corpus contains zero RSS 1.0 feeds** (39/39 `<rss>`/`<feed>`), so RDF is covered
+  only by hand-written docs — the corpus test will never exercise it.
+  `FeedParser` decides the format from an **8 KiB prefix scan**, not a parse tree, which
+  is what makes the 5 MB-of-noise case ~ms. Charset: XML declaration → HTTP `charset` →
+  UTF-8, and an unknown charset name falls through to UTF-8 rather than failing the feed.
 - 2026-08-07 — T09 done: `FeedCorpusTest` (78 tests = 39 snapshots × 2), green with no
   production change. Parameterized per feed; `requestUrl` from `manifest.tsv` so relative
   links resolve as they will live; the parameter list `check`s ≥35 snapshots so it cannot
@@ -104,3 +83,12 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
   six guesses, so an unverified guess would hand back an address that never parses.
   Ports `PageFetcher`/`FetchedPage` (bytes + contentType + post-redirect finalUrl) are
   minimal on purpose; T14's `FeedFetcher` should adapt to them, not the reverse.
+- 2026-08-07 — T12 done: Room schema v1 + DAOs (11 tests; suite now 232, 0 failures).
+  Schema exported to `app/schemas/…PerchDatabase/1.json` (committed). No `@TypeConverter`s
+  exist and none are needed — every §4 column is SQLite-native, dates are epoch millis.
+  **Do not use Room's `@Upsert` for entries.** It recovers from the unique-index conflict
+  by updating on the *primary key*, which is still 0 on a freshly parsed entry, so the row
+  is silently dropped. `EntryDao.upsertAll` instead matches on `(feedId, guid)`, carries
+  the existing row's id forward, and preserves `isRead`/`readAt`/`isStarred` — read state
+  belongs to the reader, not the feed. It returns the count of genuinely new entries,
+  which is what T15's "refetch inserts zero rows" assertion reads.

@@ -131,7 +131,7 @@ production code but no test is a defect — reopen the box.
 
 ## Phase 2 — Storage & sync (Robolectric, TDD, still no emulator)
 
-- [ ] **T12 — Room schema + DAOs. TDD.** Entities/indices/converters exactly per
+- [x] **T12 — Room schema + DAOs. TDD.** Entities/indices/converters exactly per
       SPEC.md §4; schema export on. `FeedDao`, `EntryDao` with Flow queries.
       - Done: Robolectric in-memory DB tests green: insert/query/cascade-delete,
         unique `(feedId, guid)` conflict is an upsert not a crash, `app/schemas/*.json`
