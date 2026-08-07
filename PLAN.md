@@ -249,7 +249,7 @@ production code but no test is a defect — reopen the box.
         fires an `ACTION_VIEW` intent with the entry link.
       - Rung: unit
 
-- [ ] **T26 — Refresh UX + error/offline surfacing.** Pull-to-refresh, mark-all-read
+- [x] **T26 — Refresh UX + error/offline surfacing.** Pull-to-refresh, mark-all-read
       with undo snackbar, per-source error banner + retry, offline banner.
       - Done: Robolectric tests: pull-to-refresh calls the repository once; a failing
         feed shows `⚠` in the drawer while its cached entries stay listed; mark-all-read

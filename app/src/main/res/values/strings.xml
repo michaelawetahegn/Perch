@@ -18,6 +18,23 @@
     <string name="home_empty_all_read_body">New entries land here after the next refresh.</string>
     <string name="home_empty_no_entries_body">This source has not published anything yet.</string>
 
+    <!-- Home: refresh, mark-all-read and its undo (DESIGN.md §5, §7) -->
+    <string name="action_more">More options</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="action_mark_all_read">Mark all read</string>
+    <string name="action_undo">Undo</string>
+    <string name="action_retry">Retry</string>
+    <string name="action_dismiss">Dismiss</string>
+    <!-- Snackbar after mark-all-read; the action beside it is action_undo. -->
+    <plurals name="home_marked_read">
+        <item quantity="one">%1$d entry marked read</item>
+        <item quantity="other">%1$d entries marked read</item>
+    </plurals>
+
+    <!-- Home: the banner strip above the list. Never blocks the list (DESIGN.md §7). -->
+    <string name="home_banner_offline">Offline — showing saved entries</string>
+    <string name="home_banner_all_failing">No source could be refreshed</string>
+
     <!-- Drawer -->
     <string name="drawer_all_unread">All unread</string>
     <string name="drawer_settings">Settings</string>

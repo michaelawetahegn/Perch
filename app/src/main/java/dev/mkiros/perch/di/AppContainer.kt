@@ -2,6 +2,7 @@ package dev.mkiros.perch.di
 
 import android.content.Context
 import dev.mkiros.perch.data.db.PerchDatabase
+import dev.mkiros.perch.data.net.ConnectivityMonitor
 import dev.mkiros.perch.data.net.FeedFetcher
 import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.repo.EntryRepository
@@ -25,6 +26,11 @@ class AppContainer(
     val database: PerchDatabase,
     val httpClient: OkHttpClient,
     val clock: Clock = Clock.systemUTC(),
+    /**
+     * Defaults to "online" so every test that is not *about* the offline banner can build
+     * a container without a shadow network. [create] supplies the real one.
+     */
+    val connectivity: ConnectivityMonitor = ConnectivityMonitor.AlwaysOnline,
 ) {
 
     val feeds: FeedRepository by lazy {
@@ -50,6 +56,7 @@ class AppContainer(
             return AppContainer(
                 database = PerchDatabase.build(app),
                 httpClient = PerchHttp.client(app.cacheDir),
+                connectivity = ConnectivityMonitor.system(app),
             )
         }
     }

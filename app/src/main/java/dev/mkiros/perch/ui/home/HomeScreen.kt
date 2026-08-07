@@ -23,14 +23,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Inbox
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.RssFeed
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -40,13 +44,21 @@ import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -56,6 +68,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.res.stringResource
@@ -76,8 +89,9 @@ import kotlinx.coroutines.launch
  * forty-two of them. Its four states (§7) are all here — skeleton on first load, one of
  * two empty states depending on *why* it is empty, and the list itself. Selecting a source
  * in the drawer narrows the same list and retitles the bar; long-pressing one offers
- * rename and remove. Pull-to-refresh and the error banners are T26 and attach to slots
- * this file already defines. No FAB, deliberately.
+ * rename and remove. Pulling refreshes the scope on screen, and the two things that can
+ * be wrong — no network, a failing source — say so in a slim strip *above* the list
+ * rather than in place of it (§7). No FAB, deliberately.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -90,7 +104,10 @@ fun HomeScreen(
 ) {
     val totalUnread by viewModel.totalUnread.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+    val pendingUndo by viewModel.pendingUndo.collectAsStateWithLifecycle()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     var addingSource by rememberSaveable { mutableStateOf(false) }
@@ -111,6 +128,29 @@ fun HomeScreen(
     fun addSource() {
         scope.launch { drawerState.close() }
         addingSource = true
+    }
+
+    // The undo snackbar is driven off the armed batch rather than fired at the call site,
+    // so the offer survives a rotation: the token is view-model state, and whatever
+    // recomposes next puts the snackbar back up for whatever is left of its time.
+    val context = LocalContext.current
+    val undoLabel = stringResource(R.string.action_undo)
+    LaunchedEffect(pendingUndo) {
+        val undo = pendingUndo ?: return@LaunchedEffect
+        val result = snackbarHostState.showSnackbar(
+            message = context.resources.getQuantityString(
+                R.plurals.home_marked_read,
+                undo.count,
+                undo.count,
+            ),
+            actionLabel = undoLabel,
+            withDismissAction = false,
+            duration = SnackbarDuration.Short,
+        )
+        when (result) {
+            SnackbarResult.ActionPerformed -> viewModel.undoMarkAllRead()
+            SnackbarResult.Dismissed -> viewModel.clearPendingUndo()
+        }
     }
 
     ModalNavigationDrawer(
@@ -152,22 +192,44 @@ fun HomeScreen(
                             )
                         }
                     },
+                    actions = {
+                        HomeOverflow(
+                            onRefresh = viewModel::refresh,
+                            onMarkAllRead = viewModel::markAllRead,
+                        )
+                    },
                     scrollBehavior = scrollBehavior,
                 )
             },
+            snackbarHost = { SnackbarHost(snackbarHostState) },
         ) { innerPadding ->
-            Box(
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding),
             ) {
-                when {
-                    uiState.isLoading -> SkeletonList()
-                    uiState.entries.isEmpty() -> EmptyState(
-                        hasSources = uiState.hasSources,
-                        onAddSource = ::addSource,
+                uiState.banner?.let { banner ->
+                    BannerStrip(
+                        banner = banner,
+                        onRetry = viewModel::refresh,
+                        onDismiss = viewModel::dismissBanner,
                     )
-                    else -> EntryList(state = uiState, onOpenEntry = onOpenEntry)
+                }
+                PullToRefreshBox(
+                    isRefreshing = isRefreshing,
+                    onRefresh = viewModel::refresh,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .testTag(HomeTestTags.LIST),
+                ) {
+                    when {
+                        uiState.isLoading -> SkeletonList()
+                        uiState.entries.isEmpty() -> EmptyState(
+                            hasSources = uiState.hasSources,
+                            onAddSource = ::addSource,
+                        )
+                        else -> EntryList(state = uiState, onOpenEntry = onOpenEntry)
+                    }
                 }
             }
         }
@@ -215,6 +277,122 @@ fun HomeScreen(
                 },
                 onDismiss = { removingId = null },
             )
+        }
+    }
+}
+
+/**
+ * The app bar's overflow (DESIGN.md §5). Refresh is here as well as under the pull
+ * gesture because a list short enough not to scroll still has to be refreshable, and
+ * because it is where a reader looks for it. "Show read entries" joins these two in T27.
+ */
+@Composable
+private fun HomeOverflow(onRefresh: () -> Unit, onMarkAllRead: () -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+
+    IconButton(onClick = { expanded = true }) {
+        Icon(
+            imageVector = Icons.Default.MoreVert,
+            contentDescription = stringResource(R.string.action_more),
+            modifier = Modifier.size(Dimens.icon),
+        )
+    }
+    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.action_mark_all_read)) },
+            onClick = {
+                expanded = false
+                onMarkAllRead()
+            },
+            modifier = Modifier.testTag(HomeTestTags.MARK_ALL_READ),
+        )
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.action_refresh)) },
+            onClick = {
+                expanded = false
+                onRefresh()
+            },
+            modifier = Modifier.testTag(HomeTestTags.REFRESH),
+        )
+    }
+}
+
+/**
+ * The slim strip above the list (DESIGN.md §7).
+ *
+ * It never replaces the list and never blocks it: a source that is failing still shows
+ * every entry it fetched before it broke, and an offline device is a fully readable app.
+ * That is the whole point of the strip being a sibling of the list rather than a state
+ * the list collapses into.
+ *
+ * Offline carries no Retry — there is nothing to retry until the network comes back, and
+ * a button that cannot work is worse than no button.
+ */
+@Composable
+private fun BannerStrip(
+    banner: HomeBanner,
+    onRetry: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val isError = banner != HomeBanner.Offline
+    val container =
+        if (isError) {
+            MaterialTheme.colorScheme.errorContainer
+        } else {
+            MaterialTheme.colorScheme.surfaceContainerHigh
+        }
+    val content =
+        if (isError) {
+            MaterialTheme.colorScheme.onErrorContainer
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        }
+    val message = when (banner) {
+        HomeBanner.Offline -> stringResource(R.string.home_banner_offline)
+        HomeBanner.AllSourcesFailing -> stringResource(R.string.home_banner_all_failing)
+        is HomeBanner.SourceError -> banner.message
+    }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(container)
+            .padding(
+                start = Dimens.screenHorizontal,
+                top = Dimens.sm,
+                end = Dimens.sm,
+                bottom = Dimens.sm,
+            )
+            .testTag(HomeTestTags.BANNER),
+    ) {
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodySmall,
+            color = content,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f),
+        )
+        if (banner != HomeBanner.Offline) {
+            TextButton(onClick = onRetry, modifier = Modifier.testTag(HomeTestTags.BANNER_RETRY)) {
+                Text(stringResource(R.string.action_retry), color = content)
+            }
+        }
+        // Only the global banner is dismissible: a per-source message is tied to the
+        // filter the reader chose, so leaving that source is already how it goes away.
+        if (banner == HomeBanner.AllSourcesFailing) {
+            IconButton(
+                onClick = onDismiss,
+                modifier = Modifier.testTag(HomeTestTags.BANNER_DISMISS),
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = stringResource(R.string.action_dismiss),
+                    tint = content,
+                    modifier = Modifier.size(Dimens.icon),
+                )
+            }
         }
     }
 }
@@ -362,6 +540,13 @@ object HomeTestTags {
     const val TITLE = "home:title"
     const val ALL_UNREAD_BADGE = "home:all-unread:badge"
     const val EMPTY_ADD_SOURCE = "home:empty:add-source"
+    /** The pull-to-refresh surface, so a test can make the gesture the reader makes. */
+    const val LIST = "home:list"
+    const val MARK_ALL_READ = "home:overflow:mark-all-read"
+    const val REFRESH = "home:overflow:refresh"
+    const val BANNER = "home:banner"
+    const val BANNER_RETRY = "home:banner:retry"
+    const val BANNER_DISMISS = "home:banner:dismiss"
 
     fun sourceBadge(feedId: Long) = "home:source:$feedId:badge"
 }
