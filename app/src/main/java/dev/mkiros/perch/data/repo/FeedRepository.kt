@@ -116,6 +116,12 @@ class FeedRepository(
      */
     fun observeSources(): Flow<List<FeedEntity>> = feedDao.observeAll().distinctUntilChanged()
 
+    /**
+     * One source by id, or null if it has been removed. The article byline needs the name
+     * behind an entry, and an entry only carries its `feedId`.
+     */
+    suspend fun find(feedId: Long): FeedEntity? = feedDao.findById(feedId)
+
     // ---- subscribing -----------------------------------------------------------
 
     /**

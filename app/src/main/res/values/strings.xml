@@ -57,6 +57,12 @@
     <!-- Article -->
     <string name="action_back">Back</string>
     <string name="article_missing">This entry is no longer available</string>
+    <string name="action_open_in_browser">Open in browser</string>
+    <!-- A feed that ships summaries only: the summary, then this. -->
+    <string name="article_read_on_web">Read on the web</string>
+    <string name="article_empty_body">This entry has no text in the feed.</string>
+    <!-- Stands in for an iframe, a video, or anything else the block model cannot draw. -->
+    <string name="article_embed">Embedded content · open on the web</string>
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>

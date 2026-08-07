@@ -22,11 +22,10 @@ in a script or in CLAUDE.md.
   must record:** `danluu.com` (11.1 MB) and `projectzero.google` (13.2 MB) exceed SPEC.md §6's
   8 MiB body cap, so the app would refuse them live; `research.nccgroup.com` publishes no feed
   anywhere (no `<link rel=alternate>`, every path guess soft-404s to HTML) — it is dead.
-- 2026-08-07 — T05–T09 done: four parsers + `FeedParser` dispatch + `FeedCorpusTest` (39
-  snapshots × 2; it `check`s ≥35 exist, so it cannot go vacuous). Shared plumbing lives in
-  `data/parse/FeedXml.kt` (lenient parse, direct-child + local-name lookup, `plainText`,
-  `resolveUrl`, `stableGuid`, `leadImageUrl`) — reuse it. Date floor 2000-01-01 (below → null,
-  caller falls back); >now+24h clamps to now.
+- 2026-08-07 — T05–T09 done: four parsers + dispatch + `FeedCorpusTest` (39 snapshots; it
+  `check`s ≥35 exist, so it cannot go vacuous). Shared plumbing in `data/parse/FeedXml.kt`
+  (lenient parse, local-name lookup, `plainText`, `resolveUrl`, `stableGuid`, `leadImageUrl`) —
+  reuse it. Date floor 2000-01-01 (below → null, caller falls back); >now+24h clamps to now.
 - 2026-08-07 — T10 done: `HtmlSanitizer` — jsoup `Cleaner` + a from-scratch `Safelist`, whose
   **`addProtocols` also resolves relative URLs**, so there is no manual `resolveUrl` pass.
 - 2026-08-07 — T12 done: Room schema v1 + DAOs; no `@TypeConverter`s (every §4 column is
@@ -67,33 +66,35 @@ in a script or in CLAUDE.md.
 - 2026-08-07 — T20 done: `di/AppContainer` + `ui/nav/PerchNavHost` + screen shells. **Compose UI
   tests must live in `app/src/testDebug/`** — `ui-test-manifest` is a `debugImplementation`, so
   `ComponentActivity` is missing from the release manifest and `./gradlew test` fails there.
-  Screens take dependencies only via `XxxViewModel.factory(container)`, never a singleton lookup.
 - 2026-08-07 — T21 done: home's unread list. One SQL join, `EntryDao.observeUnreadListItems()
   → EntryListItem`, so a row never looks its feed up and no article body is loaded to draw a
   list. **Read entries drop out of that flow** — T27's "show read entries" adds the variant, it
   does not filter in the UI. **No paging library:** Room Flow + `LazyColumn` *is* the paging.
 - 2026-08-07 — T22 done: source drawer + filter. Two Robolectric traps every later UI task hits.
-  **`compose.waitUntil` only advances the *virtual* clock**, so it times out on any Room emission
-  *after* the first (the re-query runs on Room's executor, a real thread) — copy
-  `HomeScreenTest.awaitState`, which polls `waitForIdle` in wall-clock time. And an **injected tap
-  never reaches a node inside the opened drawer sheet**, on screen and carrying `OnClick` though
-  it is; drive it with `performSemanticsAction(...)`. The filter is one SQL predicate
-  (`observeUnreadListItems(feedId)`, null = every source); an id no longer in `sources` drops it.
+  **`compose.waitUntil` only advances the *virtual* clock** — it burns its whole timeout in
+  microseconds without ever letting Room's executor (a real thread) run, so poll in wall-clock
+  time instead: copy `HomeScreenTest.awaitState`. And an **injected tap never reaches a node
+  inside an opened drawer sheet or a scrolling column**, on screen and carrying `OnClick` though
+  it is; drive it with `performSemanticsAction(...)`.
 - 2026-08-07 — T23 done: `ui/source/{PastedUrl,AddSourceViewModel,AddSourceSheet}.kt`. **The sheet
   owns paste normalization** — `example.com` and `feed://` become https here; the repository still
   refuses to guess. A `ModalBottomSheet` composes and exposes its nodes under Robolectric, but the
   drawer's shut "Add source" row still collides by text with the empty state's button — tag one.
-- 2026-08-07 — T24 done: long-press rename/remove (debug 370, release 335, 0 failures).
-  `NavigationDrawerItem` answers taps only and its own `clickable` eats the gesture, so source
-  rows are a hand-built `SourceRow` (`combinedClickable` + `semantics(mergeDescendants)`); its
-  metrics are `Dimens.drawerRow*`. `SourceUiItem` now carries `publishedTitle`/`customTitle`
-  separately (`title` is derived) because rename edits one and falls back to the other.
+- 2026-08-07 — T24 done: long-press rename/remove. `NavigationDrawerItem` answers taps only and
+  its own `clickable` eats the gesture, so source rows are a hand-built `SourceRow`
+  (`combinedClickable` + `semantics(mergeDescendants)`). `SourceUiItem` carries
+  `publishedTitle`/`customTitle` separately because rename edits one and falls back to the other.
   **Two test traps:** a drawer row and the app bar can hold the same text, so match rows with
   `filterToOne(hasClickAction())`, never bare `onNodeWithText`; and the dialogs leave the drawer
-  open, so a second `openDrawer()` leaves nodes `assertIsDisplayed`-false — assert at once
-  instead, or close the drawer by selecting something.
+  open, so a second `openDrawer()` leaves nodes `assertIsDisplayed`-false — assert at once instead.
 - 2026-08-07 — T25a done: `data/parse/{ArticleBlock,ArticleLowering}.kt` (debug 395, release 360,
   0 failures). Input **must** be `HtmlSanitizer` output; the mapper's tag sets cover that whole
   allowlist, so `ArticleLoweringCorpusTest` asserts **0/2644 `Unsupported`** — stricter than T32
   gate 2's ≤2%, and the assertion names the offending tags. Chrome regexes are whole-block
   matches (a real sentence opening "Share this…" survives), so **T25 must not re-strip anything**.
+- 2026-08-07 — T25 done: `ui/article/{RichText,ArticleBody,ArticleScreen,ArticleViewModel}.kt`
+  (debug 425, release 369). `ArticleBody` is total over the nine blocks with **no source-specific
+  branch** — a source that renders wrong is a T25a lowering bug. Opening marks read. An image
+  **collapses the whole figure on a load error**, so testing one needs a Coil loader that succeeds
+  (`Coil.setImageLoader` + a stub `Mapper`). **T29 residual:** Compose cannot colour or offset an
+  underline, so §8's 1dp-primary-offset-3dp link rule is a plain one; inline code has no chip padding.

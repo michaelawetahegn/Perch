@@ -236,7 +236,7 @@ production code but no test is a defect — reopen the box.
         non-empty body yields ≥1 block, and no block is a bare empty `Paragraph`.
       - Rung: unit
 
-- [ ] **T25 — Article screen + block renderer. TDD.** `List<ArticleBlock>` → Compose,
+- [x] **T25 — Article screen + block renderer. TDD.** `List<ArticleBlock>` → Compose,
       one renderer, no source-specific branches. Implements the DESIGN.md §8 type scale
       (serif editorial body, sans furniture) and block treatments literally: 680dp
       measure cap, monospace code on `surfaceContainer` that scrolls horizontally and

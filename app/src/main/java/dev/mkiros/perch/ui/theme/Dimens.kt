@@ -117,4 +117,11 @@ object Dimens {
     /** Editorial link underline: 1dp thick, offset 3dp below the baseline. §8. */
     val linkUnderline = 1.dp
     val linkUnderlineOffset = 3.dp
+
+    /**
+     * A table column. Fixed rather than measured: the block scrolls horizontally, so
+     * columns have to agree on a width across rows without a measuring pass, and a feed
+     * table that wants more room gets scroll rather than a squeezed page. §8.
+     */
+    val tableCellWidth = 140.dp
 }

@@ -1,9 +1,12 @@
 package dev.mkiros.perch.ui.theme
 
 import androidx.compose.material3.Typography
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -158,6 +161,33 @@ object ArticleType {
 
     val tableHeader = table.copy(fontWeight = FontWeight.SemiBold)
 
+    /**
+     * `ol` markers, in the gutter beside the item. Sans with tabular figures so `9.` and
+     * `10.` occupy the same width and the hanging indent stays straight. §8.
+     */
+    val listMarker = TextStyle(
+        fontFamily = Sans,
+        fontWeight = FontWeight.Normal,
+        fontSize = 15.sp,
+        lineHeight = 29.sp,
+        fontFeatureSettings = "tnum",
+    )
+
     /** An editorial underline, not a blue hyperlink — colour comes from the renderer. */
     val link = TextDecoration.Underline
+
+    // --- the inline marks a `RichSpan` can carry (§8) ---
+    // Deliberately here rather than in the renderer: these are the only typographic
+    // vocabulary a feed gets, and every `sp` in the app has to live in this package.
+
+    val strong = SpanStyle(fontWeight = FontWeight.Bold)
+
+    val emphasis = SpanStyle(fontStyle = FontStyle.Italic)
+
+    /** Inline `code` — a chip, not a block; the background is the renderer's to supply. */
+    val inlineCode = SpanStyle(fontFamily = Mono, fontSize = 15.sp)
+
+    val superscript = SpanStyle(baselineShift = BaselineShift.Superscript, fontSize = 13.sp)
+
+    val subscript = SpanStyle(baselineShift = BaselineShift.Subscript, fontSize = 13.sp)
 }
