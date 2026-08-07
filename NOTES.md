@@ -31,11 +31,10 @@ in a script or in CLAUDE.md.
   caller falls back); >now+24h clamps to now.
 - 2026-08-07 — T10 done: `HtmlSanitizer` — jsoup `Cleaner` + a from-scratch `Safelist`, whose
   **`addProtocols` also resolves relative URLs**, so there is no manual `resolveUrl` pass.
-- 2026-08-07 — T12 done: Room schema v1 + DAOs. No `@TypeConverter`s needed — every §4 column is
-  SQLite-native, dates are epoch millis. **No Room `@Upsert` for entries**: it resolves the
-  unique-index conflict on the *primary key*, still 0 on a freshly parsed entry, so the row is
-  silently dropped. `EntryDao.upsertAll` matches on `(feedId, guid)`, carries the existing id
-  forward, preserves `isRead`/`readAt`/`isStarred`, returns the count of genuinely new rows.
+- 2026-08-07 — T12 done: Room schema v1 + DAOs; no `@TypeConverter`s (every §4 column is
+  SQLite-native, dates are epoch millis). **Never Room `@Upsert` for entries** — it resolves on
+  the *primary key*, still 0 on a freshly parsed row, so the row is silently dropped;
+  `EntryDao.upsertAll` matches `(feedId, guid)` and preserves `isRead`/`readAt`/`isStarred`.
 - 2026-08-07 — T13 done: `EntryRepository` read state. `observeUnreadCountsByFeed()` is a
   `@MapColumn` multimap over `GROUP BY`, so a **fully-read source is absent from the map, not 0**
   — read it as `counts[id] ?: 0`. `EntryDao.setRead` chunks ids at 900 (SQLite caps `IN (…)`);
@@ -47,11 +46,10 @@ in a script or in CLAUDE.md.
   carrying `If-None-Match`/`If-Modified-Since` — verified. `client(cacheDir = null)` = no cache.
 - 2026-08-07 — T15 done: `data/repo/FeedRepository`. **Sanitizing moved here**: parsers still
   hand out raw `contentHtml`, but what reaches the DB is already `HtmlSanitizer`-clean plus a
-  summary, so T25's renderer never sees feed-authored markup. Three things a later task must not
-  undo: every feed write goes through `mutate()`, which **re-reads the row** (a fetch takes
-  seconds and a rename can land mid-flight — writing back the pre-fetch snapshot reverts it, and
-  there is a test); and a redirect only moves `feedUrl` if no other feed owns it, since two
-  converging subscriptions would abort on the unique index.
+  summary, so T25's renderer never sees feed-authored markup. Two invariants: every feed write
+  goes through `mutate()`, which **re-reads the row** (a rename can land mid-fetch, and writing
+  back the pre-fetch snapshot would revert it — there is a test); and a redirect moves `feedUrl`
+  only if no other feed owns it, or two converging subscriptions abort on the unique index.
 - 2026-08-07 — T17 done: `data/opml/Opml.kt` + `data/repo/OpmlRepository.kt`. Import **fetches
   nothing**: rows land with null validators and null `lastFetchedAt` — the "never polled" state
   T18's worker collects, and T27 owns the single refresh afterwards. Identity is `feedUrl`.
