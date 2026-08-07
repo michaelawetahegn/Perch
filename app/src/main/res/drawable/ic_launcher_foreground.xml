@@ -1,23 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- The Perch mark: feed arcs radiating from a point that rests on a perch. Drawn
+     inside the 66dp adaptive-icon safe zone (centre 54,54 · radius 33). -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Placeholder mark: three concentric feed arcs. Replaced by the real icon in T19. -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M38,72m-5,0a5,5 0 1,0 10,0a5,5 0 1,0 -10,0" />
+        android:pathData="M38,61m-5,0a5,5 0 1,0 10,0a5,5 0 1,0 -10,0" />
     <path
         android:strokeColor="#FFFFFF"
         android:strokeWidth="6"
         android:fillColor="#00000000"
         android:strokeLineCap="round"
-        android:pathData="M36,56 A21,21 0 0,1 57,77" />
+        android:pathData="M38,46 A15,15 0 0,1 53,61" />
     <path
         android:strokeColor="#FFFFFF"
         android:strokeWidth="6"
         android:fillColor="#00000000"
         android:strokeLineCap="round"
-        android:pathData="M36,42 A35,35 0 0,1 71,77" />
+        android:pathData="M38,34 A27,27 0 0,1 65,61" />
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="6"
+        android:fillColor="#00000000"
+        android:strokeLineCap="round"
+        android:pathData="M32,72 L76,72" />
 </vector>

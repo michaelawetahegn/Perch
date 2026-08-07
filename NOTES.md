@@ -10,14 +10,12 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
 
 ## Environment facts (measured at bootstrap, 2026-08-07)
 
-- Windows 10 Pro 19045.6466 · WSL 2.7.11 · kernel 6.18.33.2 · Ubuntu userland.
-- Host: Intel i7-4790K (4c/8t, VT-x + EPT ✔), 15.9 GB RAM, 65 GB free on `C:`.
-- WSL VM: 4 CPUs, 9 GB RAM, 899 GB free on `/`.
+- Windows 10 Pro 19045.6466 · WSL 2.7.11 · Ubuntu userland · i7-4790K (4c/8t, VT-x ✔),
+  15.9 GB host RAM, 65 GB free on `C:`, 899 GB free on `/`.
 - No physical device. WHPX **enabled** (human did the reboot); `emulator -accel-check` →
   `WHPX(10.0.19045) is installed and usable.` Every path/JDK/wrapper this implies now lives
   in CLAUDE.md §Environment — do not re-record it here.
-- Windows gateway from WSL: `172.18.144.1` (only needed if the interop bridge fails
-  and adb has to go over TCP instead).
+- Windows gateway from WSL: `172.18.144.1` (only if the interop bridge fails and adb must go TCP).
 - **2026-08-07 — host froze (session #11). Cause: host memory, not any task's code.**
   Fixed in `.wslconfig` (7 GB + `autoMemoryReclaim=gradual`), `gradle.properties` (caps —
   see CLAUDE.md) and `loop.sh` (`reclaim()` between sessions). **The `.wslconfig` half needs
@@ -40,23 +38,19 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
   `resolveUrl`, `stableGuid`, `leadImageUrl`) — reuse it rather than reparsing.
   Date floor is 2000-01-01 (below → null, caller falls back); >now+24h clamps to now.
   **The corpus contains zero RSS 1.0 feeds** (39/39 `<rss>`/`<feed>`), so RDF is covered
-  only by hand-written docs — the corpus test will never exercise it.
-  `FeedParser` decides the format from an **8 KiB prefix scan**, not a parse tree, which
-  is what makes the 5 MB-of-noise case ~ms.
+  only by hand-written docs — the corpus test will never exercise it. `FeedParser` decides
+  the format from an **8 KiB prefix scan**, not a parse tree — that is why 5 MB of noise is ~ms.
 - 2026-08-07 — T09 done: `FeedCorpusTest` = 39 snapshots × 2; it `check`s ≥35 exist, so it
   cannot go vacuous.
-- 2026-08-07 — T10 done: `HtmlSanitizer` (16 tests). jsoup `Cleaner` + a from-scratch `Safelist`;
-  **`addProtocols` is also what resolves relative URLs**, so no manual `resolveUrl` pass exists.
-- 2026-08-07 — T11 done: `FeedDiscovery` (13 tests). Why declared URLs are trusted unfetched
-  but path guesses are not is in the class's KDoc.
+- 2026-08-07 — T10 done: `HtmlSanitizer` (16 tests). jsoup `Cleaner` + from-scratch `Safelist`;
+  **`addProtocols` also resolves relative URLs**, so no manual `resolveUrl` pass exists.
 - 2026-08-07 — T12 done: Room schema v1 + DAOs. No `@TypeConverter`s exist or are needed —
-  every §4 column is SQLite-native, dates are epoch millis.
-  **Do not use Room's `@Upsert` for entries.** It recovers from the unique-index conflict
-  by updating on the *primary key*, which is still 0 on a freshly parsed entry, so the row
-  is silently dropped. `EntryDao.upsertAll` instead matches on `(feedId, guid)`, carries
-  the existing row's id forward, and preserves `isRead`/`readAt`/`isStarred` — read state
-  belongs to the reader, not the feed. It returns the count of genuinely new entries,
-  which is what T15's "refetch inserts zero rows" assertion reads.
+  every §4 column is SQLite-native, dates are epoch millis. **No Room `@Upsert` for entries** —
+  it resolves the unique-index conflict by updating on the *primary key*, still 0 on a freshly
+  parsed entry, so the row is silently dropped. `EntryDao.upsertAll` matches on `(feedId, guid)`,
+  carries the existing id forward, and preserves `isRead`/`readAt`/`isStarred` — read state
+  belongs to the reader, not the feed. It returns the count of genuinely new entries, which is
+  what T15's "refetch inserts zero rows" assertion reads.
 - 2026-08-07 — T13 done: `EntryRepository` read state (15 tests; suite now 247, 0 failures).
   `observeUnreadCountsByFeed()` is a Room 2.6 `@MapColumn` multimap over `GROUP BY`, so a
   **fully-read source is absent from the map, not 0** — T22's drawer needs `counts[id] ?: 0`.
@@ -97,3 +91,9 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
   (UPDATE, T27's) vs `ensureScheduled` (KEEP, startup) — startup must never UPDATE or it
   resets the reader's interval every launch. **`PerchApp` now builds db/http/`FeedRepository`
   lazily** to feed `PerchWorkerFactory`; T20 moves exactly those into `di/AppContainer`.
+- 2026-08-07 — T19 done: `ui/theme/{Color,Type,Dimens,Theme}.kt`. Tonal palettes generated from
+  `#3F6E5A` in LCh, **private to Color.kt** — screens address `MaterialTheme.colorScheme` roles,
+  never a tone. `Dimens` owns every dp *incl.* the §8 article metrics; `ArticleType` (serif) is
+  kept out of `PerchTypography` (sans) so furniture cannot render serif by accident — T25 reads
+  `ArticleType`. **Standing grep gate: no `Color(0x`, `N.dp`, `N.sp` outside `ui/theme/`.**
+  `PerchTheme(dynamicColor = false)` pins the fallback scheme — T29/T32 need it to be deterministic.

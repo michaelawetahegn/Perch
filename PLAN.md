@@ -183,7 +183,7 @@ production code but no test is a defect — reopen the box.
 
 ## Phase 3 — UI (DESIGN.md is the spec)
 
-- [ ] **T19 — Theme & design system.** `Color/Type/Theme/Dimens.kt` per DESIGN.md §2–4:
+- [x] **T19 — Theme & design system.** `Color/Type/Theme/Dimens.kt` per DESIGN.md §2–4:
       dynamic colour on 31+, `#3F6E5A`-seeded fallback below, dark+light, 4dp token
       scale, edge-to-edge, adaptive launcher icon.
       - Done: `./gradlew assembleDebug` green; **zero** hardcoded `Color(0x…)`,

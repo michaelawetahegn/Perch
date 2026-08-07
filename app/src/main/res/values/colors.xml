@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Matches ColorScheme.surface in the #3F6E5A-seeded fallback (Color.kt, Neutral98),
+         so the launch window does not flash a different background before Compose draws. -->
+    <color name="perch_window_background">#F2FBF7</color>
+    <color name="perch_launcher_background">#3F6E5A</color>
+</resources>

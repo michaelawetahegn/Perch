@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.Perch" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- The launch theme only. All real colour lives in Compose (ui/theme/Theme.kt);
+         this exists so the window before first frame is edge-to-edge and the right
+         shade. `enableEdgeToEdge()` makes the bars transparent at runtime. -->
+    <style name="Theme.Perch" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/perch_window_background</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
 </resources>
