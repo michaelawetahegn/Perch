@@ -52,14 +52,9 @@ in a script or in CLAUDE.md.
   seconds and a rename can land mid-flight — writing back the pre-fetch snapshot reverts it, and
   there is a test); and a redirect only moves `feedUrl` if no other feed owns it, since two
   converging subscriptions would abort on the unique index.
-- 2026-08-07 — T16 done: add/remove/rename on `FeedRepository`. `resolve(url) → SourceResolution`
-  then `add(Resolved)` — DESIGN.md §5's confirm-before-commit, and why adding costs **one** fetch:
-  `Resolved` carries the parsed feed.
 - 2026-08-07 — T17 done: `data/opml/Opml.kt` + `data/repo/OpmlRepository.kt`. Import **fetches
   nothing**: rows land with null validators and null `lastFetchedAt` — the "never polled" state
-  T18's worker collects, and T27 owns the single refresh afterwards. Identity is `feedUrl`. An
-  outline is `invalid` only if it claims to be a source (`xmlUrl`, or `type=rss|atom|feed`);
-  anything else is a folder, even an empty one.
+  T18's worker collects, and T27 owns the single refresh afterwards. Identity is `feedUrl`.
 - 2026-08-07 — T18 done: `work/RefreshWorker.kt` + `work/WorkScheduler.kt`. The worker calls
   `FeedRepository.refreshDue()`, not `refreshAll()` — that is where §7's "5 failures → 6h floor"
   lives, and T26's pull-to-refresh must keep using `refreshAll`/`refresh(id)` so a pull still
