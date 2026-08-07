@@ -50,13 +50,11 @@ in a script or in CLAUDE.md.
   summary, so T25's renderer never sees feed-authored markup. Three things a later task must not
   undo: every feed write goes through `mutate()`, which **re-reads the row** (a fetch takes
   seconds and a rename can land mid-flight — writing back the pre-fetch snapshot reverts it, and
-  there is a test); retention says "still in the body" as `fetchedAt < refreshStart`, not a guid
-  list, so it has no 999-variable ceiling; a redirect only moves `feedUrl` if no other feed owns
-  it, since two converging subscriptions would abort on the unique index.
+  there is a test); and a redirect only moves `feedUrl` if no other feed owns it, since two
+  converging subscriptions would abort on the unique index.
 - 2026-08-07 — T16 done: add/remove/rename on `FeedRepository`. `resolve(url) → SourceResolution`
   then `add(Resolved)` — DESIGN.md §5's confirm-before-commit, and why adding costs **one** fetch:
-  `Resolved` carries the parsed feed. **Paste normalization is deliberately not here**:
-  `example.com` is rejected as unreachable, T23's sheet owns it.
+  `Resolved` carries the parsed feed.
 - 2026-08-07 — T17 done: `data/opml/Opml.kt` + `data/repo/OpmlRepository.kt`. Import **fetches
   nothing**: rows land with null validators and null `lastFetchedAt` — the "never polled" state
   T18's worker collects, and T27 owns the single refresh afterwards. Identity is `feedUrl`. An
@@ -78,14 +76,11 @@ in a script or in CLAUDE.md.
 - 2026-08-07 — T20 done: `di/AppContainer` + `ui/nav/PerchNavHost` + screen shells. **Compose UI
   tests must live in `app/src/testDebug/`** — `ui-test-manifest` is a `debugImplementation`, so
   `ComponentActivity` is missing from the release manifest and `./gradlew test` fails there.
-  Screens get dependencies only via `XxxViewModel.factory(container)`, never a singleton lookup,
-  which is what lets a test compose any route over an in-memory DB.
+  Screens take dependencies only via `XxxViewModel.factory(container)`, never a singleton lookup.
 - 2026-08-07 — T21 done: home's unread list. One SQL join, `EntryDao.observeUnreadListItems()
   → EntryListItem`, so a row never looks its feed up and no article body is loaded to draw a
   list. **Read entries drop out of that flow** — T27's "show read entries" adds the variant, it
   does not filter in the UI. **No paging library:** Room Flow + `LazyColumn` *is* the paging.
-  `HomeUiState.nowMillis` comes from the injected `Clock`, which is what makes `RelativeTime`
-  ("3h ago", English-only, no resources) assertable.
 - 2026-08-07 — T22 done: source drawer + filter (debug 346, release 329, 0 failures). Two
   Robolectric traps every later UI task will hit. **`compose.waitUntil` only advances the
   *virtual* clock**, so it times out waiting for any Room emission *after* the first (the
@@ -93,7 +88,12 @@ in a script or in CLAUDE.md.
   polls `waitForIdle` in wall-clock time. And an **injected tap never reaches a node inside the
   opened drawer sheet**, on screen and carrying `OnClick` though it is; drive it with
   `performSemanticsAction(SemanticsActions.OnClick)` — T23/T24's sheet and dialog will need the
-  same. The filter is one SQL predicate (`observeUnreadListItems(feedId)`, null = every source)
-  and the selected id is carried *out* of `flatMapLatest` with the rows it produced, so the bar
-  cannot name one source over another's entries; an id no longer in `sources` drops the filter,
-  which is what keeps T24's remove honest.
+  same. The filter is one SQL predicate (`observeUnreadListItems(feedId)`, null = every source);
+  an id no longer in `sources` drops the filter, which is what keeps T24's remove honest.
+- 2026-08-07 — T23 done: `ui/source/{PastedUrl,AddSourceViewModel,AddSourceSheet}.kt` (debug 362,
+  release 335, 0 failures). **The sheet owns paste normalization** — `example.com` and `feed://`
+  become https here; the repository still refuses to guess. Confirm-then-commit is literally the
+  button's two calls: `resolve` spends the round trip, `add` spends nothing more. A
+  `ModalBottomSheet` *does* compose and expose its nodes under Robolectric. But the drawer's
+  "Add source" row is composed even while the drawer is shut, so it collides by text with the
+  empty state's button — tag one of them, as T24's dialogs will also have to.

@@ -19,6 +19,8 @@ import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.ui.source.AddSourceTestTags
+import dev.mkiros.perch.ui.source.AddSourceViewModel
 import dev.mkiros.perch.ui.theme.PerchTheme
 import java.time.Clock
 import java.time.Instant
@@ -157,6 +159,32 @@ class HomeScreenTest {
 
         compose.onNodeWithText("You're all caught up").assertIsDisplayed()
         compose.onNodeWithText("Add your first source").assertDoesNotExist()
+    }
+
+    // ---- adding a source, from the two places that offer it (T23) -----------------
+
+    @Test
+    fun `the drawer opens the add-source sheet`() {
+        seedFeed(title = "Source One")
+
+        showHome()
+        openDrawer()
+        compose.onNodeWithText("Add source")
+            .performSemanticsAction(SemanticsActions.OnClick)
+        compose.waitForIdle()
+
+        compose.onNodeWithTag(AddSourceTestTags.URL_FIELD).assertIsDisplayed()
+    }
+
+    @Test
+    fun `the empty state opens the add-source sheet without going via the drawer`() {
+        showHome()
+
+        compose.onNodeWithText("Add your first source").assertIsDisplayed()
+        compose.onNodeWithTag(HomeTestTags.EMPTY_ADD_SOURCE).performClick()
+        compose.waitForIdle()
+
+        compose.onNodeWithTag(AddSourceTestTags.URL_FIELD).assertIsDisplayed()
     }
 
     // ---- the source drawer and its filter (T22) ----------------------------------
@@ -312,10 +340,12 @@ class HomeScreenTest {
             feeds = container.feeds,
             clock = clock,
         )
+        val addSourceViewModel = AddSourceViewModel(container.feeds)
         compose.setContent {
             PerchTheme(dynamicColor = false) {
                 HomeScreen(
                     viewModel = viewModel,
+                    addSourceViewModel = addSourceViewModel,
                     onOpenEntry = onOpenEntry,
                     onOpenSettings = {},
                 )

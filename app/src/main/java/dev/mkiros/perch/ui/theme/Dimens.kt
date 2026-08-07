@@ -66,6 +66,9 @@ object Dimens {
     /** Icon glyphs sit at 20dp inside a [touchTarget]-sized hit area. */
     val icon = 20.dp
 
+    /** The spinner a primary button becomes while it is working. §5. */
+    val buttonSpinner = 18.dp
+
     // --- the reading surface (§8) ---
     /** The article text column caps here and centres — never a 100-character line. */
     val articleMeasure = 680.dp

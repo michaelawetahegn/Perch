@@ -24,6 +24,23 @@
     <!-- Content description of the ⚠ beside a source whose last refresh failed. -->
     <string name="drawer_source_error">Not updating</string>
 
+    <!-- Add source (DESIGN.md §5): paste, resolve, confirm, commit -->
+    <string name="drawer_add_source">Add source</string>
+    <string name="add_source_title">Add a source</string>
+    <string name="add_source_field_label">Feed or site address</string>
+    <!-- First tap: work out what the pasted address is. -->
+    <string name="add_source_resolve">Continue</string>
+    <!-- Second tap: subscribe to what the first tap found. -->
+    <string name="add_source_confirm">Follow</string>
+    <!-- How much the resolved feed carries, shown as confirmation before committing. -->
+    <plurals name="add_source_entry_count">
+        <item quantity="one">%1$d entry</item>
+        <item quantity="other">%1$d entries</item>
+    </plurals>
+    <string name="add_source_error_no_feed">No feed found at that address</string>
+    <string name="add_source_error_unreachable">That address could not be reached</string>
+    <string name="add_source_error_duplicate">You already follow %1$s</string>
+
     <!-- Article -->
     <string name="action_back">Back</string>
     <string name="article_missing">This entry is no longer available</string>

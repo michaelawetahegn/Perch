@@ -210,7 +210,7 @@ production code but no test is a defect — reopen the box.
         listed and the title is #2's display name; counts match the DB.
       - Rung: unit
 
-- [ ] **T23 — Add-source sheet (UI).** Paste → resolve → confirm-then-commit per
+- [x] **T23 — Add-source sheet (UI).** Paste → resolve → confirm-then-commit per
       DESIGN.md §5, inline error, loading button state.
       - Done: Robolectric tests: valid feed URL adds a source; homepage URL is
         discovered then added; garbage URL shows the inline error and adds nothing.

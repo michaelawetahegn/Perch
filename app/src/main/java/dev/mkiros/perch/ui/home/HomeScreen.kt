@@ -18,12 +18,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Inbox
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.RssFeed
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -40,7 +42,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -53,6 +58,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.mkiros.perch.R
+import dev.mkiros.perch.ui.source.AddSourceSheet
+import dev.mkiros.perch.ui.source.AddSourceViewModel
 import dev.mkiros.perch.ui.theme.Dimens
 import kotlinx.coroutines.launch
 
@@ -70,6 +77,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
+    addSourceViewModel: AddSourceViewModel,
     onOpenEntry: (Long) -> Unit,
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
@@ -79,10 +87,16 @@ fun HomeScreen(
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    var addingSource by rememberSaveable { mutableStateOf(false) }
 
     fun select(feedId: Long?) {
         viewModel.selectSource(feedId)
         scope.launch { drawerState.close() }
+    }
+
+    fun addSource() {
+        scope.launch { drawerState.close() }
+        addingSource = true
     }
 
     ModalNavigationDrawer(
@@ -93,6 +107,7 @@ fun HomeScreen(
                 state = uiState,
                 totalUnread = totalUnread,
                 onSelectSource = ::select,
+                onAddSource = ::addSource,
                 onOpenSettings = {
                     scope.launch { drawerState.close() }
                     onOpenSettings()
@@ -133,10 +148,20 @@ fun HomeScreen(
             ) {
                 when {
                     uiState.isLoading -> SkeletonList()
-                    uiState.entries.isEmpty() -> EmptyState(hasSources = uiState.hasSources)
+                    uiState.entries.isEmpty() -> EmptyState(
+                        hasSources = uiState.hasSources,
+                        onAddSource = ::addSource,
+                    )
                     else -> EntryList(state = uiState, onOpenEntry = onOpenEntry)
                 }
             }
+        }
+
+        if (addingSource) {
+            AddSourceSheet(
+                viewModel = addSourceViewModel,
+                onDismiss = { addingSource = false },
+            )
         }
     }
 }
@@ -157,6 +182,7 @@ private fun SourceDrawer(
     state: HomeUiState,
     totalUnread: Int,
     onSelectSource: (Long?) -> Unit,
+    onAddSource: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
     ModalDrawerSheet {
@@ -211,6 +237,13 @@ private fun SourceDrawer(
             }
             HorizontalDivider(modifier = Modifier.padding(Dimens.md))
             NavigationDrawerItem(
+                icon = { Icon(Icons.Default.Add, contentDescription = null) },
+                label = { Text(stringResource(R.string.drawer_add_source)) },
+                selected = false,
+                onClick = onAddSource,
+                modifier = Modifier.padding(horizontal = Dimens.md),
+            )
+            NavigationDrawerItem(
                 icon = { Icon(Icons.Default.Settings, contentDescription = null) },
                 label = { Text(stringResource(R.string.drawer_settings)) },
                 selected = false,
@@ -223,11 +256,13 @@ private fun SourceDrawer(
 
 /**
  * Handles for the few nodes whose text is ambiguous on screen — the selected source's
- * name is in the bar *and* in the drawer, and two sources can share an unread count.
+ * name is in the bar *and* in the drawer, two sources can share an unread count, and the
+ * drawer's always-composed "Add source" row shares its label with the empty state's button.
  */
 object HomeTestTags {
     const val TITLE = "home:title"
     const val ALL_UNREAD_BADGE = "home:all-unread:badge"
+    const val EMPTY_ADD_SOURCE = "home:empty:add-source"
 
     fun sourceBadge(feedId: Long) = "home:source:$feedId:badge"
 }
@@ -304,11 +339,12 @@ private fun SkeletonBar(widthFraction: Float, height: Dp) {
  * with sources but no unread they have finished. Those are opposite situations and the
  * screen says so rather than showing one grey "empty" for both.
  *
- * The action button each case wants belongs to the screen that can perform it — the
- * add-source sheet is T23 and "show read entries" is T27; both attach here.
+ * With no sources the state carries the action that resolves it, because a reader looking
+ * at an empty app should not have to find the drawer to fill it. ("Show read entries" is
+ * T27 and attaches to the other case the same way.)
  */
 @Composable
-private fun EmptyState(hasSources: Boolean) {
+private fun EmptyState(hasSources: Boolean, onAddSource: () -> Unit) {
     val icon: ImageVector
     val title: String
     val body: String
@@ -350,6 +386,15 @@ private fun EmptyState(hasSources: Boolean) {
             textAlign = TextAlign.Center,
             modifier = Modifier.width(Dimens.emptyContentWidth),
         )
+        if (!hasSources) {
+            Spacer(modifier = Modifier.size(Dimens.xl))
+            Button(
+                onClick = onAddSource,
+                modifier = Modifier.testTag(HomeTestTags.EMPTY_ADD_SOURCE),
+            ) {
+                Text(stringResource(R.string.drawer_add_source))
+            }
+        }
     }
 }
 

@@ -21,6 +21,7 @@ import dev.mkiros.perch.ui.article.ArticleViewModel
 import dev.mkiros.perch.ui.home.HomeScreen
 import dev.mkiros.perch.ui.home.HomeViewModel
 import dev.mkiros.perch.ui.settings.SettingsScreen
+import dev.mkiros.perch.ui.source.AddSourceViewModel
 
 /** Every destination in the app. There are three; there will not be more. */
 object Routes {
@@ -73,6 +74,7 @@ fun PerchNavHost(
         composable(Routes.HOME) {
             HomeScreen(
                 viewModel = viewModel(factory = HomeViewModel.factory(container)),
+                addSourceViewModel = viewModel(factory = AddSourceViewModel.factory(container)),
                 onOpenEntry = { entryId -> navController.navigate(Routes.article(entryId)) },
                 onOpenSettings = { navController.navigate(Routes.SETTINGS) },
             )
