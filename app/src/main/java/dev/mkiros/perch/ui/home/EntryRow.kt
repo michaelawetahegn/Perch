@@ -76,10 +76,10 @@ fun EntryRow(
                 maxLines = TITLE_MAX_LINES,
                 overflow = TextOverflow.Ellipsis,
             )
-            item.summary?.takeIf { it.isNotBlank() }?.let { summary ->
+            EntrySnippet.forTitle(item.title, item.summary)?.let { snippet ->
                 Spacer(modifier = Modifier.size(Dimens.xs))
                 Text(
-                    text = summary,
+                    text = snippet,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = SNIPPET_MAX_LINES,

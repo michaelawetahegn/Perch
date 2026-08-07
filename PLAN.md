@@ -272,7 +272,7 @@ production code but no test is a defect — reopen the box.
 
 ## Phase 4 — Polish & ship
 
-- [ ] **T29 — Consolidated design-polish pass (screenshot-driven).** **No device
+- [x] **T29 — Consolidated design-polish pass (screenshot-driven).** **No device
       needed.** Render real pixels on the JVM with Robolectric native graphics:
       `@GraphicsMode(NATIVE)`, `testOptions.unitTests.isIncludeAndroidResources = true`,
       `composeTestRule.onRoot().captureToImage()` → PNG in `screenshots/`. Seconds per

@@ -73,3 +73,15 @@ in a script or in CLAUDE.md.
   classes nor the assets (`src/testRelease/…/NoSeederInReleaseTest` asserts both). Seeds only when
   zero sources exist, so a source removed during testing stays removed. **T29/T32:** do not rely
   on the provider under Robolectric — construct `DebugSeeder` against your own DB, as its test does.
+- 2026-08-07 — T29 done: `ui/screenshot/DesignScreenshotTest` → 6 PNGs in `screenshots/`.
+  **T32 must reuse its capture path, not `captureToImage()`:** that goes through `PixelCopy`, which
+  blocks on a frame-commit callback a Robolectric window never delivers (2s timeout, nothing drawn).
+  Under `@GraphicsMode(NATIVE)` a plain `View.draw(Canvas)` gives the same real pixels synchronously;
+  a sheet or dialog is its **own window**, so draw each extra Compose root's `rootView` over the
+  activity's decor view or the capture silently omits it. Fix from the critique: `ui/home/EntrySnippet`
+  drops a summary that opens by restating the headline (link-blog bodies nearly all do) — narrow on
+  purpose, a title occurring *later* is load-bearing.
+  **§9 residuals** (all cosmetic, none reopened): Robolectric reports zero window insets, so the app
+  bar and the drawer sheet sit flush at y=0 in every capture — an artifact, not a layout bug; the
+  §9 lines for font scale 1.3, rotation/process-death and TalkBack traversal are not checkable from
+  pixels and this pass did not verify them; T25's link-underline and inline-code residuals stand.
