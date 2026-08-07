@@ -97,5 +97,5 @@ in a script or in CLAUDE.md.
   separately (`title` is derived) because rename edits one and falls back to the other.
   **Two test traps:** a drawer row and the app bar can hold the same text, so match rows with
   `filterToOne(hasClickAction())`, never bare `onNodeWithText`; and the dialogs leave the drawer
-  open behind them — re-calling `openDrawer()` then leaves nodes `assertIsDisplayed`-false, so
-  either assert straight away or close the drawer by selecting something.
+  open, so a second `openDrawer()` leaves nodes `assertIsDisplayed`-false — assert at once
+  instead, or close the drawer by selecting something.
