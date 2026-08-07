@@ -74,15 +74,13 @@ in a script or in CLAUDE.md.
   → EntryListItem`, so a row never looks its feed up and no article body is loaded to draw a
   list. **Read entries drop out of that flow** — T27's "show read entries" adds the variant, it
   does not filter in the UI. **No paging library:** Room Flow + `LazyColumn` *is* the paging.
-- 2026-08-07 — T22 done: source drawer + filter (debug 346, release 329, 0 failures). Two
-  Robolectric traps every later UI task will hit. **`compose.waitUntil` only advances the
-  *virtual* clock**, so it times out waiting for any Room emission *after* the first (the
-  re-query runs on Room's executor, a real thread) — copy `HomeScreenTest.awaitState`, which
-  polls `waitForIdle` in wall-clock time. And an **injected tap never reaches a node inside the
-  opened drawer sheet**, on screen and carrying `OnClick` though it is; drive it with
-  `performSemanticsAction(SemanticsActions.OnClick)` — T23/T24's sheet and dialog will need the
-  same. The filter is one SQL predicate (`observeUnreadListItems(feedId)`, null = every source);
-  an id no longer in `sources` drops the filter, which is what keeps T24's remove honest.
+- 2026-08-07 — T22 done: source drawer + filter. Two Robolectric traps every later UI task hits.
+  **`compose.waitUntil` only advances the *virtual* clock**, so it times out on any Room emission
+  *after* the first (the re-query runs on Room's executor, a real thread) — copy
+  `HomeScreenTest.awaitState`, which polls `waitForIdle` in wall-clock time. And an **injected tap
+  never reaches a node inside the opened drawer sheet**, on screen and carrying `OnClick` though
+  it is; drive it with `performSemanticsAction(...)`. The filter is one SQL predicate
+  (`observeUnreadListItems(feedId)`, null = every source); an id no longer in `sources` drops it.
 - 2026-08-07 — T23 done: `ui/source/{PastedUrl,AddSourceViewModel,AddSourceSheet}.kt` (debug 362,
   release 335, 0 failures). **The sheet owns paste normalization** — `example.com` and `feed://`
   become https here; the repository still refuses to guess. Confirm-then-commit is literally the
