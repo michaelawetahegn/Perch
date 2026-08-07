@@ -89,7 +89,7 @@ production code but no test is a defect — reopen the box.
         never throws on truncated/mismatched-tag input.
       - Rung: unit
 
-- [ ] **T07 — `AtomParser` (Atom 1.0). TDD.** `link[rel=alternate]` selection,
+- [x] **T07 — `AtomParser` (Atom 1.0). TDD.** `link[rel=alternate]` selection,
       `content[type=html|xhtml|text]`, `author/name`, `published` vs `updated`.
       - Done: as T06, over Atom documents.
       - Rung: unit

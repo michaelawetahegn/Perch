@@ -71,3 +71,11 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
   inside the previous one, and a descendant search misattributes fields. Lookup honours
   the *argument* order, not document order (`content:encoded` before `description`).
   jsoup keeps namespace prefixes in `tagName()` ("dc:creator"), so no NS config needed.
+- 2026-08-07 — T07 done: `AtomParser` (24 tests). Corpus shapes that drove it: `rel`
+  before *and* after `href`, `<link>` with **no rel** (spec says that means alternate),
+  and `self`/`edit`/`replies`/`enclosure` links on the same entry — so link choice is
+  "rel is alternate-or-absent, prefer `type=text/html`", never "first `<link>`".
+  `published` outranks `updated` (updated moves on every edit and would resurface old
+  posts). `content type=xhtml` is unwrapped from its scaffolding `<div>`; `type=text` is
+  escaped; a **missing** type is treated as markup, not text as the spec says — feeds
+  that omit it put escaped HTML there. `xml:base` on feed/entry is honoured (3 feeds use it).
