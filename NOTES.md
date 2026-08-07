@@ -47,12 +47,11 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
   · `research.nccgroup.com` — no longer publishes a feed anywhere. Homepage has zero
     `<link rel=alternate>` and /feed /feed/ /rss.xml /atom.xml /index.xml /feed.xml /rss/
     all soft-404 to the same 116 KB HTML page (HTTP 200). Kept as T11's negative case.
-- 2026-08-07 — T05 done: `DateParser` (29 tests). Corpus holds 1126 distinct date
-  strings in 7 shapes, all ≥2014, all parse. `RFC_1123_DATE_TIME` handles a missing
-  weekday / 1-digit day / missing seconds, but **rejects a weekday that contradicts the
-  date** (parseLenient does not disable that check) — so normalization strips the
-  weekday and rewrites alpha zones (`UT`/`EST`/`PDT`/…) to offsets. Plausibility floor
-  is 2000-01-01 (below → null, so the caller falls back); >now+24h clamps to now.
+- 2026-08-07 — T05 done: `DateParser` (29 tests). `RFC_1123_DATE_TIME` tolerates a missing
+  weekday / 1-digit day / missing seconds but **rejects a weekday that contradicts the
+  date** (parseLenient does not disable that check) — so normalization strips the weekday
+  and rewrites alpha zones (`UT`/`EST`/`PDT`/…) to offsets. Floor 2000-01-01 (below →
+  null, caller falls back); >now+24h clamps to now.
 - 2026-08-07 — T06 done: `RssParser` (19 tests). Shared parser plumbing lives in
   `data/parse/FeedXml.kt` (lenient XML parse, priority-ordered direct-child lookup,
   plainText/resolveUrl/stableGuid) — T07/T08 reuse it, so it is not RssParser-private.
@@ -80,13 +79,11 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
   what keeps the pathological-input case well under its 2 s budget. Charset order is
   XML declaration → HTTP `charset` → UTF-8; an unknown charset name falls through to
   UTF-8 rather than failing the feed.
-- 2026-08-07 — T09 done: `FeedCorpusTest` (78 tests = 39 snapshots × 2), **green with no
-  production change** — T05–T08 already satisfied it. Parameterized per feed so a failure
-  names the feed; `requestUrl` comes from `manifest.tsv` so relative links resolve as they
-  will live. Guarded against going vacuous: the parameter list `check`s ≥35 snapshots, and
-  the floor mutated to `now-1h` fails all 39 date cases (verified once, then reverted).
-  Every corpus entry has a **non-null** `publishedAt`, so the contract asserts non-null —
-  the `fetchedAt` fallback is untested by the corpus and stays T15's responsibility.
+- 2026-08-07 — T09 done: `FeedCorpusTest` (78 tests = 39 snapshots × 2), green with no
+  production change. Parameterized per feed; `requestUrl` from `manifest.tsv` so relative
+  links resolve as they will live; the parameter list `check`s ≥35 snapshots so it cannot
+  go vacuous. Every corpus entry has a **non-null** `publishedAt`, so the contract asserts
+  non-null — the `fetchedAt` fallback stays T15's responsibility.
 - 2026-08-07 — T10 done: `HtmlSanitizer` (16 tests; suite now 208, 0 failures). jsoup's
   `Cleaner` + a from-scratch `Safelist` does the allowlist, and **`addProtocols` is also
   what resolves relative URLs** — jsoup rewrites a protocol-restricted attribute to its
