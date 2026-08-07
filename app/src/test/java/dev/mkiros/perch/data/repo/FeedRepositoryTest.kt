@@ -326,7 +326,155 @@ class FeedRepositoryTest {
         assertThat(entries.findByGuid(id, "gone")).isNotNull()
     }
 
+    // ---- adding, removing and renaming sources ---------------------------------
+
+    @Test
+    fun `a pasted feed address resolves without committing, then commits with its entries`() =
+        runTest {
+            server.enqueue(ok(rss(item("a1"), item("a2"))))
+
+            val resolution = repo.resolve(server.url("/feed.xml").toString())
+
+            assertThat(resolution).isInstanceOf(SourceResolution.Resolved::class.java)
+            val resolved = resolution as SourceResolution.Resolved
+            assertThat(resolved.title).isEqualTo("Example Feed")
+            assertThat(resolved.entryCount).isEqualTo(2)
+            // The sheet confirms the resolution before committing it (DESIGN.md §5), so
+            // resolving alone must leave the database exactly as it found it.
+            assertThat(feeds.countAll()).isEqualTo(0)
+            assertThat(entries.countAll()).isEqualTo(0)
+
+            val id = repo.add(resolved)
+
+            val feed = feeds.findById(id)!!
+            assertThat(feed.feedUrl).isEqualTo(server.url("/feed.xml").toString())
+            assertThat(feed.title).isEqualTo("Example Feed")
+            assertThat(feed.customTitle).isNull()
+            assertThat(feed.siteUrl).isEqualTo("https://example.com/")
+            assertThat(feed.lastSuccessAt).isEqualTo(now)
+            assertThat(feed.lastError).isNull()
+            // Committing stores the entries already fetched — adding a source costs one
+            // round trip, not two.
+            assertThat(entries.countAll()).isEqualTo(2)
+            assertThat(server.requestCount).isEqualTo(1)
+        }
+
+    @Test
+    fun `a pasted homepage is resolved through the feed it declares`() = runTest {
+        server.dispatcher = pathDispatcher(
+            "/" to html("""<link rel="alternate" type="application/rss+xml" href="/feed.xml">"""),
+            "/feed.xml" to ok(rss(item("a1"))),
+        )
+
+        val id = subscribe("/")
+
+        assertThat(feeds.findById(id)!!.feedUrl).isEqualTo(server.url("/feed.xml").toString())
+        assertThat(entries.countAll()).isEqualTo(1)
+    }
+
+    @Test
+    fun `pasting an address already subscribed is rejected as a duplicate`() = runTest {
+        server.enqueue(ok(rss(item("a1"))))
+        val existing = subscribe()
+
+        // Nothing further is enqueued: a known address must be recognised before it is
+        // fetched, not after.
+        val resolution = repo.resolve(server.url("/feed.xml").toString())
+
+        assertThat(resolution).isEqualTo(SourceResolution.AlreadySubscribed(existing, "Example Feed"))
+        assertThat(feeds.countAll()).isEqualTo(1)
+    }
+
+    @Test
+    fun `a homepage whose feed is already subscribed is a duplicate, not a second copy`() =
+        runTest {
+            server.dispatcher = pathDispatcher(
+                "/" to html("""<link rel="alternate" type="application/rss+xml" href="/feed.xml">"""),
+                "/feed.xml" to ok(rss(item("a1"))),
+            )
+            val existing = subscribe("/feed.xml")
+
+            val resolution = repo.resolve(server.url("/").toString())
+
+            assertThat(resolution)
+                .isEqualTo(SourceResolution.AlreadySubscribed(existing, "Example Feed"))
+            assertThat(feeds.countAll()).isEqualTo(1)
+        }
+
+    @Test
+    fun `a page that publishes no feed anywhere is rejected without adding anything`() = runTest {
+        server.dispatcher = object : Dispatcher() {
+            override fun dispatch(request: RecordedRequest): MockResponse =
+                if (request.path == "/") html("<p>nothing to subscribe to</p>")
+                else MockResponse().setResponseCode(404)
+        }
+        val url = server.url("/").toString()
+
+        val resolution = repo.resolve(url)
+
+        assertThat(resolution).isEqualTo(SourceResolution.NoFeedFound(url))
+        assertThat(feeds.countAll()).isEqualTo(0)
+        assertThat(entries.countAll()).isEqualTo(0)
+    }
+
+    @Test
+    fun `an unreachable address is rejected with the reason, never an exception`() = runTest {
+        val dead = server.url("/feed.xml").toString()
+        server.shutdown()
+
+        val resolution = repo.resolve(dead)
+
+        assertThat(resolution).isInstanceOf(SourceResolution.Unreachable::class.java)
+        assertThat((resolution as SourceResolution.Unreachable).message).isNotEmpty()
+        assertThat(feeds.countAll()).isEqualTo(0)
+    }
+
+    @Test
+    fun `removing a source takes its entries with it`() = runTest {
+        server.enqueue(ok(rss(item("a1"), item("a2"))))
+        val id = subscribe()
+        assertThat(entries.countAll()).isEqualTo(2)
+
+        repo.remove(id)
+
+        assertThat(feeds.findById(id)).isNull()
+        assertThat(entries.countAll()).isEqualTo(0)
+    }
+
+    @Test
+    fun `renaming a source leaves the title the feed gives itself alone`() = runTest {
+        server.enqueue(ok(rss(item("a1"))))
+        server.enqueue(ok(rss(item("a1"), item("a2"))))
+        val id = subscribe()
+
+        repo.rename(id, "  My Blog  ")
+        repo.refresh(id)
+
+        val feed = feeds.findById(id)!!
+        assertThat(feed.customTitle).isEqualTo("My Blog")
+        assertThat(feed.title).isEqualTo("Example Feed")
+    }
+
+    @Test
+    fun `renaming to nothing restores the feed's own title`() = runTest {
+        server.enqueue(ok(rss(item("a1"))))
+        val id = subscribe()
+        repo.rename(id, "My Blog")
+
+        repo.rename(id, "   ")
+
+        assertThat(feeds.findById(id)!!.customTitle).isNull()
+    }
+
     // ---- helpers ---------------------------------------------------------------
+
+    /** Paste-to-subscribed, the way the add-source sheet does it: resolve, then commit. */
+    private suspend fun subscribe(path: String = "/feed.xml"): Long =
+        repo.add(repo.resolve(server.url(path).toString()) as SourceResolution.Resolved)
+
+    private fun html(body: String) = MockResponse()
+        .setBody("<!doctype html><html><head>$body</head><body>hello</body></html>")
+        .addHeader("Content-Type", "text/html; charset=utf-8")
 
     private suspend fun addFeed(path: String = "/feed.xml"): Long = feeds.insert(
         FeedEntity(

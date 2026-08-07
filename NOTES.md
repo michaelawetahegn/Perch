@@ -49,23 +49,14 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
   is what makes the 5 MB-of-noise case ~ms. Charset: XML declaration → HTTP `charset` →
   UTF-8, and an unknown charset name falls through to UTF-8 rather than failing the feed.
 - 2026-08-07 — T09 done: `FeedCorpusTest` (78 tests = 39 snapshots × 2), green with no
-  production change. Parameterized per feed; `requestUrl` from `manifest.tsv` so relative
-  links resolve as they will live; the parameter list `check`s ≥35 snapshots so it cannot
-  go vacuous.
-- 2026-08-07 — T10 done: `HtmlSanitizer` (16 tests). jsoup's `Cleaner` + a from-scratch
-  `Safelist`, and **`addProtocols` is also what resolves relative URLs** — jsoup rewrites
-  a protocol-restricted attribute to its absolute form, so no manual `resolveUrl` pass is
-  needed. `sanitize` → null when nothing renderable survives.
-- 2026-08-07 — T11 done: `FeedDiscovery` (13 tests; suite now 221, 0 failures). xania.org
-  **does** declare its feed — the `<link>` is split across two lines, which is why
-  `harvest.sh`'s line-based grep missed it and fell through to `/feed` → redirect to
-  `/feed.atom`. Hence jsoup, not a regex: attribute order, `rel` token lists and `type`
-  parameters all vary. Discovery **trusts a declared feed URL without fetching it** (T16
-  fetches it to add the source, and that is where a broken declaration should be reported)
-  but **verifies every path guess by parsing it** — nccgroup answers 200-with-HTML to all
-  six guesses, so an unverified guess would hand back an address that never parses.
-  Ports `PageFetcher`/`FetchedPage` (bytes + contentType + post-redirect finalUrl) are
-  minimal on purpose; T14's `FeedFetcher` should adapt to them, not the reverse.
+  production change; its parameter list `check`s ≥35 snapshots so it cannot go vacuous.
+- 2026-08-07 — T10 done: `HtmlSanitizer` (16 tests). jsoup `Cleaner` + a from-scratch
+  `Safelist`; **`addProtocols` is also what resolves relative URLs** (jsoup absolutizes a
+  protocol-restricted attribute), so no manual `resolveUrl` pass is needed.
+- 2026-08-07 — T11 done: `FeedDiscovery` (13 tests; suite now 221, 0 failures). Attribute
+  order, `rel` token lists and `type` parameters all vary between sites, and xania.org even
+  splits its `<link>` across two lines — hence jsoup, never a regex. Why declared URLs are
+  trusted unfetched but path guesses are not is in the class's KDoc.
 - 2026-08-07 — T12 done: Room schema v1 + DAOs (11 tests; suite now 232, 0 failures).
   Schema exported to `app/schemas/…PerchDatabase/1.json` (committed). No `@TypeConverter`s
   exist and none are needed — every §4 column is SQLite-native, dates are epoch millis.
@@ -98,3 +89,12 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
   list, so it needs no `IN (…)` and has no 999-variable ceiling. And a redirect only moves
   `feedUrl` if no other feed already owns it — `feedUrl` is uniquely indexed, so two
   subscriptions converging would otherwise abort the refresh (T16 owns the merge).
+- 2026-08-07 — T16 done: add/remove/rename on `FeedRepository` (23 tests in that class;
+  suite now 286, 0 failures). `resolve(url) → SourceResolution` (`Resolved` |
+  `AlreadySubscribed` | `NoFeedFound` | `Unreachable`), then `add(Resolved)`. The split is
+  DESIGN.md §5's confirm-before-commit, and it is also why adding a source costs **one**
+  fetch, not two: `Resolved` carries the parsed feed, so `add` writes those entries without
+  refetching. Duplicates are caught twice — on the pasted URL before any fetch, and on the
+  post-redirect final URL — and `add` is idempotent on `feedUrl`, which is what T17's OPML
+  import should lean on rather than re-checking. **Paste normalization is deliberately not
+  here**: a scheme-less `example.com` is rejected as unreachable, and T23's sheet owns it.

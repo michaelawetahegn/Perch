@@ -160,7 +160,7 @@ production code but no test is a defect — reopen the box.
         `lastError` set on failure and cleared on the next success.
       - Rung: unit
 
-- [ ] **T16 — Add / remove / rename source. TDD.** Paste-URL flow end to end:
+- [x] **T16 — Add / remove / rename source. TDD.** Paste-URL flow end to end:
       direct-feed vs discovery, duplicate rejection, cascade delete, rename semantics
       (`customTitle`).
       - Done: tests green for: direct feed URL, homepage needing discovery, duplicate

@@ -6,7 +6,9 @@ import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.net.FeedFetcher
 import dev.mkiros.perch.data.net.FetchResult
+import dev.mkiros.perch.data.parse.FeedDiscovery
 import dev.mkiros.perch.data.parse.FeedParser
+import dev.mkiros.perch.data.parse.FetchedPage
 import dev.mkiros.perch.data.parse.HtmlSanitizer
 import dev.mkiros.perch.data.parse.ParseResult
 import dev.mkiros.perch.data.parse.ParsedEntry
@@ -32,6 +34,41 @@ sealed interface FeedRefreshOutcome {
     data class Failed(val message: String) : FeedRefreshOutcome
 }
 
+/**
+ * What the address the user pasted turned out to be.
+ *
+ * Resolving is deliberately separate from committing: the add-source sheet shows the
+ * feed's own title and entry count as confirmation *before* anything is subscribed to
+ * (DESIGN.md §5), and every way this can go wrong is a value the sheet renders inline
+ * rather than an exception it has to catch.
+ */
+sealed interface SourceResolution {
+
+    /** A real feed, fetched and parsed but not yet subscribed to. Commit with [FeedRepository.add]. */
+    class Resolved internal constructor(
+        /** The address to poll — post-discovery, post-redirect. */
+        val feedUrl: String,
+        val title: String,
+        val siteUrl: String?,
+        internal val parsed: ParsedFeed,
+        internal val etag: String?,
+        internal val lastModified: String?,
+    ) : SourceResolution {
+
+        /** What the sheet shows as confirmation, alongside [title]. */
+        val entryCount: Int get() = parsed.entries.size
+    }
+
+    /** This feed is already subscribed to — [feedId] is the source the drawer already lists. */
+    data class AlreadySubscribed(val feedId: Long, val title: String) : SourceResolution
+
+    /** Reachable, but neither a feed nor a page that leads to one. */
+    data class NoFeedFound(val url: String) : SourceResolution
+
+    /** Could not be fetched at all; [message] is already phrased for the user. */
+    data class Unreachable(val message: String) : SourceResolution
+}
+
 /** What a whole refresh pass came to, keyed by feed id. */
 data class RefreshReport(val outcomes: Map<Long, FeedRefreshOutcome>) {
 
@@ -43,7 +80,9 @@ data class RefreshReport(val outcomes: Map<Long, FeedRefreshOutcome>) {
 }
 
 /**
- * Refreshing sources: fetch → parse → dedupe → upsert → record health.
+ * Sources: subscribing to them, and refreshing them — fetch → parse → dedupe → upsert →
+ * record health. Both halves share one fetcher, one parser and one notion of what a
+ * duplicate is, which is why they live together.
  *
  * The whole design is about damage containment. Every feed's turn is wrapped so that a
  * failure — unreachable host, HTML where a feed should be, an oversized body, or an
@@ -59,7 +98,110 @@ class FeedRepository(
     private val clock: Clock,
     private val parser: FeedParser = FeedParser(),
     private val concurrency: Int = MAX_IN_FLIGHT,
+    private val discovery: FeedDiscovery = FeedDiscovery(fetcher, parser),
 ) {
+
+    // ---- subscribing -----------------------------------------------------------
+
+    /**
+     * Works out what [url] is, without subscribing to anything. One round trip in the
+     * common case: an address that already parses as a feed skips discovery entirely
+     * (SPEC.md §5), and an address we already poll is recognised before it is fetched.
+     */
+    suspend fun resolve(url: String): SourceResolution {
+        val pasted = url.trim()
+        subscribedTo(pasted)?.let { return it }
+
+        val landing = when (val fetched = fetcher.fetch(pasted, etag = null, lastModified = null)) {
+            is FetchResult.Success -> fetched
+            is FetchResult.Failure -> return SourceResolution.Unreachable(fetched.message)
+            // Unreachable in practice: we send no validators, so nothing can be validated.
+            FetchResult.NotModified -> return nothingCameBack(pasted)
+        }
+        resolutionOf(landing)?.let { return it }
+
+        val declared = discovery.resolve(pasted, landing.asPage())
+            ?: return SourceResolution.NoFeedFound(pasted)
+
+        val feedPage = when (val fetched = fetcher.fetch(declared, etag = null, lastModified = null)) {
+            is FetchResult.Success -> fetched
+            is FetchResult.Failure -> return SourceResolution.Unreachable(fetched.message)
+            FetchResult.NotModified -> return nothingCameBack(declared)
+        }
+        return resolutionOf(feedPage) ?: SourceResolution.NoFeedFound(pasted)
+    }
+
+    /**
+     * Subscribes to a [resolved] feed and stores the entries that resolving already
+     * fetched — adding a source costs one round trip, not two.
+     *
+     * Idempotent on `feedUrl`: confirm-then-commit leaves a window in which the same feed
+     * could arrive twice (a second sheet, an OPML import), and `feedUrl` is uniquely
+     * indexed, so the second commit joins the existing source rather than aborting.
+     */
+    suspend fun add(resolved: SourceResolution.Resolved): Long {
+        val addedAt = clock.millis()
+        val feedId = feedDao.findByUrl(resolved.feedUrl)?.id ?: feedDao.insert(
+            FeedEntity(
+                feedUrl = resolved.feedUrl,
+                siteUrl = resolved.siteUrl,
+                title = resolved.title,
+                customTitle = null,
+                faviconUrl = null,
+                etag = resolved.etag,
+                lastModified = resolved.lastModified,
+                lastFetchedAt = addedAt,
+                lastSuccessAt = addedAt,
+                lastError = null,
+                addedAt = addedAt,
+            ),
+        )
+        entryDao.upsertAll(
+            resolved.parsed.entries
+                .distinctBy { it.guid }
+                .map { it.toEntity(feedId, resolved.parsed, resolved.feedUrl, addedAt) },
+        )
+        return feedId
+    }
+
+    /** Unsubscribes. The source's entries go with it, via `ON DELETE CASCADE`. */
+    suspend fun remove(feedId: Long) = feedDao.deleteById(feedId)
+
+    /**
+     * Renames a source for display only. The feed's own [FeedEntity.title] is left alone —
+     * it is what the next refresh overwrites, and what a cleared rename falls back to, so
+     * a blank [name] restores it rather than leaving the drawer with an empty label.
+     */
+    suspend fun rename(feedId: Long, name: String?) =
+        feedDao.setCustomTitle(feedId, name?.trim()?.takeIf { it.isNotEmpty() })
+
+    /** The resolution [page] represents, or null if it is not a feed at all. */
+    private suspend fun resolutionOf(page: FetchResult.Success): SourceResolution? {
+        val parsed = parser.parse(page.bytes, page.contentType, page.finalUrl)
+        if (parsed !is ParseResult.Success) return null
+        // Against the *final* URL: a redirect is how two pasted addresses converge on one
+        // feed, and that is a duplicate as surely as pasting the same address twice.
+        return subscribedTo(page.finalUrl) ?: SourceResolution.Resolved(
+            feedUrl = page.finalUrl,
+            title = parsed.feed.title,
+            siteUrl = parsed.feed.siteUrl,
+            parsed = parsed.feed,
+            etag = page.etag,
+            lastModified = page.lastModified,
+        )
+    }
+
+    private suspend fun subscribedTo(feedUrl: String): SourceResolution.AlreadySubscribed? =
+        feedDao.findByUrl(feedUrl)?.let {
+            SourceResolution.AlreadySubscribed(it.id, it.customTitle ?: it.title)
+        }
+
+    private fun nothingCameBack(url: String) =
+        SourceResolution.Unreachable("Nothing came back from $url.")
+
+    private fun FetchResult.Success.asPage() = FetchedPage(bytes, contentType, finalUrl)
+
+    // ---- refreshing ------------------------------------------------------------
 
     /** Refreshes every source, at most [concurrency] in flight, failures isolated. */
     suspend fun refreshAll(): RefreshReport = refresh(feedDao.getAll())
