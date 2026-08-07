@@ -79,3 +79,15 @@ Not a diary. If a workaround now lives in a script or in CLAUDE.md, delete its n
   posts). `content type=xhtml` is unwrapped from its scaffolding `<div>`; `type=text` is
   escaped; a **missing** type is treated as markup, not text as the spec says — feeds
   that omit it put escaped HTML there. `xml:base` on feed/entry is honoured (3 feeds use it).
+- 2026-08-07 — T08 done: `RdfParser` (21 tests) + `FeedParser` dispatch (20 tests).
+  **The corpus contains zero RSS 1.0 feeds** (39/39 are `<rss>` or `<feed>`), so RDF is
+  covered only by hand-written docs — T09 will not exercise it.
+  RSS 1.0's `<item>`s are siblings of `<channel>`, not children, and its `rdf:` prefix is
+  document-chosen, so `FeedXml` gained local-name lookups (`localName`,
+  `childElementsNamed`, `attrNamed`); `leadImageUrl` moved there too (RSS+RDF share it).
+  Identity is `rdf:about` (kept verbatim — it names the item, it need not be openable).
+  `FeedParser` finds the root by scanning an **8 KiB prefix** (skipping PIs/comments/
+  doctype) instead of building a tree: 5 MB of HTML or noise is refused in ~ms, which is
+  what keeps the pathological-input case well under its 2 s budget. Charset order is
+  XML declaration → HTTP `charset` → UTF-8; an unknown charset name falls through to
+  UTF-8 rather than failing the feed.

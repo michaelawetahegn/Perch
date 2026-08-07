@@ -50,19 +50,8 @@ class RssParser(private val dates: DateParser = DateParser()) {
             publishedIsEstimated = publishedAt == null,
             contentHtml = item.childElement("content:encoded", "description", "summary")
                 ?.markup(),
-            imageUrl = leadImage(item, base),
+            imageUrl = item.leadImageUrl(base),
         )
-    }
-
-    /**
-     * The lead image, if the feed volunteers one. An `<enclosure>` is just as often a
-     * podcast MP3, so the media type decides — never the mere presence of the element.
-     */
-    private fun leadImage(item: Element, base: String?): String? {
-        val candidate = item.childElements("enclosure", "media:content")
-            .firstOrNull { it.attr("type").startsWith("image/", ignoreCase = true) }
-            ?: item.childElement("media:thumbnail")
-        return resolveUrl(base, candidate?.attr("url"))
     }
 
     private companion object {

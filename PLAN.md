@@ -94,7 +94,7 @@ production code but no test is a defect — reopen the box.
       - Done: as T06, over Atom documents.
       - Rung: unit
 
-- [ ] **T08 — `RdfParser` (RSS 1.0) + `FeedParser` dispatch. TDD.** Dispatch on root
+- [x] **T08 — `RdfParser` (RSS 1.0) + `FeedParser` dispatch. TDD.** Dispatch on root
       element/namespace only. `ParseResult.Failure` for HTML or non-feed XML.
       - Done: dispatch tests green (rss/atom/rdf/html/garbage/empty); a 5 MB random-bytes
         input returns Failure in < 2s without OOM.
