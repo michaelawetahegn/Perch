@@ -118,6 +118,19 @@ class HtmlSanitizerTest {
     }
 
     @Test
+    fun `cell spans survive because they are structure, not the source voting on style`() {
+        val out = sanitize(
+            """<table><tr><td colspan="2" style="color:red" align="center">wide</td>
+               <td rowspan="3">tall</td></tr></table>""",
+        )
+
+        assertThat(out).contains("colspan=\"2\"")
+        assertThat(out).contains("rowspan=\"3\"")
+        assertThat(out).doesNotContain("style")
+        assertThat(out).doesNotContain("align")
+    }
+
+    @Test
     fun `a disallowed wrapper is unwrapped rather than deleted`() {
         val out = sanitize("""<div class="post"><section><p>Kept</p></section></div>""")
 

@@ -1,0 +1,379 @@
+<p class="">We’re back with our look at the Apple macOS and iOS security updates. As this is a new feature for us, please let us know your feedback on the blog. </p><p class="">For June 2026, Apple released 37 unique CVEs across iOS 26.5.2 / iPadOS 26.5.2, macOS Tahoe 26.5.2, Safari 26.5.2. Since Apple doesn’t provide CVSS scores or other severity information, we’re left to speculate on which of these bugs is the most severe. The overwhelming majority (31 of 37) are WebKit/WebRTC bugs reachable through malicious web content. Most of those are crash/DoS bugs rather than code execution, so the real risk lives in the small set of kernel bugs and the handful of WebKit sandbox escapes. However, there are a couple that stand out.</p><p class="">-&nbsp;&nbsp;&nbsp;&nbsp;<strong>CVE-2026-43724 (Kernel)</strong> – According to Apple, “An app may be able to cause unexpected system termination or write kernel memory.” A kernel memory write is the highest-value primitive here: it's the privilege-escalation half of a full exploit chain and leads to complete device control. The bug was credited to Hyunwoo Kim (@v4bel), who is known to be a serious kernel researcher. </p><p class="">-&nbsp;&nbsp;&nbsp;&nbsp;<strong>CVE-2026-39868 (Kernel)</strong> – Another kernel bug, this one could “cause unexpected system termination or corrupt kernel memory.” This is kernel memory corruption, and notably credited to a roster of elite offensive researchers (STAR Labs, Positive Technologies, Baidu Security). This kind of attribution usually signals a weaponizable, possibly Pwn2Own-grade bug rather than a theoretical crash.</p><p class="">-&nbsp;&nbsp;&nbsp;&nbsp;<strong>CVE-2026-43725 / CVE-2026-43701 (WebKit)</strong> – Apple states these bugs could allow a website to process restricted web content outside the sandbox. I'm flagging this sandbox-escape pair over the many WebKit crash bugs because a sandbox escape is the bridge that turns a web-content bug into a path toward the kernel issues above. It's the most dangerous remotely-triggered class in the release.</p><p class="">Here’s a look at all the bugs released by Apple this month:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+  
+
+
+  
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apple Security Update &ndash; June 29, 2026</title>
+
+</head>
+<body>
+  
+    
+      <span class="num">37</span><span class="lbl">Total CVEs</span>
+      <span class="num">22</span><span class="lbl">Denial of Service</span>
+      <span class="num">7</span><span class="lbl">Information Disclosure</span>
+      <span class="num">3</span><span class="lbl">Memory Corruption</span>
+      <span class="num">2</span><span class="lbl">Elevation of Privilege</span>
+      <span class="num">2</span><span class="lbl">Sandbox Escape</span>
+      <span class="num">1</span><span class="lbl">Spoofing</span>
+    
+
+    <table>
+      <caption>Apple security release &mdash; June 29, 2026. "Yes/No" indicates whether each update is affected. CVE IDs link to NVD.</caption>
+      <thead>
+        <tr>
+          <th>CVE ID</th>
+          <th>Component</th>
+          <th>Impact</th>
+          <th class="center">iOS 26.5.2 / iPadOS 26.5.2</th>
+          <th class="center">macOS Tahoe 26.5.2</th>
+          <th class="center">Safari 26.5.2</th>
+        </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43743" target="_blank" rel="noopener">CVE-2026-43743</a></td>
+        <td>IOGPUFamily</td>
+        <td class="impact">An app may be able to cause unexpected system termination</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-39868" target="_blank" rel="noopener">CVE-2026-39868</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to cause unexpected system termination or corrupt kernel memory</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43722" target="_blank" rel="noopener">CVE-2026-43722</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to leak sensitive kernel state</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43724" target="_blank" rel="noopener">CVE-2026-43724</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to cause unexpected system termination or write kernel memory</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43703" target="_blank" rel="noopener">CVE-2026-43703</a></td>
+        <td>libxslt</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43706" target="_blank" rel="noopener">CVE-2026-43706</a></td>
+        <td>libxslt</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43704" target="_blank" rel="noopener">CVE-2026-43704</a></td>
+        <td>Web Extensions</td>
+        <td class="impact">A malicious web extension may be able to cause an unexpected process crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-39872" target="_blank" rel="noopener">CVE-2026-39872</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43663" target="_blank" rel="noopener">CVE-2026-43663</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43676" target="_blank" rel="noopener">CVE-2026-43676</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected Safari crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43699" target="_blank" rel="noopener">CVE-2026-43699</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43700" target="_blank" rel="noopener">CVE-2026-43700</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may disclose sensitive user information</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43701" target="_blank" rel="noopener">CVE-2026-43701</a></td>
+        <td>WebKit</td>
+        <td class="impact">A malicious website may be able to process restricted web content outside the sandbox</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43705" target="_blank" rel="noopener">CVE-2026-43705</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to memory corruption</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43707" target="_blank" rel="noopener">CVE-2026-43707</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43708" target="_blank" rel="noopener">CVE-2026-43708</a></td>
+        <td>WebKit</td>
+        <td class="impact">A malicious website may exfiltrate data cross-origin</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43709" target="_blank" rel="noopener">CVE-2026-43709</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43712" target="_blank" rel="noopener">CVE-2026-43712</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43713" target="_blank" rel="noopener">CVE-2026-43713</a></td>
+        <td>WebKit</td>
+        <td class="impact">Visiting a website may leak sensitive data</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43715" target="_blank" rel="noopener">CVE-2026-43715</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to memory corruption</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43716" target="_blank" rel="noopener">CVE-2026-43716</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected Safari crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43725" target="_blank" rel="noopener">CVE-2026-43725</a></td>
+        <td>WebKit</td>
+        <td class="impact">A malicious website may be able to process restricted web content outside the sandbox</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43726" target="_blank" rel="noopener">CVE-2026-43726</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43727" target="_blank" rel="noopener">CVE-2026-43727</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected Safari crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43731" target="_blank" rel="noopener">CVE-2026-43731</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to memory corruption</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43732" target="_blank" rel="noopener">CVE-2026-43732</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may disclose sensitive user information</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43734" target="_blank" rel="noopener">CVE-2026-43734</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43735" target="_blank" rel="noopener">CVE-2026-43735</a></td>
+        <td>WebKit</td>
+        <td class="impact">A malicious website may exfiltrate data cross-origin</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43740" target="_blank" rel="noopener">CVE-2026-43740</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may result in the disclosure of process memory</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43742" target="_blank" rel="noopener">CVE-2026-43742</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43745" target="_blank" rel="noopener">CVE-2026-43745</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected Safari crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43720" target="_blank" rel="noopener">CVE-2026-43720</a></td>
+        <td>WebKit Canvas</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected Safari crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43721" target="_blank" rel="noopener">CVE-2026-43721</a></td>
+        <td>WebKit Storage</td>
+        <td class="impact">A malicious website may be able to silently hijack clipboard data</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28979" target="_blank" rel="noopener">CVE-2026-28979</a></td>
+        <td>WebRTC</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43717" target="_blank" rel="noopener">CVE-2026-43717</a></td>
+        <td>WebRTC</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected Safari crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43718" target="_blank" rel="noopener">CVE-2026-43718</a></td>
+        <td>WebRTC</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected Safari crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43746" target="_blank" rel="noopener">CVE-2026-43746</a></td>
+        <td>WebRTC</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected Safari crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      </tbody>
+    </table>
+  
+</body>
+</html>
+
+  
+  
+
+
+
+
+
+
+
+
+
+  <p class="">We’ll continue these macOS updates if people find them useful. Stay tuned for the regularly schedule Patch Tuesday blog covering Adobe and Microsoft.</p>

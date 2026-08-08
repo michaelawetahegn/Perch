@@ -31,11 +31,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
 import dev.mkiros.perch.R
@@ -318,56 +321,159 @@ private fun ListBlock(block: ArticleBlock.ListBlock, onOpenLink: (String) -> Uni
     }
 }
 
-/** Feed tables are rare and usually broken; the one rule is that none of them widens the page. */
+/**
+ * A table that reads as a table (U11a, DESIGN.md §8).
+ *
+ * Three decisions carry the whole treatment. **Columns are measured, not fixed**: a
+ * `Yes`/`No` column and a paragraph of impact text do not want the same slot, and giving
+ * them one both crushes the sentence and wastes a third of the page. A column that wants
+ * more than [Dimens.tableColumnMax] stops there and **wraps inside itself** rather than
+ * pushing the table wider — the horizontal scroll exists for tables with many columns, not
+ * for one long sentence. And the **rules and the header tint are drawn at the table's own
+ * width**, because a `fillMaxWidth` divider inside a `horizontalScroll` measures against an
+ * unbounded constraint and lands on zero: hairlines nobody can see, which is what made a
+ * table look like run-together columns before this.
+ *
+ * The header scrolls with the body. A frozen header sounds like the better idea until the
+ * body slides underneath it and every value sits under the wrong column name.
+ */
 @Composable
 private fun TableBlock(block: ArticleBlock.Table, onOpenLink: (String) -> Unit) {
+    val layout = rememberTableLayout(block)
+    val rule = MaterialTheme.colorScheme.outlineVariant
+
     Column(
         modifier = Modifier
-            .padding(bottom = Dimens.paragraphSpacing)
+            .padding(vertical = Dimens.tableSpacing)
             .horizontalScroll(rememberScrollState())
             .testTag(ArticleTestTags.TABLE),
     ) {
         if (block.header.isNotEmpty()) {
-            TableRow(block.header, ArticleType.tableHeader, onOpenLink)
-            HorizontalDivider(
-                thickness = Dimens.hairline,
-                color = MaterialTheme.colorScheme.outlineVariant,
+            TableRow(
+                cells = block.header,
+                layout = layout,
+                style = ArticleType.tableHeader,
+                onOpenLink = onOpenLink,
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.surfaceContainer)
+                    .testTag(ArticleTestTags.TABLE_HEADER),
             )
         }
         block.rows.forEachIndexed { index, row ->
-            if (index > 0) {
-                HorizontalDivider(
-                    thickness = Dimens.hairline,
-                    color = MaterialTheme.colorScheme.outlineVariant,
-                )
+            if (index > 0 || block.header.isNotEmpty()) {
+                TableRule(layout.width, rule)
             }
-            TableRow(row, ArticleType.table, onOpenLink)
+            TableRow(row, layout, ArticleType.table, onOpenLink)
         }
+        // The foot rule is what closes the table: without it the last row runs on into the
+        // page and the block stops looking like one thing.
+        if (block.rows.isNotEmpty()) TableRule(layout.width, rule)
     }
+}
+
+@Composable
+private fun TableRule(width: Dp, colour: Color) {
+    Box(
+        modifier = Modifier
+            .width(width)
+            .height(Dimens.hairline)
+            .background(colour)
+            .testTag(ArticleTestTags.TABLE_RULE),
+    )
 }
 
 @Composable
 private fun TableRow(
     cells: List<RichSpan>,
+    layout: TableLayout,
     style: androidx.compose.ui.text.TextStyle,
     onOpenLink: (String) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    Row {
-        cells.forEach { cell ->
+    Row(modifier = modifier.width(layout.width)) {
+        layout.columns.forEachIndexed { index, column ->
+            val cell = cells.getOrNull(index) ?: RichSpan("")
             Text(
                 text = cell.toAnnotatedString(
                     MaterialTheme.colorScheme.surfaceContainerHigh,
                     onOpenLink,
                 ),
-                style = style,
+                style = style.copy(textAlign = column.align),
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier
-                    .width(Dimens.tableCellWidth)
-                    .padding(vertical = Dimens.sm, horizontal = Dimens.xs),
+                    .width(column.width)
+                    .padding(vertical = Dimens.tableCellVertical, horizontal = Dimens.tableCellHorizontal),
             )
         }
     }
 }
+
+private data class TableColumn(val width: Dp, val align: TextAlign)
+
+private data class TableLayout(val columns: List<TableColumn>) {
+    val width: Dp = columns.fold(Dimens.none) { total, column -> total + column.width }
+}
+
+/**
+ * Column widths from the text itself, measured once per table.
+ *
+ * Only the first [TABLE_MEASURED_ROWS] rows are measured: a column's width is settled by
+ * its first screenful in every table the corpus ships, and a ZDI advisory runs to two
+ * hundred rows of ten columns, which is two thousand text layouts to answer a question the
+ * first fifty already answered. Anything longer than the width they agreed on wraps, which
+ * is the same thing that happens to a long cell anywhere else in the table.
+ */
+@Composable
+private fun rememberTableLayout(block: ArticleBlock.Table): TableLayout {
+    val measurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    val headerStyle = ArticleType.tableHeader
+    val bodyStyle = ArticleType.table
+
+    return remember(block, measurer, density, headerStyle, bodyStyle) {
+        val sample = block.rows.take(TABLE_MEASURED_ROWS)
+        val count = maxOf(
+            block.header.size,
+            sample.maxOfOrNull { it.size } ?: 0,
+            block.rows.firstOrNull()?.size ?: 0,
+        )
+
+        fun measure(text: String, style: androidx.compose.ui.text.TextStyle): Dp =
+            if (text.isEmpty()) {
+                Dimens.none
+            } else {
+                with(density) {
+                    measurer.measure(text, style, softWrap = false, maxLines = 1).size.width.toDp()
+                }
+            }
+
+        val columns = List(count) { index ->
+            val body = sample.mapNotNull { it.getOrNull(index)?.text }
+            val widest = maxOf(
+                measure(block.header.getOrNull(index)?.text.orEmpty(), headerStyle),
+                body.maxOfOrNull { measure(it, bodyStyle) } ?: Dimens.none,
+            )
+            TableColumn(
+                width = (widest + Dimens.tableCellHorizontal * 2)
+                    .coerceIn(Dimens.tableColumnMin, Dimens.tableColumnMax),
+                align = if (body.isNumeric()) TextAlign.End else TextAlign.Start,
+            )
+        }
+        TableLayout(columns)
+    }
+}
+
+/**
+ * A column of numbers wants its digits lined up on the right; a column of words does not.
+ * The test is deliberately strict — one `N/A` in a column of CVSS scores and the whole
+ * column goes back to reading left, which is the safe way to be wrong.
+ */
+private fun List<String>.isNumeric(): Boolean {
+    val written = filter { it.isNotBlank() }
+    return written.isNotEmpty() && written.all { NUMERIC.matches(it.trim()) }
+}
+
+private val NUMERIC = Regex("""[+-]?[$€£]?\d[\d,.\s]*%?""")
 
 /** A print section break: a short centred hairline with air, not a full-width line. */
 @Composable
@@ -421,5 +527,8 @@ private const val SECTION_HEAD_2 = 2
 private const val PLACEHOLDER_RATIO = 16f / 9f
 
 private const val MID_LUMINANCE = 0.5f
+
+/** How many body rows a table's column widths are measured from. */
+private const val TABLE_MEASURED_ROWS = 50
 
 private const val BULLET = "•"

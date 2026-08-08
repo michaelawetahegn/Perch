@@ -193,9 +193,18 @@ object Dimens {
     val linkUnderlineOffset = 3.dp
 
     /**
-     * A table column. Fixed rather than measured: the block scrolls horizontally, so
-     * columns have to agree on a width across rows without a measuring pass, and a feed
-     * table that wants more room gets scroll rather than a squeezed page. §8.
+     * A table column is measured from its own text (U11a) and then held between these two.
+     * The floor keeps a `Yes`/`No` column from collapsing to something untappable and
+     * unreadable; the ceiling is where a column stops growing and starts wrapping, so one
+     * long sentence cannot push the whole table sideways. §8.
      */
-    val tableCellWidth = 140.dp
+    val tableColumnMin = 56.dp
+    val tableColumnMax = 260.dp
+
+    /** Cell padding: comfortable enough that neighbouring columns read as separate. §8. */
+    val tableCellHorizontal = md
+    val tableCellVertical = sm
+
+    /** Air above and below a table, as a figure gets: it is a block, not a paragraph. §8. */
+    val tableSpacing = xl
 }

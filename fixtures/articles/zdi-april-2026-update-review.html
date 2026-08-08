@@ -1,0 +1,2535 @@
+<p class="">It’s time once again for Patch Tuesday, and this one is huge. We’ve also got multiple exploits in the wild, which adds another layer of urgency to this month’s release. Take a break from your regularly scheduled activities, and let’s take a look at the latest security patches from Adobe and Microsoft. If you’d rather watch the full video recap covering the entire release, you can check it out here:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    
+      
+    
+    
+      
+        
+      
+    
+    
+    
+
+
+
+  
+
+
+
+
+
+
+  <p class=""><strong>Adobe Patches for April 2026</strong></p><p class="">For April, Adobe released 12 bulletins addressing 61 unique CVEs in Adobe Acrobat Reader, InDesign, InCopy, FrameMaker, Connect, ColdFusion, Bridge, Photoshop, Illustrator, Experience Manager Screens, and the Adobe DNG SDK. Three of the Cold Fusion bugs came through the TrendAI ZDI program. For this month, I’m introducing an Adobe table as well. I’d love to get your feedback on whether this is helpful.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+  
+
+
+  
+    
+
+
+<table>
+<colgroup>
+  <col>
+  <col>
+  <col>
+  <col>
+  <col>
+  <col>
+  <col>
+</colgroup>
+<thead>
+  <tr>
+    <th>Bulletin ID</th>
+    <th>Product</th>
+    <th>CVE Count</th>
+    <th>Highest Severity</th>
+    <th>Highest CVSS</th>
+    <th>Exploited</th>
+    <th>Deployment Priority</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td><a href="https://helpx.adobe.com/security/products/acrobat/apsb26-43.html" target="_blank">APSB26-43</a></td>
+    <td>Adobe Acrobat Reader</td>
+    <td>1</td>
+    <td>Critical</td>
+    <td>8.6</td>
+    <td>Yes</td>
+    <td>1</td>
+  </tr>
+  <tr>
+    <td><a href="https://helpx.adobe.com/security/products/acrobat/apsb26-44.html" target="_blank">APSB26-44</a></td>
+    <td>Adobe Acrobat Reader</td>
+    <td>2</td>
+    <td>Critical</td>
+    <td>8.6</td>
+    <td>No</td>
+    <td>2</td>
+  </tr>
+  <tr>
+    <td><a href="https://helpx.adobe.com/security/products/indesign/apsb26-32.html" target="_blank">APSB26-32</a></td>
+    <td>Adobe InDesign</td>
+    <td>9</td>
+    <td>Critical</td>
+    <td>7.8</td>
+    <td>No</td>
+    <td>3</td>
+  </tr>
+  <tr>
+    <td><a href="https://helpx.adobe.com/security/products/incopy/apsb26-33.html" target="_blank">APSB26-33</a></td>
+    <td>Adobe InCopy</td>
+    <td>2</td>
+    <td>Critical</td>
+    <td>7.8</td>
+    <td>No</td>
+    <td>3</td>
+  </tr>
+  <tr>
+    <td><a href="https://helpx.adobe.com/security/products/framemaker/apsb26-36.html" target="_blank">APSB26-36</a></td>
+    <td>Adobe FrameMaker</td>
+    <td>11</td>
+    <td>Critical</td>
+    <td>8.6</td>
+    <td>No</td>
+    <td>3</td>
+  </tr>
+  <tr>
+    <td><a href="https://helpx.adobe.com/security/products/connect/apsb26-37.html" target="_blank">APSB26-37</a></td>
+    <td>Adobe Connect</td>
+    <td>9</td>
+    <td>Critical</td>
+    <td>9.6</td>
+    <td>No</td>
+    <td>3</td>
+  </tr>
+  <tr>
+    <td><a href="https://helpx.adobe.com/security/products/coldfusion/apsb26-38.html" target="_blank">APSB26-38</a></td>
+    <td>Adobe ColdFusion</td>
+    <td>7</td>
+    <td>Critical</td>
+    <td>9.3</td>
+    <td>No</td>
+    <td>1</td>
+  </tr>
+  <tr>
+    <td><a href="https://helpx.adobe.com/security/products/bridge/apsb26-39.html" target="_blank">APSB26-39</a></td>
+    <td>Adobe Bridge</td>
+    <td>6</td>
+    <td>Critical</td>
+    <td>7.8</td>
+    <td>No</td>
+    <td>3</td>
+  </tr>
+  <tr>
+    <td><a href="https://helpx.adobe.com/security/products/photoshop/apsb26-40.html" target="_blank">APSB26-40</a></td>
+    <td>Adobe Photoshop</td>
+    <td>1</td>
+    <td>Critical</td>
+    <td>7.8</td>
+    <td>No</td>
+    <td>3</td>
+  </tr>
+  <tr>
+    <td><a href="https://helpx.adobe.com/security/products/illustrator/apsb26-42.html" target="_blank">APSB26-42</a></td>
+    <td>Adobe Illustrator</td>
+    <td>1</td>
+    <td>Critical</td>
+    <td>7.8</td>
+    <td>No</td>
+    <td>3</td>
+  </tr>
+  <tr>
+    <td><a href="https://helpx.adobe.com/security/products/aem-screens/apsb26-34.html" target="_blank">APSB26-34</a></td>
+    <td>Adobe Experience Manager Screens</td>
+    <td>9</td>
+    <td>Important</td>
+    <td>5.4</td>
+    <td>No</td>
+    <td>3</td>
+  </tr>
+  <tr>
+    <td><a href="https://helpx.adobe.com/security/products/dng-sdk/apsb26-41.html" target="_blank">APSB26-41</a></td>
+    <td>Adobe DNG SDK</td>
+    <td>3</td>
+    <td>Important</td>
+    <td>5.5</td>
+    <td>No</td>
+    <td>3</td>
+  </tr>
+</tbody>
+</table>
+
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+  <p class="">Obviously, the active attack in Reader is the highest priority for this month, but don’t ignore the second bunch of Reader patches. Cold Fusion also gets a deployment priority of 1, so if you’re still running that platform, make sure you get the update. Otherwise, the FrameMaker and Connect patches fix 11 and nine bugs, respectively. InDesign and Experience Manager Screens also have nine CVEs addressed. </p><p class="">Outside of the Reader bug, none of the other bugs fixed by Adobe this month are listed as publicly known or under active attack at the time of release. One of the Reader bugs and Cold Fusion have a deployment priority of one, the other Reader bug has a priority of two, while all of the other updates released by Adobe this month are listed as deployment priority 3.</p><p class=""><strong>Microsoft Patches for April 2026</strong></p><p class="">This month, Microsoft released a monstrous 163 new CVEs in Windows and Windows components, Office and Office Components, Microsoft Edge (Chromium-based), Azure, .NET and Visual Studio, SQL Server, Hyper-V Server, BitLocker, and the Windows Wallet Service. Counting the third-party and a huge Chromium release, it brings the total number of CVEs to a staggering 247 updates. Six of these bugs were reported through the TrendAI ZDI program. Eight of these bugs are rated Critical, two are rated as Moderate, and the rest are rated Important in severity.</p><p class="">By my count, this is the second-largest monthly release in Microsoft’s history. There are many things we could speculate on to justify the size, but if Microsoft is like the other programs out there (including ours), they are likely seeing a rise in submissions found by AI tools. For us, our incoming rate has essentially tripled, making triage a challenge, to say the least. Whatever the reason, we have a lot of bugs to deal with this month. I should also point out that the Pwn2Own Berlin occurs next month, and it’s typical for vendors to patch as much as they can before the event.</p><p class="">There is one Microsoft bug listed as under active attack at the time of release, and one other that’s publicly known. Let’s take a closer look at some of the more interesting updates for this month, starting with the vulnerability being exploited in the wild:</p><p class="">-&nbsp;&nbsp;&nbsp; <a href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32201" target="_blank"><strong>CVE-2026-32201</strong></a><strong> - Microsoft SharePoint Server Spoofing Vulnerability<br></strong>Microsoft doesn’t provide a lot of information about this bug, but Spoofing bugs in SharePoint often manifest as cross-site scripting (XSS) bugs. They do note that attackers could view information or make changes to disclosed information. As always, they don’t provide any information on how widespread these attacks are, but I wouldn’t wait to test and deploy this fix – especially if you have internet-connected SharePoint servers.</p><p class="">-&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-33825" target="_blank"><strong>CVE-2026-33825</strong></a><strong> - Microsoft Defender Elevation of Privilege Vulnerability<br></strong>This bug is listed as publicly known, and this time, we know exactly <a href="https://deadeclipse666.blogspot.com/2026/04/public-disclosure.html" target="_blank">where</a> it was disclosed. There have been some questions about how exploitable this bug may be, but it does look like it’s a real problem – just with some reliability issues in its current state. I won’t add on to the commentary from the researcher about working with Microsoft. I’m just glad they are offering a fix for the vulnerability. If you rely on Defender, test and deploy this one quickly.</p><p class="">-&nbsp;&nbsp; <a href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-33827" target="_blank"><strong>CVE-2026-33827</strong></a><strong> - Windows TCP/IP Remote Code Execution Vulnerability<br></strong>This vulnerability allows remote, unauthenticated attackers to exploit code on affected systems without user interaction. That adds up to a wormable bug – at least on systems with IPv6 and IPSec enabled. It is a race condition, which sets exploitability to High on the CVSS scale, but we see race conditions exploited at Pwn2Own all the time, so don’t rely on that obstacle. If you’re running IPv6, I would test and deploy this fix quickly before public exploits become available.</p><p class="">-&nbsp;&nbsp;&nbsp; <a href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-33824" target="_blank"><strong>CVE-2026-33824</strong></a><strong> - Windows Internet Key Exchange (IKE) Service Extensions Remote Code Execution Vulnerability<br></strong>Speaking of wormable bugs, here’s our second one this month. By the title, we can tell that systems with IKE enabled are affected, but that leaves plenty of targets for attackers. Microsoft also notes a significant mitigation for this bug. Blocking UDP ports 500 and 4500 at the perimeter prevents external attackers from reaching the affected service. However, insiders could still target this for lateral movement within an enterprise. For enterprises using IKE, get this fix tested and deployed with haste.</p><p class="">Here’s the full list of CVEs released by Microsoft for April 2026:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+  
+
+
+  
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>April 2026 Patch Tuesday</title>
+
+</head>
+<body>
+<table>
+<thead><tr>
+  <th>CVE</th>
+  <th>Title</th>
+  <th>Severity</th>
+  <th>CVSS</th>
+  <th>Public</th>
+  <th>Exploited</th>
+  <th>Type</th>
+</tr></thead>
+<tbody>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32201">CVE-2026-32201</a></td>
+  <td>Microsoft SharePoint Server Spoofing Vulnerability</td>
+  <td>Important</td>
+  <td>6.5</td>
+  <td>No</td>
+  <td>Yes</td>
+  <td>Spoofing</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5281">CVE-2026-5281 *</a></td>
+  <td>Chromium: CVE-2026-5281 Use after free in Dawn</td>
+  <td>High</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>Yes</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-33825">CVE-2026-33825</a></td>
+  <td>Microsoft Defender Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>Yes</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-23666">CVE-2026-23666</a></td>
+  <td>.NET Framework Denial of Service Vulnerability</td>
+  <td>Critical</td>
+  <td>7.5</td>
+  <td>No</td>
+  <td>No</td>
+  <td>DoS</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32190">CVE-2026-32190</a></td>
+  <td>Microsoft Office Remote Code Execution Vulnerability</td>
+  <td>Critical</td>
+  <td>8.4</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-33114">CVE-2026-33114</a></td>
+  <td>Microsoft Word Remote Code Execution Vulnerability</td>
+  <td>Critical</td>
+  <td>8.4</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-33115">CVE-2026-33115</a></td>
+  <td>Microsoft Word Remote Code Execution Vulnerability</td>
+  <td>Critical</td>
+  <td>8.4</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32157">CVE-2026-32157</a></td>
+  <td>Remote Desktop Client Remote Code Execution Vulnerability</td>
+  <td>Critical</td>
+  <td>8.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-33826">CVE-2026-33826</a></td>
+  <td>Windows Active Directory Remote Code Execution Vulnerability</td>
+  <td>Critical</td>
+  <td>8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-33824">CVE-2026-33824</a></td>
+  <td>Windows Internet Key Exchange (IKE) Service Extensions Remote Code Execution Vulnerability</td>
+  <td>Critical</td>
+  <td>9.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-33827">CVE-2026-33827</a></td>
+  <td>Windows TCP/IP Remote Code Execution Vulnerability</td>
+  <td>Critical</td>
+  <td>8.1</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26171">CVE-2026-26171</a></td>
+  <td>.NET Denial of Service Vulnerability</td>
+  <td>Important</td>
+  <td>7.5</td>
+  <td>No</td>
+  <td>No</td>
+  <td>DoS</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32226">CVE-2026-32226</a></td>
+  <td>.NET Framework Denial of Service Vulnerability</td>
+  <td>Important</td>
+  <td>5.9</td>
+  <td>No</td>
+  <td>No</td>
+  <td>DoS</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32178">CVE-2026-32178</a></td>
+  <td>.NET Spoofing Vulnerability</td>
+  <td>Important</td>
+  <td>7.5</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Spoofing</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32203">CVE-2026-32203</a></td>
+  <td>.NET and Visual Studio Denial of Service Vulnerability</td>
+  <td>Important</td>
+  <td>7.5</td>
+  <td>No</td>
+  <td>No</td>
+  <td>DoS</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-33116">CVE-2026-33116</a></td>
+  <td>.NET, .NET Framework, and Visual Studio Denial of Service Vulnerability</td>
+  <td>Important</td>
+  <td>7.5</td>
+  <td>No</td>
+  <td>No</td>
+  <td>DoS</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2023-20585">CVE-2023-20585 *</a></td>
+  <td>AMD: CVE-2023-20585 IOMMU Write Buffer Vulnerability</td>
+  <td>Important</td>
+  <td>5.3</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32072">CVE-2026-32072</a></td>
+  <td>Active Directory Spoofing Vulnerability</td>
+  <td>Important</td>
+  <td>6.2</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Spoofing</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-25184">CVE-2026-25184</a></td>
+  <td>Applocker Filter Driver (applockerfltr.sys) Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32171">CVE-2026-32171</a></td>
+  <td>Azure Logic Apps Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>8.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32168">CVE-2026-32168</a></td>
+  <td>Azure Monitor Agent Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32192">CVE-2026-32192</a></td>
+  <td>Azure Monitor Agent Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32181">CVE-2026-32181</a></td>
+  <td>Connected User Experiences and Telemetry Service Denial of Service Vulnerability</td>
+  <td>Important</td>
+  <td>5.5</td>
+  <td>No</td>
+  <td>No</td>
+  <td>DoS</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-27924">CVE-2026-27924</a></td>
+  <td>Desktop Window Manager Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32152">CVE-2026-32152</a></td>
+  <td>Desktop Window Manager Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32154">CVE-2026-32154</a></td>
+  <td>Desktop Window Manager Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-27923">CVE-2026-27923</a></td>
+  <td>Desktop Window Manager Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32155">CVE-2026-32155</a></td>
+  <td>Desktop Window Manager Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-23653">CVE-2026-23653</a></td>
+  <td>GitHub Copilot and Visual Studio Code Information Disclosure Vulnerability</td>
+  <td>Important</td>
+  <td>5.7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Info</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32631">CVE-2026-23653 *</a></td>
+  <td> GitHub: CVE-2026-32631 &#x27;git clone&#x27; from manipulated repositories can leak NTLM hashes </td>
+  <td>Important</td>
+  <td>7.4</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Info</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-33096">CVE-2026-33096</a></td>
+  <td>HTTP.sys Denial of Service Vulnerability</td>
+  <td>Important</td>
+  <td>7.5</td>
+  <td>No</td>
+  <td>No</td>
+  <td>DoS</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-25250">CVE-2026-25250 *</a></td>
+  <td>MITRE: CVE-2026-25250 Secure Boot disable Eazy Fix</td>
+  <td>Important</td>
+  <td>6</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26181">CVE-2026-26181</a></td>
+  <td>Microsoft Brokering File System Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32219">CVE-2026-32219</a></td>
+  <td>Microsoft Brokering File System Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32091">CVE-2026-32091</a></td>
+  <td>Microsoft Brokering File System Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>8.4</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26152">CVE-2026-26152</a></td>
+  <td>Microsoft Cryptographic Services Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-33103">CVE-2026-33103</a></td>
+  <td>Microsoft Dynamics 365 (On-Premises) Information Disclosure Vulnerability</td>
+  <td>Important</td>
+  <td>5.5</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Info</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32188">CVE-2026-32188</a></td>
+  <td>Microsoft Excel Information Disclosure Vulnerability</td>
+  <td>Important</td>
+  <td>7.1</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Info</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32189">CVE-2026-32189</a></td>
+  <td>Microsoft Excel Remote Code Execution Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32197">CVE-2026-32197</a></td>
+  <td>Microsoft Excel Remote Code Execution Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32198">CVE-2026-32198</a></td>
+  <td>Microsoft Excel Remote Code Execution Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32199">CVE-2026-32199</a></td>
+  <td>Microsoft Excel Remote Code Execution Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32184">CVE-2026-32184</a></td>
+  <td>Microsoft High Performance Compute (HPC) Pack Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26155">CVE-2026-26155</a></td>
+  <td>Microsoft Local Security Authority Subsystem Service Information Disclosure Vulnerability</td>
+  <td>Important</td>
+  <td>6.5</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Info</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-27914">CVE-2026-27914</a></td>
+  <td>Microsoft Management Console Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26149">CVE-2026-26149</a></td>
+  <td>Microsoft Power Apps Security Feature Bypass</td>
+  <td>Important</td>
+  <td>9</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32200">CVE-2026-32200</a></td>
+  <td>Microsoft PowerPoint Remote Code Execution Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26143">CVE-2026-26143</a></td>
+  <td>Microsoft PowerShell Security Feature Bypass Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-33120">CVE-2026-33120 †</a></td>
+  <td>Microsoft SQL Server Remote Code Execution Vulnerability</td>
+  <td>Important</td>
+  <td>8.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-20945">CVE-2026-20945</a></td>
+  <td>Microsoft SharePoint Server Spoofing Vulnerability</td>
+  <td>Important</td>
+  <td>4.6</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Spoofing</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-33822">CVE-2026-33822</a></td>
+  <td>Microsoft Word Information Disclosure Vulnerability</td>
+  <td>Important</td>
+  <td>6.1</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Info</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-33095">CVE-2026-33095</a></td>
+  <td>Microsoft Word Remote Code Execution Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-23657">CVE-2026-23657</a></td>
+  <td>Microsoft Word Remote Code Execution Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32081">CVE-2026-32081</a></td>
+  <td>Package Catalog Information Disclosure Vulnerability</td>
+  <td>Important</td>
+  <td>5.5</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Info</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26170">CVE-2026-26170</a></td>
+  <td>PowerShell Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26183">CVE-2026-26183</a></td>
+  <td>Remote Access Management service/API (RPC server) Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26160">CVE-2026-26160</a></td>
+  <td>Remote Desktop Licensing Service Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26159">CVE-2026-26159</a></td>
+  <td>Remote Desktop Licensing Service Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26151">CVE-2026-26151</a></td>
+  <td>Remote Desktop Spoofing Vulnerability</td>
+  <td>Important</td>
+  <td>7.1</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Spoofing</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32085">CVE-2026-32085</a></td>
+  <td>Remote Procedure Call Information Disclosure Vulnerability</td>
+  <td>Important</td>
+  <td>5.5</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Info</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32167">CVE-2026-32167</a></td>
+  <td>SQL Server Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>6.7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32176">CVE-2026-32176</a></td>
+  <td>SQL Server Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>6.7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-0390">CVE-2026-0390</a></td>
+  <td>UEFI Secure Boot Security Feature Bypass Vulnerability</td>
+  <td>Important</td>
+  <td>6.7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32220">CVE-2026-32220</a></td>
+  <td>UEFI Secure Boot Security Feature Bypass Vulnerability</td>
+  <td>Important</td>
+  <td>4.4</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32212">CVE-2026-32212</a></td>
+  <td>Universal Plug and Play (upnp.dll) Information Disclosure Vulnerability</td>
+  <td>Important</td>
+  <td>5.5</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Info</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32214">CVE-2026-32214</a></td>
+  <td>Universal Plug and Play (upnp.dll) Information Disclosure Vulnerability</td>
+  <td>Important</td>
+  <td>5.5</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Info</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32079">CVE-2026-32079</a></td>
+  <td>Web Account Manager Information Disclosure Vulnerability</td>
+  <td>Important</td>
+  <td>5.5</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Info</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-33104">CVE-2026-33104</a></td>
+  <td>Win32k Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32196">CVE-2026-32196</a></td>
+  <td>Windows Admin Center Spoofing Vulnerability</td>
+  <td>Important</td>
+  <td>6.1</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Spoofing</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26178">CVE-2026-26178</a></td>
+  <td>Windows Advanced Rasterization Platform Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>8.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32073">CVE-2026-32073</a></td>
+  <td>Windows Ancillary Function Driver for WinSock Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26168">CVE-2026-26168</a></td>
+  <td>Windows Ancillary Function Driver for WinSock Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26173">CVE-2026-26173</a></td>
+  <td>Windows Ancillary Function Driver for WinSock Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26177">CVE-2026-26177</a></td>
+  <td>Windows Ancillary Function Driver for WinSock Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26182">CVE-2026-26182</a></td>
+  <td>Windows Ancillary Function Driver for WinSock Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-27922">CVE-2026-27922</a></td>
+  <td>Windows Ancillary Function Driver for WinSock Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-33099">CVE-2026-33099</a></td>
+  <td>Windows Ancillary Function Driver for WinSock Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-33100">CVE-2026-33100</a></td>
+  <td>Windows Ancillary Function Driver for WinSock Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32088">CVE-2026-32088</a></td>
+  <td>Windows Biometric Service Security Feature Bypass Vulnerability</td>
+  <td>Important</td>
+  <td>6.1</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-27913">CVE-2026-27913</a></td>
+  <td>Windows BitLocker Security Feature Bypass Vulnerability</td>
+  <td>Important</td>
+  <td>7.7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26175">CVE-2026-26175</a></td>
+  <td>Windows Boot Manager Security Feature Bypass Vulnerability</td>
+  <td>Important</td>
+  <td>4.6</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32162">CVE-2026-32162</a></td>
+  <td>Windows COM Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>8.4</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-20806">CVE-2026-20806</a></td>
+  <td>Windows COM Server Information Disclosure Vulnerability</td>
+  <td>Important</td>
+  <td>5.5</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Info</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26176">CVE-2026-26176</a></td>
+  <td>Windows Client Side Caching driver (csc.sys) Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-27926">CVE-2026-27926</a></td>
+  <td>Windows Cloud Files Mini Filter Driver Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32070">CVE-2026-32070</a></td>
+  <td>Windows Common Log File System Driver Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-33098">CVE-2026-33098</a></td>
+  <td>Windows Container Isolation FS Filter Driver Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26153">CVE-2026-26153</a></td>
+  <td>Windows Encrypted File System (EFS) Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32087">CVE-2026-32087</a></td>
+  <td>Windows Function Discovery Service (fdwsd.dll) Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32093">CVE-2026-32093</a></td>
+  <td>Windows Function Discovery Service (fdwsd.dll) Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32086">CVE-2026-32086</a></td>
+  <td>Windows Function Discovery Service (fdwsd.dll) Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32150">CVE-2026-32150</a></td>
+  <td>Windows Function Discovery Service (fdwsd.dll) Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-27931">CVE-2026-27931</a></td>
+  <td>Windows GDI Information Disclosure Vulnerability</td>
+  <td>Important</td>
+  <td>5.5</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Info</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-27930">CVE-2026-27930</a></td>
+  <td>Windows GDI Information Disclosure Vulnerability</td>
+  <td>Important</td>
+  <td>5.5</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Info</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32221">CVE-2026-32221</a></td>
+  <td>Windows Graphics Component Remote Code Execution Vulnerability</td>
+  <td>Important</td>
+  <td>8.4</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-27906">CVE-2026-27906</a></td>
+  <td>Windows Hello Security Feature Bypass Vulnerability</td>
+  <td>Important</td>
+  <td>4.4</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-27928">CVE-2026-27928</a></td>
+  <td>Windows Hello Security Feature Bypass Vulnerability</td>
+  <td>Important</td>
+  <td>8.7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26156">CVE-2026-26156</a></td>
+  <td>Windows Hyper-V Remote Code Execution Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32149">CVE-2026-32149</a></td>
+  <td>Windows Hyper-V Remote Code Execution Vulnerability</td>
+  <td>Important</td>
+  <td>7.3</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-27910">CVE-2026-27910</a></td>
+  <td>Windows Installer Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-27912">CVE-2026-27912</a></td>
+  <td>Windows Kerberos Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26179">CVE-2026-26179</a></td>
+  <td>Windows Kernel Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26180">CVE-2026-26180</a></td>
+  <td>Windows Kernel Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32195">CVE-2026-32195</a></td>
+  <td>Windows Kernel Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26163">CVE-2026-26163</a></td>
+  <td>Windows Kernel Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32215">CVE-2026-32215</a></td>
+  <td>Windows Kernel Information Disclosure Vulnerability</td>
+  <td>Important</td>
+  <td>5.5</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Info</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32217">CVE-2026-32217</a></td>
+  <td>Windows Kernel Information Disclosure Vulnerability</td>
+  <td>Important</td>
+  <td>5.5</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Info</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32218">CVE-2026-32218</a></td>
+  <td>Windows Kernel Information Disclosure Vulnerability</td>
+  <td>Important</td>
+  <td>5.5</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Info</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26169">CVE-2026-26169</a></td>
+  <td>Windows Kernel Memory Information Disclosure Vulnerability</td>
+  <td>Important</td>
+  <td>6.1</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Info</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-27929">CVE-2026-27929</a></td>
+  <td>Windows LUA File Virtualization Filter Driver Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32071">CVE-2026-32071</a></td>
+  <td>Windows Local Security Authority Subsystem Service (LSASS) Denial of Service Vulnerability</td>
+  <td>Important</td>
+  <td>7.5</td>
+  <td>No</td>
+  <td>No</td>
+  <td>DoS</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-20930">CVE-2026-20930</a></td>
+  <td>Windows Management Services Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26162">CVE-2026-26162</a></td>
+  <td>Windows OLE Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-33101">CVE-2026-33101</a></td>
+  <td>Windows Print Spooler Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32084">CVE-2026-32084</a></td>
+  <td>Windows Print Spooler Information Disclosure Vulnerability</td>
+  <td>Important</td>
+  <td>5.5</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Info</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-27927">CVE-2026-27927</a></td>
+  <td>Windows Projected File System Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26184">CVE-2026-26184</a></td>
+  <td>Windows Projected File System Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32069">CVE-2026-32069</a></td>
+  <td>Windows Projected File System Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32074">CVE-2026-32074</a></td>
+  <td>Windows Projected File System Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32078">CVE-2026-32078</a></td>
+  <td>Windows Projected File System Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26167">CVE-2026-26167</a></td>
+  <td>Windows Push Notifications Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>8.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32158">CVE-2026-32158</a></td>
+  <td>Windows Push Notifications Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32159">CVE-2026-32159</a></td>
+  <td>Windows Push Notifications Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32160">CVE-2026-32160</a></td>
+  <td>Windows Push Notifications Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26172">CVE-2026-26172</a></td>
+  <td>Windows Push Notifications Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-20928">CVE-2026-20928</a></td>
+  <td>Windows Recovery Environment Security Feature Bypass Vulnerability</td>
+  <td>Important</td>
+  <td>4.6</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32216">CVE-2026-32216</a></td>
+  <td>Windows Redirected Drive Buffering System Denial of Service Vulnerability</td>
+  <td>Important</td>
+  <td>5.5</td>
+  <td>No</td>
+  <td>No</td>
+  <td>DoS</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-27909">CVE-2026-27909</a></td>
+  <td>Windows Search Service Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26161">CVE-2026-26161</a></td>
+  <td>Windows Sensor Data Service Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26174">CVE-2026-26174</a></td>
+  <td>Windows Server Update Service (WSUS) Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32224">CVE-2026-32224</a></td>
+  <td>Windows Server Update Service (WSUS) Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26154">CVE-2026-26154</a></td>
+  <td>Windows Server Update Service (WSUS) Tampering Vulnerability</td>
+  <td>Important</td>
+  <td>7.5</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Tampering</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26165">CVE-2026-26165</a></td>
+  <td>Windows Shell Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26166">CVE-2026-26166</a></td>
+  <td>Windows Shell Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-27918">CVE-2026-27918</a></td>
+  <td>Windows Shell Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32151">CVE-2026-32151</a></td>
+  <td>Windows Shell Information Disclosure Vulnerability</td>
+  <td>Important</td>
+  <td>6.5</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Info</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32225">CVE-2026-32225</a></td>
+  <td>Windows Shell Security Feature Bypass Vulnerability</td>
+  <td>Important</td>
+  <td>8.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32202">CVE-2026-32202</a></td>
+  <td>Windows Shell Spoofing Vulnerability</td>
+  <td>Important</td>
+  <td>4.3</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Spoofing</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32082">CVE-2026-32082</a></td>
+  <td>Windows Simple Search and Discovery Protocol (SSDP) Service Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32083">CVE-2026-32083</a></td>
+  <td>Windows Simple Search and Discovery Protocol (SSDP) Service Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32068">CVE-2026-32068</a></td>
+  <td>Windows Simple Search and Discovery Protocol (SSDP) Service Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32183">CVE-2026-32183</a></td>
+  <td>Windows Snipping Tool Remote Code Execution Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32089">CVE-2026-32089</a></td>
+  <td>Windows Speech Brokered Api Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32090">CVE-2026-32090</a></td>
+  <td>Windows Speech Brokered Api Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32153">CVE-2026-32153</a></td>
+  <td>Windows Speech Runtime Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-27907">CVE-2026-27907</a></td>
+  <td>Windows Storage Spaces Controller Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32076">CVE-2026-32076</a></td>
+  <td>Windows Storage Spaces Controller Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-27908">CVE-2026-27908</a></td>
+  <td>Windows TDI Translation Driver (tdx.sys) Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-27921">CVE-2026-27921</a></td>
+  <td>Windows TDI Translation Driver (tdx.sys) Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-27915">CVE-2026-27915</a></td>
+  <td>Windows UPnP Device Host Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-27919">CVE-2026-27919</a></td>
+  <td>Windows UPnP Device Host Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32075">CVE-2026-32075</a></td>
+  <td>Windows UPnP Device Host Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-27916">CVE-2026-27916</a></td>
+  <td>Windows UPnP Device Host Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-27920">CVE-2026-27920</a></td>
+  <td>Windows UPnP Device Host Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32077">CVE-2026-32077</a></td>
+  <td>Windows UPnP Device Host Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-27925">CVE-2026-27925</a></td>
+  <td>Windows UPnP Device Host Information Disclosure Vulnerability</td>
+  <td>Important</td>
+  <td>6.5</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Info</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32156">CVE-2026-32156</a></td>
+  <td>Windows UPnP Device Host Remote Code Execution Vulnerability</td>
+  <td>Important</td>
+  <td>7.4</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32223">CVE-2026-32223</a></td>
+  <td>Windows USB Printing Stack (usbprint.sys) Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>6.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32165">CVE-2026-32165</a></td>
+  <td>Windows User Interface Core Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-27911">CVE-2026-27911</a></td>
+  <td>Windows User Interface Core Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32163">CVE-2026-32163</a></td>
+  <td>Windows User Interface Core Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32164">CVE-2026-32164</a></td>
+  <td>Windows User Interface Core Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-23670">CVE-2026-23670</a></td>
+  <td>Windows Virtualization-Based Security (VBS) Security Feature Bypass Vulnerability</td>
+  <td>Important</td>
+  <td>5.7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-27917">CVE-2026-27917</a></td>
+  <td>Windows WFP NDIS Lightweight Filter Driver (wfplwfs.sys) Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32080">CVE-2026-32080</a></td>
+  <td>Windows WalletService Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-32222">CVE-2026-32222</a></td>
+  <td>Windows Win32k Elevation of Privilege Vulnerability</td>
+  <td>Important</td>
+  <td>7.8</td>
+  <td>No</td>
+  <td>No</td>
+  <td>EoP</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-21637">CVE-2026-21637 *</a></td>
+  <td> HackerOne: CVE-2026-21637 TLS PSK/ALPN Callback Exceptions Bypass Error Handlers</td>
+  <td> Moderate</td>
+  <td>7.5</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-33119">CVE-2026-33119</a></td>
+  <td>Microsoft Edge (Chromium-based) for Android Spoofing Vulnerability</td>
+  <td>Moderate</td>
+  <td>5.4</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Spoofing</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-33829">CVE-2026-33829</a></td>
+  <td>Windows Snipping Tool Spoofing Vulnerability</td>
+  <td>Moderate</td>
+  <td>4.3</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Spoofing</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5858">CVE-2026-5858 *</a></td>
+  <td>Chromium: CVE-2026-5858 Heap buffer overflow in WebML</td>
+  <td>Critical</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5859">CVE-2026-5859 *</a></td>
+  <td>Chromium: CVE-2026-5859 Integer overflow in WebML</td>
+  <td>Critical</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5272">CVE-2026-5272 *</a></td>
+  <td>Chromium: CVE-2026-5272 Heap buffer overflow in GPU</td>
+  <td>High</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5273">CVE-2026-5273 *</a></td>
+  <td>Chromium: CVE-2026-5273 Use after free in CSS</td>
+  <td>High</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5274">CVE-2026-5274 *</a></td>
+  <td>Chromium: CVE-2026-5274 Integer overflow in Codecs</td>
+  <td>High</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5275">CVE-2026-5275 *</a></td>
+  <td>Chromium: CVE-2026-5275 Heap buffer overflow in ANGLE</td>
+  <td>High</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5276">CVE-2026-5276 *</a></td>
+  <td>Chromium: CVE-2026-5276 Insufficient policy enforcement in WebUSB</td>
+  <td>High</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5277">CVE-2026-5277 *</a></td>
+  <td>Chromium: CVE-2026-5277 Integer overflow in ANGLE</td>
+  <td>High</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5279">CVE-2026-5279 *</a></td>
+  <td>Chromium: CVE-2026-5279 Object corruption in V8</td>
+  <td>High</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5280">CVE-2026-5280 *</a></td>
+  <td>Chromium: CVE-2026-5280 Use after free in WebCodecs</td>
+  <td>High</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5283">CVE-2026-5283 *</a></td>
+  <td>Chromium: CVE-2026-5283 Inappropriate implementation in ANGLE</td>
+  <td>High</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5284">CVE-2026-5284 *</a></td>
+  <td>Chromium: CVE-2026-5284 Use after free in Dawn</td>
+  <td>High</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5285">CVE-2026-5285 *</a></td>
+  <td>Chromium: CVE-2026-5285 Use after free in WebGL</td>
+  <td>High</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5286">CVE-2026-5286 *</a></td>
+  <td>Chromium: CVE-2026-5286 Use after free in Dawn</td>
+  <td>High</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5287">CVE-2026-5287 *</a></td>
+  <td>Chromium: CVE-2026-5287 Use after free in PDF</td>
+  <td>High</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5289">CVE-2026-5289 *</a></td>
+  <td>Chromium: CVE-2026-5289 Use after free in Navigation</td>
+  <td>High</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5290">CVE-2026-5290 *</a></td>
+  <td>Chromium: CVE-2026-5290 Use after free in Compositing</td>
+  <td>High</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5860">CVE-2026-5860 *</a></td>
+  <td>Chromium: CVE-2026-5860 Use after free in WebRTC</td>
+  <td>High</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5861">CVE-2026-5861 *</a></td>
+  <td>Chromium: CVE-2026-5861 Use after free in V8</td>
+  <td>High</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5862">CVE-2026-5862 *</a></td>
+  <td>Chromium: CVE-2026-5862 Inappropriate implementation in V8</td>
+  <td>High</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5863">CVE-2026-5863 *</a></td>
+  <td>Chromium: CVE-2026-5863 Inappropriate implementation in V8</td>
+  <td>High</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5864">CVE-2026-5864 *</a></td>
+  <td>Chromium: CVE-2026-5864 Heap buffer overflow in WebAudio</td>
+  <td>High</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5865">CVE-2026-5865 *</a></td>
+  <td>Chromium: CVE-2026-5865 Type Confusion in V8</td>
+  <td>High</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5866">CVE-2026-5866 *</a></td>
+  <td>Chromium: CVE-2026-5866 Use after free in Media</td>
+  <td>High</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5867">CVE-2026-5867 *</a></td>
+  <td>Chromium: CVE-2026-5867 Heap buffer overflow in WebML</td>
+  <td>High</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5868">CVE-2026-5868 *</a></td>
+  <td>Chromium: CVE-2026-5868 Heap buffer overflow in ANGLE</td>
+  <td>High</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5869">CVE-2026-5869 *</a></td>
+  <td>Chromium: CVE-2026-5869 Heap buffer overflow in WebML</td>
+  <td>High</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5870">CVE-2026-5870 *</a></td>
+  <td>Chromium: CVE-2026-5870 Integer overflow in Skia</td>
+  <td>High</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5871">CVE-2026-5871 *</a></td>
+  <td>Chromium: CVE-2026-5871 Type Confusion in V8</td>
+  <td>High</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5872">CVE-2026-5872 *</a></td>
+  <td>Chromium: CVE-2026-5872 Use after free in Blink</td>
+  <td>High</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5873">CVE-2026-5873 *</a></td>
+  <td>Chromium: CVE-2026-5873 Out of bounds read and write in V8</td>
+  <td>High</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5291">CVE-2026-5291 *</a></td>
+  <td>Chromium: CVE-2026-5291 Inappropriate implementation in WebGL</td>
+  <td>Medium</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5292">CVE-2026-5292 *</a></td>
+  <td>Chromium: CVE-2026-5292 Out of bounds read in WebCodecs</td>
+  <td>Medium</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Info</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5874">CVE-2026-5874 *</a></td>
+  <td>Chromium: CVE-2026-5874 Use after free in PrivateAI</td>
+  <td>Medium</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5875">CVE-2026-5875 *</a></td>
+  <td>Chromium: CVE-2026-5875 Policy bypass in Blink</td>
+  <td>Medium</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5876">CVE-2026-5876 *</a></td>
+  <td>Chromium: CVE-2026-5876 Side-channel information leakage in Navigation</td>
+  <td>Medium</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Info</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5877">CVE-2026-5877 *</a></td>
+  <td>Chromium: CVE-2026-5877 Use after free in Navigation</td>
+  <td>Medium</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5878">CVE-2026-5878 *</a></td>
+  <td>Chromium: CVE-2026-5878 Incorrect security UI in Blink</td>
+  <td>Medium</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Spoofing</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5879">CVE-2026-5879 *</a></td>
+  <td>Chromium: CVE-2026-5879 Insufficient validation of untrusted input in ANGLE</td>
+  <td>Medium</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5880">CVE-2026-5880 *</a></td>
+  <td>Chromium: CVE-2026-5880 Incorrect security UI in browser UI</td>
+  <td>Medium</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Spoofing</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5881">CVE-2026-5881 *</a></td>
+  <td>Chromium: CVE-2026-5881 Policy bypass in LocalNetworkAccess</td>
+  <td>Medium</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5882">CVE-2026-5882 *</a></td>
+  <td>Chromium: CVE-2026-5882 Incorrect security UI in Fullscreen</td>
+  <td>Medium</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Spoofing</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5883">CVE-2026-5883 *</a></td>
+  <td>Chromium: CVE-2026-5883 Use after free in Media</td>
+  <td>Medium</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5884">CVE-2026-5884 *</a></td>
+  <td>Chromium: CVE-2026-5884 Insufficient validation of untrusted input in Media</td>
+  <td>Medium</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5885">CVE-2026-5885 *</a></td>
+  <td>Chromium: CVE-2026-5885 Insufficient validation of untrusted input in WebML</td>
+  <td>Medium</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5886">CVE-2026-5886 *</a></td>
+  <td>Chromium: CVE-2026-5886 Out of bounds read in WebAudio</td>
+  <td>Medium</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Info</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5887">CVE-2026-5887 *</a></td>
+  <td>Chromium: CVE-2026-5887 Insufficient validation of untrusted input in Downloads</td>
+  <td>Medium</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5888">CVE-2026-5888 *</a></td>
+  <td>Chromium: CVE-2026-5888 Uninitialized Use in WebCodecs</td>
+  <td>Medium</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5889">CVE-2026-5889 *</a></td>
+  <td>Chromium: CVE-2026-5889 Cryptographic Flaw in PDFium</td>
+  <td>Medium</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5890">CVE-2026-5890 *</a></td>
+  <td>Chromium: CVE-2026-5890 Race in WebCodecs</td>
+  <td>Medium</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5891">CVE-2026-5891 *</a></td>
+  <td>Chromium: CVE-2026-5891 Insufficient policy enforcement in browser UI</td>
+  <td>Medium</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5892">CVE-2026-5892 *</a></td>
+  <td>Chromium: CVE-2026-5892 Insufficient policy enforcement in PWAs</td>
+  <td>Medium</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5893">CVE-2026-5893 *</a></td>
+  <td>Chromium: CVE-2026-5893 Race in V8</td>
+  <td>Medium</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5894">CVE-2026-5894 *</a></td>
+  <td>Chromium: CVE-2026-5894 Inappropriate implementation in PDF</td>
+  <td>Low</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5895">CVE-2026-5895 *</a></td>
+  <td>Chromium: CVE-2026-5895 Incorrect security UI in Omnibox</td>
+  <td>Low</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Spoofing</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5896">CVE-2026-5896 *</a></td>
+  <td>Chromium: CVE-2026-5896 Policy bypass in Audio</td>
+  <td>Low</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5897">CVE-2026-5897 *</a></td>
+  <td>Chromium: CVE-2026-5897 Incorrect security UI in Downloads</td>
+  <td>Low</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Spoofing</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5898">CVE-2026-5898 *</a></td>
+  <td>Chromium: CVE-2026-5898 Incorrect security UI in Omnibox</td>
+  <td>Low</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Spoofing</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5899">CVE-2026-5899 *</a></td>
+  <td>Chromium: CVE-2026-5899 Incorrect security UI in History Navigation</td>
+  <td>Low</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Spoofing</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5900">CVE-2026-5900 *</a></td>
+  <td>Chromium: CVE-2026-5900 Policy bypass in Downloads</td>
+  <td>Low</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5901">CVE-2026-5901 *</a></td>
+  <td>Chromium: CVE-2026-5901 Policy bypass in DevTools</td>
+  <td>Low</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5902">CVE-2026-5902 *</a></td>
+  <td>Chromium: CVE-2026-5902 Race in Media</td>
+  <td>Low</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5903">CVE-2026-5903 *</a></td>
+  <td>Chromium: CVE-2026-5903 Policy bypass in IFrameSandbox</td>
+  <td>Low</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5904">CVE-2026-5904 *</a></td>
+  <td>Chromium: CVE-2026-5904 Use after free in V8</td>
+  <td>Low</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5905">CVE-2026-5905 *</a></td>
+  <td>Chromium: CVE-2026-5905 Incorrect security UI in Permissions</td>
+  <td>Low</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Spoofing</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5906">CVE-2026-5906 *</a></td>
+  <td>Chromium: CVE-2026-5906 Incorrect security UI in Omnibox</td>
+  <td>Low</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Spoofing</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5907">CVE-2026-5907 *</a></td>
+  <td>Chromium: CVE-2026-5907 Insufficient data validation in Media</td>
+  <td>Low</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5908">CVE-2026-5908 *</a></td>
+  <td>Chromium: CVE-2026-5908 Integer overflow in Media</td>
+  <td>Low</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5909">CVE-2026-5909 *</a></td>
+  <td>Chromium: CVE-2026-5909 Integer overflow in Media</td>
+  <td>Low</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5910">CVE-2026-5910 *</a></td>
+  <td>Chromium: CVE-2026-5910 Integer overflow in Media</td>
+  <td>Low</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5911">CVE-2026-5911 *</a></td>
+  <td>Chromium: CVE-2026-5911 Policy bypass in ServiceWorkers</td>
+  <td>Low</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5912">CVE-2026-5912 *</a></td>
+  <td>Chromium: CVE-2026-5912 Integer overflow in WebRTC</td>
+  <td>Low</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5913">CVE-2026-5913 *</a></td>
+  <td>Chromium: CVE-2026-5913 Out of bounds read in Blink</td>
+  <td>Low</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Info</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5914">CVE-2026-5914 *</a></td>
+  <td>Chromium: CVE-2026-5914 Type Confusion in CSS</td>
+  <td>Low</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>RCE</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5915">CVE-2026-5915 *</a></td>
+  <td>Chromium: CVE-2026-5915 Insufficient validation of untrusted input in WebML</td>
+  <td>Low</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5918">CVE-2026-5918 *</a></td>
+  <td>Chromium: CVE-2026-5918 Inappropriate implementation in Navigation</td>
+  <td>Low</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-5919">CVE-2026-5919 *</a></td>
+  <td>Chromium: CVE-2026-5919 Insufficient validation of untrusted input in WebSockets</td>
+  <td>Low</td>
+  <td>N/A</td>
+  <td>No</td>
+  <td>No</td>
+  <td>SFB</td>
+</tr>
+<tr>
+  <td><a target="_blank" href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-33118">CVE-2026-33118</a></td>
+  <td>Microsoft Edge (Chromium-based) Spoofing Vulnerability</td>
+  <td>Low</td>
+  <td>4.3</td>
+  <td>No</td>
+  <td>No</td>
+  <td>Spoofing</td>
+</tr>
+</tbody></table></body></html>
+  
+  
+
+
+
+
+
+
+
+
+
+  <p class=""><em>* Indicates this CVE had been released by a third party and is now being included in Microsoft releases</em>.</p><p class=""><em>† Indicates further administrative actions are required to fully address the vulnerability.</em></p><p class=""><em>&nbsp;</em></p><p class="">Looking at the other Critical-rated bugs in this month’s release, there are three Office-related bugs where the Preview Pane is once again listed as an exploit vector. I would still like to have a full-proof way of disabling the Preview Pane, but I don’t see that as an option. There’s a bug in the RDP client, but that involves connecting to a malicious RDP server. The bug in Active Directory requires authentication and a network adjacent attacker. The final Critical-rated bug is an interesting DoS in .NET Framework. An unauthenticated attacker could deny service over a network – presumably crippling any affected app made in .NET. You rarely see Critical-rated DoS bugs, but this one deserves the moniker.</p><p class="">Moving on to the other code execution bugs, you have quite a few open-and-own bugs in Office components, most notably Excel, where the Preview Pane is not an attack vector. The bug in SQL Server requires authentication, and as usual, additional steps are needed to ensure you have the correct update to remediate this vulnerability. The two bugs in Hyper-V almost reads like a privilege escalation since it allows unauthorized attackers to execute code locally. That’s the same for the bugs in the Windows Snipping Tool and the UPnP Device host. </p><p class="">More than half of this release addresses Elevation of Privilege (EoP) bugs. However, most simply lead to local attackers executing their code at SYSTEM-level privileges or administrative privileges, so there’s not much to add without further technical details about the bugs themselves. The bugs in SQL Server could allow an attacker to gain SQL sysadmin privileges. One of the kernel bugs simply states an attacker could “elevate privileges locally”. How obtuse. That’s similar for the bug in afd.sys and Desktop Windows Manager, but Microsoft also states that these bugs could crash an affected system. There are several bugs that result in a sandbox escape, including Windows Push Notifications, AFD for Winsock, Management Services, and User Interface Core. Of these, CVE-2026-26167 (Push Notifications) is the most notable — it's the only one with low attack complexity, meaning no race condition needed. The rest all require winning a race condition (AC:H). The bugs in UPnP are interesting as they allow attackers to gain access to a limited set of administrator-protected objects. Not a full escalation but definitely getting access to resources they shouldn’t. The vulnerability in the Brokering File System allows attackers to gain the level of the logged on user, so don’t do your normal activities as a user with admin privileges. The bug in Azure Monitor Agent leads to root-level access. </p><p class="">There are a dozen different security features bypass bugs in the April release. Some of these are obvious by the title alone. For example, the bugs in Windows Hello bypass safety features within the Hello app itself. The bug in the Biometric Service allows attackers to bypass biometric protections. The vulns in BitLocker and Secure Boot bypass protections in those components. The bug in Power Apps allows attackers to bypass a security warning dialog and trick targets into triggering an external protocol call that performs unintended actions on the user’s device. The bug in Windows Shell allows attackers to bypass Mark of the Web (MotW) protections. The bug in PowerShell could almost be described as a code execution bug as exploiting it bypasses dynamic-expression security checks, which could result in code execution. The vulnerability in the Windows Recovery Environment allows local attackers to bypass BitLocker device encryption. Finally, the bug in Virtualization‑Based Security (VBS) is the most interesting of the bunch – and not just because VBS is a (relatively) new feature. The problem allows attackers to manipulate allow a compromised Windows kernel to modify memory belonging to the secure kernel, breaking the intended isolation guarantees provided by VBS. Somewhat of a sandbox escape, but this time, you’re escaping from Virtual Trust Level 0 (VTL0) to Virtual Trust Level 1 (VTL1). Neat.</p><p class="">Moving on to the Information Disclosure bugs fixed this month, we have 20 different CVEs. Fortunately, most of these simply result in info leaks consisting of unspecified memory contents or memory addresses. While useful in crafting exploits, they aren’t exactly exciting on their own. There are also several bugs that disclose addresses from an object a contained in a sandboxed execution environment. This includes bugs in the Print Spooler, Package Catalog, and Web Account Manager. The bug in Dynamics 365 discloses the ever ineffable “sensitive information”. There are three different info disclosure bugs in UPnP. Two allow an attacker to read from the file system, while the third discloses anything available to the LOCAL SERVICE account. The final info disclosure bug resides in Copilot and Visual Studio and allows attackers to disclose the contents of the Model Context Protocol (MCP) when using Copilot. There are those who think MCP is dead (thanks to agentic AI agents), but if you’re using a custom MCP, I doubt you would want it leaked.</p><p class="">The April release contains just a handful of Spoofing bugs. Some, like the bugs in .NET, Active Directory, and Windows Shell, just say that they allow spoofing over a network. Others, like the bug in Windows Snipping Tool, say similar but also note that it could be used to relay NTLMv2 hashes. The patch for RDP <a href="https://go.microsoft.com/fwlink/?linkid=2347342">notes</a> that there are new warning dialogs coming this month. The bug in the Windows Admin Center would allow an attacker to interact with other tenant’s applications and content. Finally, the spoofing bug in SharePoint is another XSS issue.</p><p class="">There are eight DoS bugs in the April release, but as always, Microsoft provides no actionable information about the vulnerabilities. Microsoft does offer a mitigation for the http.sys bug that can be applied while you test and deploy the patch, but I would rely on the patch rather than the mitigation. Another exception is the bug for Connected User Experiences and Telemetry Service, which allows attackers to deny service locally rather than over the network.</p><p class="">The final(!) bug in the April release is a Tampering bug in WSUS that reads like a DoS. According to Microsoft, “An attacker can send specially crafted packets which could affect availability of the service and result in Denial of Service (DoS).” But sure – let’s call it Tampering. </p><p class="">No new advisories are being released this month.</p><p class=""><strong>Looking Ahead</strong></p><p class="">I will be in Berlin for the next Patch Tuesday, which will be May 12, and I’ll provide my full thoughts then on what will hopefully be a smaller release than this one. Until then, stay safe, happy patching, and may all your reboots be smooth and clean!</p>

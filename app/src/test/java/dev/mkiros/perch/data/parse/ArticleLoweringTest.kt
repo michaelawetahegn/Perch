@@ -191,6 +191,52 @@ class ArticleLoweringTest {
     }
 
     @Test
+    fun `one th anywhere in the first row makes it the header`() {
+        val table = lower(
+            "<table><tr><th>CVE</th><td>Impact</td></tr>" +
+                "<tr><td>CVE-2026-1</td><td>RCE</td></tr></table>",
+        ).single() as ArticleBlock.Table
+
+        assertThat(table.header.map { it.text }).containsExactly("CVE", "Impact").inOrder()
+        assertThat(table.rows).hasSize(1)
+    }
+
+    @Test
+    fun `a colspan cell is padded out so the columns beside it stay aligned`() {
+        val table = lower(
+            """<table><tr><th>A</th><th>B</th><th>C</th></tr>
+               <tr><td colspan="2">wide</td><td>c</td></tr>
+               <tr><td>a</td><td>b</td><td>c</td></tr></table>""",
+        ).single() as ArticleBlock.Table
+
+        assertThat(table.header).hasSize(3)
+        assertThat(table.rows.map { row -> row.map { it.text } })
+            .containsExactly(listOf("wide", "", "c"), listOf("a", "b", "c")).inOrder()
+    }
+
+    @Test
+    fun `a rowspan cell holds its column open in the rows beneath it`() {
+        val table = lower(
+            """<table><tr><th>A</th><th>B</th></tr>
+               <tr><td rowspan="2">tall</td><td>b1</td></tr>
+               <tr><td>b2</td></tr></table>""",
+        ).single() as ArticleBlock.Table
+
+        assertThat(table.rows.map { row -> row.map { it.text } })
+            .containsExactly(listOf("tall", "b1"), listOf("", "b2")).inOrder()
+    }
+
+    @Test
+    fun `a short row is padded to the width of the widest one`() {
+        val table = lower(
+            "<table><tr><td>a</td><td>b</td><td>c</td></tr><tr><td>d</td></tr></table>",
+        ).single() as ArticleBlock.Table
+
+        assertThat(table.rows.map { it.size }).containsExactly(3, 3).inOrder()
+        assertThat(table.rows[1].map { it.text }).containsExactly("d", "", "").inOrder()
+    }
+
+    @Test
     fun `an hr becomes a rule`() {
         assertThat(lower("<p>a</p><hr><p>b</p>")[1]).isEqualTo(ArticleBlock.Rule)
     }

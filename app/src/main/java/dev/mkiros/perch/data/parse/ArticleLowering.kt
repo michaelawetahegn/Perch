@@ -144,22 +144,67 @@ object ArticleLowering {
         nested.forEach { list -> list.childElements("li").forEach { collectItem(it, into) } }
     }
 
-    /** A header row is one whose cells are *all* `th`; anything less is just a first row. */
+    /**
+     * A table laid out on its real grid (U11a).
+     *
+     * `ArticleBlock.Table` has no concept of a span, so a merged cell is **padded out**
+     * rather than dropped: the cell keeps its text at its own position and the positions
+     * it swallowed become empty cells. Dropping them instead would shift every column to
+     * the right of the merge, and a security advisory whose CVSS score has slid under
+     * "Exploited" is worse than one that did not render. Short rows are padded to the
+     * widest row for the same reason — the renderer gives a column one width, and that
+     * only means anything if the column exists in every row.
+     *
+     * A header is a first row containing **any** `th`; the corpus writes plenty of rows
+     * that mix a `th` label with `td` values. A first row of nothing but `td` is a body
+     * row even when it reads like a header (the Word/Excel exports ZDI publishes), because
+     * promoting it would be guessing at markup that already said what it meant.
+     */
     private fun table(el: Element): List<ArticleBlock> {
-        val rows = el.select("tr").map { tr ->
-            tr.children().filter { it.lowerTag() == "th" || it.lowerTag() == "td" }
-                .map { it.inlineSpan() ?: RichSpan("") }
-        }
-        if (rows.isEmpty()) return emptyList()
+        val trs = el.select("tr")
+        if (trs.isEmpty()) return emptyList()
 
-        val first = el.select("tr").first()?.children().orEmpty()
-        val hasHeader = first.isNotEmpty() && first.all { it.lowerTag() == "th" }
+        val grid = mutableListOf<MutableList<RichSpan?>>()
+
+        fun put(row: Int, column: Int, span: RichSpan) {
+            while (grid.size <= row) grid.add(mutableListOf())
+            val cells = grid[row]
+            while (cells.size <= column) cells.add(null)
+            cells[column] = span
+        }
+
+        fun taken(row: Int, column: Int) = grid.getOrNull(row)?.getOrNull(column) != null
+
+        trs.forEachIndexed { r, tr ->
+            var c = 0
+            for (cell in tr.children()) {
+                if (cell.lowerTag() != "td" && cell.lowerTag() != "th") continue
+                while (taken(r, c)) c++
+                val columns = cell.span("colspan")
+                val rows = minOf(cell.span("rowspan"), trs.size - r)
+                put(r, c, cell.inlineSpan() ?: RichSpan(""))
+                for (dr in 0 until rows) {
+                    for (dc in 0 until columns) {
+                        if (dr != 0 || dc != 0) put(r + dr, c + dc, RichSpan(""))
+                    }
+                }
+                c += columns
+            }
+        }
+
+        val width = grid.maxOfOrNull { it.size } ?: 0
+        if (width == 0) return emptyList()
+        val rows = grid.map { cells -> List(width) { cells.getOrNull(it) ?: RichSpan("") } }
+
+        val hasHeader = trs[0].children().any { it.lowerTag() == "th" }
         val header = if (hasHeader) rows.first() else emptyList()
         val body = if (hasHeader) rows.drop(1) else rows
-        return if (header.isEmpty() && body.isEmpty()) emptyList() else {
-            listOf(ArticleBlock.Table(header, body))
-        }
+        return listOf(ArticleBlock.Table(header, body))
     }
+
+    /** A `colspan`/`rowspan`, clamped: the attribute is publisher input, not a promise. */
+    private fun Element.span(name: String): Int =
+        attr(name).trim().toIntOrNull()?.coerceIn(1, MAX_SPAN) ?: 1
 
     /** A leading or trailing rule is a separator with nothing to separate — often what a
      *  stripped chrome footer left behind. */
@@ -305,6 +350,9 @@ object ArticleLowering {
 
     private const val BLOCK_DESCENDANT =
         "img, p, div, ul, ol, li, table, blockquote, pre, hr, h1, h2, h3, h4, h5, h6, figure"
+
+    /** `colspan="99999"` is a typo or an attack, never a table. */
+    private const val MAX_SPAN = 64
 
     /**
      * Publisher chrome, matched against a whole block's text so a real sentence that

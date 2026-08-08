@@ -450,7 +450,7 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
         `./gradlew test` green.
       - Rung: screenshot
 
-- [ ] **U11a — Tables that look like tables. TDD + screenshot.** `ArticleBlock.Table`
+- [x] **U11a — Tables that look like tables. TDD + screenshot.** `ArticleBlock.Table`
       currently renders as bare text with no rules, so a table reads as run-together
       columns. The Zero Day Initiative blog (`zerodayinitiative.com`) publishes tabular
       advisories constantly and is the corpus source for this.

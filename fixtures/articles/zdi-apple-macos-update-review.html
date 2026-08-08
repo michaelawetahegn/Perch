@@ -1,0 +1,736 @@
+<p class="">We’ve received some feedback from those who read the Patch Blog that they would like something similar for macOS updates. Unfortunately, Apple doesn’t schedule these for a particular day, but we can provide our thoughts and analysis on the days they do release their latest patches. </p><p class="">For May 2026, Apple released 82 unique CVEs across the three macOS versions: 79 for macOS Tahoe 26.5, 45 for macOS Sequoia 15.7.7, and 42 for macOS Sonoma 14.8.7. Since Apple doesn’t provide CVSS scores or other severity information, we’re left to speculate on which of these bugs is the most severe. However, there are a couple that stand out.</p><p class="">-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>CVE-2026-28819 (Wi-Fi)</strong> stands out as the strongest candidate for the most severe as it states, “An app may be able to execute arbitrary code with kernel privileges.” The combination of arbitrary code execution at the kernel level is about as bad as it gets on a severity scale. Plus, it affects all three macOS versions (Tahoe, Sequoia, and Sonoma).</p><p class="">-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>CVE-2026-43668 (mDNSResponder)</strong> also piques my interest since, “A remote attacker may be able to cause unexpected system termination or corrupt kernel memory.” The remote attack vector with kernel memory corruption on all three OS versions makes this a serious one, especially since mDNSResponder is always running.</p><p class="">-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>CVE-2026-28972 (Kernel)</strong> This one states that “An app may be able to cause unexpected system termination or write kernel memory.” An out-of-bounds write directly into kernel memory on all three OS versions. This one may also have implications in the upcoming Pwn2Own Berlin contest.</p><p class="">Here’s a look at all the bugs released by Apple this month:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+  
+
+
+  
+    
+
+
+  82Unique CVEs
+  <a href="https://support.apple.com/en-us/127115" target="_blank">79macOS Tahoe 26.5</a>
+  <a href="https://support.apple.com/en-us/127116" target="_blank">45macOS Sequoia 15.7.7</a>
+  <a href="https://support.apple.com/en-us/127117" target="_blank">42macOS Sonoma 14.8.7</a>
+
+
+
+<table>
+<colgroup>
+  <col>
+  <col>
+  <col>
+  <col>
+  <col>
+  <col>
+</colgroup>
+<thead>
+  <tr>
+    <th>CVE ID</th>
+    <th>Component</th>
+    <th>Impact</th>
+    <th>macOS Tahoe 26.5</th>
+    <th>macOS Sequoia 15.7.7</th>
+    <th>macOS Sonoma 14.8.7</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28991" target="_blank">CVE-2026-28991</a></td>
+    <td>Accelerate</td>
+    <td>An app may be able to cause a denial-of-service</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28988" target="_blank">CVE-2026-28988</a></td>
+    <td>Accounts</td>
+    <td>An app may be able to bypass certain Privacy preferences</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28959" target="_blank">CVE-2026-28959</a></td>
+    <td>APFS</td>
+    <td>An app may be able to cause unexpected system termination</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28995" target="_blank">CVE-2026-28995</a></td>
+    <td>App Intents</td>
+    <td>A malicious app may be able to break out of its sandbox</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-1837" target="_blank">CVE-2026-1837</a></td>
+    <td>AppleJPEG</td>
+    <td>Processing a maliciously crafted image may lead to a denial-of-service</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28956" target="_blank">CVE-2026-28956</a></td>
+    <td>AppleJPEG</td>
+    <td>Processing a maliciously crafted media file may lead to unexpected app termination or corrupt process memory</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-39869" target="_blank">CVE-2026-39869</a></td>
+    <td>Audio</td>
+    <td>Processing an audio stream in a maliciously crafted media file may terminate the process</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28922" target="_blank">CVE-2026-28922</a></td>
+    <td>CoreMedia</td>
+    <td>An app may be able to access private information</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28936" target="_blank">CVE-2026-28936</a></td>
+    <td>CoreServices</td>
+    <td>Processing a maliciously crafted file may lead to unexpected app termination</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><img title="Reported through Zero Day Initiative" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMTAgMTY3Ij4KICA8IS0tIEhvcm5zIC0tPgogIDxwYXRoIGQ9Ik04NSA0IFE3NCA2IDcyIDE4IEw4MCAyMCBRNzkgMTIgODcgOFoiIGZpbGw9IiMxQjJBNEEiLz4KICA8cGF0aCBkPSJNMTI1IDQgUTEzNiA2IDEzOCAxOCBMMTMwIDIwIFExMzEgMTIgMTIzIDhaIiBmaWxsPSIjMUIyQTRBIi8+CiAgPCEtLSBIZWFkIC0tPgogIDxlbGxpcHNlIGN4PSIxMDUiIGN5PSIyMiIgcng9IjE4IiByeT0iMTIiIGZpbGw9IiMxQjJBNEEiLz4KICA8IS0tIExlZnQgdXBwZXIgYXJtIC0tPgogIDxwYXRoIGQ9Ik03MiAzMCBMNTggNDQgTDYzIDQ4IEw3OCAzNVoiIGZpbGw9IiMxQjJBNEEiLz4KICA8IS0tIFJpZ2h0IHVwcGVyIGFybSAtLT4KICA8cGF0aCBkPSJNMTM4IDMwIEwxNTIgNDQgTDE0NyA0OCBMMTMyIDM1WiIgZmlsbD0iIzFCMkE0QSIvPgogIDwhLS0gWWVsbG93IGJvd3RpZSBsZWZ0IC0tPgogIDxwYXRoIGQ9Ik03NiAzOCBROTAgMzIgMTA1IDM4IFE5MCA0NCA3NiAzOFoiIGZpbGw9IiNGNUI4MDAiLz4KICA8IS0tIFllbGxvdyBib3d0aWUgcmlnaHQgLS0+CiAgPHBhdGggZD0iTTEzNCAzOCBRMTIwIDMyIDEwNSAzOCBRMTIwIDQ0IDEzNCAzOFoiIGZpbGw9IiNGNUI4MDAiLz4KICA8IS0tIEJsdWUgY2hlc3QgLS0+CiAgPGVsbGlwc2UgY3g9IjEwNSIgY3k9IjQ2IiByeD0iMTQiIHJ5PSIxMCIgZmlsbD0iIzNEQjdFNCIvPgogIDwhLS0gQmx1ZSBsZWZ0IHdpbmcgLS0+CiAgPHBhdGggZD0iTTkxIDU0IFE2MCA1OCAxOCA3NSBRMTAgNjggMTQgNjIgUTUwIDUyIDkxIDU0WiIgZmlsbD0iIzNEQjdFNCIvPgogIDwhLS0gQmx1ZSByaWdodCB3aW5nIC0tPgogIDxwYXRoIGQ9Ik0xMTkgNTQgUTE1MCA1OCAxOTIgNzUgUTIwMCA2OCAxOTYgNjIgUTE2MCA1MiAxMTkgNTRaIiBmaWxsPSIjM0RCN0U0Ii8+CiAgPCEtLSBHb2xkIGxlZnQgd2luZ3RpcCAtLT4KICA8cGF0aCBkPSJNMTQgNjIgUTQgNjIgMTAgNTQgUTE2IDU4IDE4IDc1WiIgZmlsbD0iI0Y1QjgwMCIvPgogIDwhLS0gR29sZCByaWdodCB3aW5ndGlwIC0tPgogIDxwYXRoIGQ9Ik0xOTYgNjIgUTIwNiA2MiAyMDAgNTQgUTE5NCA1OCAxOTIgNzVaIiBmaWxsPSIjRjVCODAwIi8+CiAgPCEtLSBMb3dlciBib2R5IGxlZnQgc3RydXQgLS0+CiAgPHBhdGggZD0iTTkwIDYyIEw3NiA4NiBMODQgOTAgTDk3IDY2WiIgZmlsbD0iIzFCMkE0QSIvPgogIDwhLS0gTG93ZXIgYm9keSByaWdodCBzdHJ1dCAtLT4KICA8cGF0aCBkPSJNMTIwIDYyIEwxMzQgODYgTDEyNiA5MCBMMTEzIDY2WiIgZmlsbD0iIzFCMkE0QSIvPgogIDwhLS0gQmx1ZSB0ZWFyZHJvcCBhYmRvbWVuIC0tPgogIDxwYXRoIGQ9Ik0xMDUgNjggUTExOCA4MiAxMDUgMTA4IFE5MiA4MiAxMDUgNjhaIiBmaWxsPSIjM0RCN0U0Ii8+CiAgPCEtLSBMZWZ0IGxvd2VyIGxlZyAtLT4KICA8cGF0aCBkPSJNODAgMTAwIEw2MCAxMTIgTDYyIDExOCBMODQgMTA2WiIgZmlsbD0iIzFCMkE0QSIvPgogIDwhLS0gUmlnaHQgbG93ZXIgbGVnIC0tPgogIDxwYXRoIGQ9Ik0xMzAgMTAwIEwxNTAgMTEyIEwxNDggMTE4IEwxMjYgMTA2WiIgZmlsbD0iIzFCMkE0QSIvPgo8L3N2Zz4="/><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28918" target="_blank">CVE-2026-28918</a></td>
+    <td>CoreSymbolication</td>
+    <td>Parsing a maliciously crafted file may lead to an unexpected app termination</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28878" target="_blank">CVE-2026-28878</a></td>
+    <td>Crash Reporter</td>
+    <td>An app may be able to enumerate a user's installed apps</td>
+    <td>No</td>
+    <td>Yes</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28915" target="_blank">CVE-2026-28915</a></td>
+    <td>CUPS</td>
+    <td>An app may be able to gain root privileges</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43659" target="_blank">CVE-2026-43659</a></td>
+    <td>FileProvider</td>
+    <td>An app may be able to access sensitive user data</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28923" target="_blank">CVE-2026-28923</a></td>
+    <td>GPU Drivers</td>
+    <td>A malicious app may be able to break out of its sandbox</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28925" target="_blank">CVE-2026-28925</a></td>
+    <td>HFS</td>
+    <td>An app may be able to cause unexpected system termination or write kernel memory</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-43524" target="_blank">CVE-2025-43524</a></td>
+    <td>Icons</td>
+    <td>An app may be able to break out of its sandbox</td>
+    <td>No</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43661" target="_blank">CVE-2026-43661</a></td>
+    <td>ImageIO</td>
+    <td>Processing a maliciously crafted image may corrupt process memory</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28977" target="_blank">CVE-2026-28977</a></td>
+    <td>ImageIO</td>
+    <td>Processing a maliciously crafted file may lead to unexpected app termination</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28990" target="_blank">CVE-2026-28990</a></td>
+    <td>ImageIO</td>
+    <td>Processing a maliciously crafted image may corrupt process memory</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28978" target="_blank">CVE-2026-28978</a></td>
+    <td>Installer</td>
+    <td>A malicious app may be able to break out of its sandbox</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28992" target="_blank">CVE-2026-28992</a></td>
+    <td>IOHIDFamily</td>
+    <td>An attacker may be able to cause unexpected app termination</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28943" target="_blank">CVE-2026-28943</a></td>
+    <td>IOHIDFamily</td>
+    <td>An app may be able to determine kernel memory layout</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28969" target="_blank">CVE-2026-28969</a></td>
+    <td>IOKit</td>
+    <td>An app may be able to cause unexpected system termination</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43655" target="_blank">CVE-2026-43655</a></td>
+    <td>IOSurfaceAccelerator</td>
+    <td>An app may be able to cause unexpected system termination or read kernel memory</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43654" target="_blank">CVE-2026-43654</a></td>
+    <td>Kernel</td>
+    <td>An app may be able to disclose kernel memory</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28908" target="_blank">CVE-2026-28908</a></td>
+    <td>Kernel</td>
+    <td>An app may be able to modify protected parts of the file system</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28954" target="_blank">CVE-2026-28954</a></td>
+    <td>Kernel</td>
+    <td>A maliciously crafted disk image may bypass Gatekeeper checks</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28897" target="_blank">CVE-2026-28897</a></td>
+    <td>Kernel</td>
+    <td>A local user may be able to cause unexpected system termination or read kernel memory</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28952" target="_blank">CVE-2026-28952</a></td>
+    <td>Kernel</td>
+    <td>An app may be able to cause unexpected system termination</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28951" target="_blank">CVE-2026-28951</a></td>
+    <td>Kernel</td>
+    <td>An app may be able to gain root privileges</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28972" target="_blank">CVE-2026-28972</a></td>
+    <td>Kernel</td>
+    <td>An app may be able to cause unexpected system termination or write kernel memory</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28986" target="_blank">CVE-2026-28986</a></td>
+    <td>Kernel</td>
+    <td>An app may be able to cause unexpected system termination</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28987" target="_blank">CVE-2026-28987</a></td>
+    <td>Kernel</td>
+    <td>An app may be able to leak sensitive kernel state</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28983" target="_blank">CVE-2026-28983</a></td>
+    <td>LaunchServices</td>
+    <td>A remote attacker may be able to cause a denial of service</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28929" target="_blank">CVE-2026-28929</a></td>
+    <td>Mail Drafts</td>
+    <td>Replying to an email could display remote images in Mail in Lockdown Mode</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43653" target="_blank">CVE-2026-43653</a></td>
+    <td>mDNSResponder</td>
+    <td>An attacker on the local network may be able to cause a denial-of-service</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28985" target="_blank">CVE-2026-28985</a></td>
+    <td>mDNSResponder</td>
+    <td>An attacker on the local network may be able to cause a denial-of-service</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43668" target="_blank">CVE-2026-43668</a></td>
+    <td>mDNSResponder</td>
+    <td>A remote attacker may be able to cause unexpected system termination or corrupt kernel memory</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43666" target="_blank">CVE-2026-43666</a></td>
+    <td>mDNSResponder</td>
+    <td>An attacker on the local network may be able to cause a denial-of-service</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><img title="Reported through Zero Day Initiative" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMTAgMTY3Ij4KICA8IS0tIEhvcm5zIC0tPgogIDxwYXRoIGQ9Ik04NSA0IFE3NCA2IDcyIDE4IEw4MCAyMCBRNzkgMTIgODcgOFoiIGZpbGw9IiMxQjJBNEEiLz4KICA8cGF0aCBkPSJNMTI1IDQgUTEzNiA2IDEzOCAxOCBMMTMwIDIwIFExMzEgMTIgMTIzIDhaIiBmaWxsPSIjMUIyQTRBIi8+CiAgPCEtLSBIZWFkIC0tPgogIDxlbGxpcHNlIGN4PSIxMDUiIGN5PSIyMiIgcng9IjE4IiByeT0iMTIiIGZpbGw9IiMxQjJBNEEiLz4KICA8IS0tIExlZnQgdXBwZXIgYXJtIC0tPgogIDxwYXRoIGQ9Ik03MiAzMCBMNTggNDQgTDYzIDQ4IEw3OCAzNVoiIGZpbGw9IiMxQjJBNEEiLz4KICA8IS0tIFJpZ2h0IHVwcGVyIGFybSAtLT4KICA8cGF0aCBkPSJNMTM4IDMwIEwxNTIgNDQgTDE0NyA0OCBMMTMyIDM1WiIgZmlsbD0iIzFCMkE0QSIvPgogIDwhLS0gWWVsbG93IGJvd3RpZSBsZWZ0IC0tPgogIDxwYXRoIGQ9Ik03NiAzOCBROTAgMzIgMTA1IDM4IFE5MCA0NCA3NiAzOFoiIGZpbGw9IiNGNUI4MDAiLz4KICA8IS0tIFllbGxvdyBib3d0aWUgcmlnaHQgLS0+CiAgPHBhdGggZD0iTTEzNCAzOCBRMTIwIDMyIDEwNSAzOCBRMTIwIDQ0IDEzNCAzOFoiIGZpbGw9IiNGNUI4MDAiLz4KICA8IS0tIEJsdWUgY2hlc3QgLS0+CiAgPGVsbGlwc2UgY3g9IjEwNSIgY3k9IjQ2IiByeD0iMTQiIHJ5PSIxMCIgZmlsbD0iIzNEQjdFNCIvPgogIDwhLS0gQmx1ZSBsZWZ0IHdpbmcgLS0+CiAgPHBhdGggZD0iTTkxIDU0IFE2MCA1OCAxOCA3NSBRMTAgNjggMTQgNjIgUTUwIDUyIDkxIDU0WiIgZmlsbD0iIzNEQjdFNCIvPgogIDwhLS0gQmx1ZSByaWdodCB3aW5nIC0tPgogIDxwYXRoIGQ9Ik0xMTkgNTQgUTE1MCA1OCAxOTIgNzUgUTIwMCA2OCAxOTYgNjIgUTE2MCA1MiAxMTkgNTRaIiBmaWxsPSIjM0RCN0U0Ii8+CiAgPCEtLSBHb2xkIGxlZnQgd2luZ3RpcCAtLT4KICA8cGF0aCBkPSJNMTQgNjIgUTQgNjIgMTAgNTQgUTE2IDU4IDE4IDc1WiIgZmlsbD0iI0Y1QjgwMCIvPgogIDwhLS0gR29sZCByaWdodCB3aW5ndGlwIC0tPgogIDxwYXRoIGQ9Ik0xOTYgNjIgUTIwNiA2MiAyMDAgNTQgUTE5NCA1OCAxOTIgNzVaIiBmaWxsPSIjRjVCODAwIi8+CiAgPCEtLSBMb3dlciBib2R5IGxlZnQgc3RydXQgLS0+CiAgPHBhdGggZD0iTTkwIDYyIEw3NiA4NiBMODQgOTAgTDk3IDY2WiIgZmlsbD0iIzFCMkE0QSIvPgogIDwhLS0gTG93ZXIgYm9keSByaWdodCBzdHJ1dCAtLT4KICA8cGF0aCBkPSJNMTIwIDYyIEwxMzQgODYgTDEyNiA5MCBMMTEzIDY2WiIgZmlsbD0iIzFCMkE0QSIvPgogIDwhLS0gQmx1ZSB0ZWFyZHJvcCBhYmRvbWVuIC0tPgogIDxwYXRoIGQ9Ik0xMDUgNjggUTExOCA4MiAxMDUgMTA4IFE5MiA4MiAxMDUgNjhaIiBmaWxsPSIjM0RCN0U0Ii8+CiAgPCEtLSBMZWZ0IGxvd2VyIGxlZyAtLT4KICA8cGF0aCBkPSJNODAgMTAwIEw2MCAxMTIgTDYyIDExOCBMODQgMTA2WiIgZmlsbD0iIzFCMkE0QSIvPgogIDwhLS0gUmlnaHQgbG93ZXIgbGVnIC0tPgogIDxwYXRoIGQ9Ik0xMzAgMTAwIEwxNTAgMTEyIEwxNDggMTE4IEwxMjYgMTA2WiIgZmlsbD0iIzFCMkE0QSIvPgo8L3N2Zz4="/><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28941" target="_blank">CVE-2026-28941</a></td>
+    <td>Model I/O</td>
+    <td>Processing a maliciously crafted file may lead to a denial-of-service or potentially disclose memory contents</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><img title="Reported through Zero Day Initiative" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMTAgMTY3Ij4KICA8IS0tIEhvcm5zIC0tPgogIDxwYXRoIGQ9Ik04NSA0IFE3NCA2IDcyIDE4IEw4MCAyMCBRNzkgMTIgODcgOFoiIGZpbGw9IiMxQjJBNEEiLz4KICA8cGF0aCBkPSJNMTI1IDQgUTEzNiA2IDEzOCAxOCBMMTMwIDIwIFExMzEgMTIgMTIzIDhaIiBmaWxsPSIjMUIyQTRBIi8+CiAgPCEtLSBIZWFkIC0tPgogIDxlbGxpcHNlIGN4PSIxMDUiIGN5PSIyMiIgcng9IjE4IiByeT0iMTIiIGZpbGw9IiMxQjJBNEEiLz4KICA8IS0tIExlZnQgdXBwZXIgYXJtIC0tPgogIDxwYXRoIGQ9Ik03MiAzMCBMNTggNDQgTDYzIDQ4IEw3OCAzNVoiIGZpbGw9IiMxQjJBNEEiLz4KICA8IS0tIFJpZ2h0IHVwcGVyIGFybSAtLT4KICA8cGF0aCBkPSJNMTM4IDMwIEwxNTIgNDQgTDE0NyA0OCBMMTMyIDM1WiIgZmlsbD0iIzFCMkE0QSIvPgogIDwhLS0gWWVsbG93IGJvd3RpZSBsZWZ0IC0tPgogIDxwYXRoIGQ9Ik03NiAzOCBROTAgMzIgMTA1IDM4IFE5MCA0NCA3NiAzOFoiIGZpbGw9IiNGNUI4MDAiLz4KICA8IS0tIFllbGxvdyBib3d0aWUgcmlnaHQgLS0+CiAgPHBhdGggZD0iTTEzNCAzOCBRMTIwIDMyIDEwNSAzOCBRMTIwIDQ0IDEzNCAzOFoiIGZpbGw9IiNGNUI4MDAiLz4KICA8IS0tIEJsdWUgY2hlc3QgLS0+CiAgPGVsbGlwc2UgY3g9IjEwNSIgY3k9IjQ2IiByeD0iMTQiIHJ5PSIxMCIgZmlsbD0iIzNEQjdFNCIvPgogIDwhLS0gQmx1ZSBsZWZ0IHdpbmcgLS0+CiAgPHBhdGggZD0iTTkxIDU0IFE2MCA1OCAxOCA3NSBRMTAgNjggMTQgNjIgUTUwIDUyIDkxIDU0WiIgZmlsbD0iIzNEQjdFNCIvPgogIDwhLS0gQmx1ZSByaWdodCB3aW5nIC0tPgogIDxwYXRoIGQ9Ik0xMTkgNTQgUTE1MCA1OCAxOTIgNzUgUTIwMCA2OCAxOTYgNjIgUTE2MCA1MiAxMTkgNTRaIiBmaWxsPSIjM0RCN0U0Ii8+CiAgPCEtLSBHb2xkIGxlZnQgd2luZ3RpcCAtLT4KICA8cGF0aCBkPSJNMTQgNjIgUTQgNjIgMTAgNTQgUTE2IDU4IDE4IDc1WiIgZmlsbD0iI0Y1QjgwMCIvPgogIDwhLS0gR29sZCByaWdodCB3aW5ndGlwIC0tPgogIDxwYXRoIGQ9Ik0xOTYgNjIgUTIwNiA2MiAyMDAgNTQgUTE5NCA1OCAxOTIgNzVaIiBmaWxsPSIjRjVCODAwIi8+CiAgPCEtLSBMb3dlciBib2R5IGxlZnQgc3RydXQgLS0+CiAgPHBhdGggZD0iTTkwIDYyIEw3NiA4NiBMODQgOTAgTDk3IDY2WiIgZmlsbD0iIzFCMkE0QSIvPgogIDwhLS0gTG93ZXIgYm9keSByaWdodCBzdHJ1dCAtLT4KICA8cGF0aCBkPSJNMTIwIDYyIEwxMzQgODYgTDEyNiA5MCBMMTEzIDY2WiIgZmlsbD0iIzFCMkE0QSIvPgogIDwhLS0gQmx1ZSB0ZWFyZHJvcCBhYmRvbWVuIC0tPgogIDxwYXRoIGQ9Ik0xMDUgNjggUTExOCA4MiAxMDUgMTA4IFE5MiA4MiAxMDUgNjhaIiBmaWxsPSIjM0RCN0U0Ii8+CiAgPCEtLSBMZWZ0IGxvd2VyIGxlZyAtLT4KICA8cGF0aCBkPSJNODAgMTAwIEw2MCAxMTIgTDYyIDExOCBMODQgMTA2WiIgZmlsbD0iIzFCMkE0QSIvPgogIDwhLS0gUmlnaHQgbG93ZXIgbGVnIC0tPgogIDxwYXRoIGQ9Ik0xMzAgMTAwIEwxNTAgMTEyIEwxNDggMTE4IEwxMjYgMTA2WiIgZmlsbD0iIzFCMkE0QSIvPgo8L3N2Zz4="/><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28940" target="_blank">CVE-2026-28940</a></td>
+    <td>Model I/O</td>
+    <td>Processing a maliciously crafted image may corrupt process memory</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28961" target="_blank">CVE-2026-28961</a></td>
+    <td>Network Extensions</td>
+    <td>An attacker with physical access to a locked device may be able to view sensitive user information</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28906" target="_blank">CVE-2026-28906</a></td>
+    <td>Networking</td>
+    <td>An attacker may be able to track users through their IP address</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28840" target="_blank">CVE-2026-28840</a></td>
+    <td>PackageKit</td>
+    <td>An app may be able to gain root privileges</td>
+    <td>No</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43656" target="_blank">CVE-2026-43656</a></td>
+    <td>Quick Look</td>
+    <td>Parsing a maliciously crafted file may lead to an unexpected app termination</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43652" target="_blank">CVE-2026-43652</a></td>
+    <td>Sandbox</td>
+    <td>An app may be able to access protected user data</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-39870" target="_blank">CVE-2026-39870</a></td>
+    <td>SceneKit</td>
+    <td>Processing a maliciously crafted image may corrupt process memory</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28846" target="_blank">CVE-2026-28846</a></td>
+    <td>SceneKit</td>
+    <td>A remote attacker may be able to cause unexpected app termination</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28993" target="_blank">CVE-2026-28993</a></td>
+    <td>Shortcuts</td>
+    <td>An app may be able to access user-sensitive data</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28848" target="_blank">CVE-2026-28848</a></td>
+    <td>SMB</td>
+    <td>A remote attacker may be able to cause unexpected system termination</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28930" target="_blank">CVE-2026-28930</a></td>
+    <td>Spotlight</td>
+    <td>An app may be able to access protected user data</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28974" target="_blank">CVE-2026-28974</a></td>
+    <td>Spotlight</td>
+    <td>An app may be able to cause a denial-of-service</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28996" target="_blank">CVE-2026-28996</a></td>
+    <td>Storage</td>
+    <td>An app may be able to access sensitive user data</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28919" target="_blank">CVE-2026-28919</a></td>
+    <td>StorageKit</td>
+    <td>An app may be able to gain root privileges</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28924" target="_blank">CVE-2026-28924</a></td>
+    <td>Sync Services</td>
+    <td>An app may be able to access Contacts without user consent</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-39871" target="_blank">CVE-2026-39871</a></td>
+    <td>TV App</td>
+    <td>An app may be able to observe unprotected user data</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28976" target="_blank">CVE-2026-28976</a></td>
+    <td>UserAccountUpdater</td>
+    <td>An app may be able to gain root privileges</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43660" target="_blank">CVE-2026-43660</a></td>
+    <td>WebKit</td>
+    <td>Processing maliciously crafted web content may prevent Content Security Policy from being enforced</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28907" target="_blank">CVE-2026-28907</a></td>
+    <td>WebKit</td>
+    <td>Processing maliciously crafted web content may prevent Content Security Policy from being enforced</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28962" target="_blank">CVE-2026-28962</a></td>
+    <td>WebKit</td>
+    <td>Processing maliciously crafted web content may disclose sensitive user information</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43658" target="_blank">CVE-2026-43658</a></td>
+    <td>WebKit</td>
+    <td>Processing maliciously crafted web content may lead to an unexpected Safari crash</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28905" target="_blank">CVE-2026-28905</a></td>
+    <td>WebKit</td>
+    <td>Processing maliciously crafted web content may lead to an unexpected process crash</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><img title="Reported through Zero Day Initiative" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMTAgMTY3Ij4KICA8IS0tIEhvcm5zIC0tPgogIDxwYXRoIGQ9Ik04NSA0IFE3NCA2IDcyIDE4IEw4MCAyMCBRNzkgMTIgODcgOFoiIGZpbGw9IiMxQjJBNEEiLz4KICA8cGF0aCBkPSJNMTI1IDQgUTEzNiA2IDEzOCAxOCBMMTMwIDIwIFExMzEgMTIgMTIzIDhaIiBmaWxsPSIjMUIyQTRBIi8+CiAgPCEtLSBIZWFkIC0tPgogIDxlbGxpcHNlIGN4PSIxMDUiIGN5PSIyMiIgcng9IjE4IiByeT0iMTIiIGZpbGw9IiMxQjJBNEEiLz4KICA8IS0tIExlZnQgdXBwZXIgYXJtIC0tPgogIDxwYXRoIGQ9Ik03MiAzMCBMNTggNDQgTDYzIDQ4IEw3OCAzNVoiIGZpbGw9IiMxQjJBNEEiLz4KICA8IS0tIFJpZ2h0IHVwcGVyIGFybSAtLT4KICA8cGF0aCBkPSJNMTM4IDMwIEwxNTIgNDQgTDE0NyA0OCBMMTMyIDM1WiIgZmlsbD0iIzFCMkE0QSIvPgogIDwhLS0gWWVsbG93IGJvd3RpZSBsZWZ0IC0tPgogIDxwYXRoIGQ9Ik03NiAzOCBROTAgMzIgMTA1IDM4IFE5MCA0NCA3NiAzOFoiIGZpbGw9IiNGNUI4MDAiLz4KICA8IS0tIFllbGxvdyBib3d0aWUgcmlnaHQgLS0+CiAgPHBhdGggZD0iTTEzNCAzOCBRMTIwIDMyIDEwNSAzOCBRMTIwIDQ0IDEzNCAzOFoiIGZpbGw9IiNGNUI4MDAiLz4KICA8IS0tIEJsdWUgY2hlc3QgLS0+CiAgPGVsbGlwc2UgY3g9IjEwNSIgY3k9IjQ2IiByeD0iMTQiIHJ5PSIxMCIgZmlsbD0iIzNEQjdFNCIvPgogIDwhLS0gQmx1ZSBsZWZ0IHdpbmcgLS0+CiAgPHBhdGggZD0iTTkxIDU0IFE2MCA1OCAxOCA3NSBRMTAgNjggMTQgNjIgUTUwIDUyIDkxIDU0WiIgZmlsbD0iIzNEQjdFNCIvPgogIDwhLS0gQmx1ZSByaWdodCB3aW5nIC0tPgogIDxwYXRoIGQ9Ik0xMTkgNTQgUTE1MCA1OCAxOTIgNzUgUTIwMCA2OCAxOTYgNjIgUTE2MCA1MiAxMTkgNTRaIiBmaWxsPSIjM0RCN0U0Ii8+CiAgPCEtLSBHb2xkIGxlZnQgd2luZ3RpcCAtLT4KICA8cGF0aCBkPSJNMTQgNjIgUTQgNjIgMTAgNTQgUTE2IDU4IDE4IDc1WiIgZmlsbD0iI0Y1QjgwMCIvPgogIDwhLS0gR29sZCByaWdodCB3aW5ndGlwIC0tPgogIDxwYXRoIGQ9Ik0xOTYgNjIgUTIwNiA2MiAyMDAgNTQgUTE5NCA1OCAxOTIgNzVaIiBmaWxsPSIjRjVCODAwIi8+CiAgPCEtLSBMb3dlciBib2R5IGxlZnQgc3RydXQgLS0+CiAgPHBhdGggZD0iTTkwIDYyIEw3NiA4NiBMODQgOTAgTDk3IDY2WiIgZmlsbD0iIzFCMkE0QSIvPgogIDwhLS0gTG93ZXIgYm9keSByaWdodCBzdHJ1dCAtLT4KICA8cGF0aCBkPSJNMTIwIDYyIEwxMzQgODYgTDEyNiA5MCBMMTEzIDY2WiIgZmlsbD0iIzFCMkE0QSIvPgogIDwhLS0gQmx1ZSB0ZWFyZHJvcCBhYmRvbWVuIC0tPgogIDxwYXRoIGQ9Ik0xMDUgNjggUTExOCA4MiAxMDUgMTA4IFE5MiA4MiAxMDUgNjhaIiBmaWxsPSIjM0RCN0U0Ii8+CiAgPCEtLSBMZWZ0IGxvd2VyIGxlZyAtLT4KICA8cGF0aCBkPSJNODAgMTAwIEw2MCAxMTIgTDYyIDExOCBMODQgMTA2WiIgZmlsbD0iIzFCMkE0QSIvPgogIDwhLS0gUmlnaHQgbG93ZXIgbGVnIC0tPgogIDxwYXRoIGQ9Ik0xMzAgMTAwIEwxNTAgMTEyIEwxNDggMTE4IEwxMjYgMTA2WiIgZmlsbD0iIzFCMkE0QSIvPgo8L3N2Zz4="/><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28847" target="_blank">CVE-2026-28847</a></td>
+    <td>WebKit</td>
+    <td>Processing maliciously crafted web content may lead to an unexpected process crash</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28904" target="_blank">CVE-2026-28904</a></td>
+    <td>WebKit</td>
+    <td>Processing maliciously crafted web content may lead to an unexpected process crash</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><img title="Reported through Zero Day Initiative" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMTAgMTY3Ij4KICA8IS0tIEhvcm5zIC0tPgogIDxwYXRoIGQ9Ik04NSA0IFE3NCA2IDcyIDE4IEw4MCAyMCBRNzkgMTIgODcgOFoiIGZpbGw9IiMxQjJBNEEiLz4KICA8cGF0aCBkPSJNMTI1IDQgUTEzNiA2IDEzOCAxOCBMMTMwIDIwIFExMzEgMTIgMTIzIDhaIiBmaWxsPSIjMUIyQTRBIi8+CiAgPCEtLSBIZWFkIC0tPgogIDxlbGxpcHNlIGN4PSIxMDUiIGN5PSIyMiIgcng9IjE4IiByeT0iMTIiIGZpbGw9IiMxQjJBNEEiLz4KICA8IS0tIExlZnQgdXBwZXIgYXJtIC0tPgogIDxwYXRoIGQ9Ik03MiAzMCBMNTggNDQgTDYzIDQ4IEw3OCAzNVoiIGZpbGw9IiMxQjJBNEEiLz4KICA8IS0tIFJpZ2h0IHVwcGVyIGFybSAtLT4KICA8cGF0aCBkPSJNMTM4IDMwIEwxNTIgNDQgTDE0NyA0OCBMMTMyIDM1WiIgZmlsbD0iIzFCMkE0QSIvPgogIDwhLS0gWWVsbG93IGJvd3RpZSBsZWZ0IC0tPgogIDxwYXRoIGQ9Ik03NiAzOCBROTAgMzIgMTA1IDM4IFE5MCA0NCA3NiAzOFoiIGZpbGw9IiNGNUI4MDAiLz4KICA8IS0tIFllbGxvdyBib3d0aWUgcmlnaHQgLS0+CiAgPHBhdGggZD0iTTEzNCAzOCBRMTIwIDMyIDEwNSAzOCBRMTIwIDQ0IDEzNCAzOFoiIGZpbGw9IiNGNUI4MDAiLz4KICA8IS0tIEJsdWUgY2hlc3QgLS0+CiAgPGVsbGlwc2UgY3g9IjEwNSIgY3k9IjQ2IiByeD0iMTQiIHJ5PSIxMCIgZmlsbD0iIzNEQjdFNCIvPgogIDwhLS0gQmx1ZSBsZWZ0IHdpbmcgLS0+CiAgPHBhdGggZD0iTTkxIDU0IFE2MCA1OCAxOCA3NSBRMTAgNjggMTQgNjIgUTUwIDUyIDkxIDU0WiIgZmlsbD0iIzNEQjdFNCIvPgogIDwhLS0gQmx1ZSByaWdodCB3aW5nIC0tPgogIDxwYXRoIGQ9Ik0xMTkgNTQgUTE1MCA1OCAxOTIgNzUgUTIwMCA2OCAxOTYgNjIgUTE2MCA1MiAxMTkgNTRaIiBmaWxsPSIjM0RCN0U0Ii8+CiAgPCEtLSBHb2xkIGxlZnQgd2luZ3RpcCAtLT4KICA8cGF0aCBkPSJNMTQgNjIgUTQgNjIgMTAgNTQgUTE2IDU4IDE4IDc1WiIgZmlsbD0iI0Y1QjgwMCIvPgogIDwhLS0gR29sZCByaWdodCB3aW5ndGlwIC0tPgogIDxwYXRoIGQ9Ik0xOTYgNjIgUTIwNiA2MiAyMDAgNTQgUTE5NCA1OCAxOTIgNzVaIiBmaWxsPSIjRjVCODAwIi8+CiAgPCEtLSBMb3dlciBib2R5IGxlZnQgc3RydXQgLS0+CiAgPHBhdGggZD0iTTkwIDYyIEw3NiA4NiBMODQgOTAgTDk3IDY2WiIgZmlsbD0iIzFCMkE0QSIvPgogIDwhLS0gTG93ZXIgYm9keSByaWdodCBzdHJ1dCAtLT4KICA8cGF0aCBkPSJNMTIwIDYyIEwxMzQgODYgTDEyNiA5MCBMMTEzIDY2WiIgZmlsbD0iIzFCMkE0QSIvPgogIDwhLS0gQmx1ZSB0ZWFyZHJvcCBhYmRvbWVuIC0tPgogIDxwYXRoIGQ9Ik0xMDUgNjggUTExOCA4MiAxMDUgMTA4IFE5MiA4MiAxMDUgNjhaIiBmaWxsPSIjM0RCN0U0Ii8+CiAgPCEtLSBMZWZ0IGxvd2VyIGxlZyAtLT4KICA8cGF0aCBkPSJNODAgMTAwIEw2MCAxMTIgTDYyIDExOCBMODQgMTA2WiIgZmlsbD0iIzFCMkE0QSIvPgogIDwhLS0gUmlnaHQgbG93ZXIgbGVnIC0tPgogIDxwYXRoIGQ9Ik0xMzAgMTAwIEwxNTAgMTEyIEwxNDggMTE4IEwxMjYgMTA2WiIgZmlsbD0iIzFCMkE0QSIvPgo8L3N2Zz4="/><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28955" target="_blank">CVE-2026-28955</a></td>
+    <td>WebKit</td>
+    <td>Processing maliciously crafted web content may lead to an unexpected process crash</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28903" target="_blank">CVE-2026-28903</a></td>
+    <td>WebKit</td>
+    <td>Processing maliciously crafted web content may lead to an unexpected process crash</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28953" target="_blank">CVE-2026-28953</a></td>
+    <td>WebKit</td>
+    <td>Processing maliciously crafted web content may lead to an unexpected process crash</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28902" target="_blank">CVE-2026-28902</a></td>
+    <td>WebKit</td>
+    <td>Processing maliciously crafted web content may lead to an unexpected process crash</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28901" target="_blank">CVE-2026-28901</a></td>
+    <td>WebKit</td>
+    <td>Processing maliciously crafted web content may lead to an unexpected process crash</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28913" target="_blank">CVE-2026-28913</a></td>
+    <td>WebKit</td>
+    <td>Processing maliciously crafted web content may lead to an unexpected process crash</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28883" target="_blank">CVE-2026-28883</a></td>
+    <td>WebKit</td>
+    <td>Processing maliciously crafted web content may lead to an unexpected process crash</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28958" target="_blank">CVE-2026-28958</a></td>
+    <td>WebKit</td>
+    <td>An app may be able to access sensitive user data</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28917" target="_blank">CVE-2026-28917</a></td>
+    <td>WebKit</td>
+    <td>Processing maliciously crafted web content may lead to an unexpected process crash</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28947" target="_blank">CVE-2026-28947</a></td>
+    <td>WebKit</td>
+    <td>Processing maliciously crafted web content may lead to an unexpected Safari crash</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28946" target="_blank">CVE-2026-28946</a></td>
+    <td>WebKit</td>
+    <td>Processing maliciously crafted web content may lead to an unexpected Safari crash</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28942" target="_blank">CVE-2026-28942</a></td>
+    <td>WebKit</td>
+    <td>Processing maliciously crafted web content may lead to an unexpected Safari crash</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28971" target="_blank">CVE-2026-28971</a></td>
+    <td>WebKit</td>
+    <td>A malicious iframe may use another website's download settings</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28944" target="_blank">CVE-2026-28944</a></td>
+    <td>WebRTC</td>
+    <td>Processing maliciously crafted web content may lead to an unexpected process crash</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28819" target="_blank">CVE-2026-28819</a></td>
+    <td>Wi-Fi</td>
+    <td>An app may be able to execute arbitrary code with kernel privileges</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28994" target="_blank">CVE-2026-28994</a></td>
+    <td>Wi-Fi</td>
+    <td>An attacker in a privileged network position may be able to perform denial-of-service attack using crafted Wi-Fi packets</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28914" target="_blank">CVE-2026-28914</a></td>
+    <td>zip</td>
+    <td>A maliciously crafted ZIP archive may bypass Gatekeeper checks</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28920" target="_blank">CVE-2026-28920</a></td>
+    <td>zlib</td>
+    <td>Visiting a maliciously crafted website may leak sensitive data</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+</tbody>
+</table>
+
+<img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMTAgMTY3Ij4KICA8IS0tIEhvcm5zIC0tPgogIDxwYXRoIGQ9Ik04NSA0IFE3NCA2IDcyIDE4IEw4MCAyMCBRNzkgMTIgODcgOFoiIGZpbGw9IiMxQjJBNEEiLz4KICA8cGF0aCBkPSJNMTI1IDQgUTEzNiA2IDEzOCAxOCBMMTMwIDIwIFExMzEgMTIgMTIzIDhaIiBmaWxsPSIjMUIyQTRBIi8+CiAgPCEtLSBIZWFkIC0tPgogIDxlbGxpcHNlIGN4PSIxMDUiIGN5PSIyMiIgcng9IjE4IiByeT0iMTIiIGZpbGw9IiMxQjJBNEEiLz4KICA8IS0tIExlZnQgdXBwZXIgYXJtIC0tPgogIDxwYXRoIGQ9Ik03MiAzMCBMNTggNDQgTDYzIDQ4IEw3OCAzNVoiIGZpbGw9IiMxQjJBNEEiLz4KICA8IS0tIFJpZ2h0IHVwcGVyIGFybSAtLT4KICA8cGF0aCBkPSJNMTM4IDMwIEwxNTIgNDQgTDE0NyA0OCBMMTMyIDM1WiIgZmlsbD0iIzFCMkE0QSIvPgogIDwhLS0gWWVsbG93IGJvd3RpZSBsZWZ0IC0tPgogIDxwYXRoIGQ9Ik03NiAzOCBROTAgMzIgMTA1IDM4IFE5MCA0NCA3NiAzOFoiIGZpbGw9IiNGNUI4MDAiLz4KICA8IS0tIFllbGxvdyBib3d0aWUgcmlnaHQgLS0+CiAgPHBhdGggZD0iTTEzNCAzOCBRMTIwIDMyIDEwNSAzOCBRMTIwIDQ0IDEzNCAzOFoiIGZpbGw9IiNGNUI4MDAiLz4KICA8IS0tIEJsdWUgY2hlc3QgLS0+CiAgPGVsbGlwc2UgY3g9IjEwNSIgY3k9IjQ2IiByeD0iMTQiIHJ5PSIxMCIgZmlsbD0iIzNEQjdFNCIvPgogIDwhLS0gQmx1ZSBsZWZ0IHdpbmcgLS0+CiAgPHBhdGggZD0iTTkxIDU0IFE2MCA1OCAxOCA3NSBRMTAgNjggMTQgNjIgUTUwIDUyIDkxIDU0WiIgZmlsbD0iIzNEQjdFNCIvPgogIDwhLS0gQmx1ZSByaWdodCB3aW5nIC0tPgogIDxwYXRoIGQ9Ik0xMTkgNTQgUTE1MCA1OCAxOTIgNzUgUTIwMCA2OCAxOTYgNjIgUTE2MCA1MiAxMTkgNTRaIiBmaWxsPSIjM0RCN0U0Ii8+CiAgPCEtLSBHb2xkIGxlZnQgd2luZ3RpcCAtLT4KICA8cGF0aCBkPSJNMTQgNjIgUTQgNjIgMTAgNTQgUTE2IDU4IDE4IDc1WiIgZmlsbD0iI0Y1QjgwMCIvPgogIDwhLS0gR29sZCByaWdodCB3aW5ndGlwIC0tPgogIDxwYXRoIGQ9Ik0xOTYgNjIgUTIwNiA2MiAyMDAgNTQgUTE5NCA1OCAxOTIgNzVaIiBmaWxsPSIjRjVCODAwIi8+CiAgPCEtLSBMb3dlciBib2R5IGxlZnQgc3RydXQgLS0+CiAgPHBhdGggZD0iTTkwIDYyIEw3NiA4NiBMODQgOTAgTDk3IDY2WiIgZmlsbD0iIzFCMkE0QSIvPgogIDwhLS0gTG93ZXIgYm9keSByaWdodCBzdHJ1dCAtLT4KICA8cGF0aCBkPSJNMTIwIDYyIEwxMzQgODYgTDEyNiA5MCBMMTEzIDY2WiIgZmlsbD0iIzFCMkE0QSIvPgogIDwhLS0gQmx1ZSB0ZWFyZHJvcCBhYmRvbWVuIC0tPgogIDxwYXRoIGQ9Ik0xMDUgNjggUTExOCA4MiAxMDUgMTA4IFE5MiA4MiAxMDUgNjhaIiBmaWxsPSIjM0RCN0U0Ii8+CiAgPCEtLSBMZWZ0IGxvd2VyIGxlZyAtLT4KICA8cGF0aCBkPSJNODAgMTAwIEw2MCAxMTIgTDYyIDExOCBMODQgMTA2WiIgZmlsbD0iIzFCMkE0QSIvPgogIDwhLS0gUmlnaHQgbG93ZXIgbGVnIC0tPgogIDxwYXRoIGQ9Ik0xMzAgMTAwIEwxNTAgMTEyIEwxNDggMTE4IEwxMjYgMTA2WiIgZmlsbD0iIzFCMkE0QSIvPgo8L3N2Zz4="/><span>CVEs marked with the scarab logo were reported through the <strong>TrendAI Zero Day Initiative</strong> program.</span>
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+  <p class="">We’ll continue these macOS updates if people find them useful. Stay tuned for the regularly schedule Patch Tuesday blog covering Adobe and Microsoft. </p>

@@ -310,8 +310,19 @@ mono one — see §3.
   8dp between items. `ol` markers in sans tabular figures.
 - **Rules** (`hr`): not a full-width line — a centred 32dp `outlineVariant` hairline
   with 32dp of air, the way a print section break reads.
-- **Tables**: horizontally scrollable, hairline row separators, sans 14sp, header row
-  w600. Tables from feeds are rare and usually broken; never let one widen the page.
+- **Tables** (U11a): sans 14sp, hairline `outlineVariant` rules between rows and one
+  closing the foot, 12dp/8dp cell padding, 24dp of air above and below — a table is a
+  block like a figure, not a paragraph. A **header row** (any `<th>` in the first row)
+  takes w600 on a `surfaceContainer` tint; a first row of `<td>` stays a body row however
+  much it reads like a heading. **Columns are measured from their own text**, held between
+  56dp and 260dp: a `Yes`/`No` column and a paragraph of impact text do not want the same
+  slot. A column at the ceiling **wraps inside itself** rather than pushing the table
+  wider. Beyond the measure the table **scrolls horizontally and the header scrolls with
+  it** — a frozen header sounds better until the body slides and every value sits under
+  the wrong name. Rules and tint are drawn at the table's own content width, never
+  `fillMaxWidth`, which inside a scroll measures to zero. A column whose every written
+  cell is a number is **right-aligned**, header included; one `N/A` and it reads left
+  again. Tables from feeds are rare and usually broken; never let one widen the page.
 - **Links**: `onSurface` with a 1dp `primary`-at-0.5 underline offset 3dp — an editorial
   underline, not a blue hyperlink. Custom Tab on tap.
 - **Anything unmapped** (iframes, embeds, video): a single tasteful inline card —

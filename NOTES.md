@@ -9,68 +9,61 @@ JDKs and wrappers are in CLAUDE.md §Environment. **The `.wslconfig` 7 GB cap on
 `wsl --shutdown` — confirm `/proc/meminfo` MemTotal ~6.9 GB; ~9.9 GB means the cap is off and a freeze is coming.**
 
 ## Log
-- 2026-08-07 — T12–T18. **Never Room `@Upsert` for entries** (it resolves on the *primary key*, 0 on a fresh parse); `EntryDao.upsertAll` matches `(feedId, guid)`. Sanitizing lives in `FeedRepository`.
 - 2026-08-07 — T19: screens address `colorScheme` roles, never a tone. **Grep gate: no `Color(0x`/`N.dp`/`N.sp` outside `ui/theme/`.**
 - 2026-08-07 — **Standing UI-test traps (T20/T22/T26/T29).** Compose UI tests live in **`app/src/testDebug/`**
   (`ui-test-manifest` is `debugImplementation`). An injected tap/long-press **never reaches a node inside a drawer
   sheet, bottom sheet or dropdown** — use `performSemanticsAction(OnClick/OnLongClick)`. `compose.waitUntil` advances
   only the *virtual* clock; wait on Room in wall-clock time (`awaitInRealTime`). `PullToRefreshBox` ignores a swipe
-  unless its child scrolls. Screenshots: `ui/screenshot/*` → `screenshots/`, and **never `captureToImage()`**
-  (CLAUDE.md is wrong) — `PixelCopy` waits on a frame-commit callback Robolectric never delivers, while under
-  `@GraphicsMode(NATIVE)` a plain `View.draw(Canvas)` is synchronous; a sheet, dialog or dropdown is its **own
-  window**, so draw its `rootView` over the decor view **translated by `getLocationOnScreen`**. **Residuals:** zero
-  window insets (app bar flush at y=0); the empty state cannot be pulled.
+  unless its child scrolls. Screenshots: **never `captureToImage()`** (CLAUDE.md is wrong) — `PixelCopy` waits on a
+  frame callback Robolectric never delivers, while under `@GraphicsMode(NATIVE)` `View.draw(Canvas)` is synchronous;
+  a sheet/dialog/dropdown is its **own window**, so draw its `rootView` over the decor view **translated by
+  `getLocationOnScreen`**. **Residuals:** zero window insets; the empty state cannot be pulled.
 - 2026-08-07 — T25: `ArticleLowering`'s input **must** be `HtmlSanitizer` output (`ArticleLoweringCorpusTest` asserts **0 `Unsupported`**); a source that renders wrong is an `ArticleLowering` bug, never a branch in `ArticleBody`.
 - 2026-08-07 — T31: `fallbackToDestructiveMigration()` is **gone for good** — `PerchDatabaseMigrationTest` fails the
-  build on a version bump with no migration or a stale `app/schemas/N.json`. (`WorkManagerTestInitHelper`'s
-  `SynchronousExecutor` misses WorkManager's own executor — poll in wall-clock.)
-- 2026-08-07 — **T32.** `acceptance/LiveAcceptanceTest` is in `testDebug`. Re-run: `./gradlew :app:testDebugUnitTest
-  -Pperch.live=true --tests '*LiveAcceptance*'`. **Gate 1 landed on the 38/42 floor** — `danluu.com` (11.1 MB) and
-  `projectzero.google` (13.2 MB) bust SPEC §6's 8 MiB cap, `research.nccgroup.com` has no feed, `rachelbythebay.com`
-  times out from this host — expect a red run if one more source dies. **§8 residual, not ours:** the LLVM feed omits
-  the spaces around inline `<code>`/`<a>` — do not "repair" it. **v0.1 APK (on the phone, debug-signed):**
-  `app/build/outputs/apk/debug/app-debug.apk`.
+  build on a version bump with no migration or a stale `app/schemas/N.json`.
+- 2026-08-07 — **T32.** `acceptance/LiveAcceptanceTest` (in `testDebug`): `./gradlew :app:testDebugUnitTest
+  -Pperch.live=true --tests '*LiveAcceptance*'`. **Gate 1 sits on the 38/42 floor** — `danluu.com`/`projectzero.google`
+  bust SPEC §6's 8 MiB cap, `research.nccgroup.com` has no feed, `rachelbythebay.com` times out here; one more death is
+  a red run. **§8 residual, not ours:** the LLVM feed omits the spaces around inline `<code>`/`<a>` — do not "repair"
+  it. **v0.1 APK (on the phone, debug-signed):** `app/build/outputs/apk/debug/app-debug.apk`.
 - 2026-08-07 — **U01: the repo is public** (MIT) — never un-redact the `apiKey` in `fixtures/homepages/research-nccgroup-com.html`.
 - 2026-08-07 — **U02: losing `~/.perch/perch-release.jks` or `signing.properties` makes every future install a data
-  wipe** — you cannot rotate to a key you no longer have. Both `chmod 600`, outside the repo, **not backed up
-  anywhere yet**. Cert SHA-256 `61367c04…fce489` (valid to 2053) *is* the update identity; absent the key, release
-  falls back to debug signing with a warning. Version lives only in `perchVersionCode`/`perchVersionName` atop
-  `app/build.gradle.kts`; **`assembleRelease` runs `lintVitalRelease` where `assembleDebug` does not.**
-- 2026-08-07 — **U03 (folders): build test databases with `PerchDatabase.inMemory(context)`**, never
+  wipe** — you cannot rotate to a key you no longer have. Both `chmod 600`, outside the repo, **not backed up yet**.
+  Cert SHA-256 `61367c04…fce489` *is* the update identity; absent the key, release falls back to debug signing with a
+  warning. Version lives only in `perchVersionCode`/`perchVersionName` atop `app/build.gradle.kts`; **`assembleRelease`
+  runs `lintVitalRelease` where `assembleDebug` does not.**
+- 2026-08-07 — **U03: build test databases with `PerchDatabase.inMemory(context)`**, never
   `Room.inMemoryDatabaseBuilder` — only the former seeds Uncategorized, without which the `feeds.folderId` FK rejects
-  the first feed. **A migration test builds the old DB from `app/schemas/N.json` via `ExportedSchemas.createStatements`.**
+  the first feed; a migration test builds the old DB from `app/schemas/N.json` via `ExportedSchemas.createStatements`.
   **`WorkSchedulerTest` "choosing manual cancels the periodic refresh" is flaky in a full-suite run**, passes alone.
 - 2026-08-07 — **U04 (`isSaved`/`savedAt`/`starredAt`): three independent reader-owned flags**, each nulling its
-  timestamp when it goes off. **Add a fourth and two places erase it:** `EntryDao.upsertAll` must copy every flag *and*
-  timestamp off the existing row (a parsed entry arrives at defaults), and `deleteReadOlderThan` must exempt it.
+  timestamp when it goes off. **Add a fourth and two places erase it:** `EntryDao.upsertAll` (never Room `@Upsert` —
+  it resolves on the primary key; ours matches `(feedId, guid)`) must copy every flag *and* timestamp off the existing
+  row, and `deleteReadOlderThan` must exempt it.
 - 2026-08-07 — **U06: folders scope the Feed via `HomeScope`** — a **second SQL predicate on `feeds.folderId`**, never
-  a resolved feed-id list, which a move invalidates. **Room rejects a `@Query` whose parameter it cannot see used**: an
-  always-true predicate must still say `:folderId`.
-- 2026-08-07 — **U07: the window is a *calendar* one** (`TimeFilter.since(clock)` = local midnight, never `now - n`)
-  and **defaults to Today** — a UI test seeding anything older must pin `TimeFilter.AllTime` via its own
-  `SettingsStore` or it asserts against an empty screen. Sections fall out of the row (ordered folder-then-recency,
-  carrying `folderId`/`folderName`); address headers by `HomeTestTags.section(id)`, never by text — the drawer
-  composes even while closed. `uiState` is `WhileSubscribed`: an action needing the window reads `settings.current()`.
-- 2026-08-07 — **U08: the row's 96dp thumbnail square is always reserved** — absent, loading and failed draw the same
-  placeholder. Coil states are reproducible offline: a `Mapper` succeeds, an `Interceptor` returning `ErrorResult`
-  fails, one that `awaitCancellation()`s stays loading; **a list screenshot needs `stubThumbnails()`**.
-- 2026-08-08 — **U08a.** Two Compose-test traps: a `TextButton` **merges its descendants** (label needs
-  `useUnmergedTree = true`); and **`hasVisualOverflow` is not a clipping assertion** — assert `lineCount` plus
-  `size.width >= maxIntrinsicWidth` under **`@GraphicsMode(NATIVE)`**, since Robolectric's default text measurement
-  gives every character ~1px and every string "fits".
-- 2026-08-08 — **U09: the bottom bar and the `NavHost` are siblings**, not nested — only the shell can say which tab
-  is selected or leave the bar off `article/{id}`. **Feed's `DrawerState`/`LazyListState` are hoisted into
-  `PerchNavHost`**: state remembered inside the Feed composable dies on every tab switch. §0's back policy is the pure
-  `nextBackStep(BackState)` in `BackChain.kt` — the enum's declaration order *is* the priority. **`EntryRow` owns its
-  own `combinedClickable`**: an inner `clickable` eats the pointer stream.
+  a resolved feed-id list, which a move invalidates. **Room rejects a `@Query` whose parameter it cannot see used.**
+- 2026-08-07 — **U07: the window is a *calendar* one** (`TimeFilter.since(clock)` = local midnight) and **defaults to
+  Today** — a UI test seeding anything older must pin `TimeFilter.AllTime` via its own `SettingsStore` or it asserts
+  against an empty screen. Address section headers by `HomeTestTags.section(id)`, never by text (the drawer composes
+  while closed). `uiState` is `WhileSubscribed`: an action needing the window reads `settings.current()`.
+- 2026-08-07 — **U08: the row's 96dp thumbnail square is always reserved** (absent/loading/failed draw one
+  placeholder). Coil offline: a `Mapper` succeeds, an `Interceptor` returning `ErrorResult` fails, one that
+  `awaitCancellation()`s stays loading; **a list screenshot needs `stubThumbnails()`**.
+- 2026-08-08 — **U08a.** A `TextButton` **merges its descendants** (label needs `useUnmergedTree = true`); and
+  **`hasVisualOverflow` is not a clipping assertion** — assert `lineCount` plus `size.width >= maxIntrinsicWidth`
+  under **`@GraphicsMode(NATIVE)`**: Robolectric's default text measurement gives every char ~1px, so everything fits.
+- 2026-08-08 — **U09: the bottom bar and the `NavHost` are siblings**, not nested. **Feed's `DrawerState`/
+  `LazyListState` are hoisted into `PerchNavHost`**: state remembered inside the Feed composable dies on a tab switch.
+  §0's back policy is the pure `nextBackStep(BackState)` in `BackChain.kt` — the enum's declaration order *is* the
+  priority. **`EntryRow` owns its own `combinedClickable`**: an inner `clickable` eats the pointer stream.
 - 2026-08-08 — **U09a: the drawer long press is multi-select.** `DrawerSelection` holds §0's two invariants
   (homogeneous; never Uncategorized), hoisted into `PerchNavHost` as `rememberSaveable`. **The selection `BackHandler`
   must live inside `ModalDrawerSheet`** — the root one registers first and loses. A batch delete's dialog is **a
   coroutine behind its tap**, so wait in wall-clock time. **Residual:** mid-selection a folder header does nothing.
 - 2026-08-08 — **U09b: the mark is path data in `ui/theme/Brand.kt`**, restated verbatim in
   `ic_launcher_foreground.xml` / `_monochrome.xml` (a VectorDrawable cannot read a Kotlin constant); `LauncherIconTest`
-  asserts the three agree, in launcher coordinates, all ink inside the centre 66dp circle. `perch-wordmark.png` is
-  **generated** by `BrandScreenshotTest`. **Residual:** the themed icon's P counter closes up at 48dp.
+  asserts the three agree, all ink inside the centre 66dp circle. **Residual:** the themed icon's P counter closes up
+  at 48dp.
 - 2026-08-08 — **U07a: all three lists are Paging 3.** New deps `androidx.paging:paging-runtime-ktx`/`-compose`
   (+`room-paging`, `paging-testing`): the fallback `LIMIT`/`OFFSET` would have hand-rolled the invalidation plumbing
   Room already generates. `PerchPaging.config` is shared by all three — **placeholders off**, so
@@ -97,3 +90,12 @@ JDKs and wrappers are in CLAUDE.md §Environment. **The `.wslconfig` 7 GB cap on
   construct runs to end-of-line or EOF. The line-number gutter sits **outside** the `horizontalScroll` and inside a
   **`DisableSelection`** (the article body is one big `SelectionContainer`, so numbers would otherwise copy).
   **Residual:** no rule between gutter and code, so a scrolled wide line slides to within 12dp of the numbers.
+- 2026-08-08 — **U11a (tables).** `colspan`/`rowspan` survive `HtmlSanitizer` (structure, not style) and
+  `ArticleLowering.table()` lays a real grid — merged cells **padded out**, short rows padded to the widest, so every
+  row is one width; header = **any** `th` in row 1. **Inside a `horizontalScroll` a `fillMaxWidth` divider measures to
+  0** — that, not the lowering, is why tables looked ruleless; rules and the header tint are drawn at the summed
+  column width. Columns come from `rememberTextMeasurer` over the first 50 rows (a ZDI advisory is 211×10), clamped
+  56–260dp; at the ceiling a cell wraps rather than widen the table. `fixtures/articles/zdi-*.html` are **feed bodies,
+  not pages**: ZDI ships full content, and `ArticleExtractor` loses a table on a Squarespace page anyway (each block is
+  its own `sqs-block` div, past `assemble`'s sibling sweep) — a real gap for excerpt-only Squarespace, open till U15
+  6b. **Residual:** no edge affordance says a wide table scrolls.

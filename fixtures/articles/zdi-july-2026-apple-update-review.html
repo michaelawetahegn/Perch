@@ -1,0 +1,1350 @@
+<p class="">Welcome to our monthly look at Apple security patches. This release shows that Apple is not immune to the bug apocalypse that is impacting other vendors. Last month, they released 37 unique CVEs compare to this month’s 210. Quite a jump.</p><p class="">For July 2026, Apple released 210 unique CVEs across iOS/iPadOS 26.6, macOS Tahoe 26.6, macOS Sequoia 15.7.8, macOS Sonoma 14.8.8, tvOS 26.6, watchOS 26.6, visionOS 26.6, and Safari 26.6. Since Apple doesn’t provide CVSS scores or other severity information, we’re left to speculate on which of these bugs is the most severe. However, there are a couple that stand out.</p><p class="">·&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>CVE-2026-43818 (ImageIO)</strong> – This bug could allow the “Processing [of] a maliciously crafted image may lead to <em>arbitrary code execution</em>." ImageIO is the classic zero-/one-click remote surface on Apple platforms (images auto-parsed in Messages, previews, notifications), so this is the highest real-world remote-exploitation risk in the release. It’s also present across iOS and all macOS versions. Depending on delivery path, this is the one most likely to be weaponized into a remote foothold.</p><p class="">·&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>CVE-2026-64747 (AVEVideoEncoder)</strong> – According to Apple, “An app may be able to execute arbitrary code <em>with kernel privileges</em>.” Kernel-level code execution is the maximum-impact outcome on an Apple device: full compromise, defeats the sandbox and most mitigations. It's also unusually broad, shipping to iOS/iPadOS, all three macOS versions, tvOS, watchOS, and visionOS. Local-app precondition is its only limiter, and it's exactly the second stage a remote bug chains into.</p><p class="">·&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>CVE-2026-64767 (afpfs)</strong> – In this case, “A <em>remote attacker</em> may be able to cause unexpected system termination or <em>corrupt kernel memory</em>.” This bug is a network-reachable, apparently unauthenticated path to kernel memory corruption via Apple Filing Protocol. Remote plus kernel is a dangerous combination. &nbsp;Also, the “remote attacker” versus “remote user” wording suggests no authentication required. This bug affects macOS only, which is the only reason it sits at #3 rather than higher.</p><p class="">Honorable mentions: CVE-2026-43776 (AppleDouble) and the SceneKit set (CVE-2026-64763/64/65/66) are additional file-parsing paths to arbitrary code execution. CVE-2026-43750 (Wi‑Fi) allows code execution out of the sandbox with elevated privileges. And finally, CVE-2026-64696 (SMB) / CVE-2026-43810 (Kernel) are further remote kernel-corruption bugs.</p><p class="">Here’s the full table of Apple patches and the products they affect:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+  
+
+
+  
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apple Security Updates — July 27, 2026</title>
+
+</head>
+<body>
+  
+    
+      <span class="num">210</span><span class="lbl">Total CVEs</span>
+      <span class="num">9</span><span class="lbl">Code Execution</span>
+      <span class="num">26</span><span class="lbl">Elevation of Privilege</span>
+      <span class="num">11</span><span class="lbl">Sandbox Escape</span>
+      <span class="num">9</span><span class="lbl">Security Feature Bypass</span>
+      <span class="num">15</span><span class="lbl">Memory Corruption</span>
+      <span class="num">55</span><span class="lbl">Information Disclosure</span>
+      <span class="num">2</span><span class="lbl">Spoofing / UI</span>
+      <span class="num">75</span><span class="lbl">Denial of Service</span>
+      <span class="num">8</span><span class="lbl">Other</span>
+    
+    <table>
+      <caption>Apple security release &mdash; July 27, 2026 (iOS/iPadOS 26.6, macOS Tahoe 26.6, macOS Sequoia 15.7.8, macOS Sonoma 14.8.8, tvOS 26.6, watchOS 26.6, visionOS 26.6, Safari 26.6). "Yes/No" indicates whether each update is affected. CVE IDs link to NVD.</caption>
+      <thead>
+        <tr>
+          <th>CVE ID</th>
+          <th>Component</th>
+          <th>Impact</th>
+          <th class="prod">iOS / iPadOS 26.6</th>
+          <th class="prod">macOS Tahoe 26.6</th>
+          <th class="prod">macOS Sequoia 15.7.8</th>
+          <th class="prod">macOS Sonoma 14.8.8</th>
+          <th class="prod">tvOS 26.6</th>
+          <th class="prod">watchOS 26.6</th>
+          <th class="prod">visionOS 26.6</th>
+          <th class="prod">Safari 26.6</th>
+        </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64732" target="_blank" rel="noopener">CVE-2026-64732</a></td>
+        <td>Accessibility</td>
+        <td class="impact">An attacker with physical access may be able to access sensitive user data during iPhone Mirroring</td>
+        <td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43749" target="_blank" rel="noopener">CVE-2026-43749</a></td>
+        <td>Accounts</td>
+        <td class="impact">An app may be able to gain root privileges</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43819" target="_blank" rel="noopener">CVE-2026-43819</a></td>
+        <td>Accounts</td>
+        <td class="impact">An app may be able to access sensitive user data</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64733" target="_blank" rel="noopener">CVE-2026-64733</a></td>
+        <td>Accounts Framework</td>
+        <td class="impact">An app may be able to fingerprint the user</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64767" target="_blank" rel="noopener">CVE-2026-64767</a></td>
+        <td>afpfs</td>
+        <td class="impact">A remote attacker may be able to cause unexpected system termination or corrupt kernel memory</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-23918" target="_blank" rel="noopener">CVE-2026-23918</a></td>
+        <td>apache</td>
+        <td class="impact">A remote attacker may be able to cause a denial-of-service</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64695" target="_blank" rel="noopener">CVE-2026-64695</a></td>
+        <td>APFS</td>
+        <td class="impact">A remote user may be able to cause unexpected system termination or corrupt kernel memory</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43801" target="_blank" rel="noopener">CVE-2026-43801</a></td>
+        <td>App Store</td>
+        <td class="impact">An app may be able to access sensitive user data</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43781" target="_blank" rel="noopener">CVE-2026-43781</a></td>
+        <td>Apple Account</td>
+        <td class="impact">An app may be able to access sensitive user data</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64737" target="_blank" rel="noopener">CVE-2026-64737</a></td>
+        <td>Apple Account</td>
+        <td class="impact">A malicious app may be able to break out of its sandbox</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28928" target="_blank" rel="noopener">CVE-2026-28928</a></td>
+        <td>Apple Neural Engine</td>
+        <td class="impact">An app may be able to cause unexpected system termination</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43748" target="_blank" rel="noopener">CVE-2026-43748</a></td>
+        <td>Apple Neural Engine</td>
+        <td class="impact">An app may be able to cause unexpected system termination</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43776" target="_blank" rel="noopener">CVE-2026-43776</a></td>
+        <td>AppleDouble</td>
+        <td class="impact">Processing a maliciously crafted file may lead to unexpected app termination or arbitrary code execution</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43681" target="_blank" rel="noopener">CVE-2026-43681</a></td>
+        <td>AppleRAID</td>
+        <td class="impact">A local user may be able to read kernel memory</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43672" target="_blank" rel="noopener">CVE-2026-43672</a></td>
+        <td>Assets</td>
+        <td class="impact">A malicious application may be able to bypass Privacy preferences</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43763" target="_blank" rel="noopener">CVE-2026-43763</a></td>
+        <td>ATS</td>
+        <td class="impact">An app may be able to read files outside of its sandbox</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64702" target="_blank" rel="noopener">CVE-2026-64702</a></td>
+        <td>Audio</td>
+        <td class="impact">An app may be able to break out of its sandbox</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64725" target="_blank" rel="noopener">CVE-2026-64725</a></td>
+        <td>Audio</td>
+        <td class="impact">An app may be able to cause a denial-of-service</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43730" target="_blank" rel="noopener">CVE-2026-43730</a></td>
+        <td>AuthKit</td>
+        <td class="impact">An app may be able to fingerprint the user</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64747" target="_blank" rel="noopener">CVE-2026-64747</a></td>
+        <td>AVEVideoEncoder</td>
+        <td class="impact">An app may be able to execute arbitrary code with kernel privileges</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64762" target="_blank" rel="noopener">CVE-2026-64762</a></td>
+        <td>AVEVideoEncoder</td>
+        <td class="impact">An app may be able to cause unexpected system termination</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64707" target="_blank" rel="noopener">CVE-2026-64707</a></td>
+        <td>BackgroundAssets</td>
+        <td class="impact">An app may be able to delete files for which it does not have permission</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28849" target="_blank" rel="noopener">CVE-2026-28849</a></td>
+        <td>BOM</td>
+        <td class="impact">A maliciously crafted ZIP archive may bypass Gatekeeper checks</td>
+        <td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43811" target="_blank" rel="noopener">CVE-2026-43811</a></td>
+        <td>Books</td>
+        <td class="impact">An app may be able to modify protected parts of the file system</td>
+        <td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64698" target="_blank" rel="noopener">CVE-2026-64698</a></td>
+        <td>cd9660</td>
+        <td class="impact">An app may be able to cause unexpected system termination or read kernel memory</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43813" target="_blank" rel="noopener">CVE-2026-43813</a></td>
+        <td>CloudAttestation</td>
+        <td class="impact">A maliciously crafted app may be able to bypass code signing enforcement</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43797" target="_blank" rel="noopener">CVE-2026-43797</a></td>
+        <td>Contacts</td>
+        <td class="impact">An app may be able to access information about a user&#x27;s contacts</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64734" target="_blank" rel="noopener">CVE-2026-64734</a></td>
+        <td>Contacts</td>
+        <td class="impact">Processing a maliciously crafted contact may leak sensitive data</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64746" target="_blank" rel="noopener">CVE-2026-64746</a></td>
+        <td>Contacts</td>
+        <td class="impact">An app may be able to add contacts without user authorization</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43756" target="_blank" rel="noopener">CVE-2026-43756</a></td>
+        <td>Control Center</td>
+        <td class="impact">An app may be able to access user-sensitive data</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43693" target="_blank" rel="noopener">CVE-2026-43693</a></td>
+        <td>Core Services</td>
+        <td class="impact">An app may be able to gain root privileges</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43673" target="_blank" rel="noopener">CVE-2026-43673</a></td>
+        <td>CoreAudio</td>
+        <td class="impact">Processing a maliciously crafted audio file may corrupt process memory</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43744" target="_blank" rel="noopener">CVE-2026-43744</a></td>
+        <td>CoreAudio</td>
+        <td class="impact">Processing an audio stream in a maliciously crafted media file may terminate the process</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43803" target="_blank" rel="noopener">CVE-2026-43803</a></td>
+        <td>CoreAudio</td>
+        <td class="impact">A remote attacker may be able to cause unexpected system termination</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43711" target="_blank" rel="noopener">CVE-2026-43711</a></td>
+        <td>CoreMedia</td>
+        <td class="impact">Processing a maliciously crafted video file may lead to unexpected app termination</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43759" target="_blank" rel="noopener">CVE-2026-43759</a></td>
+        <td>CoreMedia</td>
+        <td class="impact">An app may be able to access sensitive user data</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43775" target="_blank" rel="noopener">CVE-2026-43775</a></td>
+        <td>CoreMedia</td>
+        <td class="impact">An app may be able to access sensitive user data</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28936" target="_blank" rel="noopener">CVE-2026-28936</a></td>
+        <td>CoreServices</td>
+        <td class="impact">Processing a maliciously crafted file may lead to unexpected app termination</td>
+        <td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43738" target="_blank" rel="noopener">CVE-2026-43738</a></td>
+        <td>CoreUI</td>
+        <td class="impact">Processing a maliciously crafted asset catalog may result in disclosure of process memory</td>
+        <td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43802" target="_blank" rel="noopener">CVE-2026-43802</a></td>
+        <td>CoreVideo</td>
+        <td class="impact">An app may be able to cause unexpected system termination</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64710" target="_blank" rel="noopener">CVE-2026-64710</a></td>
+        <td>Crash Reporter</td>
+        <td class="impact">An app may be able to leak sensitive user information</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-39875" target="_blank" rel="noopener">CVE-2026-39875</a></td>
+        <td>CUPS</td>
+        <td class="impact">A malicious app may be able to gain root privileges</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43698" target="_blank" rel="noopener">CVE-2026-43698</a></td>
+        <td>CUPS</td>
+        <td class="impact">An app may be able to gain root privileges</td>
+        <td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-3783" target="_blank" rel="noopener">CVE-2026-3783</a></td>
+        <td>curl</td>
+        <td class="impact">Authentication credentials may be sent to a server on another origin</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-3784" target="_blank" rel="noopener">CVE-2026-3784</a></td>
+        <td>curl</td>
+        <td class="impact">Authentication credentials may be sent to a server on another origin</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43758" target="_blank" rel="noopener">CVE-2026-43758</a></td>
+        <td>Data Detectors UI</td>
+        <td class="impact">An app may be able to access sensitive user data</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64708" target="_blank" rel="noopener">CVE-2026-64708</a></td>
+        <td>DesktopServices</td>
+        <td class="impact">An app may bypass Gatekeeper checks</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28926" target="_blank" rel="noopener">CVE-2026-28926</a></td>
+        <td>Disk Images</td>
+        <td class="impact">An app may be able to elevate privileges</td>
+        <td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28945" target="_blank" rel="noopener">CVE-2026-28945</a></td>
+        <td>Disk Images</td>
+        <td class="impact">An app may be able to bypass network restrictions</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43747" target="_blank" rel="noopener">CVE-2026-43747</a></td>
+        <td>Disk Images</td>
+        <td class="impact">Parsing a maliciously crafted file may lead to an unexpected app termination</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64694" target="_blank" rel="noopener">CVE-2026-64694</a></td>
+        <td>Disk Images</td>
+        <td class="impact">An app may be able to cause unexpected system termination</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64776" target="_blank" rel="noopener">CVE-2026-64776</a></td>
+        <td>Disk Images</td>
+        <td class="impact">An app may be able to disclose kernel memory</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43753" target="_blank" rel="noopener">CVE-2026-43753</a></td>
+        <td>DriverKit</td>
+        <td class="impact">An attacker with physical access to a locked device may be able to view sensitive user information</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43793" target="_blank" rel="noopener">CVE-2026-43793</a></td>
+        <td>DriverKit</td>
+        <td class="impact">An app may be able to cause unexpected system termination</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43714" target="_blank" rel="noopener">CVE-2026-43714</a></td>
+        <td>Foundation</td>
+        <td class="impact">A malicious app may be able to access protected user data</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64742" target="_blank" rel="noopener">CVE-2026-64742</a></td>
+        <td>FrontBoard</td>
+        <td class="impact">An app may be able to access sensitive user data</td>
+        <td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43796" target="_blank" rel="noopener">CVE-2026-43796</a></td>
+        <td>Game Center</td>
+        <td class="impact">An app may be able to access sensitive user data</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64740" target="_blank" rel="noopener">CVE-2026-64740</a></td>
+        <td>Game Center</td>
+        <td class="impact">A malicious app may be able to break out of its sandbox</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64691" target="_blank" rel="noopener">CVE-2026-64691</a></td>
+        <td>GPU Drivers</td>
+        <td class="impact">An app may be able to cause unexpected system termination</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64692" target="_blank" rel="noopener">CVE-2026-64692</a></td>
+        <td>Heimdal</td>
+        <td class="impact">An app may be able to cause a denial-of-service</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28981" target="_blank" rel="noopener">CVE-2026-28981</a></td>
+        <td>HFS</td>
+        <td class="impact">Processing a maliciously crafted image may lead to arbitrary code execution</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43682" target="_blank" rel="noopener">CVE-2026-43682</a></td>
+        <td>HFS</td>
+        <td class="impact">A remote user may be able to cause unexpected system termination or corrupt kernel memory</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43710" target="_blank" rel="noopener">CVE-2026-43710</a></td>
+        <td>HFS</td>
+        <td class="impact">An attacker may be able to cause unexpected system termination or corrupt kernel memory</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43764" target="_blank" rel="noopener">CVE-2026-43764</a></td>
+        <td>HFS</td>
+        <td class="impact">An app may be able to cause unexpected system termination</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43767" target="_blank" rel="noopener">CVE-2026-43767</a></td>
+        <td>HFS</td>
+        <td class="impact">An app may be able to cause unexpected system termination</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43773" target="_blank" rel="noopener">CVE-2026-43773</a></td>
+        <td>HFS</td>
+        <td class="impact">Mounting a maliciously crafted disk image may cause unexpected system termination or corrupt kernel memory</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64697" target="_blank" rel="noopener">CVE-2026-64697</a></td>
+        <td>HFS</td>
+        <td class="impact">An app may be able to cause unexpected system termination or corrupt kernel memory</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-43325" target="_blank" rel="noopener">CVE-2025-43325</a></td>
+        <td>Icons</td>
+        <td class="impact">An app may be able to access sensitive user data</td>
+        <td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43661" target="_blank" rel="noopener">CVE-2026-43661</a></td>
+        <td>ImageIO</td>
+        <td class="impact">Processing a maliciously crafted image may corrupt process memory</td>
+        <td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43780" target="_blank" rel="noopener">CVE-2026-43780</a></td>
+        <td>ImageIO</td>
+        <td class="impact">Processing a maliciously crafted texture may lead to unexpected app termination</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43818" target="_blank" rel="noopener">CVE-2026-43818</a></td>
+        <td>ImageIO</td>
+        <td class="impact">Processing a maliciously crafted image may lead to arbitrary code execution</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64693" target="_blank" rel="noopener">CVE-2026-64693</a></td>
+        <td>ImageIO</td>
+        <td class="impact">Processing a maliciously crafted image may lead to a denial-of-service</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64716" target="_blank" rel="noopener">CVE-2026-64716</a></td>
+        <td>ImageIO</td>
+        <td class="impact">Processing a maliciously crafted image may corrupt process memory</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64754" target="_blank" rel="noopener">CVE-2026-64754</a></td>
+        <td>ImageIO</td>
+        <td class="impact">Processing a maliciously crafted file may lead to a denial-of-service</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64758" target="_blank" rel="noopener">CVE-2026-64758</a></td>
+        <td>ImageIO</td>
+        <td class="impact">Processing a maliciously crafted file may lead to unexpected app termination</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43743" target="_blank" rel="noopener">CVE-2026-43743</a></td>
+        <td>IOGPUFamily</td>
+        <td class="impact">An app may be able to cause unexpected system termination</td>
+        <td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43805" target="_blank" rel="noopener">CVE-2026-43805</a></td>
+        <td>IOKit</td>
+        <td class="impact">An app may be able to cause unexpected system termination or write kernel memory</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-39877" target="_blank" rel="noopener">CVE-2026-39877</a></td>
+        <td>IOSkywalkFamily</td>
+        <td class="impact">An app may be able to disclose kernel memory</td>
+        <td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28931" target="_blank" rel="noopener">CVE-2026-28931</a></td>
+        <td>Kernel</td>
+        <td class="impact">Connecting to a malicious NFS server may lead to kernel memory corruption</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28982" target="_blank" rel="noopener">CVE-2026-28982</a></td>
+        <td>Kernel</td>
+        <td class="impact">A remote user may be able to cause unexpected system termination or corrupt kernel memory</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-39868" target="_blank" rel="noopener">CVE-2026-39868</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to cause unexpected system termination or corrupt kernel memory</td>
+        <td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43722" target="_blank" rel="noopener">CVE-2026-43722</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to leak sensitive kernel state</td>
+        <td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43724" target="_blank" rel="noopener">CVE-2026-43724</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to cause unexpected system termination or write kernel memory</td>
+        <td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43739" target="_blank" rel="noopener">CVE-2026-43739</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to cause unexpected system termination</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43754" target="_blank" rel="noopener">CVE-2026-43754</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to leak sensitive kernel state</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43757" target="_blank" rel="noopener">CVE-2026-43757</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to cause unexpected system termination</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43769" target="_blank" rel="noopener">CVE-2026-43769</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to cause unexpected system termination</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43778" target="_blank" rel="noopener">CVE-2026-43778</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to cause unexpected system termination or corrupt kernel memory</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43782" target="_blank" rel="noopener">CVE-2026-43782</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to access sensitive user data</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43799" target="_blank" rel="noopener">CVE-2026-43799</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to cause unexpected system termination</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43809" target="_blank" rel="noopener">CVE-2026-43809</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to cause unexpected system termination</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43810" target="_blank" rel="noopener">CVE-2026-43810</a></td>
+        <td>Kernel</td>
+        <td class="impact">A remote user may be able to cause unexpected system termination or corrupt kernel memory</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43814" target="_blank" rel="noopener">CVE-2026-43814</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to cause unexpected system termination</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43816" target="_blank" rel="noopener">CVE-2026-43816</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to cause unexpected system termination</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43817" target="_blank" rel="noopener">CVE-2026-43817</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to cause unexpected system termination</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43822" target="_blank" rel="noopener">CVE-2026-43822</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to cause unexpected system termination</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64700" target="_blank" rel="noopener">CVE-2026-64700</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to cause unexpected system termination</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64709" target="_blank" rel="noopener">CVE-2026-64709</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to disclose kernel memory</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64720" target="_blank" rel="noopener">CVE-2026-64720</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to cause unexpected system termination</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64721" target="_blank" rel="noopener">CVE-2026-64721</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to access sensitive user data</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64723" target="_blank" rel="noopener">CVE-2026-64723</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to access sensitive user data</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64727" target="_blank" rel="noopener">CVE-2026-64727</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to cause unexpected system termination</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64729" target="_blank" rel="noopener">CVE-2026-64729</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to cause unexpected system termination</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64735" target="_blank" rel="noopener">CVE-2026-64735</a></td>
+        <td>Kernel</td>
+        <td class="impact">A remote attacker may be able to bypass network filters</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64744" target="_blank" rel="noopener">CVE-2026-64744</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to disclose kernel memory</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64749" target="_blank" rel="noopener">CVE-2026-64749</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to cause unexpected system termination or corrupt kernel memory</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64751" target="_blank" rel="noopener">CVE-2026-64751</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to cause unexpected system termination or write kernel memory</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64775" target="_blank" rel="noopener">CVE-2026-64775</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to cause unexpected system termination</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-20672" target="_blank" rel="noopener">CVE-2026-20672</a></td>
+        <td>LaunchServices</td>
+        <td class="impact">An app may be able to access sensitive user data</td>
+        <td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28983" target="_blank" rel="noopener">CVE-2026-28983</a></td>
+        <td>LaunchServices</td>
+        <td class="impact">A remote attacker may be able to cause a denial of service</td>
+        <td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28900" target="_blank" rel="noopener">CVE-2026-28900</a></td>
+        <td>libarchive</td>
+        <td class="impact">A maliciously crafted ZIP archive may bypass Gatekeeper checks</td>
+        <td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-4424" target="_blank" rel="noopener">CVE-2026-4424</a></td>
+        <td>libarchive</td>
+        <td class="impact">Processing a maliciously crafted file may result in disclosure of process memory</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28973" target="_blank" rel="noopener">CVE-2026-28973</a></td>
+        <td>libc</td>
+        <td class="impact">A malicious app may be able to break out of its sandbox</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64739" target="_blank" rel="noopener">CVE-2026-64739</a></td>
+        <td>Libnotify</td>
+        <td class="impact">An attacker may be able to cause unexpected app termination</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43703" target="_blank" rel="noopener">CVE-2026-43703</a></td>
+        <td>libxslt</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43706" target="_blank" rel="noopener">CVE-2026-43706</a></td>
+        <td>libxslt</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43766" target="_blank" rel="noopener">CVE-2026-43766</a></td>
+        <td>LoginWindow</td>
+        <td class="impact">An attacker with physical access to a locked device may be able to view sensitive user information</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64743" target="_blank" rel="noopener">CVE-2026-64743</a></td>
+        <td>Managed Configuration</td>
+        <td class="impact">An app may be able to access sensitive user data</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64738" target="_blank" rel="noopener">CVE-2026-64738</a></td>
+        <td>Maps</td>
+        <td class="impact">A malicious app may be able to break out of its sandbox</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43653" target="_blank" rel="noopener">CVE-2026-43653</a></td>
+        <td>mDNSResponder</td>
+        <td class="impact">An attacker on the local network may be able to cause a denial-of-service</td>
+        <td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43806" target="_blank" rel="noopener">CVE-2026-43806</a></td>
+        <td>mDNSResponder</td>
+        <td class="impact">A local attacker may be able to cause a denial of service</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64724" target="_blank" rel="noopener">CVE-2026-64724</a></td>
+        <td>mDNSResponder</td>
+        <td class="impact">An attacker on the local network may be able to cause a denial-of-service</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43723" target="_blank" rel="noopener">CVE-2026-43723</a></td>
+        <td>MediaRemote</td>
+        <td class="impact">An app may be able to gain root privileges</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28911" target="_blank" rel="noopener">CVE-2026-28911</a></td>
+        <td>Metal</td>
+        <td class="impact">A malicious app may be able to corrupt memory of a system process</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43807" target="_blank" rel="noopener">CVE-2026-43807</a></td>
+        <td>MobileAccessoryUpdater</td>
+        <td class="impact">A malicious accessory may be able to cause unexpected app termination</td>
+        <td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43729" target="_blank" rel="noopener">CVE-2026-43729</a></td>
+        <td>Model I/O</td>
+        <td class="impact">Processing a maliciously crafted image may corrupt process memory</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43733" target="_blank" rel="noopener">CVE-2026-43733</a></td>
+        <td>Model I/O</td>
+        <td class="impact">Processing a maliciously crafted image may corrupt process memory</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64722" target="_blank" rel="noopener">CVE-2026-64722</a></td>
+        <td>Model I/O</td>
+        <td class="impact">Processing a 3D model may result in disclosure of process memory</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64768" target="_blank" rel="noopener">CVE-2026-64768</a></td>
+        <td>Model I/O</td>
+        <td class="impact">A remote attacker may cause an unexpected app termination</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64769" target="_blank" rel="noopener">CVE-2026-64769</a></td>
+        <td>Model I/O</td>
+        <td class="impact">A remote attacker may be able to cause unexpected application termination or heap corruption</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64770" target="_blank" rel="noopener">CVE-2026-64770</a></td>
+        <td>Model I/O</td>
+        <td class="impact">A remote attacker may be able to cause unexpected application termination or heap corruption</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64771" target="_blank" rel="noopener">CVE-2026-64771</a></td>
+        <td>Model I/O</td>
+        <td class="impact">A remote attacker may be able to cause unexpected application termination or heap corruption</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64772" target="_blank" rel="noopener">CVE-2026-64772</a></td>
+        <td>Model I/O</td>
+        <td class="impact">A remote attacker may be able to cause unexpected application termination or heap corruption</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64774" target="_blank" rel="noopener">CVE-2026-64774</a></td>
+        <td>Model I/O</td>
+        <td class="impact">A remote attacker may be able to cause unexpected application termination or heap corruption</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43771" target="_blank" rel="noopener">CVE-2026-43771</a></td>
+        <td>Net-SNMP</td>
+        <td class="impact">An app may be able to cause a denial-of-service</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43772" target="_blank" rel="noopener">CVE-2026-43772</a></td>
+        <td>NetFSFramework</td>
+        <td class="impact">An app may be able to break out of its sandbox</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28961" target="_blank" rel="noopener">CVE-2026-28961</a></td>
+        <td>Network Extensions</td>
+        <td class="impact">An attacker with physical access to a locked device may be able to view sensitive user information</td>
+        <td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64711" target="_blank" rel="noopener">CVE-2026-64711</a></td>
+        <td>NSColorPanel</td>
+        <td class="impact">An app may be able to leak sensitive user information</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28912" target="_blank" rel="noopener">CVE-2026-28912</a></td>
+        <td>PackageKit</td>
+        <td class="impact">A user may be able to elevate privileges</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43765" target="_blank" rel="noopener">CVE-2026-43765</a></td>
+        <td>PackageKit</td>
+        <td class="impact">An app may be able to modify protected parts of the file system</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28896" target="_blank" rel="noopener">CVE-2026-28896</a></td>
+        <td>ppp</td>
+        <td class="impact">An attacker may be able to cause unexpected system termination or read kernel memory</td>
+        <td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64731" target="_blank" rel="noopener">CVE-2026-64731</a></td>
+        <td>Printing</td>
+        <td class="impact">A malicious app may be able to break out of its sandbox</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43812" target="_blank" rel="noopener">CVE-2026-43812</a></td>
+        <td>Pro Res</td>
+        <td class="impact">An app may be able to cause unexpected system termination</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43694" target="_blank" rel="noopener">CVE-2026-43694</a></td>
+        <td>quarantine</td>
+        <td class="impact">An app may be able to cause unexpected system termination or write kernel memory</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-39874" target="_blank" rel="noopener">CVE-2026-39874</a></td>
+        <td>Remote Management</td>
+        <td class="impact">A malicious app may be able to gain root privileges</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43792" target="_blank" rel="noopener">CVE-2026-43792</a></td>
+        <td>Safari</td>
+        <td class="impact">An app may be able to access sensitive user data</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64741" target="_blank" rel="noopener">CVE-2026-64741</a></td>
+        <td>Sandbox Profiles</td>
+        <td class="impact">An app may be able to read a persistent device identifier</td>
+        <td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64763" target="_blank" rel="noopener">CVE-2026-64763</a></td>
+        <td>SceneKit</td>
+        <td class="impact">Processing a maliciously crafted file may lead to unexpected app termination or arbitrary code execution</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64764" target="_blank" rel="noopener">CVE-2026-64764</a></td>
+        <td>SceneKit</td>
+        <td class="impact">Processing a maliciously crafted file may lead to unexpected app termination or arbitrary code execution</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64765" target="_blank" rel="noopener">CVE-2026-64765</a></td>
+        <td>SceneKit</td>
+        <td class="impact">Processing a maliciously crafted file may lead to unexpected app termination or arbitrary code execution</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64766" target="_blank" rel="noopener">CVE-2026-64766</a></td>
+        <td>SceneKit</td>
+        <td class="impact">Processing a maliciously crafted file may lead to unexpected app termination or arbitrary code execution</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43665" target="_blank" rel="noopener">CVE-2026-43665</a></td>
+        <td>Screen Sharing Server</td>
+        <td class="impact">A local attacker may be able to determine the legacy VNC password configured for Screen Sharing</td>
+        <td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43760" target="_blank" rel="noopener">CVE-2026-43760</a></td>
+        <td>Screen Sharing Server</td>
+        <td class="impact">An app may be able to access user-sensitive data</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43777" target="_blank" rel="noopener">CVE-2026-43777</a></td>
+        <td>Screen Sharing Server</td>
+        <td class="impact">A remote attacker may be able to cause a denial of service</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43779" target="_blank" rel="noopener">CVE-2026-43779</a></td>
+        <td>Screen Sharing Server</td>
+        <td class="impact">An app may be able to intercept network connections intended for another process</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43728" target="_blank" rel="noopener">CVE-2026-43728</a></td>
+        <td>Security</td>
+        <td class="impact">An attacker may be able to modify the state of the Keychain</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43755" target="_blank" rel="noopener">CVE-2026-43755</a></td>
+        <td>SecurityAgent</td>
+        <td class="impact">An app may be able to gain root privileges</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43800" target="_blank" rel="noopener">CVE-2026-43800</a></td>
+        <td>Siri</td>
+        <td class="impact">An app may be able to access sensitive user data</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64745" target="_blank" rel="noopener">CVE-2026-64745</a></td>
+        <td>Siri</td>
+        <td class="impact">A person with physical access to a locked device may be able to access contacts and photos</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-39873" target="_blank" rel="noopener">CVE-2026-39873</a></td>
+        <td>SMB</td>
+        <td class="impact">Connecting to a malicious SMB server may lead to unexpected system termination</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64696" target="_blank" rel="noopener">CVE-2026-64696</a></td>
+        <td>SMB</td>
+        <td class="impact">A remote user may be able to cause unexpected system termination or corrupt kernel memory</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64704" target="_blank" rel="noopener">CVE-2026-64704</a></td>
+        <td>SMB</td>
+        <td class="impact">An app may be able to cause unexpected system termination</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43774" target="_blank" rel="noopener">CVE-2026-43774</a></td>
+        <td>Spotlight</td>
+        <td class="impact">An app may be able to access sensitive user data</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43770" target="_blank" rel="noopener">CVE-2026-43770</a></td>
+        <td>StorageKit</td>
+        <td class="impact">An app may be able to access sensitive user data</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43768" target="_blank" rel="noopener">CVE-2026-43768</a></td>
+        <td>udf</td>
+        <td class="impact">An app may be able to cause unexpected system termination</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43704" target="_blank" rel="noopener">CVE-2026-43704</a></td>
+        <td>Web Extensions</td>
+        <td class="impact">A malicious web extension may be able to cause an unexpected process crash</td>
+        <td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64699" target="_blank" rel="noopener">CVE-2026-64699</a></td>
+        <td>WebDAV</td>
+        <td class="impact">An app may be able to disclose kernel memory</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64703" target="_blank" rel="noopener">CVE-2026-64703</a></td>
+        <td>WebDAV</td>
+        <td class="impact">An app may be able to cause a denial-of-service</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-39872" target="_blank" rel="noopener">CVE-2026-39872</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43663" target="_blank" rel="noopener">CVE-2026-43663</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43676" target="_blank" rel="noopener">CVE-2026-43676</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected Safari crash</td>
+        <td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43699" target="_blank" rel="noopener">CVE-2026-43699</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43700" target="_blank" rel="noopener">CVE-2026-43700</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may disclose sensitive user information</td>
+        <td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43701" target="_blank" rel="noopener">CVE-2026-43701</a></td>
+        <td>WebKit</td>
+        <td class="impact">A malicious website may be able to process restricted web content outside the sandbox</td>
+        <td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43705" target="_blank" rel="noopener">CVE-2026-43705</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to memory corruption</td>
+        <td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43707" target="_blank" rel="noopener">CVE-2026-43707</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43708" target="_blank" rel="noopener">CVE-2026-43708</a></td>
+        <td>WebKit</td>
+        <td class="impact">A malicious website may exfiltrate data cross-origin</td>
+        <td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43709" target="_blank" rel="noopener">CVE-2026-43709</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43712" target="_blank" rel="noopener">CVE-2026-43712</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43713" target="_blank" rel="noopener">CVE-2026-43713</a></td>
+        <td>WebKit</td>
+        <td class="impact">Visiting a website may leak sensitive data</td>
+        <td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43715" target="_blank" rel="noopener">CVE-2026-43715</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to memory corruption</td>
+        <td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43725" target="_blank" rel="noopener">CVE-2026-43725</a></td>
+        <td>WebKit</td>
+        <td class="impact">A malicious website may be able to process restricted web content outside the sandbox</td>
+        <td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43726" target="_blank" rel="noopener">CVE-2026-43726</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43727" target="_blank" rel="noopener">CVE-2026-43727</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected Safari crash</td>
+        <td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43731" target="_blank" rel="noopener">CVE-2026-43731</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to memory corruption</td>
+        <td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43732" target="_blank" rel="noopener">CVE-2026-43732</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may disclose sensitive user information</td>
+        <td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43734" target="_blank" rel="noopener">CVE-2026-43734</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43735" target="_blank" rel="noopener">CVE-2026-43735</a></td>
+        <td>WebKit</td>
+        <td class="impact">A malicious website may exfiltrate data cross-origin</td>
+        <td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43740" target="_blank" rel="noopener">CVE-2026-43740</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may result in the disclosure of process memory</td>
+        <td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43742" target="_blank" rel="noopener">CVE-2026-43742</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43745" target="_blank" rel="noopener">CVE-2026-43745</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected Safari crash</td>
+        <td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43804" target="_blank" rel="noopener">CVE-2026-43804</a></td>
+        <td>WebKit</td>
+        <td class="impact">Visiting a website may lead to an app denial-of-service</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43821" target="_blank" rel="noopener">CVE-2026-43821</a></td>
+        <td>WebKit</td>
+        <td class="impact">An app may be able to read files outside of its sandbox</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64713" target="_blank" rel="noopener">CVE-2026-64713</a></td>
+        <td>WebKit</td>
+        <td class="impact">Websites may know if the user has visited a given link</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64728" target="_blank" rel="noopener">CVE-2026-64728</a></td>
+        <td>WebKit</td>
+        <td class="impact">Maliciously crafted web content may violate iframe sandboxing policy</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64730" target="_blank" rel="noopener">CVE-2026-64730</a></td>
+        <td>WebKit</td>
+        <td class="impact">Visiting a website that frames malicious content may lead to UI spoofing</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64757" target="_blank" rel="noopener">CVE-2026-64757</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected Safari crash</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64783" target="_blank" rel="noopener">CVE-2026-64783</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected Safari crash</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43720" target="_blank" rel="noopener">CVE-2026-43720</a></td>
+        <td>WebKit Canvas</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected Safari crash</td>
+        <td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64718" target="_blank" rel="noopener">CVE-2026-64718</a></td>
+        <td>WebKit Canvas</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected Safari crash</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43721" target="_blank" rel="noopener">CVE-2026-43721</a></td>
+        <td>WebKit Storage</td>
+        <td class="impact">A malicious website may be able to silently hijack clipboard data</td>
+        <td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28979" target="_blank" rel="noopener">CVE-2026-28979</a></td>
+        <td>WebRTC</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43717" target="_blank" rel="noopener">CVE-2026-43717</a></td>
+        <td>WebRTC</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected Safari crash</td>
+        <td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43718" target="_blank" rel="noopener">CVE-2026-43718</a></td>
+        <td>WebRTC</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected Safari crash</td>
+        <td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64719" target="_blank" rel="noopener">CVE-2026-64719</a></td>
+        <td>WebRTC</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected Safari crash</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43750" target="_blank" rel="noopener">CVE-2026-43750</a></td>
+        <td>Wi-Fi</td>
+        <td class="impact">An app may be able to execute arbitrary code out of its sandbox or with certain elevated privileges</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64726" target="_blank" rel="noopener">CVE-2026-64726</a></td>
+        <td>Wi-Fi</td>
+        <td class="impact">An attacker in physical proximity may be able to corrupt process memory</td>
+        <td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-64755" target="_blank" rel="noopener">CVE-2026-64755</a></td>
+        <td>WorkoutKit</td>
+        <td class="impact">An app may be able to access sensitive user data</td>
+        <td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28932" target="_blank" rel="noopener">CVE-2026-28932</a></td>
+        <td>xar</td>
+        <td class="impact">An app may be able to cause a denial of service</td>
+        <td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28914" target="_blank" rel="noopener">CVE-2026-28914</a></td>
+        <td>zip</td>
+        <td class="impact">A maliciously crafted ZIP archive may bypass Gatekeeper checks</td>
+        <td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td>
+      </tr>
+      </tbody>
+    </table>
+  
+</body>
+</html>
+
+  
+  
+
+
+
+
+
+
+
+
+
+  <p class="">We’ll continue these macOS updates if people find them useful. Stay tuned for the regularly schedule Patch Tuesday blog covering Adobe and Microsoft.</p>

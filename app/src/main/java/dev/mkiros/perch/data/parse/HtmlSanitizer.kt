@@ -129,6 +129,11 @@ object HtmlSanitizer {
         .addAttributes("img", "src", "alt")
         // Only on `pre`, and only ever holding what `normalizeLanguage` put there.
         .addAttributes("pre", "class")
+        // A span is the table's *shape*, not the source voting on typography (§8): without
+        // it the lowering cannot tell a merged cell from a missing one, and every column
+        // to its right shifts by one for the rest of the table.
+        .addAttributes("td", "colspan", "rowspan")
+        .addAttributes("th", "colspan", "rowspan")
         // Restricting the protocol is also what makes jsoup rewrite the value to its
         // absolute form, so this line is doing the relative-URL resolution too.
         .addProtocols("a", "href", "http", "https")

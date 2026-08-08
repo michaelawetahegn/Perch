@@ -341,6 +341,8 @@ object ArticleTestTags {
     const val IMAGE = "article:image"
     const val QUOTE = "article:quote"
     const val TABLE = "article:table"
+    const val TABLE_HEADER = "article:table-header"
+    const val TABLE_RULE = "article:table-rule"
     const val RULE = "article:rule"
     const val EMBED = "article:embed"
 }
