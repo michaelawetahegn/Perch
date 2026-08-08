@@ -30,7 +30,17 @@ class FolderRepository(
     fun observeUnreadCountsByFolder(): Flow<Map<Long, Int>> =
         folderDao.observeUnreadCountsByFolder().distinctUntilChanged()
 
+    /** A one-shot read of the same order [observeFolders] emits, for callers that are not UI. */
+    suspend fun folders(): List<FolderEntity> = folderDao.getAll()
+
     suspend fun findFolder(id: Long): FolderEntity? = folderDao.findById(id)
+
+    /**
+     * The folder called [name], matched the way [createFolder] matches — case-insensitively
+     * and ignoring surrounding space. U13's OPML import asks first so that it can report how
+     * many folders it actually *created*, which [createFolder] alone cannot tell it.
+     */
+    suspend fun findFolderNamed(name: String): FolderEntity? = folderDao.findByName(name.trim())
 
     /**
      * Creates a folder, or returns the one that is already called [name]. Matching is

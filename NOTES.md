@@ -1,15 +1,13 @@
 # NOTES.md
 
-Working memory for unattended sessions, per CLAUDE.md §NOTES.md discipline. **Under 100 lines.**
-
 ## Environment facts (measured at bootstrap, 2026-08-07)
 
-Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM. No physical device; WHPX **enabled**. Paths,
-JDKs and wrappers are in CLAUDE.md §Environment. **The `.wslconfig` 7 GB cap only took effect at the *second*
-`wsl --shutdown` — confirm `/proc/meminfo` MemTotal ~6.9 GB; ~9.9 GB means the cap is off and a freeze is coming.**
+Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical device, WHPX **enabled**. **The
+`.wslconfig` 7 GB cap only took effect at the *second* `wsl --shutdown`** — confirm `/proc/meminfo` MemTotal ~6.9 GB;
+~9.9 GB means the cap is off and a freeze is coming.
 
 ## Log
-- 2026-08-07 — T19: screens address `colorScheme` roles, never a tone. **Grep gate: no `Color(0x`/`N.dp`/`N.sp` outside `ui/theme/`.**
+- **Standing grep gate:** no `Color(0x` / `N.dp` / `N.sp` outside `ui/theme/` — screens address roles, never tones.
 - 2026-08-07 — **Standing UI-test traps (T20/T22/T26/T29).** Compose UI tests live in **`app/src/testDebug/`**
   (`ui-test-manifest` is `debugImplementation`). An injected tap/long-press **never reaches a node inside a drawer
   sheet, bottom sheet or dropdown** — use `performSemanticsAction(OnClick/OnLongClick)`. `compose.waitUntil` advances
@@ -20,9 +18,9 @@ JDKs and wrappers are in CLAUDE.md §Environment. **The `.wslconfig` 7 GB cap on
   `getLocationOnScreen`**. **Residuals:** zero window insets; the empty state cannot be pulled.
 - 2026-08-07 — **T32.** `acceptance/LiveAcceptanceTest` (in `testDebug`): `./gradlew :app:testDebugUnitTest
   -Pperch.live=true --tests '*LiveAcceptance*'`. **Gate 1 sits on the 38/42 floor** — `danluu.com`/`projectzero.google`
-  bust SPEC §6's 8 MiB cap, `research.nccgroup.com` has no feed, `rachelbythebay.com` times out here; one more death is
-  a red run. **§8 residual, not ours:** the LLVM feed omits the spaces around inline `<code>`/`<a>` — do not "repair"
-  it. **v0.1 APK (on the phone, debug-signed):** `app/build/outputs/apk/debug/app-debug.apk`.
+  bust SPEC §6's 8 MiB cap, `research.nccgroup.com` has no feed, `rachelbythebay.com` times out here; one more death
+  is a red run. **§8 residual, not ours:** the LLVM feed omits the spaces around inline `<code>`/`<a>` — do not
+  "repair" it. **v0.1 APK (on the phone, debug-signed):** `app/build/outputs/apk/debug/app-debug.apk`.
 - 2026-08-07 — **U01: the repo is public** (MIT) — never un-redact the `apiKey` in `fixtures/homepages/research-nccgroup-com.html`.
 - 2026-08-07 — **U02: losing `~/.perch/perch-release.jks` or `signing.properties` makes every future install a data
   wipe** — you cannot rotate to a key you no longer have. Both `chmod 600`, outside the repo, **not backed up yet**.
@@ -31,12 +29,12 @@ JDKs and wrappers are in CLAUDE.md §Environment. **The `.wslconfig` 7 GB cap on
   runs `lintVitalRelease` where `assembleDebug` does not.**
 - 2026-08-07 — **U03: build test databases with `PerchDatabase.inMemory(context)`**, never
   `Room.inMemoryDatabaseBuilder` — only the former seeds Uncategorized, without which the `feeds.folderId` FK rejects
-  the first feed; a migration test builds the old DB from `app/schemas/N.json` via `ExportedSchemas.createStatements`.
-  **`WorkSchedulerTest` "choosing manual cancels the periodic refresh" is flaky in a full-suite run**, passes alone.
-- 2026-08-07 — **U04 (`isSaved`/`savedAt`/`starredAt`): three independent reader-owned flags**, each nulling its
-  timestamp when it goes off. **Add a fourth and two places erase it:** `EntryDao.upsertAll` (never Room `@Upsert` —
-  it resolves on the primary key; ours matches `(feedId, guid)`) must copy every flag *and* timestamp off the existing
-  row, and `deleteReadOlderThan` must exempt it.
+  the first feed. **`WorkSchedulerTest` "choosing manual cancels the periodic refresh" is flaky in a full-suite run**,
+  passes alone.
+- 2026-08-07 — **U04: `isRead`/`isSaved`/`isStarred` are independent reader-owned flags**, each nulling its timestamp
+  when it goes off. **Add a fourth and two places erase it:** `EntryDao.upsertAll` (never Room `@Upsert` — it resolves
+  on the primary key, ours on `(feedId, guid)`) must copy every flag *and* timestamp off the existing row, and
+  `deleteReadOlderThan` must exempt it.
 - 2026-08-07 — **U07: the window is a *calendar* one** (`TimeFilter.since(clock)` = local midnight) and **defaults to
   Today** — a UI test seeding anything older must pin `TimeFilter.AllTime` via its own `SettingsStore` or it asserts
   against an empty screen. Address section headers by `HomeTestTags.section(id)`, never by text (the drawer composes
@@ -44,27 +42,26 @@ JDKs and wrappers are in CLAUDE.md §Environment. **The `.wslconfig` 7 GB cap on
 - 2026-08-07 — **U08: the row's 96dp thumbnail square is always reserved** (absent/loading/failed draw one
   placeholder). Coil offline: a `Mapper` succeeds, an `Interceptor` returning `ErrorResult` fails, one that
   `awaitCancellation()`s stays loading; **a list screenshot needs `stubThumbnails()`**.
-- 2026-08-08 — **U08a.** A `TextButton` **merges its descendants** (label needs `useUnmergedTree = true`); and
-  **`hasVisualOverflow` is not a clipping assertion** — assert `lineCount` plus `size.width >= maxIntrinsicWidth`
-  under **`@GraphicsMode(NATIVE)`**: Robolectric's default text measurement gives every char ~1px, so everything fits.
-- 2026-08-08 — **U09: the bottom bar and the `NavHost` are siblings**, not nested. **Feed's `DrawerState`/
-  `LazyListState` are hoisted into `PerchNavHost`**: state remembered inside the Feed composable dies on a tab switch.
-  §0's back policy is the pure `nextBackStep(BackState)` in `BackChain.kt` — the enum's declaration order *is* the
-  priority. **`EntryRow` owns its own `combinedClickable`**: an inner `clickable` eats the pointer stream.
+- 2026-08-08 — **U08a.** A `TextButton` **merges its descendants** (`useUnmergedTree = true`); **`hasVisualOverflow`
+  is not a clipping assertion** — assert `lineCount` + `size.width >= maxIntrinsicWidth` under `@GraphicsMode(NATIVE)`,
+  since Robolectric's default text measurement gives every char ~1px and so everything fits.
+- 2026-08-08 — **U09: the bottom bar and the `NavHost` are siblings**, not nested; **Feed's `DrawerState`/
+  `LazyListState` are hoisted into `PerchNavHost`** (state remembered inside Feed dies on a tab switch). §0's back
+  policy is the pure `nextBackStep(BackState)` in `BackChain.kt`, the enum's declaration order *being* the priority.
+  **`EntryRow` owns its own `combinedClickable`**: an inner `clickable` eats the pointer stream.
 - 2026-08-08 — **U09a: the selection `BackHandler` must live inside `ModalDrawerSheet`** — the root one registers
   first and loses. A batch delete's dialog is **a coroutine behind its tap**, so wait in wall-clock time.
   **Residual:** mid-selection a folder header does nothing.
-- 2026-08-08 — **U09b: the mark is path data in `ui/theme/Brand.kt`**, restated verbatim in
-  `ic_launcher_foreground.xml` / `_monochrome.xml` (a VectorDrawable cannot read a Kotlin constant); `LauncherIconTest`
-  asserts the three agree, all ink inside the centre 66dp circle. **Residual:** the themed icon's P counter closes up
-  at 48dp.
+- 2026-08-08 — **U09b: the mark is path data in `ui/theme/Brand.kt`**, restated verbatim in the two launcher
+  VectorDrawables (they cannot read a Kotlin constant); `LauncherIconTest` guards that the three agree.
+  **Residual:** the themed icon's P counter closes up at 48dp.
 - 2026-08-08 — **U07a: all three lists are Paging 3.** New deps `androidx.paging:paging-runtime-ktx`/`-compose`
   (+`room-paging`, `paging-testing`): the fallback `LIMIT`/`OFFSET` would have hand-rolled the invalidation plumbing
   Room already generates. `PerchPaging.config` is shared by all three — **placeholders off**, so
-  `startsSection(previous, item)` is answerable at a page edge; `initialLoadSize` is one page, not Paging's three. The three list queries live once in **`EntryQueries`** (`const val`, which Room/KSP resolves) because each
-  exists twice — `Flow<List>` *and* `PagingSource`. **`uiState.entries` is gone**: ask the screen
-  (`compose.rowTitles()`) what the list holds, `observeEntries` what the *query* holds. `performScrollToIndex` past
-  the loaded rows throws.
+  `startsSection(previous, item)` is answerable at a page edge; `initialLoadSize` is one page, not Paging's three.
+  The three list queries live once in **`EntryQueries`** (`const val`, which Room/KSP resolves) because each exists
+  twice — `Flow<List>` *and* `PagingSource`. **`uiState.entries` is gone**: ask the screen (`compose.rowTitles()`)
+  what the list holds, `observeEntries` what the *query* holds. `performScrollToIndex` past loaded rows throws.
 - 2026-08-08 — **U10: DB is version 4** (`entries.bodyIsExcerpt`, `fullTextAt`); Readability-over-jsoup in
   `data/extract/`, **no new dependency**. Three traps. (1) **`ArticleLowering` deletes truncation markers as chrome**
   (T25's `CHROME`), so `FullText` looks for "Continue reading" in the *unlowered* text — once there are blocks the
@@ -72,28 +69,31 @@ JDKs and wrappers are in CLAUDE.md §Environment. **The `.wslconfig` 7 GB cap on
   `bg_content`) wins and the article's last section, its sibling, is lost — hence `unwrapped()`. (3) **`upsertAll` is
   now the third place a refresh can erase reader-visible state**: it keeps the extracted `contentHtml`+`fullTextAt`
   unless the feed's body is longer. The guard that makes auto-extract-on-open safe: **an extraction only ever replaces
-  a body it beats.** §0 says fabiensanglard ships "nothing else" — really 68 of 144 ship nothing, 76 ship a one-line
-  `<description>`; both need U10. Fixtures: `fixtures/articles/` (15 pages + the gpuopen feed, 2 MB, 2026-08-08).
+  a body it beats.** §0 says fabiensanglard ships "nothing else" — really 68 of 144 ship nothing, 76 a one-line
+  `<description>`. Fixtures: `fixtures/articles/` (15 pages + the gpuopen feed, 2 MB).
 - 2026-08-08 — **U11 (code).** Bundled JetBrains Mono 2.304 (OFL 1.1, licence in `assets/`) is DESIGN.md §3's one
-  exception, **ligatures off** so `->` never draws as `→`. **`HtmlSanitizer` keeps `class` on `pre` and nowhere
-  else**, holding a normalised `language-x` hoisted before `Cleaner` runs from the `<code>`, the `<pre>`, or a
-  wrapper `<div>` two levels up (Rouge/Jekyll). **A declared language is final, `plaintext` included.** The lexer is
-  total by construction (never a `catch`). The gutter sits **outside** the `horizontalScroll`, inside a
-  **`DisableSelection`** — the body is one `SelectionContainer`, so numbers would otherwise copy.
-  **Residual:** no rule between gutter and code, so a scrolled wide line slides to within 12dp of the numbers.
+  exception, **ligatures off** so `->` never draws as `→`. **`HtmlSanitizer` keeps `class` on `pre` and nowhere else**,
+  holding a normalised `language-x` hoisted before `Cleaner` runs from the `<code>`, the `<pre>`, or a wrapper `<div>`
+  two levels up (Rouge/Jekyll). **A declared language is final, `plaintext` included.** The lexer is total by
+  construction (never a `catch`). The gutter sits **outside** the `horizontalScroll`, inside a **`DisableSelection`**
+  — the body is one `SelectionContainer`. **Residual:** no rule between gutter and code, so a scrolled wide line
+  slides to within 12dp of the numbers.
 - 2026-08-08 — **U11a (tables).** Merged cells are **padded out** and short rows padded to the widest, so every row
   is one width; header = **any** `th` in row 1. **Inside a `horizontalScroll` a `fillMaxWidth` divider measures to
-  0** — that, not the lowering, is why tables looked ruleless; rules are drawn at the summed column width. Columns
-  come from `rememberTextMeasurer` over the first 50 rows, clamped 56–260dp. `fixtures/articles/zdi-*.html` are
-  **feed bodies, not pages**: `ArticleExtractor` loses a table on a Squarespace page (each block its own `sqs-block`
-  div, past `assemble`'s sibling sweep) — a real gap for excerpt-only Squarespace, open till U15 6b.
-  **Residual:** no edge affordance says a wide table scrolls.
+  0** — that, not the lowering, is why tables looked ruleless; rules are drawn at the summed column width.
+  `fixtures/articles/zdi-*.html` are **feed bodies, not pages**: `ArticleExtractor` loses a table on a Squarespace
+  page (each block its own `sqs-block` div, past `assemble`'s sibling sweep) — a real gap for excerpt-only
+  Squarespace, open till U15 6b. **Residual:** no edge affordance says a wide table scrolls.
 - 2026-08-08 — **U12: the viewer is an overlay, not a destination** — a sibling of the article's `Scaffold` in one
-  `Box`, so the reading position it closes back to was never torn down. `ZoomedImage` is hoisted to `PerchNavHost`
-  (`rememberSaveable`) because **`BackStep.CloseImageViewer` sits between `CloseOverlay` and `PopArticle`**, and
-  `BackChainTest` guards the enum's declaration order — a new rung means updating it. The math is pure
-  (`ZoomGeometry`: rubber-banded 1×–5×, pan fenced to the **fitted content**, not the viewport, and dismiss only at
-  fit); `ZoomState` is Animatables over it. Compose's `detectTransformGestures` **has no end callback**, hence the
-  hand-rolled `awaitEachGesture` in `ImageViewer.kt`. Traps: `performClick` needs `mainClock.advanceTimeBy` (a tap is
-  only a tap once the double-tap window shuts), and an open overlay eats `performTouchInput` — scroll under it first.
-  **Residual:** full-bleed with no inset handling, so the close button sits under the status bar on a device.
+  `Box`, so the reading position it closes back to was never torn down; `ZoomedImage` is hoisted to `PerchNavHost`
+  because **`BackStep.CloseImageViewer` sits between `CloseOverlay` and `PopArticle`** and `BackChainTest` guards the
+  enum's order. Math is pure (`ZoomGeometry`: rubber-banded 1×–5×, pan fenced to the **fitted content**, dismiss only
+  at fit). `detectTransformGestures` **has no end callback**, hence `awaitEachGesture`. Traps: `performClick` needs
+  `mainClock.advanceTimeBy` (a tap is only a tap once the double-tap window shuts); an open overlay eats
+  `performTouchInput` — scroll under it first. **Residual:** no inset handling, so close sits under the status bar.
+- 2026-08-08 — **U13 (OPML folders).** `OpmlOutline.folder` is a **name, not an id** — ids do not survive the file.
+  Export walks `folders()` (Uncategorized last, its sources written **unfiled at top level**, never as a folder
+  literally named Uncategorized); import files a source under the **outermost** container and flattens deeper nesting.
+  Two rules the counts depend on: a **duplicate is left entirely alone, folder included** (an import adds, it never
+  refiles), and a folder is created **only when a source actually goes into it**, so a re-import reports
+  `0/n/k/0 folders` and leaves no empty drawer rows. Fixture: `fixtures/opml/other-reader.opml`.

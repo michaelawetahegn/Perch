@@ -201,10 +201,13 @@
     <!-- Settings: OPML over the storage-access framework (SPEC.md §9) -->
     <string name="settings_section_subscriptions">Subscriptions</string>
     <string name="settings_import_title">Import OPML</string>
-    <string name="settings_import_body">Add every source in a subscription file. Duplicates are skipped.</string>
+    <string name="settings_import_body">Add every source in a subscription file, folders and all. Duplicates are skipped.</string>
     <string name="settings_export_title">Export OPML</string>
     <string name="settings_export_body">Save your sources as a file another reader can open.</string>
     <string name="settings_import_result">%1$d added · %2$d already followed · %3$d unusable</string>
+    <!-- The same line when the file brought folders with it (U13); an import that created
+         none says nothing about folders rather than saying "0 folders". -->
+    <string name="settings_import_result_folders">%1$d added · %2$d already followed · %3$d unusable · %4$d new folders</string>
     <string name="settings_import_rejected">That file is not OPML: %1$s</string>
     <string name="settings_export_done">Subscriptions exported</string>
     <string name="settings_transfer_failed">That file could not be opened</string>

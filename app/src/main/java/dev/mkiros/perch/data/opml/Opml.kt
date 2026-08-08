@@ -11,8 +11,19 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import org.jsoup.nodes.Element
 
-/** One source in an OPML document: what SPEC.md §9 keeps of a subscription, and no more. */
-data class OpmlOutline(val title: String, val xmlUrl: String, val siteUrl: String? = null)
+/**
+ * One source in an OPML document: what SPEC.md §9 keeps of a subscription, and no more.
+ *
+ * @param folder the name of the container it sits in, or null for a source written at the
+ *   top level of the body. A *name*, not an id — the document is the only thing either
+ *   side of a transfer agrees on, and folder ids do not survive leaving the app.
+ */
+data class OpmlOutline(
+    val title: String,
+    val xmlUrl: String,
+    val siteUrl: String? = null,
+    val folder: String? = null,
+)
 
 /** What a file offered as OPML turned out to be. */
 sealed interface OpmlParse {
@@ -30,15 +41,18 @@ sealed interface OpmlParse {
 /**
  * The OPML 2.0 document format — the one thing every other reader agrees to speak.
  *
- * Writing is deliberately rigid and hand-rolled: a flat body of `type="rss"` outlines,
- * byte-predictable, so the export is diffable and the round-trip test asserts on the real
- * text rather than on a serializer's mood.
+ * Writing is deliberately rigid and hand-rolled: one container outline per folder holding
+ * its `type="rss"` sources, unfiled sources at the top level of the body, byte-predictable,
+ * so the export is diffable and the round-trip test asserts on the real text rather than on
+ * a serializer's mood.
  *
  * Reading is the opposite. Exports in the wild nest sources in folders several deep,
  * disagree about whether the label lives in `text` or `title`, and carry outlines that
- * point nowhere. None of that is a reason to reject a file the user chose, so folders are
- * flattened, labels fall back, dead outlines are counted, and the only error is a document
- * that is not OPML — returned as a value, never thrown.
+ * point nowhere. None of that is a reason to reject a file the user chose, so a source is
+ * filed under the **outermost** container it sits in and any deeper nesting is flattened
+ * onto that name — Perch has one level of folders (PLAN-2 §0) and a file with three must
+ * still import — labels fall back, dead outlines are counted, and the only error is a
+ * document that is not OPML, returned as a value, never thrown.
  */
 object Opml {
 
@@ -47,7 +61,19 @@ object Opml {
     /** `perch-20260807.opml` — what the SAF create-document dialog is pre-filled with. */
     fun fileName(date: LocalDate): String = "perch-${DateTimeFormatter.BASIC_ISO_DATE.format(date)}.opml"
 
-    /** Serializes [outlines] as OPML 2.0. Flat — v1 has no folders (SPEC.md §9). */
+    /**
+     * Serializes [outlines] as OPML 2.0 (SPEC.md §9).
+     *
+     * Each folder becomes one container outline holding its sources, in the order the
+     * folders are first seen — so a caller that hands them over in drawer order gets a
+     * document in drawer order — and a folder whose sources are scattered through
+     * [outlines] still gets exactly one container rather than one per run.
+     *
+     * Unfiled sources are written at the top level of the body, after the containers.
+     * That is where every other reader puts them and where every other reader looks for
+     * them; a folder literally called "Uncategorized" would import into the next app as a
+     * folder called Uncategorized sitting inside its own Uncategorized.
+     */
     fun write(outlines: List<OpmlOutline>, createdAt: Instant? = null): String = buildString {
         appendLine("""<?xml version="1.0" encoding="UTF-8"?>""")
         appendLine("""<opml version="2.0">""")
@@ -56,12 +82,19 @@ object Opml {
         if (createdAt != null) appendLine("    <dateCreated>${RFC_822.format(createdAt)}</dateCreated>")
         appendLine("  </head>")
         appendLine("  <body>")
-        outlines.forEach { appendLine("    ${it.asTag()}") }
+        val (filed, unfiled) = outlines.partition { it.folder != null }
+        // groupBy keeps first-appearance order, which is the caller's folder order.
+        filed.groupBy { it.folder!! }.forEach { (folder, sources) ->
+            appendLine("""    <outline text="${escape(folder)}" title="${escape(folder)}">""")
+            sources.forEach { appendLine("      ${it.asTag()}") }
+            appendLine("    </outline>")
+        }
+        unfiled.forEach { appendLine("    ${it.asTag()}") }
         appendLine("  </body>")
         appendLine("</opml>")
     }
 
-    /** Parses [text] as OPML, flattening folders. Total: malformed input is a value. */
+    /** Parses [text] as OPML. Total: malformed input is a value. */
     fun read(text: String): OpmlParse {
         val trimmed = text.trim()
         if (trimmed.isEmpty()) return OpmlParse.Malformed("The file is empty.")
@@ -75,21 +108,29 @@ object Opml {
         // The body, or the root itself: a `<body>` is required by the spec and omitted in
         // the wild often enough that refusing the file over it would be pedantry.
         val body = root.childElementsNamed("body").firstOrNull() ?: root
-        fun walk(parent: Element) {
+        fun walk(parent: Element, folder: String?) {
             for (outline in parent.childElementsNamed("outline")) {
                 val address = outline.attrNamed("xmlUrl")
                 when {
                     address != null && address.isFeedAddress() ->
-                        found += OpmlOutline(outline.label(address), address, outline.attrNamed("htmlUrl"))
+                        found += OpmlOutline(
+                            outline.label(address),
+                            address,
+                            outline.attrNamed("htmlUrl"),
+                            folder,
+                        )
                     // A source claim we cannot use: an address that is not one, or none at
                     // all under an explicit `type`. A bare `<outline text="Folder">` claims
                     // nothing, so it is a container even when it holds nothing.
                     address != null || outline.claimsToBeAFeed() -> invalid++
                 }
-                walk(outline)
+                // Only the outermost container names the folder: once inside one, deeper
+                // containers are decoration. An outline that is itself a source is not a
+                // container at all, whatever it happens to hold.
+                walk(outline, folder ?: outline.containerLabel().takeIf { address == null })
             }
         }
-        walk(body)
+        walk(body, folder = null)
         return OpmlParse.Success(found, invalid)
     }
 
@@ -116,6 +157,14 @@ object Opml {
     /** `text` is what the spec requires, `title` is what several readers write instead. */
     private fun Element.label(address: String): String =
         attrNamed("text") ?: attrNamed("title") ?: runCatching { URI(address).host }.getOrNull() ?: address
+
+    /**
+     * A container's folder name, or null if it does not really have one. Unlike a source
+     * there is no address to fall back on, and a folder called "" is worse than no folder:
+     * it would put a row with no name in the drawer.
+     */
+    private fun Element.containerLabel(): String? =
+        (attrNamed("text") ?: attrNamed("title"))?.trim()?.takeIf { it.isNotEmpty() }
 
     private fun Element.claimsToBeAFeed(): Boolean =
         attrNamed("type")?.lowercase() in setOf("rss", "atom", "feed")

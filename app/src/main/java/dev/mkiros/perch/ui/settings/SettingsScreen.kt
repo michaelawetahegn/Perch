@@ -354,12 +354,22 @@ private fun <T> ChoiceDialog(
 
 @Composable
 private fun messageText(message: SettingsMessage): String = when (message) {
-    is SettingsMessage.Imported -> stringResource(
-        R.string.settings_import_result,
-        message.added,
-        message.duplicates,
-        message.invalid,
-    )
+    is SettingsMessage.Imported -> if (message.folders > 0) {
+        stringResource(
+            R.string.settings_import_result_folders,
+            message.added,
+            message.duplicates,
+            message.invalid,
+            message.folders,
+        )
+    } else {
+        stringResource(
+            R.string.settings_import_result,
+            message.added,
+            message.duplicates,
+            message.invalid,
+        )
+    }
 
     is SettingsMessage.ImportRejected ->
         stringResource(R.string.settings_import_rejected, message.reason)

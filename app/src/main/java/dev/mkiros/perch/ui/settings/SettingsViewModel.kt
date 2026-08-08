@@ -43,7 +43,13 @@ data class SettingsUiState(
  */
 sealed interface SettingsMessage {
 
-    data class Imported(val added: Int, val duplicates: Int, val invalid: Int) : SettingsMessage
+    /** @param folders how many folders the file brought that the library did not have (U13). */
+    data class Imported(
+        val added: Int,
+        val duplicates: Int,
+        val invalid: Int,
+        val folders: Int = 0,
+    ) : SettingsMessage
 
     /** The file parsed as something other than OPML; nothing was written. */
     data class ImportRejected(val reason: String) : SettingsMessage
@@ -157,6 +163,7 @@ class SettingsViewModel(
                         added = result.added,
                         duplicates = result.duplicates,
                         invalid = result.invalid,
+                        folders = result.folders,
                     )
                     if (result.added > 0) refreshImported()
                 }

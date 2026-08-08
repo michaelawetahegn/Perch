@@ -269,12 +269,20 @@ pasted URL already parses as a feed, skip discovery entirely.
 
 ## 9. OPML
 
-- **Export:** OPML 2.0, `<outline type="rss" text= title= xmlUrl= htmlUrl=>`, flat
-  (no folders in v1), written via SAF `CreateDocument` → `perch-YYYYMMDD.opml`.
-- **Import:** SAF `OpenDocument`, accepts nested outlines (flattened), dedupes against
-  existing `feedUrl`, imports without fetching, then triggers one refresh.
-  Reports `n added / m duplicates / k invalid`.
-- Round-trip is a standing unit test: export → import → identical source set.
+- **Export:** OPML 2.0, `<outline type="rss" text= title= xmlUrl= htmlUrl=>`, written via
+  SAF `CreateDocument` → `perch-YYYYMMDD.opml`. Since U13 it carries folders (PLAN-2 §0):
+  each folder is a container outline `<outline text="AI/LLM" title="AI/LLM">` holding its
+  sources, in drawer order; Uncategorized's sources are written at the top level of the
+  body, because that is where every other reader puts and looks for unfiled feeds.
+- **Import:** SAF `OpenDocument`, accepts arbitrary nesting — a container outline becomes a
+  folder, created if absent and matched case-insensitively if present, and nesting deeper
+  than one level is flattened onto the outermost folder name, Perch having one level.
+  Dedupes against existing `feedUrl`; a source already subscribed to is left exactly as it
+  is, folder included. Imports without fetching, then triggers one refresh. Reports
+  `n added / m duplicates / k invalid / f folders`, where `f` counts folders *created*, so
+  re-importing the same file reports zero of everything.
+- Round-trip is a standing unit test: export → import → identical source set **and
+  identical folder membership**.
 
 ## 10. Navigation
 

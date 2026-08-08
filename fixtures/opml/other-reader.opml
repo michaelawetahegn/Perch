@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  A subscription list of the shape other readers actually export, hand-written for U13:
+  containers nested two deep, sources sitting at top level alongside them, the label in
+  `title` on some outlines and `text` on others, an empty folder, and one outline that
+  points nowhere. Nothing in here is Perch's own output — that is the point.
+-->
+<opml version="1.0">
+  <head>
+    <title>NetNewsWire Subscriptions</title>
+    <dateCreated>Mon, 03 Aug 2026 09:14:00 GMT</dateCreated>
+  </head>
+  <body>
+    <outline type="rss" text="Daring Fireball" xmlUrl="https://daringfireball.net/feeds/main" htmlUrl="https://daringfireball.net/"/>
+    <outline text="Programming">
+      <outline type="rss" text="Null Program" xmlUrl="https://nullprogram.com/feed/" htmlUrl="https://nullprogram.com/"/>
+      <outline text="Systems">
+        <outline type="rss" title="Embedded in Academia" xmlUrl="https://blog.regehr.org/feed"/>
+        <outline text="Compilers">
+          <outline type="rss" text="LLVM Project Blog" xmlUrl="https://blog.llvm.org/index.xml"/>
+        </outline>
+      </outline>
+    </outline>
+    <outline title="Security">
+      <outline type="rss" text="Project Zero" xmlUrl="https://googleprojectzero.blogspot.com/feeds/posts/default"/>
+      <outline type="rss" text="Broken outline with no address"/>
+    </outline>
+    <outline text="Empty folder"></outline>
+    <outline type="rss" text="Simon Willison" xmlUrl="https://simonwillison.net/atom/everything/" htmlUrl="https://simonwillison.net/"/>
+  </body>
+</opml>

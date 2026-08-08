@@ -67,7 +67,7 @@ class AppContainer(
     }
 
     val opml: OpmlRepository by lazy {
-        OpmlRepository(feedDao = database.feedDao(), clock = clock)
+        OpmlRepository(feedDao = database.feedDao(), folders = folders, clock = clock)
     }
 
     companion object {

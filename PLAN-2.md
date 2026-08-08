@@ -493,7 +493,7 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
 
 ## Phase 4 — Get your sources in and out
 
-- [ ] **U13 — OPML with folders. TDD.** SPEC.md §9's "flat, no folders in v1" is now
+- [x] **U13 — OPML with folders. TDD.** SPEC.md §9's "flat, no folders in v1" is now
       obsolete — amend it in this commit. Export nests each folder as a container
       `<outline text="AI/LLM" title="AI/LLM">` holding its sources' `type="rss"` outlines;
       Uncategorized's sources are written at top level (that is what other readers expect).
