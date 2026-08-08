@@ -4,16 +4,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import dev.mkiros.perch.data.db.EntryListItem
 import dev.mkiros.perch.data.repo.EntryRepository
 import dev.mkiros.perch.di.AppContainer
 import java.time.Clock
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /**
@@ -34,16 +34,6 @@ enum class Collection {
 }
 
 /**
- * @param isLoading true only before the first database emission, exactly as home's is.
- * @param nowMillis the instant the rows' relative times are against, fixed per emission.
- */
-data class CollectionUiState(
-    val isLoading: Boolean = true,
-    val entries: List<EntryListItem> = emptyList(),
-    val nowMillis: Long = 0L,
-)
-
-/**
  * What a removal from one of these lists undid, while its snackbar is up.
  *
  * Held as state rather than fired as an event for T26's reason: a rotation mid-snackbar
@@ -62,18 +52,32 @@ data class CollectionUndo(val entryId: Long, val title: String)
  * here, so nothing downstream can reintroduce them.
  */
 class CollectionViewModel(
-    private val entries: EntryRepository,
+    private val repository: EntryRepository,
     private val clock: Clock,
     val collection: Collection,
 ) : ViewModel() {
 
-    val uiState: StateFlow<CollectionUiState> =
+    /**
+     * The list, a page at a time (U07a). These two are the likeliest of the three lists to
+     * grow without bound — retention exempts saved and liked rows (U04), so nothing ever
+     * ages out of them.
+     *
+     * `cachedIn(viewModelScope)` for home's reason: without it every recomposition of the
+     * screen starts the list again at the top.
+     */
+    val entries: Flow<PagingData<EntryListItem>> =
         when (collection) {
-            Collection.ToRead -> entries.observeSaved()
-            Collection.Liked -> entries.observeLiked()
-        }
-            .map { CollectionUiState(isLoading = false, entries = it, nowMillis = clock.millis()) }
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), CollectionUiState())
+            Collection.ToRead -> repository.pagedSaved()
+            Collection.Liked -> repository.pagedLiked()
+        }.cachedIn(viewModelScope)
+
+    /**
+     * The instant the rows' relative times are measured against, read once per
+     * composition. There is no state class left to carry it: since U07a the rows arrive a
+     * page at a time and report their own load state, so everything else this screen knew
+     * about the list now lives on the list.
+     */
+    val nowMillis: Long get() = clock.millis()
 
     private val _pendingUndo = MutableStateFlow<CollectionUndo?>(null)
     val pendingUndo: StateFlow<CollectionUndo?> = _pendingUndo.asStateFlow()
@@ -89,7 +93,7 @@ class CollectionViewModel(
      */
     fun setSaved(item: EntryListItem, isSaved: Boolean) {
         viewModelScope.launch {
-            entries.setSaved(item.id, isSaved)
+            repository.setSaved(item.id, isSaved)
             if (!isSaved && collection == Collection.ToRead) {
                 _pendingUndo.value = CollectionUndo(item.id, item.title)
             }
@@ -99,7 +103,7 @@ class CollectionViewModel(
     /** *Liked*, with the same undo rule and for the same reason. */
     fun setLiked(item: EntryListItem, isLiked: Boolean) {
         viewModelScope.launch {
-            entries.setLiked(item.id, isLiked)
+            repository.setLiked(item.id, isLiked)
             if (!isLiked && collection == Collection.Liked) {
                 _pendingUndo.value = CollectionUndo(item.id, item.title)
             }
@@ -107,7 +111,7 @@ class CollectionViewModel(
     }
 
     fun setRead(entryId: Long, isRead: Boolean) {
-        viewModelScope.launch { entries.setRead(entryId, isRead) }
+        viewModelScope.launch { repository.setRead(entryId, isRead) }
     }
 
     /**
@@ -123,8 +127,8 @@ class CollectionViewModel(
         _pendingUndo.value = null
         viewModelScope.launch {
             when (collection) {
-                Collection.ToRead -> entries.setSaved(undo.entryId, isSaved = true)
-                Collection.Liked -> entries.setLiked(undo.entryId, isLiked = true)
+                Collection.ToRead -> repository.setSaved(undo.entryId, isSaved = true)
+                Collection.Liked -> repository.setLiked(undo.entryId, isLiked = true)
             }
         }
     }
@@ -135,8 +139,6 @@ class CollectionViewModel(
     }
 
     companion object {
-        private const val STOP_TIMEOUT_MS = 5_000L
-
         fun factory(container: AppContainer, collection: Collection) = viewModelFactory {
             initializer { CollectionViewModel(container.entries, container.clock, collection) }
         }

@@ -26,6 +26,7 @@ import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.di.AppContainer
 import dev.mkiros.perch.ui.source.AddSourceViewModel
 import dev.mkiros.perch.ui.theme.PerchTheme
+import dev.mkiros.perch.ui.rowTitles
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
@@ -123,14 +124,14 @@ class HomeRefreshTest {
         assertThat(requestedPaths()).containsExactly("/one.xml", "/two.xml")
         // The write lands before `refreshAll` returns, but the Room flow that carries it
         // to the list does not, so wait for the emission rather than for the gesture.
-        awaitState { state -> state.entries.map { it.title }.containsAll(FRESH) }
+        awaitCondition { listedTitles().containsAll(FRESH) }
 
-        // Asserted on the list, not on pixels: `LazyColumn` anchors on the key that was
-        // first before the write, so entries prepended by a refresh are composed *above*
-        // the viewport until the reader scrolls up. What a row looks like is T21's test.
-        assertThat(viewModel.uiState.value.entries.map { it.title })
-            .containsAtLeast("Fresh from one", "Fresh from two")
-        assertThat(viewModel.uiState.value.entries).hasSize(4)
+        // Asserted on the list's *query* rather than on its rows: `LazyColumn` anchors on
+        // the key that was first before the write, so entries prepended by a refresh are
+        // composed above the viewport until the reader scrolls up — and since U07a they
+        // are not even loaded until then. What a row looks like is T21's test.
+        assertThat(listedTitles()).containsAtLeast("Fresh from one", "Fresh from two")
+        assertThat(listedTitles()).hasSize(4)
     }
 
     @Test
@@ -200,7 +201,7 @@ class HomeRefreshTest {
         selectInDrawer("Broken")
         compose.onNodeWithTag(HomeTestTags.BANNER_RETRY)
             .performSemanticsAction(SemanticsActions.OnClick)
-        awaitState { state -> state.entries.any { it.title == "Back from the dead" } }
+        awaitCondition { compose.rowTitles().contains("Back from the dead") }
 
         assertThat(requestedPaths()).containsExactly("/broken.xml")
     }
@@ -287,7 +288,7 @@ class HomeRefreshTest {
         assertThat(unreadTitles()).isEmpty()
 
         compose.onNodeWithText("Undo").performSemanticsAction(SemanticsActions.OnClick)
-        awaitState { it.entries.size == unreadBefore.size }
+        awaitCondition { compose.rowTitles().size == unreadBefore.size }
 
         // The entry that was already read stays read: undo is scoped to what it flipped.
         assertThat(unreadTitles()).containsExactlyElementsIn(unreadBefore)
@@ -326,7 +327,7 @@ class HomeRefreshTest {
         compose.waitForIdle()
         compose.onNodeWithTag(HomeTestTags.MARK_ALL_READ)
             .performSemanticsAction(SemanticsActions.OnClick)
-        awaitState { it.entries.isEmpty() }
+        awaitCondition { compose.rowTitles().isEmpty() }
     }
 
     private fun openDrawer() {
@@ -344,6 +345,16 @@ class HomeRefreshTest {
 
     private fun requestedPaths(): List<String> =
         List(server.requestCount) { server.takeRequest().path.orEmpty() }
+
+    /**
+     * What home's list query selects, whether or not the row has been paged in (U07a).
+     *
+     * The Feed asks for one page at a time now, so "is it in the list" and "is it on the
+     * screen" are different questions — and the one this test is asking is the first.
+     */
+    private fun listedTitles(): List<String> = runBlocking {
+        container.entries.observeEntries(includeRead = false).first().map { it.title }
+    }
 
     private fun unreadTitles(): List<String> = runBlocking {
         database.entryDao().observeAll().first().filterNot { it.isRead }.map { it.title }

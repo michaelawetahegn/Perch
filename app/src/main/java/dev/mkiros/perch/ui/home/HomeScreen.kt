@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -89,7 +88,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
 import dev.mkiros.perch.R
+import dev.mkiros.perch.data.db.EntryListItem
 import dev.mkiros.perch.ui.source.AddSourceSheet
 import dev.mkiros.perch.ui.source.AddSourceViewModel
 import dev.mkiros.perch.ui.brand.PerchMark
@@ -132,6 +136,10 @@ fun HomeScreen(
 ) {
     val totalUnread by viewModel.totalUnread.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    // The rows arrive on their own flow now (U07a), a page at a time, and carry their own
+    // load state — which is why the screen below asks *this* whether the list is empty
+    // rather than asking [uiState].
+    val entries = viewModel.pagedEntries.collectAsLazyPagingItems()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val pendingUndo by viewModel.pendingUndo.collectAsStateWithLifecycle()
     val collapsedFolders by viewModel.collapsedFolders.collectAsStateWithLifecycle()
@@ -356,16 +364,23 @@ fun HomeScreen(
                         .fillMaxSize()
                         .testTag(HomeTestTags.LIST),
                 ) {
+                    // "Empty" is only ever asserted once the first page has come back:
+                    // a paged list is momentarily empty on every query change, and an
+                    // empty state that flashes between two full lists reads as a bug.
+                    val loadingFirstPage = entries.loadState.refresh is LoadState.Loading
                     when {
-                        uiState.isLoading -> SkeletonList()
-                        uiState.entries.isEmpty() -> EmptyState(
+                        uiState.isLoading || (entries.itemCount == 0 && loadingFirstPage) ->
+                            SkeletonList()
+                        entries.itemCount == 0 -> EmptyState(
                             hasSources = uiState.hasSources,
                             widerFilter = uiState.widerFilter,
                             onAddSource = ::addSource,
                             onWiden = viewModel::widenTimeFilter,
                         )
                         else -> EntryList(
-                            state = uiState,
+                            entries = entries,
+                            showSections = uiState.showSections,
+                            nowMillis = uiState.nowMillis,
                             listState = listState,
                             onOpenEntry = onOpenEntry,
                             onLongPressEntry = { entryActionsForId = it },
@@ -472,7 +487,11 @@ fun HomeScreen(
             )
         }
 
-        uiState.entries.firstOrNull { it.id == entryActionsForId }?.let { item ->
+        // Resolved against the rows that are actually loaded rather than against the whole
+        // list, which no longer exists in one place (U07a). That is not a narrowing: the
+        // only row whose sheet can be open is one the reader long-pressed, and a row they
+        // could press is a row that is loaded.
+        entries.itemSnapshotList.items.firstOrNull { it.id == entryActionsForId }?.let { item ->
             EntryActionsSheet(
                 item = item,
                 onToggleSaved = {
@@ -1042,16 +1061,26 @@ object HomeTestTags {
 }
 
 /**
- * The list proper. Room hands the whole unread set over on every write and `LazyColumn`
- * composes only what is on screen — that is the paging story, and it is enough for a
- * reader whose inbox is measured in hundreds.
+ * The list proper, paged (U07a).
+ *
+ * `LazyColumn` was already composing only what is on screen; what it was not doing was
+ * *loading* only that. The rows now arrive a page at a time, and the reader is meant never
+ * to find out: the only visible difference is a small footer while the next page is in
+ * flight, and a marker where the list genuinely ends.
+ *
+ * `peek` rather than indexing for the neighbours: reading a row through `get` tells Paging
+ * the reader has reached it, and asking "what folder was the row above in" is not the
+ * reader reaching anything. Indexing the neighbour would drag the prefetch window along
+ * behind the list by one row for no reason.
  *
  * [rememberLazyListState] is saveable, so the scroll offset survives opening an article
  * and coming back; the reader returns to the row they left, not to the top.
  */
 @Composable
 private fun EntryList(
-    state: HomeUiState,
+    entries: LazyPagingItems<EntryListItem>,
+    showSections: Boolean,
+    nowMillis: Long,
     listState: LazyListState,
     onOpenEntry: (Long) -> Unit,
     onLongPressEntry: (Long) -> Unit,
@@ -1060,25 +1089,30 @@ private fun EntryList(
         state = listState,
         modifier = Modifier.fillMaxSize().testTag(HomeTestTags.ENTRY_LIST),
     ) {
-        itemsIndexed(state.entries, key = { _, item -> item.id }) { index, item ->
-            // A header is due wherever the folder changes, which is a question about this
-            // row and the one before it — never about the list as a whole. U07a keeps
-            // that property when the list stops arriving all at once.
-            val startsSection = state.showSections &&
-                (index == 0 || state.entries[index - 1].folderId != item.folderId)
-            val endsSection = state.showSections && index < state.entries.lastIndex &&
-                state.entries[index + 1].folderId != item.folderId
+        items(
+            count = entries.itemCount,
+            key = entries.itemKey { it.id },
+        ) { index ->
+            val item = entries[index] ?: return@items
+            // Placeholders are off (see PerchPaging), so every index below `itemCount` is
+            // a loaded row and both neighbours are answerable — which is what keeps the
+            // header from reappearing at the top of every page.
+            val previous = if (index == 0) null else entries.peek(index - 1)
+            val next =
+                if (index + 1 < entries.itemCount) entries.peek(index + 1) else null
+            val opensSection = showSections && startsSection(previous, item)
+            val endsSection = showSections && next != null && next.folderId != item.folderId
             Column(modifier = Modifier.animateItem()) {
-                if (startsSection) SectionHeader(folderId = item.folderId, name = item.folderName)
+                if (opensSection) SectionHeader(folderId = item.folderId, name = item.folderName)
                 EntryRow(
                     item = item,
-                    now = state.nowMillis,
+                    now = nowMillis,
                     onClick = { onOpenEntry(item.id) },
                     onLongClick = { onLongPressEntry(item.id) },
                     modifier = Modifier.testTag(HomeTestTags.ENTRY),
                 )
                 // The header below is the break; a rule as well would be two.
-                if (index < state.entries.lastIndex && !endsSection) {
+                if (next != null && !endsSection) {
                     HorizontalDivider(
                         modifier = Modifier.padding(start = Dimens.dividerInset),
                         color = MaterialTheme.colorScheme.outlineVariant,
@@ -1086,6 +1120,7 @@ private fun EntryList(
                 }
             }
         }
+        pagedFooter(entries)
     }
 }
 

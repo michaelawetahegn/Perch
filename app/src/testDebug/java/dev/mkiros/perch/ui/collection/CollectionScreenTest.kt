@@ -7,6 +7,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
@@ -16,6 +17,7 @@ import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.di.AppContainer
 import dev.mkiros.perch.ui.home.EntryActionTestTags
+import dev.mkiros.perch.ui.rowTitles
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.theme.PerchTheme
 import java.time.Clock
@@ -213,7 +215,7 @@ class CollectionScreenTest {
 
     // ---- harness ---------------------------------------------------------------
 
-    private fun titles(): List<String> = viewModel.uiState.value.entries.map { it.title }
+    private fun titles(): List<String> = compose.rowTitles()
 
     private fun entry(id: Long): EntryEntity = runBlocking { database.entryDao().findById(id)!! }
 
@@ -236,7 +238,13 @@ class CollectionScreenTest {
                 CollectionScreen(viewModel = viewModel, onOpenEntry = {})
             }
         }
-        compose.awaitInRealTime("the list to load") { !viewModel.uiState.value.isLoading }
+        // The list is paged (U07a), so "loaded" is a question for the screen: either rows
+        // arrived or the empty state did. Nothing else is a settled list.
+        compose.awaitInRealTime("the list to settle") {
+            titles().isNotEmpty() ||
+                compose.onAllNodesWithTag(CollectionTestTags.EMPTY).fetchSemanticsNodes()
+                    .isNotEmpty()
+        }
     }
 
     private fun seedFeed(): Long = runBlocking {

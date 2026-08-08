@@ -27,6 +27,8 @@ import dev.mkiros.perch.di.AppContainer
 import dev.mkiros.perch.ui.source.AddSourceTestTags
 import dev.mkiros.perch.ui.source.AddSourceViewModel
 import dev.mkiros.perch.ui.theme.PerchTheme
+import dev.mkiros.perch.ui.rowTitles
+import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
@@ -291,7 +293,7 @@ class HomeScreenTest {
         showHome()
         selectInDrawer("Source One")
         runBlocking { container.entries.setRead(entryId = idOf("Only in one"), isRead = true) }
-        awaitState { it.entries.isEmpty() }
+        compose.awaitInRealTime("the last unread entry to leave") { compose.rowTitles().isEmpty() }
 
         compose.onNodeWithText("You're all caught up").assertIsDisplayed()
         compose.onNodeWithTag(HomeTestTags.TITLE).assertTextEquals("Source One")

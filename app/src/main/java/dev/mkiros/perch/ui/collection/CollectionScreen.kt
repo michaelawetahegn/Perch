@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.LibraryBooks
@@ -40,9 +39,15 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
 import dev.mkiros.perch.R
+import dev.mkiros.perch.data.db.EntryListItem
 import dev.mkiros.perch.ui.home.EntryActionsSheet
 import dev.mkiros.perch.ui.home.EntryRow
+import dev.mkiros.perch.ui.home.pagedFooter
 import dev.mkiros.perch.ui.home.shareEntry
 import dev.mkiros.perch.ui.theme.Dimens
 
@@ -63,7 +68,7 @@ fun CollectionScreen(
     onOpenEntry: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val entries = viewModel.entries.collectAsLazyPagingItems()
     val pendingUndo by viewModel.pendingUndo.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -108,19 +113,26 @@ fun CollectionScreen(
                 .fillMaxSize()
                 .padding(innerPadding),
         ) {
+            // Nothing is drawn while the first page is in flight — these lists load in a
+            // frame and a skeleton would be a flash rather than a reassurance. The empty
+            // state waits for that page for home's reason: an empty state between two full
+            // lists reads as a bug.
             when {
-                uiState.isLoading -> Unit
-                uiState.entries.isEmpty() -> EmptyState(viewModel.collection)
-                else -> EntryList(
-                    state = uiState,
+                entries.itemCount > 0 -> EntryList(
+                    entries = entries,
+                    nowMillis = viewModel.nowMillis,
                     onOpenEntry = onOpenEntry,
                     onLongPress = { actionsForId = it },
                 )
+                entries.loadState.refresh is LoadState.Loading -> Unit
+                else -> EmptyState(viewModel.collection)
             }
         }
     }
 
-    uiState.entries.firstOrNull { it.id == actionsForId }?.let { item ->
+    // Against the loaded rows, not the whole list (U07a): the only row whose sheet can be
+    // open is one the reader long-pressed, which is a row that is loaded.
+    entries.itemSnapshotList.items.firstOrNull { it.id == actionsForId }?.let { item ->
         EntryActionsSheet(
             item = item,
             onToggleSaved = {
@@ -144,27 +156,37 @@ fun CollectionScreen(
     }
 }
 
+/**
+ * Paged like the Feed (U07a), and for the sharper reason: retention exempts saved and
+ * liked rows (U04), so nothing ever leaves these two lists on its own.
+ *
+ * No folder sections here, so the only neighbour question is where the last rule goes —
+ * `peek` rather than indexing, because asking what comes after this row is not the reader
+ * reaching it and must not drag the prefetch window along.
+ */
 @Composable
 private fun EntryList(
-    state: CollectionUiState,
+    entries: LazyPagingItems<EntryListItem>,
+    nowMillis: Long,
     onOpenEntry: (Long) -> Unit,
     onLongPress: (Long) -> Unit,
 ) {
     val listState = rememberLazyListState()
     LazyColumn(state = listState, modifier = Modifier.fillMaxSize().testTag(CollectionTestTags.LIST)) {
-        itemsIndexed(state.entries, key = { _, item -> item.id }) { index, item ->
+        items(count = entries.itemCount, key = entries.itemKey { it.id }) { index ->
+            val item = entries[index] ?: return@items
             // `animateItem` is what makes un-saving read as the row leaving rather than as
-            // the list blinking: Room re-emits without it, and the row it dropped simply
-            // is not there on the next frame.
+            // the list blinking: the list re-emits without it, and the row it dropped
+            // simply is not there on the next frame.
             Column(modifier = Modifier.animateItem()) {
                 EntryRow(
                     item = item,
-                    now = state.nowMillis,
+                    now = nowMillis,
                     onClick = { onOpenEntry(item.id) },
                     onLongClick = { onLongPress(item.id) },
                     modifier = Modifier.testTag(CollectionTestTags.ENTRY),
                 )
-                if (index < state.entries.lastIndex) {
+                if (index + 1 < entries.itemCount) {
                     HorizontalDivider(
                         modifier = Modifier.padding(start = Dimens.dividerInset),
                         color = MaterialTheme.colorScheme.outlineVariant,
@@ -172,6 +194,7 @@ private fun EntryList(
                 }
             }
         }
+        pagedFooter(entries)
     }
 }
 

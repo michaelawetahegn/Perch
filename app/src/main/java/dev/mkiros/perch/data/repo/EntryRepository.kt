@@ -1,11 +1,47 @@
 package dev.mkiros.perch.data.repo
 
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import dev.mkiros.perch.data.db.EntryDao
 import dev.mkiros.perch.data.db.EntryListItem
 import dev.mkiros.perch.data.db.entity.EntryEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import java.time.Clock
+
+/**
+ * How the three lists page (U07a).
+ *
+ * One config for all of them, because they are one list shape and a reader who scrolls
+ * To-Read should not meet a different loading rhythm than one who scrolls the Feed.
+ *
+ * The numbers exist so the reader never learns that paging is happening at all. A page of
+ * 30 is roughly four screens of 96dp rows, and [PagingConfig.prefetchDistance] of 10 asks
+ * for the next one while a third of a screen still stands between the reader and the end
+ * of what is loaded — at any plausible flick speed the rows are there before the eye is.
+ *
+ * [PagingConfig.enablePlaceholders] is off deliberately, and the section headers depend on
+ * it: with placeholders the list is full of nulls whose folder nothing can know, so "is a
+ * header due here" would have no answer at a page edge. Off, every index below `itemCount`
+ * is a row that has been loaded, and the question is always answerable.
+ *
+ * `initialLoadSize` is one page rather than Paging's default of three. Three is tuned for
+ * a cold list on a fast scroll; this list is re-collected every time a flag changes, and
+ * the first load is exactly the cost this task exists to stop paying repeatedly.
+ */
+object PerchPaging {
+
+    const val PAGE_SIZE = 30
+    const val PREFETCH_DISTANCE = 10
+
+    val config = PagingConfig(
+        pageSize = PAGE_SIZE,
+        prefetchDistance = PREFETCH_DISTANCE,
+        enablePlaceholders = false,
+        initialLoadSize = PAGE_SIZE,
+    )
+}
 
 /**
  * Reader state: the part of an entry that belongs to the reader rather than to the feed —
@@ -19,12 +55,13 @@ class EntryRepository(
 ) {
 
     /**
-     * The home reading list, newest first, each row already carrying its source's display
-     * name (DESIGN.md §5).
+     * The home reading list as a whole, newest first, each row already carrying its
+     * source's display name (DESIGN.md §5).
      *
-     * This is the whole paging story. Room re-emits the list on any write, `LazyColumn`
-     * composes only the rows on screen, and a reader with 42 sources has a list measured
-     * in hundreds — a paging library here would buy latency, not headroom.
+     * Home reads [pagedEntries] instead; this stays for the callers that genuinely want
+     * every matching row at once — the tests that assert what the query selects, and the
+     * live acceptance run that counts a corpus. **Nothing on a screen should call it**: it
+     * materialises every match and re-emits all of them when one entry's flags change.
      *
      * @param feedId the drawer's per-source filter; null is every source.
      * @param folderId the drawer's per-folder scope (U06); null is every folder. The two
@@ -43,6 +80,25 @@ class EntryRepository(
     ): Flow<List<EntryListItem>> =
         entryDao.observeListItems(feedId, folderId, includeRead, publishedAfter)
             .distinctUntilChanged()
+
+    /**
+     * The home reading list, a page at a time (U07a) — what the Feed actually collects.
+     *
+     * Same filters, same order and same row as [observeEntries]; the difference is that
+     * only what has been scrolled to is loaded, and a write invalidates that much rather
+     * than the whole match. The `Flow` is cold and builds a new `Pager` per collection, so
+     * a caller that survives configuration changes must `cachedIn` a scope that does too —
+     * see [dev.mkiros.perch.ui.home.HomeViewModel].
+     */
+    fun pagedEntries(
+        feedId: Long? = null,
+        folderId: Long? = null,
+        includeRead: Boolean = false,
+        publishedAfter: Long? = null,
+    ): Flow<PagingData<EntryListItem>> =
+        Pager(PerchPaging.config) {
+            entryDao.pagedListItems(feedId, folderId, includeRead, publishedAfter)
+        }.flow
 
     /** The unread inbox — [observeEntries] as home reads it by default. */
     fun observeUnreadEntries(feedId: Long? = null): Flow<List<EntryListItem>> =
@@ -88,6 +144,19 @@ class EntryRepository(
     /** The Liked list, most recently liked first. Same exemption as [observeSaved]. */
     fun observeLiked(): Flow<List<EntryListItem>> =
         entryDao.observeLiked().distinctUntilChanged()
+
+    /**
+     * The two reader-owned lists, paged (U07a).
+     *
+     * They page for the same reason the Feed does and are the more likely of the three to
+     * need it: nothing ever ages out of them. Retention exempts saved and liked rows
+     * (U04), so a queue three years old is a queue with every article still in it.
+     */
+    fun pagedSaved(): Flow<PagingData<EntryListItem>> =
+        Pager(PerchPaging.config) { entryDao.pagedSaved() }.flow
+
+    fun pagedLiked(): Flow<PagingData<EntryListItem>> =
+        Pager(PerchPaging.config) { entryDao.pagedLiked() }.flow
 
     /**
      * Files an entry under *Read later*, or takes it off the queue.

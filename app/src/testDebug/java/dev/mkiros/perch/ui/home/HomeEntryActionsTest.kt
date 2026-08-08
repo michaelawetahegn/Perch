@@ -16,6 +16,7 @@ import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.di.AppContainer
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
+import dev.mkiros.perch.ui.rowTitles
 import dev.mkiros.perch.ui.source.AddSourceViewModel
 import dev.mkiros.perch.ui.theme.PerchTheme
 import java.time.Clock
@@ -207,7 +208,7 @@ class HomeEntryActionsTest {
                 )
             }
         }
-        compose.awaitInRealTime("the list to load") { viewModel.uiState.value.entries.isNotEmpty() }
+        compose.awaitInRealTime("the list to load") { compose.rowTitles().isNotEmpty() }
     }
 
     private fun seed(

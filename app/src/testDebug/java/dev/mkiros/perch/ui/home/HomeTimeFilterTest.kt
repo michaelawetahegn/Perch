@@ -13,6 +13,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
+import dev.mkiros.perch.ui.rowTitles
 import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.db.entity.FeedEntity
@@ -133,6 +134,7 @@ class HomeTimeFilterTest {
 
         showHome()
         chooseRange(TimeFilter.PastMonth)
+        assertThat(compose.rowTitles()).containsExactly("Last month")
 
         // A second view model over the same settings — process death, in miniature. The
         // range has to come out of DataStore, not out of the last view model's memory.
@@ -154,10 +156,14 @@ class HomeTimeFilterTest {
                 seen.lastOrNull()?.isLoading == false
             }
             assertThat(seen.last().timeFilter).isEqualTo(TimeFilter.PastMonth)
-            assertThat(seen.last().entries.map { it.title }).containsExactly("Last month")
         } finally {
             job.cancel()
         }
+        // The rows are asserted on the live screen rather than on the relaunched view
+        // model: since U07a they arrive as `PagingData`, which has no rows to read until
+        // something collects it, and the only collector is a composition. What is being
+        // defended is that the *remembered* range is the one the list was queried with,
+        // and the screen above is running that query.
     }
 
     // ---- the empty bucket --------------------------------------------------------

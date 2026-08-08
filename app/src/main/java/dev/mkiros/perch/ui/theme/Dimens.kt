@@ -174,6 +174,13 @@ object Dimens {
     val sectionHeaderTop = lg
     val sectionHeaderBottom = sm
 
+    /**
+     * The footer spinner of a paged list (U07a). Deliberately smaller and thinner than a
+     * Material default: it is a note that the next page is coming, not an event.
+     */
+    val appendIndicator = 20.dp
+    val appendIndicatorStroke = 2.dp
+
     /** Editorial link underline: 1dp thick, offset 3dp below the baseline. §8. */
     val linkUnderline = 1.dp
     val linkUnderlineOffset = 3.dp

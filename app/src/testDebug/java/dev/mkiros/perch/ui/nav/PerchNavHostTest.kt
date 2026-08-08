@@ -19,6 +19,7 @@ import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.data.repo.PerchPaging
 import dev.mkiros.perch.ui.home.HomeTestTags
 import dev.mkiros.perch.ui.home.TimeFilter
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
@@ -170,8 +171,7 @@ class PerchNavHostTest {
         seedManyEntries(count = 40)
         showNavHost()
         awaitFeedLoaded()
-        compose.onNodeWithTag(HomeTestTags.ENTRY_LIST).performScrollToIndex(30)
-        compose.waitForIdle()
+        scrollFeedTo(30)
         assertThat(isDisplayed("Entry 00")).isFalse()
         assertThat(isDisplayed("Entry 30")).isTrue()
 
@@ -183,6 +183,28 @@ class PerchNavHostTest {
         // The range is Feed's alone (§0) and it is where the reader left it.
         compose.onNodeWithTag(HomeTestTags.TIME_RANGE_LABEL, useUnmergedTree = true)
             .assertTextEquals("All Time")
+    }
+
+    /**
+     * Scrolls the Feed to [index], loading pages on the way (U07a).
+     *
+     * A paged list only holds what the reader has reached, so an index past the loaded
+     * rows is genuinely out of bounds until they get near it — walking there a page at a
+     * time is what a thumb does, and it is also the only way this test can reach row 30 of
+     * a list whose first page is 30 rows long.
+     */
+    private fun scrollFeedTo(index: Int) {
+        var at = 0
+        while (at < index) {
+            at = minOf(at + PerchPaging.PAGE_SIZE - 1, index)
+            val row = at
+            compose.awaitInRealTime("row $row to page in") {
+                runCatching {
+                    compose.onNodeWithTag(HomeTestTags.ENTRY_LIST).performScrollToIndex(row)
+                }.isSuccess
+            }
+            compose.waitForIdle()
+        }
     }
 
     // ---- U09: §0's back chain, walked end to end -------------------------------
@@ -214,8 +236,7 @@ class PerchNavHostTest {
         seedManyEntries(count = 40)
         showNavHost()
         awaitFeedLoaded()
-        compose.onNodeWithTag(HomeTestTags.ENTRY_LIST).performScrollToIndex(30)
-        compose.waitForIdle()
+        scrollFeedTo(30)
 
         pressBack()
 

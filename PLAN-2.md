@@ -352,7 +352,7 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
         logo and no broken image links; `./gradlew test` green.
       - Rung: screenshot
 
-- [ ] **U07a — Page the lists; stop loading everything. TDD.** A `Flow<List<EntryEntity>>`
+- [x] **U07a — Page the lists; stop loading everything. TDD.** A `Flow<List<EntryEntity>>`
       materialises every matching row and **re-emits the entire list every time one entry's
       read flag flips** — so marking an article read re-does the work of the whole screen.
       `LazyColumn` already composes only what is visible, so the cost is the query and the

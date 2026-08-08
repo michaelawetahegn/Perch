@@ -1,5 +1,6 @@
 package dev.mkiros.perch.data.db
 
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.MapColumn
@@ -8,6 +9,60 @@ import androidx.room.Transaction
 import androidx.room.Update
 import dev.mkiros.perch.data.db.entity.EntryEntity
 import kotlinx.coroutines.flow.Flow
+
+/**
+ * The three list queries, written once (U07a).
+ *
+ * Each exists twice over — as a `Flow<List<…>>` and as a `PagingSource` — because Room
+ * generates a different implementation for each return type from the same SQL. Holding the
+ * text in one constant is what stops the two copies drifting apart, which would be the
+ * quiet kind of bug: the paged list and the flow list would answer the same question
+ * differently and only one of them is on screen.
+ */
+internal object EntryQueries {
+
+    /**
+     * The row shape every list draws (DESIGN.md §5), joined to its source and folder so a
+     * row never has to look either of them up.
+     */
+    private const val ROW = """
+        SELECT e.id AS id, e.feedId AS feedId, e.title AS title, e.summary AS summary,
+               e.imageUrl AS imageUrl, e.publishedAt AS publishedAt, e.isRead AS isRead,
+               COALESCE(NULLIF(TRIM(f.customTitle), ''), f.title) AS sourceTitle,
+               fo.id AS folderId, fo.name AS folderName,
+               e.isSaved AS isSaved, e.isStarred AS isStarred, e.link AS link
+        FROM entries e
+        JOIN feeds f ON f.id = e.feedId
+        JOIN folders fo ON fo.id = f.folderId
+    """
+
+    /**
+     * Home, ordered by folder first and recency second so §0's sections fall out of the
+     * row order itself: the section a row belongs to is a property of the row, and a
+     * header is due wherever the previous row's folder differs. Nothing has to hold the
+     * whole list to work that out, which is what keeps the page boundaries honest.
+     */
+    const val LIST_ITEMS = """
+        $ROW
+        WHERE (:includeRead OR e.isRead = 0) AND (:feedId IS NULL OR e.feedId = :feedId)
+          AND (:folderId IS NULL OR f.folderId = :folderId)
+          AND (:publishedAfter IS NULL OR e.publishedAt >= :publishedAfter)
+        ORDER BY (fo.id = 1) ASC, fo.sortIndex ASC, fo.name COLLATE NOCASE ASC,
+                 e.publishedAt DESC, e.id DESC
+    """
+
+    const val SAVED = """
+        $ROW
+        WHERE e.isSaved = 1
+        ORDER BY e.savedAt DESC, e.id DESC
+    """
+
+    const val LIKED = """
+        $ROW
+        WHERE e.isStarred = 1
+        ORDER BY e.starredAt DESC, e.id DESC
+    """
+}
 
 /**
  * Articles. The interesting method is [upsertAll]: a refetch re-presents every entry the
@@ -41,38 +96,34 @@ abstract class EntryDao {
      *   second predicate rather than a resolved list of feed ids because membership is a
      *   column on `feeds` that a move can change under us — the join already knows.
      * @param publishedAfter U07's time window, inclusive; null is All Time. In SQL rather
-     *   than in the view model for the same reason as the other two, and because U07a
-     *   swaps this query for a `PagingSource` — a filter the UI applies afterwards would
-     *   page the rows it then threw away.
+     *   than in the view model for the same reason as the other two: a filter the UI
+     *   applied afterwards would page the rows it then threw away.
      *
-     * Ordered by folder first and recency second, so §0's sections fall out of the row
-     * order itself: the section a row belongs to is a property of the row, and a header
-     * is due wherever the previous row's folder differs. Nothing has to hold the whole
-     * list to work that out, which is what keeps U07a's page boundaries honest.
+     * Ordering, and why the section headers depend on it, are in [EntryQueries.LIST_ITEMS].
      */
-    @Query(
-        """
-        SELECT e.id AS id, e.feedId AS feedId, e.title AS title, e.summary AS summary,
-               e.imageUrl AS imageUrl, e.publishedAt AS publishedAt, e.isRead AS isRead,
-               COALESCE(NULLIF(TRIM(f.customTitle), ''), f.title) AS sourceTitle,
-               fo.id AS folderId, fo.name AS folderName,
-               e.isSaved AS isSaved, e.isStarred AS isStarred, e.link AS link
-        FROM entries e
-        JOIN feeds f ON f.id = e.feedId
-        JOIN folders fo ON fo.id = f.folderId
-        WHERE (:includeRead OR e.isRead = 0) AND (:feedId IS NULL OR e.feedId = :feedId)
-          AND (:folderId IS NULL OR f.folderId = :folderId)
-          AND (:publishedAfter IS NULL OR e.publishedAt >= :publishedAfter)
-        ORDER BY (fo.id = 1) ASC, fo.sortIndex ASC, fo.name COLLATE NOCASE ASC,
-                 e.publishedAt DESC, e.id DESC
-        """,
-    )
+    @Query(EntryQueries.LIST_ITEMS)
     abstract fun observeListItems(
         feedId: Long?,
         folderId: Long?,
         includeRead: Boolean,
         publishedAfter: Long?,
     ): Flow<List<EntryListItem>>
+
+    /**
+     * The same list, a page at a time (U07a) — what home actually reads.
+     *
+     * A `Flow<List<…>>` materialises every matching row and re-emits all of them whenever
+     * any one entry's flags change, so marking a single article read re-does the work of
+     * the whole screen. Room drives this one off the same invalidation signal, but the
+     * reload is bounded by what is loaded rather than by what matches.
+     */
+    @Query(EntryQueries.LIST_ITEMS)
+    abstract fun pagedListItems(
+        feedId: Long?,
+        folderId: Long?,
+        includeRead: Boolean,
+        publishedAfter: Long?,
+    ): PagingSource<Int, EntryListItem>
 
     @Query("SELECT * FROM entries WHERE id = :id")
     abstract suspend fun findById(id: Long): EntryEntity?
@@ -153,38 +204,20 @@ abstract class EntryDao {
      * on `isRead`. It is also exempt from the time filter by construction — a to-read list
      * that hides last month's articles is not a to-read list (PLAN-2 §0).
      */
-    @Query(
-        """
-        SELECT e.id AS id, e.feedId AS feedId, e.title AS title, e.summary AS summary,
-               e.imageUrl AS imageUrl, e.publishedAt AS publishedAt, e.isRead AS isRead,
-               COALESCE(NULLIF(TRIM(f.customTitle), ''), f.title) AS sourceTitle,
-               fo.id AS folderId, fo.name AS folderName,
-               e.isSaved AS isSaved, e.isStarred AS isStarred, e.link AS link
-        FROM entries e
-        JOIN feeds f ON f.id = e.feedId
-        JOIN folders fo ON fo.id = f.folderId
-        WHERE e.isSaved = 1
-        ORDER BY e.savedAt DESC, e.id DESC
-        """,
-    )
+    @Query(EntryQueries.SAVED)
     abstract fun observeSaved(): Flow<List<EntryListItem>>
 
+    /** To-Read, a page at a time (U07a) — what the screen reads. */
+    @Query(EntryQueries.SAVED)
+    abstract fun pagedSaved(): PagingSource<Int, EntryListItem>
+
     /** The Liked destination. Same rules as [observeSaved], ordered by when it was liked. */
-    @Query(
-        """
-        SELECT e.id AS id, e.feedId AS feedId, e.title AS title, e.summary AS summary,
-               e.imageUrl AS imageUrl, e.publishedAt AS publishedAt, e.isRead AS isRead,
-               COALESCE(NULLIF(TRIM(f.customTitle), ''), f.title) AS sourceTitle,
-               fo.id AS folderId, fo.name AS folderName,
-               e.isSaved AS isSaved, e.isStarred AS isStarred, e.link AS link
-        FROM entries e
-        JOIN feeds f ON f.id = e.feedId
-        JOIN folders fo ON fo.id = f.folderId
-        WHERE e.isStarred = 1
-        ORDER BY e.starredAt DESC, e.id DESC
-        """,
-    )
+    @Query(EntryQueries.LIKED)
     abstract fun observeLiked(): Flow<List<EntryListItem>>
+
+    /** Liked, a page at a time (U07a). */
+    @Query(EntryQueries.LIKED)
+    abstract fun pagedLiked(): PagingSource<Int, EntryListItem>
 
     @Query("UPDATE entries SET isSaved = :isSaved, savedAt = :savedAt WHERE id = :id")
     abstract suspend fun setSaved(id: Long, isSaved: Boolean, savedAt: Long?)

@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import dev.mkiros.perch.data.db.EntryListItem
 import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.db.entity.FolderEntity
@@ -121,7 +123,9 @@ sealed interface HomeBanner {
  * What home is showing (DESIGN.md §7's four states).
  *
  * @param isLoading true only before the first database emission. A refresh never returns
- *   here; it shows in the pull indicator, never as a full-screen replace.
+ *   here; it shows in the pull indicator, never as a full-screen replace. Since U07a it
+ *   says nothing about the *list* — the rows arrive a page at a time down their own flow
+ *   and report their own load state; this is the drawer and the banner arriving.
  * @param hasSources whether any source is subscribed at all. An empty list means
  *   "add your first source" with zero sources and "you're all caught up" with any.
  * @param nowMillis the instant the row timestamps are relative to, fixed per emission so
@@ -130,17 +134,16 @@ sealed interface HomeBanner {
  *   source in [sources] appears in exactly one of them.
  * @param scope the drawer's filter; [HomeScope.All] is the unified inbox.
  * @param selectedTitle the display name to put in the app bar, or null for "Unread".
- *   It is derived from the same emission [entries] came from, so the bar can never name
- *   one source while the list shows another.
+ *   It is derived from the same query the rows were fetched under, so the bar can never
+ *   name one source while the list shows another.
  * @param banner the one strip above the list, or null. It never replaces the list: a
  *   failing source keeps its cached entries on screen (§7).
- * @param timeFilter how far back [entries] reaches (U07). It is a filter, not a section:
+ * @param timeFilter how far back the list reaches (U07). It is a filter, not a section:
  *   it decides which rows survive, and the folder each survivor sits under is a separate
  *   question the row answers itself.
  */
 data class HomeUiState(
     val isLoading: Boolean = true,
-    val entries: List<EntryListItem> = emptyList(),
     val hasSources: Boolean = false,
     val nowMillis: Long = 0L,
     val sources: List<SourceUiItem> = emptyList(),
@@ -222,34 +225,44 @@ class HomeViewModel(
     private val timeFilter: Flow<TimeFilter> =
         settings.settings.map { it.timeFilter }.distinctUntilChanged()
 
-    /** What one collection of the list query produced, and what produced it. */
-    private data class ListData(
+    /** The three things that decide which rows exist, gathered as one value. */
+    private data class ListQuery(
         val scope: HomeScope,
+        val showRead: Boolean,
         val timeFilter: TimeFilter,
-        val items: List<EntryListItem>,
     )
 
     /**
-     * The list, re-queried per scope, per window, and per "show read entries". All three
-     * are carried *out* of the `flatMapLatest` alongside the rows they produced, so a
-     * selection or a range change can never leave the bar and the dropdown describing a
-     * list that is still the previous query's.
+     * What home is currently asking the database for. Both the rows and the furniture that
+     * describes them are derived from this one flow, so the bar and the dropdown cannot end
+     * up describing a query the list is not running.
+     */
+    private val query: Flow<ListQuery> =
+        combine(scope, showReadEntries, timeFilter, ::ListQuery)
+
+    /**
+     * The reading list, a page at a time (U07a).
+     *
+     * A new `Pager` per query — a scope, a window or a "show read entries" change is a
+     * different list, not the same list filtered, and `flatMapLatest` tears the previous
+     * one down. `cachedIn(viewModelScope)` is what makes the pages survive a rotation and
+     * lets more than one collector share the one load; without it every recomposition of
+     * the screen would start the list again at the top.
      *
      * `since` is resolved here, once per query, rather than inside [TimeFilter]: the
      * boundary is a moment in time, and re-deriving it per row would let a list straddle
      * midnight and disagree with itself.
      */
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val filteredEntries: Flow<ListData> =
-        combine(scope, showReadEntries, timeFilter, ::Triple)
-            .flatMapLatest { (scope, showRead, filter) ->
-                entries.observeEntries(
-                    feedId = scope.feedId,
-                    folderId = scope.folderId,
-                    includeRead = showRead,
-                    publishedAfter = filter.since(clock),
-                ).map { ListData(scope, filter, it) }
-            }
+    val pagedEntries: Flow<PagingData<EntryListItem>> =
+        query.flatMapLatest { (scope, showRead, filter) ->
+            entries.pagedEntries(
+                feedId = scope.feedId,
+                folderId = scope.folderId,
+                includeRead = showRead,
+                publishedAfter = filter.since(clock),
+            )
+        }.cachedIn(viewModelScope)
 
     /** Everything the drawer draws, gathered before the top-level `combine` runs out of arity. */
     private data class DrawerData(
@@ -295,12 +308,12 @@ class HomeViewModel(
     private val globalErrorDismissed = MutableStateFlow(false)
 
     val uiState: StateFlow<HomeUiState> = combine(
-        filteredEntries,
+        query,
         drawer,
         connectivity.observeOnline(),
         globalErrorDismissed,
-    ) { list, drawer, online, dismissed ->
-        val scope = list.scope
+    ) { query, drawer, online, dismissed ->
+        val scope = query.scope
         // A fully-read source is absent from the count map rather than mapped to 0.
         val items = drawer.sources.map { feed ->
             SourceUiItem(
@@ -331,7 +344,6 @@ class HomeViewModel(
         }
         HomeUiState(
             isLoading = false,
-            entries = list.items,
             hasSources = items.isNotEmpty(),
             nowMillis = clock.millis(),
             sources = items,
@@ -339,7 +351,7 @@ class HomeViewModel(
             scope = resolved,
             selectedTitle = selected?.title ?: selectedFolder?.name,
             banner = bannerFor(items, selected, online, dismissed),
-            timeFilter = list.timeFilter,
+            timeFilter = query.timeFilter,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), HomeUiState())
 
