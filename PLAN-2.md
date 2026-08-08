@@ -380,7 +380,7 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
 
 ## Phase 3 — The reading surface
 
-- [ ] **U10 — Full text for feeds that don't ship it. TDD.** The single most important task
+- [x] **U10 — Full text for feeds that don't ship it. TDD.** The single most important task
       in this plan: **reading an article must never require visiting the site.** Covers both
       §0 shapes — fabiensanglard.net (no body at all) and gpuopen.com (a 194-char
       `<description>` teaser with no `content:encoded`, which renders as a stub).

@@ -1,0 +1,605 @@
+<html>
+<head>
+  <link rel="alternate" type="application/rss+xml"  title="RSS Feed for fabiensanglard.net" href="/rss.xml" />
+  <style type="text/css">
+
+    @font-face {
+      font-family: 'Roboto';
+      src: url('/font/roboto/static/Roboto-Regular.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: block;
+    }
+
+    @font-face {
+      font-family: 'Roboto';
+      src: url('/font/roboto/static/Roboto-Italic.ttf') format('truetype');
+      font-weight: normal;
+      font-style: italic;
+      font-display: block;
+    }
+
+    @font-face {
+      font-family: 'Roboto';
+      src: url('/font/roboto/static/Roboto-Bold.ttf') format('truetype');
+      font-weight: bold;
+      font-style: normal;
+      font-display: block;
+    }
+
+    @font-face {
+      font-family: 'Roboto';
+      src: url('/font/roboto/static/Roboto-BoldItalic.ttf') format('truetype');
+      font-weight: bold;
+      font-style: italic;
+      font-display: block;
+    }
+
+    html {
+      font-family: 'Roboto', sans-serif;
+      max-width: 800px;  /* For Desktop PC (see @media for Tablets/Phones) */
+      padding-left: 2%;
+      padding-right: 3%;
+      margin: 0 auto;
+      /* background: #F5F5F0; */
+      background: white;
+  	}
+
+    :root {
+      --title-font-size: 22px;
+      --body-font-size: inherit;
+    }
+
+    @media (max-width: 800px) {
+      :root {
+        --title-font-size: 18px;
+      }
+    }
+
+    @media (max-width: 500px) {
+      :root {
+        --title-font-size: 15px;
+        --body-font-size: 12px;
+      }
+    }
+
+    * {
+      font-size: var(--body-font-size);
+    }
+
+    h, div.heading{
+      display: block;
+      font-weight: bold;      
+      text-transform: uppercase;
+      margin-top: 4ch;
+    }
+
+    h::after {
+      content: "";
+      display: block;
+      border-top: 1px solid #ccc;
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    a {
+  color: #2a7ae2;
+  text-decoration: none;
+}
+a:visited {
+  color: rgb(23, 86, 169);
+}
+a:hover {
+  color: #111;
+  text-decoration: underline;
+}
+
+a.title, a.title:visited {
+  color: black;
+  text-decoration: none;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: var(--title-font-size);
+}
+a.title:hover {
+  color: black;
+  text-decoration: underline;
+}
+
+img {
+  border: 1px solid black;
+}
+
+figure {
+  margin: 0;
+  padding: 0;
+}
+
+figcaption {
+  padding-top: 1ch;
+  font-size: 85%;
+  text-align: center;
+}
+
+  .trivia {
+    border-left: 1px black solid;
+    padding-left: 1ch;
+  }
+
+  .trivia::before {
+  font-weight: bold;
+  text-decoration: underline;
+  padding-right: 1ch;
+  content: "Trivia:";
+  }
+
+  p, ul, ol , div{
+    text-align: justify;
+  }
+
+  sup {
+    font-size: 75%;
+    line-height: 0;
+    position: relative;
+    vertical-align: baseline;
+  }
+  
+  sup {
+    top: -0.2em;
+  }
+  
+
+  blockquote {
+  /* Text styling */
+  color: #828282;                /* Muted grey font color */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-style: italic;            /* Makes the whole blockquote italicized */
+
+  margin-left: 0;                /* Resets default browser indent */
+  margin-right: 0;
+  padding-left: 2ch;            /* Pushes text away from the left border */
+  text-align: justify;
+  
+  /* The iconic border */
+  border-left: 4px solid #e8e8e8; /* Soft, light grey accent line */
+}
+
+/* To match the link color inside the quote */
+blockquote a {
+  color: #2a7ae2;                /* Minima's default blue link color */
+  text-decoration: none;
+}
+
+blockquote a:hover {
+  text-decoration: underline;    /* Underline on hover */
+}
+
+blockquote cite::before {
+  content: "— ";
+}
+
+blockquote cite {
+  display: block;                /* Forces it onto a new line */
+  font-style: normal;            /* Optional: keeps the author name regular/upright for contrast */
+  margin-top: 10px;              /* Adds a little breathing room below the quote text */
+  color: #828282;                /* Matches the quote color */
+  text-align: right;
+}
+
+/* TARGETED RULES FOR THE REFERENCES FOOTER */
+  td.ref a:hover{
+    text-decoration: underline ;
+  }
+  td.ref a{
+    color: black;
+    text-decoration: none;
+  }
+
+  code {
+    /*font-size: 110%;*/
+    font-weight: bold;
+    background-color: #e1e1e1;
+    border-radius: 0.5ch;
+    padding-left: 0.3ch;
+    padding-right: 0.3ch;
+  }
+
+  pre {
+  border: solid black 1px;
+  background-color: #EEEEEE;
+  padding-left: 2ch;
+  padding-right: 1ch;
+  padding-top: 2ch;
+  padding-bottom: 1ch;
+  overflow: auto;
+}
+
+.red {
+  color: red;
+}
+
+td.ref:nth-child(1) a {
+  color: #2a7ae2;                  /* Matches primary link color */
+  text-decoration: none !important; /* Prevents ugly underline under the arrow */
+}
+
+      </style>
+  <title>Jurassic Park computers in excruciating detail</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=12.0, minimum-scale=1.0, user-scalable=yes">
+</head>  
+  <body>
+    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 2ch;">
+      <a href="/" class="title">Fabien Sanglard - WEBSITE</a>
+      <div style="display: flex; gap: 1.5ch; align-items: center;">
+      <!-- Github -->
+      <a href="https://github.com/fabiensanglard">
+      <svg fill="#555" aria-hidden="true" data-component="Octicon" height="21" viewBox="0 0 24 24" version="1.1" width="21" data-view-component="true" class="octicon octicon-mark-github">
+    <path d="M10.226 17.284c-2.965-.36-5.054-2.493-5.054-5.256 0-1.123.404-2.336 1.078-3.144-.292-.741-.247-2.314.09-2.965.898-.112 2.111.36 2.83 1.01.853-.269 1.752-.404 2.853-.404 1.1 0 1.999.135 2.807.382.696-.629 1.932-1.1 2.83-.988.315.606.36 2.179.067 2.942.72.854 1.101 2 1.101 3.167 0 2.763-2.089 4.852-5.098 5.234.763.494 1.28 1.572 1.28 2.807v2.336c0 .674.561 1.056 1.235.786 4.066-1.55 7.255-5.615 7.255-10.646C23.5 6.188 18.334 1 11.978 1 5.62 1 .5 6.188.5 12.545c0 4.986 3.167 9.12 7.435 10.669.606.225 1.19-.18 1.19-.786V20.63a2.9 2.9 0 0 1-1.078.224c-1.483 0-2.359-.808-2.987-2.313-.247-.607-.517-.966-1.034-1.033-.27-.023-.359-.135-.359-.27 0-.27.45-.471.898-.471.652 0 1.213.404 1.797 1.235.45.651.921.943 1.483.943.561 0 .92-.202 1.437-.719.382-.381.674-.718.944-.943"></path>
+      </svg>
+      </a> 
+      <!-- Email -->
+      <a href="mailto:fabiensanglard.net@gmail.com">
+      <svg fill="#555" aria-hidden="true" height="27" viewBox="0 0 24 24" version="1.1" width="27" data-view-component="true" class="octicon octicon-mail">
+        <path d="M0 3 h24 v17.5 H0 Z M24 5.5 L12 13 L0 5.5 v2 L12 15 L24 7.5 Z"></path>
+      </svg>
+      </a>
+   <!-- RSS -->
+   <a href="/rss.xml">
+   <svg fill="#555" height="20" width="20" version="1.1" id="Layer_1" viewBox="-271 273 256 256" xml:space="preserve">
+<g>
+	<path d="M-271,360v48.9c31.9,0,62.1,12.6,84.7,35.2c22.6,22.6,35.1,52.8,35.1,84.8v0.1h49.1c0-46.6-19-88.7-49.6-119.4
+		C-182.2,379-224.4,360.1-271,360z"/>
+	<path d="M-237,460.9c-9.4,0-17.8,3.8-24,10s-10,14.6-10,24c0,9.3,3.8,17.7,10,23.9c6.2,6.1,14.6,9.9,24,9.9s17.8-3.7,24-9.9
+		s10-14.6,10-23.9c0-9.4-3.8-17.8-10-24C-219.2,464.7-227.6,460.9-237,460.9z"/>
+	<path d="M-90.1,348.1c-46.3-46.4-110.2-75.1-180.8-75.1v48.9C-156.8,322-64.1,414.9-64,529h49C-15,458.4-43.7,394.5-90.1,348.1z"/>
+</g>
+</svg>
+</a>
+      </div>
+
+    </div>
+    <br>
+<div style="margin-bottom: 2ch;text-transform: none;">
+Jul 13, 2026</div>
+<h>Jurassic Park computers in excruciating detail</h>
+
+<p>After I mentioned a Jurassic Park anecdote <a href="../extinct/">the other day</a>, I watched the movie again. I must have seen it at least ten times now. This time, I researched every computer/software I spotted.</p>
+
+<p style="border-left: 1px black solid;padding-left: 1ch;"><b>EDIT:</b> Just when I was putting the final touches on this article, I read the sad news that <a href="https://en.wikipedia.org/wiki/Sam_Neill">Sam Neill</a>, who played paleontologist Alan Grant in JP, has passed away today. <b>R.I.P</b> Sam.</p> 
+
+
+
+
+
+<h>Apple Powerbook 100</h>
+<p>Surprisingly, the first computer visible is not on the island <i>Isla Nublar</i> but in Alan Grant and Ellie Sattler's mobile trailer. It is an <a href="https://en.wikipedia.org/wiki/PowerBook_100">Apple Powerbook 100</a>, visible in the image below on the left side.</p>
+<figure style="text-align: center; "><a href="00_11_15_Apple_Powerbook_100.webp"><img loading="lazy" src="00_11_15_Apple_Powerbook_100.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>Apple Powerbook 100</figcaption></figure>
+<blockquote>
+	It had a Motorola 68000 processor at 16 MHz, 2–8 megabytes (MB) of RAM, a 9-inch (23 cm) monochrome backlit liquid-crystal display (LCD) with 640 × 400 pixel resolution, and the System 7.0.1 operating system.
+	<cite><a href="https://en.wikipedia.org/wiki/PowerBook_100">Wikipedia</a></cite>
+</blockquote>
+
+<p class="trivia">This machine's specs reminds me of how awful '90s laptop screens, based on a passive matrix, were. Definitely something I don't miss from that era.</p>
+</p>
+
+<h>Jurassic Park Control Room</h>
+
+<p>All computers and software are located in the Control Room on the desks of two engineers, Dennis Nedry and Ray Arnold.</p>
+
+<p>Dennis Nedry's desk is an indescribable mess with three machines (two macs, one SGI), three monitors, one PDA, and storage devices.</p>
+<figure style="text-align: center; "><a href="00_43_24_Motorola_Envoy_2.webp"><img loading="lazy" src="00_43_24_Motorola_Envoy_2.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>Dennis Nedry's chaotic desk</figcaption></figure>
+<p>Ray Arnold's desk is much tidier. It features a CCTV screen, storage devices, two computers (a Mac and a SGI), and two monitors.</p>
+<figure style="text-align: center; "><a href="00_40_47_Thinking_Machines_CM-5_2.webp"><img loading="lazy" src="00_40_47_Thinking_Machines_CM-5_2.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>Ray Arnold's desk with supercomputers in the background</figcaption></figure>
+
+
+<p>In the back of the Control Room, we can make out a giant screen and a supercomputer with tall panels and blinking red lights.</p>
+
+<p>The book <a href="https://www.amazon.com/dp/034538122X">The Making Of Jurassic Park</a> has interesting details about how they designed the Control Room.</p>
+
+
+<blockquote>
+	Everything in the set was real. We couldn't fake any of it, because audiences are so sophisticated now in their knowledge of computers. All told, $875,000 worth of computer hardware loaned by Silicon Graphics, $350,000 worth from Apple and some $500,000 in additional hardware and software went into equipping both the set and off-stage control room.
+	<cite><a href="https://www.amazon.com/dp/034538122X">Cory Faucher (Special Effects Coordinator)</a></cite>
+</blockquote>
+
+<p>This means, adjusted for inflation, Apple and SGI loaned roughly $4,000,000 of 2026 dollars for the production of Jurassic Park.</p>
+
+
+
+
+
+
+
+<h>SGI R4000 Indigo</h>
+<p>Ray Arnold's workstation is a <a href="https://archive.irixnet.org/sgistuff/hardware/systems/indigo.html">SGI R4000 Indigo</a>. It is barely visible in two shots. Blink and you will miss it at <b>54:48</b>.</p>
+
+<figure style="text-align: center; "><a href="00_54_48_SGI R4000 Indigo Elan_1.webp"><img loading="lazy" src="00_54_48_SGI R4000 Indigo Elan_1.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>SGI R4000 Indigo (Hardly visible)</figcaption></figure>
+<p>We get a somewhat better view of it towards the end of the movie thanks to a Velociraptor that never skips leg-day.</p>
+<figure style="text-align: center; "><a href="01_54_56_SGI R4000 Indigo Elan_2.webp"><img loading="lazy" src="01_54_56_SGI R4000 Indigo Elan_2.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>SGI R4000 Indigo (Better view)</figcaption></figure>
+<p>For the needs of the movie, that SGIs came in handy to run real-time 3D animation of the Hurricane. Or did they?</p>
+<figure style="text-align: center; "><a href="00_40_35_Ray_s_SGI.webp"><img loading="lazy" src="00_40_35_Ray_s_SGI.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>SGI R4000 Indigo running 3D hurricane animation</figcaption></figure>
+<blockquote>
+	<p>A dynamic and interactive method was employed to create the graphics, both on the big screen and on the computer monitors at each individual station. A makeshift room was built adjacent to the set, then equipped with a battery of Silicon Graphics and Apple Macintosh computer systems. Stored on computer disks were animations generated over a period of six months by a four-man computer graphics team headed by Michael Backes.</p>
+
+	<p> Responding to cues received via radio from the set, Backes and his team were able to feed their graphics directly to the appropriate monitors on stage, making it seem as though the actors involved were actually calling up the imagery.</p>
+	<cite><a href="https://www.amazon.com/dp/034538122X">The Making Of Jurassic Park</a></cite>
+</blockquote>
+
+
+
+
+<div class="trivia">Gregory Gosson emailed me to elaborate on the animation showing on the Indigo.
+	<blockquote>
+		<p>The software running on the SGI Indigo, showing the animated hurricane, was called Earthwatch, developed by Paul Douglas.</p>
+		<p>
+			The software was created so television meteorologists could create 3D fly-bys/fly-throughs of weather.  The interface you see in the movie is the exact same interface the meteorologists would use when creating the animations.
+		</p>
+		<p>
+			I worked with a local cable news station for over two decades.  We used Earthwatch in the 1990s for our on-air weather graphics.  The software allowed you to not only create the cool 3D graphics but also the 2D forecast pages, like the five-day and ten-day forecasts, and then to put them into a sequence that a hand-held remote switch would trigger.  Basically, think of it as a PowerPoint slide deck.  It was fantastic-looking stuff for the day, but the render times were very slow.  The meteorologists would start the render sequence and then go to lunch.  It could play the resulting animations in real-time, but could not render in real-time.
+		</p>
+		<cite>Gregory Gosson<br/>
+Former Broadcast Engineer for RNews/Spectrum News in Rochester NY</cite>
+	</blockquote>
+</div>
+
+
+
+
+<h>SGI IRIS Crimson</h>
+<p>Dennis Nedry's powerhouse workstation is an <a href="https://en.wikipedia.org/wiki/SGI_Crimson">SGI IRIS Crimson</a>. It is such a beast that it won't fit on his desk. It is on the floor on the right of his desk (red box).</p>
+<figure style="text-align: center; "><a href="00_48_53_chaos.webp"><img loading="lazy" src="00_48_53_chaos.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>SGI Crimson (red box on the right)</figcaption></figure><p>Most of the time it is used to display a 3D chess game (monitor the right end of Dennis desk).</p>
+<figure style="text-align: center; "><a href="00_43_24_Motorola_Envoy_2.webp"><img loading="lazy" src="00_43_24_Motorola_Envoy_2.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>Chess, running on SGI IRIX Crimson (right screen)</figcaption></figure>
+<p>The SGI Crimson is rarely visible on screen. It is briefly visible after Dennis's "white rabbit" lockdown brings Samuel Jackson into a depression.</p>
+<figure style="text-align: center; "><a href="01_31_58_SGI_Crimson.webp"><img loading="lazy" src="01_31_58_SGI_Crimson.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>Crimson (also red box on the right)</figcaption></figure>
+<p>The SGI Crimson was a very powerful workstation released in 1992. Its main appeal was its panel of real-time 3D graphics cards. The CPU was also very powerful with hardware Floating-Point Unit, a luxury for 3D graphics.</p>
+
+<blockquote>
+<ul>
+	<li>One MIPS 100 MHz R4000 or 150 MHz R4400 processor
+<li>Choice of seven high-performance 3D graphics subsystems (Entry, XS, XS24, Elan, Extreme, Reality Engine, VGXT)
+<li>Up to 256 MB memory and internal disk capacity of up to 7.2 GB, expandable to more than 72 GB using additional enclosures
+<li>I/O subsystem includes four VMEbus expansion slots, Ethernet and two SCSI channels with disk striping support
+</li>
+<cite><a href="https://en.wikipedia.org/wiki/SGI_Crimson">Wikipedia</a></a></cite>
+</blockquote>
+
+
+<div class="trivia">Like the SGI Indigo, the SGI Crimson was not connected to its monitor. The signal actually came from another machine in the makeshift room as pointed out by Ben Drago.
+
+<blockquote>
+	 I worked at Silicon Graphics in the '90s, and remember some internal presentations from coworkers who set up these systems for Jurassic Park.
+	 <ul>
+	 <li>	The SGI systems on set used display extenders to feed the monitors from systems in another room. The Crimson was never powered on, as it would have been too loud. Keyboard/mouse extenders were used so the display was in sync when the actor was typing.</li>
+<li>In the scene where Ray triggers the "magic word" animation, gr_osview is actually running on a Silicon Graphics Onyx, and not a Crimson. The Crimson only had a single processor, and gr_osview clearly shows four.</li>
+</ul>
+	 <cite>Ben Drago </cite>
+</blockquote>
+</div>
+
+
+
+<h>PLI, Mini Arrays</h>
+<p>Both Dennis and Ray use PLI Mini Arrays for their backup. Dennis has an impressive stack of five on the left-end of his desk.</p>
+
+<figure style="text-align: center; "><a href="00_44_00_XX_5x.webp"><img loading="lazy" src="00_44_00_XX_5x.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>A stack of five PLI Mini Arrays on Dennis's desk</figcaption></figure><p>There is a continuity error in the movie. See how the stack of PLI is facing left in this early shot.</p>
+<figure style="text-align: center; "><a href="00_48_53_chaos.webp"><img loading="lazy" src="00_48_53_chaos.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>Chaos and left-looking PLIs</figcaption></figure><p>Later in the movie, after Ray takes over Dennis's desk, we can see the PLIs have magically rotated to face the developer.</p>
+<!-- <figure style="text-align: center; "><a href="01_31_58_SGI_Crimson.webp"><img loading="lazy" src="01_31_58_SGI_Crimson.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>Continuity error with PLIs rotated.</figcaption></figure> -->
+<figure style="text-align: center; "><a href="01_10_41_LIP.webp"><img loading="lazy" src="01_10_41_LIP.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>Continuity error.</figcaption></figure>
+<p>On Ray's desk we also find a smaller stack of two PLIs.</p>
+
+<figure style="text-align: center; "><a href="00_41_54_XX_2x.webp"><img loading="lazy" src="00_41_54_XX_2x.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>A stack of two PLI Mini Arrays on the left of Ray Arnold's desk</figcaption></figure><p>There is a close-up shot when John Hammond follows the jeeps' progress on the CCTV.</p> 
+<figure style="text-align: center; "><a href="00_41_03_XX_closeup.webp"><img loading="lazy" src="00_41_03_XX_closeup.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>A close up of the Mini Arrays on Ray Arnold's desk</figcaption></figure>
+<p>Despite the attention to detail, it seems the PLIs were not connected since the LEDs are all blank. In <a href="Macs_Place_Spring1993.pdf">Macs Place of Spring 1993</a> we can find an ad on page 38 giving more details about the capacity.</p> 
+
+<figure style="text-align: center; "><a href="pli.webp"><img loading="lazy" src="pli.webp" width="1490" height="416" style="width: 100%; height: auto; "/></a><figcaption>PLI, Mini Arrays ad (1993)</figcaption></figure>
+
+<p>Since John Hammond "spared no expense", it is fair to say he picked 1GiB version at $3,598 a piece. That would give them 7 GiB of storage for a 2026 equivalent of $33,223.70. In 2026, 7 GiB of HDD would cost $0.49.</p>
+
+<p class="trivia">Seven GiB was a MASSIVE amount in 1993 when a high-end PC would come with 120 MiB HDD.</p>
+
+
+
+<h>Motorola Envoy</h>
+<p>The <a href="https://en.wikipedia.org/wiki/Motorola_Envoy">Motorola Envoy</a> is a personal digital assistant used by Dennis. It is visible next to his right elbow in the image below.</p>
+<figure style="text-align: center; "><a href="00_43_24_Motorola_Envoy_2.webp"><img loading="lazy" src="00_43_24_Motorola_Envoy_2.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>Motorola Envoy (Closed)</figcaption></figure>
+<p> It is an extremely impressive device for the early '90s. It is a foldable that features an antenna when deployed (<a href="https://www.youtube.com/watch?v=7q82f_usY00">video</a>).</p>
+<blockquote>
+	<p>The hardware of the Motorola Envoy included a Motorola Dragon I/68349 microprocessor, 4 MB of read only memory (ROM), 1 MB of random access memory (RAM), and an LCD. Of particular interest were the wireless communications capabilities of the Envoy. Its built-in communication components included a radio modem capable of 4,800 bits per second communication, a fax and data modem, and an infrared transceiver capable of 38.4 kbit/s of data transfer.</p>
+	<cite><a href="https://en.wikipedia.org/wiki/Motorola_Envoy">Wikipedia</a></cite>
+</blockquote>
+
+
+<p> Dennis must have used it since we see it moved and partially unfolded later in the movie.</p>
+
+
+<figure style="text-align: center; "><a href="00_54_24_Motorola_Envoy_1.webp"><img loading="lazy" src="00_54_24_Motorola_Envoy_1.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>Motorola Envoy (Opened)</figcaption></figure>
+
+
+
+<div class="trivia">It is unclear how Jurassic Park crew got their hands on a Motorola Envoy. The movie was shot from August to November 1992. Motorola only finished the PDA in mid-1994 but delayed releasing it to February 1995<a name="back_1" style="text-decoration: none;" href="#footnote_1"><sup>[1]</sup></a>.</p>
+
+<p><b>EDIT :</b> Hackernews user kalleboo <a href="https://news.ycombinator.com/item?id=48916194">solved</a> the mystery!</p>
+<blockquote>
+	The head of frogdesign (Hartmut Esslinger) ended up running into Spielberg on a plane and showed it to him. The one in the movie is an original mockup
+
+    (<a href="https://www.therpf.com/forums/threads/jurassic-park-tablet-device-on-nedrys-desk.169883/#post-2929104">source</a> and
+
+    <a href="https://news.ycombinator.com/item?id=46752261">discussion</a>).
+    <cite><a href="https://news.ycombinator.com/item?id=48916194">kalleboo</a></cite>
+</blockquote> 
+
+</div>
+
+
+
+
+
+
+<h>Thinking Machines CM-5</h>
+<p>The supercomputer of the control room looks a lot like five <a href="https://en.wikipedia.org/wiki/Connection_Machine#:~:text=of%20FROSTBURG%2C-,a%20CM%2D5,-%2C%20on%20display%20">Thinking Machines CM-5</a> with there characteristic front panel with thousands of red blinking LEDs. With a pricetag of "only" $46,000 per machine, it is very possible these were authentic.</p>
+<figure style="text-align: center; "><a href="00_58_01_Thinking_Machines_CM-5.webp"><img loading="lazy" src="00_58_01_Thinking_Machines_CM-5.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>Four Thinking Machines CM-5</figcaption></figure>
+<p>The CM-5, "<b>C</b>onnection <b>M</b>achine", was released in 1991<a name="back_2" style="text-decoration: none;" href="#footnote_2"><sup>[2]</sup></a>. In 1993 it was still considered the most powerful computer in the world<a name="back_3" style="text-decoration: none;" href="#footnote_3"><sup>[3]</sup></a>. Each machine was called a "node", featuring a Sparc CPU, four vector units, and 32 MiB RAM. As many nodes as needed could be connected together to form a mesh. The National Center for Atmospheric Research (NCAR) build a 32-node supercomputer with CM-5<a name="back_4" style="text-decoration: none;" href="#footnote_4"><sup>[4]</sup></a>.</p>
+
+
+<figure style="text-align: center; "><a href="00_40_47_Thinking_Machines_CM-5_2.webp"><img loading="lazy" src="00_40_47_Thinking_Machines_CM-5_2.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>A fifth CM-5 can be seen on the right.</figcaption></figure>
+
+
+<p class="trivia">Does the red LED pattern in the front panel mean anything? Absolutely not, they were randomly generated<a name="back_5" style="text-decoration: none;" href="#footnote_5"><sup>[5]</sup></a>.</p>
+
+<div class="trivia">If you listen carefully you can actually hear Dennis Nedry talk about the CM-5, "<b>C</b>onnection <b>M</b>achine".
+	<blockquote>I am totally unappreciated in my time. You can run this whole park from this room with minimal staff for up to 3 days. You think that kind of automation is easy? Or cheap? You know anybody who can network 8 <span class="red">connection machines</span> and debug 2 million lines of code for what I bid for this job? Because if he can I'd like to see him try.
+		<cite><a href="https://www.imdb.com/title/tt0107290/characters/nm0001431/#:~:text=I%20am%20totally,see%20him%20try.">Dennis Nedry</a></cite>
+	</blockquote>
+</div>
+
+<div class="trivia">User pivo (from hackernews) explained why the movie features CM-5 while the novel has Cray [<a href="https://archive.is/6Pq4G#selection-445.171-445.199:~:text=didn%27t%20like%20the%20Cray%27s%20looks">debated</a>] supercomputer.
+<blockquote>
+	<p>My wife worked for Thinking Machines back then. I remember that they'd asked Cray to loan them a supercomputer for the film because that's the computer used in the book. Cray brushed them off, so they turned to Thinking Machines who were happy to do it.</p>
+	<p>
+To thank them, the producers rented a theater in Cambridge, MA [Kendall Sq. cinema] to screen the film just for Thinking Machines and I was also able to attend. By far the biggest reactions from the audience that night were when the CM-5 was shown for the first time and then when the young actress says, "It's a Unix system. I know this"</p>
+<cite><a href="https://news.ycombinator.com/item?id=48920798">pivo (from hackernews)</a></cite>
+</blockquote>
+</div
+>
+<!-- https://archive.is/6Pq4G from https://www.washingtonpost.com/archive/business/1993/06/28/going-out-for-a-byte-in-jurassic-park/d6a6c60b-61e1-4610-bb59-599abab55a7d/?utm_source=chatgpt.com -->
+<div class="trivia">
+	<blockquote>
+		I used to work at Oregon State University in their oceanography department where they had CM-5. I was friends with the technician who did the installs in the '90s. He had to leave part way to  work on JP. He told me they only installed the front panels with the RED leds (not real CM-5 [<a href="https://archive.is/6Pq4G#selection-445.323-445.383:~:text=Thinking%20Machines%20lent%20Universal%20Studios%20the%20shell%20of%20a%20CM%2D5">confirmed</a>]). Side story: When they were decommissioned, I rescued the LED panels and <a href="https://housedillon.com/blog/resurrected-led-panels/">rebuilt them</a>. 
+		<cite>William Dillon</cite>
+	</blockquote>
+</div>
+
+
+
+
+<h>Monitor SuperMatch 20-T</h>
+<p>One of the very best monitors money could buy in 1993 was the SuperMatch 20-T. The twenty means 20" and T meant Trinitron. The SuperMatch was featured on the cover of <a href="macUser_feb_92.pdf">MacUser in Feb 92</a>. In <a href="macUser_oct_93.pdf">MacUser of Oct 94</a>, page 180 (out of 252!!), we can see it cost $2,589 ($6,000 in 2026).</p>
+
+<figure style="text-align: center; "><a href="00_49_07_brands.webp"><img loading="lazy" src="00_49_07_brands.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>An amazing product placement for Apple and SuperMach.</figcaption></figure>
+<p>20" monitors were considered absolutely massive in 1993 and only seen in professional workspaces. A typical PC would come with a 15" CRT. 21" is almost the maximum CRTs reached, their depth and weight made them very hard to move. They were replaced by LCD around 2005.</p>
+
+
+<div class="trivia">A lot of attention was paid to avoid showing CRT refresh artifact in the movie. SuperMatch had engineer <a href="https://news.ycombinator.com/item?id=25392870">on-site</a> and production had people dedicated to <a href="https://www.youtube.com/watch?v=qicQUvSUbPM">syncing CRT framerate with film rate</a>.
+<blockquote>
+	My uncle (John Monsour) worked on this movie as the “24 Frame Computer Sync Engineer”. Because film cameras and CRT monitors have different frame rates, you needed to use specialized electronics to synchronize them with the camera frame rate otherwise you would have banding and weird moving artifacts on all the screens. It’s crazy to imagine needing to do this for all the screens visible in these shots.
+	<cite><a href="https://news.ycombinator.com/item?id=48918088">amccollum</a></cite>
+</blockquote>	
+<p>Sure enough, if we check out <a href="jp_credit_24fps.png">Jurassic Park credits</a>, we can see <i>24 Frame Computer Sync: John Monsour</i>.</p>
+</div>
+
+
+
+
+
+
+
+
+<h>Monitor SiliconGraphics</h>
+<p>The monitor features a particular "chin". The absolutely gorgeous <a href="hardware_developer_handbook_2.0.pdf">SGI Hardware Developer Handbook</a>, on page 4-59, reveals this is a 19" Mitsubishi HL7965 Monitor which SGI rebranded. It likely cost as much as the SuperMatch 20-T.</p>
+
+<figure style="text-align: center; "><a href="01_53_02_fsn_start.webp"><img loading="lazy" src="01_53_02_fsn_start.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>Mitsubishi HL7965 Monitor</figcaption></figure>
+
+
+
+
+
+
+
+<h>SGI "Beige" Keyboard (Indigo Style)</h>
+<p>On Ray Arnold's desk, we can notice a weird keyboard with a connector on the side. This is a <a href="https://deskthority.net/viewtopic.php?t=26771">SGI "Beige" Keyboard (Indigo Style)<a name="back_6" style="text-decoration: none;" href="#footnote_6"><sup>[6]</sup></a></a>. It is a pretty cool keyboard with two <a href="https://geekhack.org/index.php?topic=81065.0">6 Pin Mini-DIN connectors</a><a name="back_7" style="text-decoration: none;" href="#footnote_7"><sup>[7]</sup></a> on each side. The keyboard can be connected to the workstation from either side and the mouse is to be daisy-chained into the other port.</p>
+<figure style="text-align: center; "><a href="00_54_55_keyboard.webp"><img loading="lazy" src="00_54_55_keyboard.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>SGI 'Beige' Keyboard (Indigo Style) Keyboard</figcaption></figure>
+
+<p>Ray is seen using the same keyboard later. If you look closely at the screen, you'll see the command <code>status network</code> was called. It issued four (successful) <code>ping</code>  to four distinct IP addresses.</p>
+<figure style="text-align: center; "><a href="00_40_49_ping.webp"><img loading="lazy" src="00_40_49_ping.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>Just four <code>ping</code>s to look cool</figcaption></figure>
+
+
+
+
+
+
+
+
+
+<h>Macintosh Quadra 700</h>
+<p>Dennis Nedry uses two <a href="https://en.wikipedia.org/wiki/Macintosh_Quadra_700">Macintosh Quadra 700</a>. Apple must have been very happy with the product placement. Although they usually require their computers not to be used for nefarious activity which is not the case here.</p>
+<figure style="text-align: center; "><a href="00_49_07_brands.webp"><img loading="lazy" src="00_49_07_brands.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>Dennis'ss Macintosh Quadra 700</figcaption></figure><p>Released in 1991, The Quadra 700 ran on Motorola 68040 @ 25 MHz with 4 MB RAM, expandable to 68 MB. HDD sizes available were 80 and 160 MB. Ray also uses a <a href="https://en.wikipedia.org/wiki/Macintosh_Quadra_700">Macintosh Quadra 700</a> but he has only one on his desk.</p>
+<figure style="text-align: center; "><a href="00_40_47_Thinking_Machines_CM-5_2.webp"><img loading="lazy" src="00_40_47_Thinking_Machines_CM-5_2.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>Ray's Macintosh Quadra 700</figcaption></figure>
+
+
+
+
+
+
+<h>Quicktime Video Player</h>
+<p>Dennis negotiates with his co-conspirator located in the harbor to give him time to make it there. It happens via a VC on the Mac. Why not on a SGI? Because the whole thing was faked via Quicktime Video player running on System 7.</p>
+<p>The cursor on the progress bar is clearly visible. This is 1-minute clip. Even the mouse cursor is still on the "play" button of the Quicktime window.</p>
+<figure style="text-align: center; "><a href="00_54_18_quicktime.webp"><img loading="lazy" src="00_54_18_quicktime.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>No webcam back then. The stream was faked with a Quicktime video</figcaption></figure>
+<p class="trivia">Notice the video folder, named <code>VIDnet</code>.</p>
+
+<p>Quicktime is used earlier in the movie. When Dennis is revealed to be working at Jurassic Park, he had Jaws played on his left screen<a name="back_8" style="text-decoration: none;" href="#footnote_8"><sup>[8]</sup></a>.</p>
+
+<figure style="text-align: center; "><a href="00_43_12_jaws.webp"><img loading="lazy" src="00_43_12_jaws.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>Jaws playing on Dennis's left monitor</figcaption></figure>
+
+
+
+
+
+<h>gr_osview</h>
+<p>IRIX System Usage utility, named <code>gr_osview</code> can be seen a few times. It looks like a powerful tool, able to report not only user time, sys time, but also interrupt overhead and even gfx overhead according to <a href="IRIX - Desktop User’s Guide.pdf">IRIX - Desktop User’s Guide</a> on p182.</p>
+
+
+<figure style="text-align: center; "><a href="00_59_48_gr_osview.webp"><img loading="lazy" src="00_59_48_gr_osview.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>gr_osview</figcaption></figure>
+<p>Despite reports that monitors screens were faked via remote operators, <code>gr_osview</code> seems to react appropriately to keystrokes in the sequence above. Maybe this one was actually live.</p>
+
+
+
+<h>White Rabbit (whte_rbt.obj)</h>
+<p>When Ray accidentally locks down the whole system, Nedry's face superimposed onto an Elvis Presley jumpsuit shows up on his Macintosh. That is the UI of the "White Rabbit", which Ray Arnold briefly mentions when he explains the lockdown to Ellie Sattler <span style="color:grey">"White rabbit object. Whatever it did, it did it all. But with the key-checks off, the computer didn't file the keystrokes."</span>. It is only in the novel that the program filename, <code>whte_rbt.obj</code> is revealed. Michael Crichton, the author of Jurassic Park, was actually a highly capable programmer.</p>
+<figure style="text-align: center; "><a href="01_00_03_white_rabbit.webp"><img loading="lazy" src="01_00_03_white_rabbit.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>YOU DIDN'T SAY THE MAGIC WORD!</figcaption></figure>
+<p class="trivia" style="margin-top:2ch;">The origin of whte_rbt.obj animation was tracked down in <a href="https://youtu.be/-LQyhSI56gU?si=fnOgNB-33UlUD9Qv&t=1023">VFX History: the origin of After Effects</a> video. It was implemented with "After Effects".</p>
+
+
+
+
+
+<h>fsn File Explorer</h>
+
+
+
+<p>The legendary "It's a Unix system. I know this" sequence was done using an experimental SGI file explorer application named <code>fsn</code>. Lex Murphy takes over Dennis's SGI Crimson and opens the <code>/usr</code> directory.</p>
+<figure style="text-align: center; "><a href="01_53_02_fsn_start.webp"><img loading="lazy" src="01_53_02_fsn_start.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>cd /usr</figcaption></figure>
+<p>SGI was super happy to see this since they mentioned "YOU SAW IT IN JURASSIC PARK!" on their website<a name="back_9" style="text-decoration: none;" href="#footnote_9"><sup>[9]</sup></a>.</p>
+
+<figure style="text-align: center; "><a href="01_53_55_fsn_visitor_center.webp"><img loading="lazy" src="01_53_55_fsn_visitor_center.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>cd Visitor.Center</figcaption></figure>
+<p class="trivia">IRIX supported spaces in file and directory names. I assume they put a dot between Visitors and Center for style.</p>
+
+<h>Nedryland</h>
+<p>Nedryland is the system modestly named by Dennis Nedry to control Jurassic Park. We can catch a few glimpses of the name on screen when the system successfully reboots.</p>
+<figure style="text-align: center; "><a href="01_53_58_nedryland.webp"><img loading="lazy" src="01_53_58_nedryland.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>Nedryland (BAD)</figcaption></figure>
+<p>There is very little online about how these screens were created except that they were created by Michael Backes and his team. An <a href="https://www.washingtonpost.com/archive/business/1993/06/28/going-out-for-a-byte-in-jurassic-park/">article from 1993</a> (<a href="https://archive.is/6Pq4G">mirror</a>) by <i>The Washington Post</i> claims they used "Animation software from Macromedia Inc".</p>
+
+<figure style="text-align: center; "><a href="01_54_04_nedryland.webp"><img loading="lazy" src="01_54_04_nedryland.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>Nedryland (GOOD)</figcaption></figure>
+<p class="trivia">Fans have recreated Nedryland. Checkout <a href="https://www.youtube.com/@jpos_nedryland">JPOS NEDRYLAND YouTube channel</a> to see it in action. There is also an online version at <a href="https://www.jurassicsystems.com/">jurassicsystems.com</a>.</p>
+
+<h>Nedryland Source Code</h>
+<p>Some code associated with Nedryland is visible on screen. It looks like actual source code<a name="back_10" style="text-decoration: none;" href="#footnote_10"><sup>[10]</sup></a> with Classic Mac OS API functions calls. <b>EDIT:</b> Several hackers news users <a href="https://news.ycombinator.com/item?id=48915709">pointed out</a> this is Pascal from MPW (Macintosh Programmers Workshop).</p>
+<figure style="text-align: center; "><a href="00_53_36_code.webp"><img loading="lazy" src="00_53_36_code.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>Nedryland Code</figcaption></figure>
+<p>Later during the faked video-conference, we can see more files belonging to a Nedryland directory.</p>
+<figure style="text-align: center; "><a href="00_54_18_quicktime.webp"><img loading="lazy" src="00_54_18_quicktime.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>Nedryland directory</figcaption></figure>
+<h>Book on shelf</h>
+<p>One last detail for the road. The book on the top of Dennis's shelf (upper-right) is <a href="https://archive.org/details/mac_System_7_Revealed_Macintosh_Inside_Out_1991">System 7 Revealed</a> by Anthony Meadow. Wow they really did pay attention to every detail!</p>
+
+<figure style="text-align: center; "><a href="00_43_20_system7.webp"><img loading="lazy" src="00_43_20_system7.webp" width="1920" height="1038" style="width: 100%; height: auto; "/></a><figcaption>Programming book, System 7 Revealed by Anthony Meadow</figcaption></figure>
+<style type='text/css'>td.ref {  padding-bottom: 0ch; width:0;}</style><div class='heading'>References</div><hr/><p id='paperbox' style='text-align:left;'><table><tbody style='vertical-align: top;'><tr><td class='ref' style='width:1ch;'><a name="footnote_1"></a><a href="#back_1">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[&#x2007;1]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://en.wikipedia.org/wiki/Motorola_Envoy">Motorola Envoy Release date</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_2"></a><a href="#back_2">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[&#x2007;2]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://en.wikipedia.org/wiki/Connection_Machine#:~:text=Release%20date,1991%20(CM%2D5)">Connection Machine Series</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_3"></a><a href="#back_3">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[&#x2007;3]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://dl.acm.org/doi/abs/10.1145/3558481.3591321">The CM-5, Moore's Law, and the Future of Computational Performance</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_4"></a><a href="#back_4">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[&#x2007;4]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://www.cisl.ucar.edu/ncar-supercomputing-history/littlebear">NCAR's Connection Machine 5 - Littlebear</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_5"></a><a href="#back_5">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[&#x2007;5]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://en.wikipedia.org/wiki/Connection_Machine#:~:text=The%20CM%2D5%20LED%20panels%20could%20show%20randomly%20generated%20moving%20patterns%20that%20served%20purely%20as%20eye%20candy%2C%20as%20seen%20in%20Jurassic%20Park.">CM-5 in Jurassic Park</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_6"></a><a href="#back_6">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[&#x2007;6]</td><td style='width:100%;text-align:left;' class='ref'><a href="hardware_developer_handbook_2.0.pdf">SGI hardware developer handbook p4-25</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_7"></a><a href="#back_7">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[&#x2007;7]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://hardware.majix.org/computers/sgi.pi/keyboard.shtml">Using the Indigo Keyboard
+with a Personal Iris</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_8"></a><a href="#back_8">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[&#x2007;8]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://www.reddit.com/r/MovieDetails/comments/7n2v1v/in_jurassic_park_when_nedry_is_introduced_you_can/">In Jurassic Park, when Nedry is introduced, you can see he's watching Jaws on his computer.</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_9"></a><a href="#back_9">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[&#x2007;9]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://archive.irixnet.org/siliconsurf/free/cool_sw_01.html">3D File System Navigator for IRIX 4.0.1+</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_10"></a><a href="#back_10">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[10]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://movies.stackexchange.com/questions/28030/source-code-on-nedrys-workstation-real-programming-language-s">Source code on Nedry's workstation: real programming language/s?</a></td>
+</tr></tbody></table></p> <hr>
+ <center>*

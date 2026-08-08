@@ -1,0 +1,471 @@
+<html>
+<head>
+  <link rel="alternate" type="application/rss+xml"  title="RSS Feed for fabiensanglard.net" href="/rss.xml" />
+  <style type="text/css">
+
+    @font-face {
+      font-family: 'fabfont';
+      src: url('/font/DejaVuSansMono.woff2');
+      font-display: block;
+    }
+
+    @font-face {
+      font-family: 'fabfont';
+      src: url('/font/DejaVuSansMono-Bold.woff2');
+      font-weight: bold;
+      font-display: block;
+    }
+
+    * {
+       font-size: 16px;
+    }
+
+    html {
+      font-family: fabfont,  monospace;
+      max-width: 900px;  /* For Desktop PC (see @media for Tablets/Phones) */
+      padding-left: 2%;
+      padding-right: 3%;
+      margin: 0 auto;
+      background: #F5F5F0;
+  	} 
+    
+
+
+  	a {
+      color: black;
+      font-weight: bold;
+    }
+
+    img {
+      border: none; 
+    }
+
+    p {
+      margin-top: 0px;
+      text-align: justify;
+    }
+    sup {
+      vertical-align: 0.3em;
+      font-size: 0.65em;
+    }   
+
+    pre {
+      font-family: fabfont, monospace;
+      background-color: white; 
+      border: 1px solid Black; 
+      padding-left: 2%;
+      padding-top: 1ch;
+      padding-bottom: 1ch;
+      /* Only take care of X overflow since this is the only part that can be too wide.
+         The Y axis will never overflow.
+      */
+      overflow: hidden;
+    }
+
+    div.heading {
+      font-weight: bold;      
+      text-transform: uppercase;
+      margin-top: 4ch;
+    }
+
+    /** {
+      font-size: 16px;
+    }*/
+    @media (max-width: 500px) { /* For small screen decices */
+      * {
+        font-size: 12px; 
+      }
+    }   
+    .title {
+      text-decoration: none;
+    }
+
+    img.pixel, canvas.pixel {
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: crisp-edges;
+    }
+
+    blockquote { 
+    background-color: #f3f3f3;
+    border: dashed 1px grey; 
+    width: 97.5%; 
+    font-style: italic; 
+    text-align: justify;
+
+    padding: 1ch; 
+    padding-top: 2ch; 
+    padding-bottom: 2ch;     
+    
+    margin : 0ch; 
+    margin-bottom: 2ch; 
+    margin-top: 0ch;
+  }
+
+  blockquote div {
+    text-transform: none;
+    text-align: right;
+    width: 100%;
+  }
+
+  code {
+    /*font-size: 110%;*/
+    font-weight: bold;
+    background-color: #e1e1e1;
+    border-radius: 0.5ch;
+    padding-left: 0.3ch;
+    padding-right: 0.3ch;
+  }
+
+  .trivia {
+    border-left: 1px black solid;
+    padding-left: 1ch;
+  }
+
+  .trivia::before {
+  font-weight: bold;
+  text-decoration: underline;
+  padding-right: 1ch;
+  content: "Trivia:";
+  }
+  
+table.hard , table.hard th, table.hard td {
+  border: 1px solid black;
+  border-collapse: collapse;
+  padding-left: 1ch;
+}
+table.hard  td {
+  padding-right: 1ch;
+  padding-top: 0.8ch;
+  padding-bottom: 0.8ch;
+  text-align: right;
+}
+
+table.hard th {
+  font-weight: bold;
+  background-color: #BBB;
+  
+}
+
+
+
+  </style>
+  <title>The art and engineering of Sega CD Silpheed</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=12.0, minimum-scale=1.0, user-scalable=yes">
+</head>  
+  <body><br><center>
+    <div style="display: inline-block; vertical-align:middle;">
+<a href="/" class="title"><b>FABIEN SANGLARD'S WEBSITE</b><br>
+</a><hr/><div style="text-align: justify;display: inline-block; width: 100%;">
+
+<a class="title" href="mailto:fabiensanglard.net@gmail.com">CONTACT</a> &nbsp;&nbsp;&nbsp;<a class="title" href="/rss.xml">RSS</a> &nbsp;&nbsp;&nbsp;&nbsp;<a class="title" href="https://paypal.me/fabiensanglard">DONATE</a></div></div>
+
+</center><br><br>
+<div style="margin-bottom: 2ch;text-transform: none;">
+June 1, 2026</div>
+<div class='heading'>The art and engineering of Sega CD Silpheed</div><hr/>
+<style type="text/css">
+pre {
+  overflow: scroll;
+}
+
+img {
+  border: 1px black solid ;
+  margin-bottom: 2ch;
+  image-rendering: pixelated;
+}  
+small {
+  font-size: 80%;
+}
+canvas {
+  image-rendering: pixelated;
+  border: 1px black solid ;
+}
+</style> 
+
+<a href="f384_cropped.png"><img loading="lazy" src="f384_cropped.png" width="256" height="192" style="width: 40%; height: auto; margin-left:2ch;float:right;margin-bottom:0.5ch;"/></a><p>
+The 90's was a decade of considerable improvement in the world of video-game consoles<a name="back_1" style="text-decoration: none;" href="#footnote_1"><sup>[1]</sup></a>. Each new model brought advanced processing power and better graphics without compromise.
+</p>
+
+<p>
+The mid-90s emergence of CD-ROM drives however was an oddity. While the 640 MiB storage was 320x a cartridge capacity<a name="back_2" style="text-decoration: none;" href="#footnote_2"><sup>[2]</sup></a>, the access time (800ms<a name="back_3" style="text-decoration: none;" href="#footnote_3"><sup>[3]</sup></a>) and bandwidth (single-speed 150 KiB/s) were an eye-watering 4,000,000x and 35x slower.
+</p>
+
+<p>
+The Mega-CD was Sega's idea to bring CD-ROM to its Genesis console. Nearly 200<a name="back_4" style="text-decoration: none;" href="#footnote_4"><sup>[4]</sup></a> titles were produced for the platform. A few great games like <a href="https://www.youtube.com/watch?v=yKpS3ja7m7w">Sonic CD</a>, <a href="https://www.youtube.com/watch?v=sVVS2E3dwXg">Snatcher</a>, <a href="https://www.youtube.com/watch?v=T8cBEOqLf1o">Final Fight CD</a>, and <a href="https://www.youtube.com/watch?v=xeq9fPOxz6o">RPGs</a> came out. But an endless series of titles relying heavily on Full Motion Video (FMV) gave Sega's add-on an infamous reputation (<a href="https://www.youtube.com/watch?v=plV5l_uKzDo">Night Trap</a>, <a href="https://www.youtube.com/watch?v=FPcnTpqjX6M">Prize Fighter</a>, <a href="https://www.youtube.com/watch?v=Mjv0t0OMCBw">Slam City</a>, <a href="https://www.youtube.com/watch?v=e0JgUvRPAac">Corpse Killer</a>, <a href="https://www.youtube.com/watch?v=Lyak7VQhW4o">Supreme Warrior</a>, <a href="https://www.youtube.com/watch?v=h7IXEJci_OQ&t=380s">WireHead</a>, and <a href="https://www.youtube.com/watch?v=lM9ukMOe7PU">A/X-101</a>).</p>
+
+<p>And then, there is <i><b>Silpheed</b></i>. Armed with exquisite artistic taste and an engine capable of jaw-dropping animation, it made the press go wild<a name="back_5" style="text-decoration: none;" href="#footnote_5"><sup>[5]</sup></a><a name="back_6" style="text-decoration: none;" href="#footnote_6"><sup>[6]</sup></a>. Players pondered what was real-time 3D and what was pre-calculated<a name="back_7" style="text-decoration: none;" href="#footnote_7"><sup>[7]</sup></a>. It received praises which, to this day, persist<a name="back_8" style="text-decoration: none;" href="#footnote_8"><sup>[8]</sup></a><a name="back_9" style="text-decoration: none;" href="#footnote_9"><sup>[9]</sup></a>.</p>
+
+<div id="story-grid" class="grid"></div>
+<script src="player.js"></script>
+<style>
+.player { width: calc(100% - 20px); }   /* -14px = half the 28px grid gap, so two fit per row */
+.player canvas   { width: 100%; height: auto; }  /* auto keeps the 256×224 (8:7) ratio */
+
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  /* left-align items so a partial last row packs to the left, not centered;
+     the grid block itself stays centered on the page via margin:auto. */
+  justify-content: flex-start;
+  /* cap each row at 4 players (4 × 256px canvas + 3 × 28px gaps) */
+  max-width: calc(256px * 4 + 28px * 3);
+  margin: 0 auto;
+}
+.player .controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  width: 100%;   /* span the full canvas width */
+  margin-top:1ch;
+}
+
+.player button {
+  /* Fix the width so toggling between ▶ (one glyph) and ▮▮ (two glyphs)
+     doesn't resize the button and shift the slider next to it. */
+  width: 34px;
+  text-align: center;
+}
+
+.controls input {
+  width:80%;
+}
+/*.canvas {
+  border: 1px black solid ;
+  image-rendering: pixelated;
+}*/
+</style>
+
+<!-- Per-page instantiation. The two arrays are filled in by main.cpp's
+     write_index() (STORY = curated story order, OTHER = everything else). To add
+     a player by hand, append an entry of this shape to STORY or OTHER:
+       { label: 'A12',          // caption / fallback title
+         path:  'a12/',         // folder with f000.png… and audio.wav
+         start: 0,              // first frame index
+         end:   474,            // last frame index
+         desc:  'Game Starts',  // title shown above the video (optional)
+         preview: 112 }         // poster frame to open on (optional, default 0)
+-->
+
+<script>
+const STORY = [
+  {label:'', path:'storyboard/a12/', start:0, end:474, desc:'', preview:404},
+{label:'', path:'storyboard/a13/', start:0, end:1028, desc:'', preview:71},
+
+];
+
+const storyGrid = document.getElementById('story-grid');
+for (const v of STORY) {
+  createPlayer(storyGrid, v);
+}
+</script>
+
+<p style="margin-top:2ch;">For those still unimpressed, keep in mind these near-fullscreen cutscenes run on a 12.5MHz m68k  CPU, use 16 colors, and consume 150 KiB/s. With 16-bit 16kHz music, the 15fps video stream was left with a mere 8 KiB per frame.</p>
+
+<p>I spent the past two weeks reverse engineering the FMV format in my spare time. That was a departure from how I normally work since I did not write a single line of code. I will likely write something about my A.I framework (and opensource it) next month. But I can already tell this is an overall pleasant way to work.</p>
+
+<p>The following is what I came up with. And if you want to see all of the cutscenes and gameplay background videos to get accustomed to the topic, here is a <a href="./storyboard">storyboard</a> I created with the tools I designed (I can't really say I "wrote" them).</p>
+
+
+<div class='heading'>Sega-CD internals 101</div><hr/><p>Before we dive into the optimizations and tricks that made Silpheed video format so efficient, we need to learn about how a Sega Genesis and a Mega-CD work together.</p>
+
+<pre>
+        GENESIS               │                      MEGA-CD                   
+                              │                                                
+┌──────────────────────┐      │               ┌───────────┐        ┌──────────┐
+│ MC68000 7.67 MHz     │      │               │  WORD RAM │        │  MC68000 │
+│                      │  ┌───┴──────┐        │   256 KB  │        │          │
+│ 64 KB RAM            ◄──┤Expansion ├────────►───────────┤        │ 12.5 MHz │
+│                      │  │   Port   │        │PROGRAM RAM│        │          │
+│ 8 KB Audio RAM (Z80) │  └───┬──────┘        │  512 KB   │        │          │
+└──────────┬───────────┘      │               └─────┬─────┘        └─────┬────┘
+           │                  │                     └──────────────┬─────┘     
+     ┌─────┴──────────┐       │                                    │           
+     │                │       │                 ┌───────┐     ┌────┴────┐      
+┌────▼──────┐   ┌─────▼─────┐ │                 │ Ricoh │     │  ASIC   │      
+│ VDP       │   │   Z-80    │ │                 │  PCM  ├─────┤  GFX    │      
+│ ┌───────┐ │   │   YM2612  │ │                 └───┬───┘     └────┬────┘      
+│ │64KVRM │ │   │  SN76489  │ │                     │              │           
+│ └───────┘ │   │           │ │                     │              │           
+└─────┬─────┘   └──────┬────┘ │                     │              │           
+      │                │      │                     │      ┌───────┴──────┐    
+      │                │   ┌──┴──────┐         ┌────▼────┐ │    CD-ROM    │    
+      │                └───┤RCA Cable├─────────►  MIXER  ◄─┤     DRIVE    │    
+      │                    └──┬──────┘         └────┬────┘ └──────────────┘    
+      │                       │                     │                          
+ ┌────▼────┐                  │                     │                          
+ │   TV    ◄──────────────────┼─────────────────────┘                          
+ └─────────┘                  │                                                 
+</pre>                                                    
+
+<p>Adding a Mega-CD turns the machine into two systems running in parallel. The Mega-CD side has PCM and CD playback, connected directly to the mixer<a name="back_10" style="text-decoration: none;" href="#footnote_10"><sup>[10]</sup></a>. There is an ASIC with graphics acceleration (rot/scal/misc) to rival games like Mario Kart. The two systems communicate via shared memory (the expansion port) and analogic audio mixing.</p>
+
+<p class="trivia">Understanding how this thing works made me respect Mega-CD developers even more than before. This looks like a nightmare to deal with, especially synchronization.</p>
+
+<div class='heading'>The architecture of Silpheed</div><hr/><a href="arch_all.png"><img loading="lazy" src="arch_all.png" width="256" height="224" style="width: 39%; height: auto; Float:right;margin-left:2ch;margin-bottom:0"/></a> 
+<p>A Mega-CD system still renders to the TV with three layers. Two of them are made of tiles and called backgrounds (A and B) while one is the foreground containing sprites.</p>
+<p>The Sub-CPU m68k writes the tiles and tilemap for background B. Meanwhile the main CPU takes care of "drawing" background A containing the HUD and the foreground sprite layer.</p>
+<p>The Sub-CPU uses a double-buffer system where it renders to the Word RAM in L1 mode. While one buffer is fed to the VDP by the main CPU, it renders the next frame into the other buffer.</p>
+
+<p>On the audio side, non-interactive cutscenes rely only on the Ricoh from the Mega-CD to generate PCM quality music. During interactive sequences, the Ricoh is sporadically used for PCM audio samples while the music is done via the YM2612.</p>
+
+<style>
+.main-grid {
+  display: grid;
+  /* Create the 3-column structure */
+  grid-template-columns: repeat(3, 1fr); 
+  gap: 0ch; 
+  width: 100%;
+}
+
+/* Strip browser margins from figures */
+.main-grid figure {
+  margin: 0; 
+}
+
+/* Target ALL images inside the grid so they scale properly */
+.main-grid img {
+  display: block; 
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.main-grid figcaption {
+  text-align: center;
+  margin-top: 0.5ch;
+}
+</style>
+
+<div class="main-grid">
+
+ <figure> <a href="arch_a.png"><img loading="lazy" src="arch_a.png" width="256" height="224" style="width: 100%; height: auto; "/></a> <figcaption>Background A</figcaption> </figure>
+ <figure> <a href="arch_b.png"><img loading="lazy" src="arch_b.png" width="256" height="224" style="width: 100%; height: auto; "/></a> <figcaption>Background B</figcaption> </figure>
+ <figure> <a href="arch_sprites.png"><img loading="lazy" src="arch_sprites.png" width="256" height="224" style="width: 100%; height: auto; "/></a> <figcaption>Foreground (Sprites)</figcaption> </figure>
+</div>
+
+<p class="trivia" style="margin-top:2ch;">The original Genesis (Model 1) audio path is incredibly convoluted. The output of the Genesis, its front jack port, must physically be connected to the RCA input in the back of the Sega-CD via a "mixing cable". The Sega-CD then mixes the line-in signal with its own CD-DA + PCM signal. The result is sent direclty to the TV via another RCA cable!</p>
+
+
+
+
+<div class='heading'>Good design decisions</div><hr/><a href="f549_cropped.png"><img loading="lazy" src="f549_cropped.png" width="256" height="192" style="width: 40%; height: auto; margin-left:2ch;float:right;margin-bottom:0;"/></a><p>Most FMV games looked bad because developers followed a top-down approach trying to cram a real movie into a tiny CD-ROM using a weak CPU. To do so, they had to use a minuscule window, compression artifacts, and dithering that made you cry.</p>
+
+<p>
+For Silpheed, Game Arts took the opposite approach. They started from the bottom, engineering upward from the constraints of the system. They made excellent trade-off decisions with flat shaded polygons, 16 colors total, no gouraud, and minimal dithering.
+</p>
+
+<p>This approach would have never succeeded without the talented artists of Game Arts who were able to go the distance with these choices (especially the limited number of colors).</p>
+
+
+<p class="trivia">PC-CDROM games were a different story. Thanks to better CPUs (DX4-100) they were able to use much better codecs. Some well-funded games, like <a href="https://www.youtube.com/watch?v=v-1-5M3M1po">Command & Conquer</a>, <a href="https://www.youtube.com/watch?v=rUnvNTvHMnQ">Crusader: No Remorse</a>, or <a href="https://www.youtube.com/watch?v=uhPlK6yOT3g">Wing Commander III</a> (4 CDs!) used FMV to tremendously improve the storytelling.</p>
+
+
+
+<div class='heading'>The bandwidth problem</div><hr/><p>
+At its core the problem of FMV is a problem of bandwidth. Data needs to be extracted from the CD-ROM, decompressed by a processor into an image, and that image must be fed to the video screen to find its way to the TV. The Mega-CD is ill-equipped in all three stages. 
+</p>
+
+<div class='heading'>The tilemap problem</div><hr/><p>
+At first sight, there is another problem. Without a framebuffer, rendering must follow a cumbersome process where 768 tiles of dimensions 8x8 are drawn into. The tiles are then laid out on the screen, 32x28 via a tilemap (traditionally called "nametable" in Genesis parlance). The result forms a 256x224 image.
+</p>
+
+<div class='heading'>Three easy ways to reduce bandwidth</div><hr/><a href="f847_cropped.png"><img loading="lazy" src="f847_cropped.png" width="256" height="191" style="width: 40%; height: auto; margin-left:2ch;float:right;"/></a>
+<p>
+The easiest way to reduce bandwidth is to reduce the size of the video. Silpheed also uses this trick but just a little bit with the top and bottom tile line set to black (that is 16 lines total). It almost looks like an artistic choice since it results in a cinematic aspect ratio!
+</p>
+
+<p>
+The second way to reduce bandwidth is to reduce the framerate. Silpheed uses mostly 15fps with some complex scenes going as low as 7.5fps.
+</p>
+
+<p>
+Finally, the third way to reduce bandwidth is compression. For this, cutscenes and background video are handled differently.
+</p>
+
+
+<div class='heading'>Video Compression</div><hr/><p>
+Silpheed does not use delta-compression. Every frame in a video is self-sufficient. Every single frame contains all the tiles it needs and the tilemap to place the tiles on the screen.</p>
+
+<p>Written like that it looks like there is no compression at all. But that is where the cumbersome tilemap system becomes a tremendous source of optimizations. Let's take the example of frame 44 in the "Game starts" cutscene.</p>
+</p>
+
+<a href="8x8/f044.png"><img loading="lazy" src="8x8/f044.png" width="256" height="224" style="width: 100%; height: auto; "/></a>
+<p>
+If we add an 8x8 pixel grid, we can see the image has interesting properties. For example, a lot of tiles are the same plain color.</p>
+
+
+<a href="8x8/f044_grid.png"><img loading="lazy" src="8x8/f044_grid.png" width="1024" height="896" style="width: 100%; height: auto; "/></a>
+<p>Silpheed's video format extensively exploits this. The encoder only issues one of each of the 15 plain color tiles in a frame and then references it over and over again in the tilemap. For this frame, out of 896 tiles, 456 reference the same 15 single color tiles. That is a bandwidth reduction of 50% right there.</p>
+
+<a href="8x8/f044_solid_tiles_grid.png"><img loading="lazy" src="8x8/f044_solid_tiles_grid.png" width="1024" height="896" style="width: 49%; height: auto; "/></a><a href="8x8/f044_nonsolid_tiles_grid.png"><img loading="lazy" src="8x8/f044_nonsolid_tiles_grid.png" width="1024" height="896" style="width: 49%; height: auto; margin-left:1%;"/></a>
+<p>On the right, we have all the leftover tiles made of more than one color. For these as well, Silpheed has a trick up its sleeves.</p>
+
+
+
+<div class='heading'>Leveraging Mega-CD ASIC for decompression</div><hr/><p>
+With 456 tiles taken care of, 440 remain (see the image below). Some of these tiles also have an interesting property. They are made of only two colors.</p> 
+</p>
+
+<a href="8x8/f044_nonsolid_tiles_grid.png"><img loading="lazy" src="8x8/f044_nonsolid_tiles_grid.png" width="1024" height="896" style="width: 100%; height: auto; "/></a>
+<p>The Mega-CD ASIC features advanced graphics capabilities. The most famous ones are rotation and scaling (to be able to rival games like Mario Kart on Super Nintendo). A much less notorious feature is named "Font bit"<a name="back_11" style="text-decoration: none;" href="#footnote_11"><sup>[11]</sup></a>. As its name indicates, the intent was to allow fast 2-color kanji/text rendition. With three bytes, the font registers generate 16 nibbles (8 bytes) which is two full rows of an 8x8 tile. Here is how it works.</p>
+
+<ol>
+<li>Write two 4-bit palette indices to the source color register ($FF804D).
+  <ul>
+    <li>Color A = pixels generated when a bit is 0
+    <li>Color B = pixels generated when a bit is 1
+</ul>
+<li>Write a 16-bit bitmap pattern to $FF804E.
+  <ul>  
+    <li>Each bit represents one pixel.
+    <li>The 16 bits are interpreted as two rows of 8 pixels.
+    <li>A 0 bit selects Color A.
+    <li>A 1 bit selects Color B.
+  </ul>
+<li>The ASIC expands the 1-bit pattern into 4-bit pixel data.
+<li>Read the generated tile data back from $FF8050-$FF8056.
+</ol>
+
+<p>With three bytes, the font registers generate 16 nibbles (8 bytes). That is 37% bandwidth saved on the 50% remaining from the first optimization. Not to mention the CPU time saved not having to mask bits to write nibbles.</p>
+
+<a href="8x8/f044_nonsolid_tiles_asic_grid.png"><img loading="lazy" src="8x8/f044_nonsolid_tiles_asic_grid.png" width="1024" height="896" style="width: 49%; height: auto; "/></a><a href="8x8/f044_nonsolid_tiles_raw_grid.png"><img loading="lazy" src="8x8/f044_nonsolid_tiles_raw_grid.png" width="1024" height="896" style="width: 49%; height: auto; margin-left:1%;"/></a>
+<p>
+Above, on the left, are 234 tiles, made of two colors. These were generated via the ASIC "font registers". On the right is what remains, 206 raw tiles that are actually stored as 8x8 "raw" nibbles in the frame.
+</p>
+
+<div class='heading'>Tilemap compression</div><hr/><p>
+Each frame has a tilemap and this also is compressed. Normally the 768 tile locations would have taken 768x 10bit = 960 bytes. The compression scheme leverages another property of the image, namely that tile indices in the tilemap increase linearly (as shown in the 8x2 tilemap below).</p>
+
+<pre>
+0 1 2 3 4 5 6 7
+8 9 A B C D E F
+</pre>
+
+<p>The tilemap is stored as a 768-bit bitmap (96 bytes) where 0 means "auto-increment" and 1 means read an immediate value. In practice, the trick reduced the space requirement by nearly 30% (96 + 556-byte payload = 652 bytes).</p>
+</p>
+
+<div class='heading'>Fractal level</div><hr/><p>If you refer to the <a href="./storyboard">storyboard</a>, you will see that two levels (Stage 1 and Stage 10) include complex textures (which in interviews were called "fractals" by developers). These sequences were very hard to compress. So much so that all tiles use raw format without any trick. The only way to make it work was to drop the framerate to 7.5fps.</p>
+
+
+<div class='heading'>Palette trick</div><hr/><a href="laser_palette_cycle.png"><img loading="lazy" src="laser_palette_cycle.png" width="4" height="1" style="width: 10%; height: auto; float:right; margin-left:2ch;margin-bottom:0"/></a><p>If you take a look at the actual <a href="https://youtu.be/GBS332N6wig?si=NGvRQkOj1b3aaXOi&t=1749">gameplay</a> you will have noticed that the laser and explosions do not use a plain color. They are in fact multi-colored. This effect is achieved by reserving four colors at the end of the palette and shifting them each frame via the main m68k.</p>
+<p>
+ This also means artists had to design gameplay sequences using only twelve colors (cutscenes used the full 16 colors since there was no laser effect in them)!</p>
+</p>
+
+<style type='text/css'>td.ref {  padding-bottom: 0ch; width:0;}</style><div class='heading'>References</div><hr/><p id='paperbox' style='text-align:left;'><table><tbody style='vertical-align: top;'><tr><td class='ref' style='width:1ch;'><a name="footnote_1"></a><a href="#back_1">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[&#x2007;1]</td><td style='width:100%;text-align:left;' class='ref'><a href="consoles.webp">Consoles of the 90s</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_2"></a><a href="#back_2">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[&#x2007;2]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://en.wikipedia.org/wiki/Sega_CD">Wikipedia: Mega-CD</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_3"></a><a href="#back_3">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[&#x2007;3]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://www.vgmuseum.com/systems/segacd/">VG Museum, Sega-CD</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_4"></a><a href="#back_4">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[&#x2007;4]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://segaretro.org/List_of_Mega-CD_games_in_the_United_States">List of Mega-CD games</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_5"></a><a href="#back_5">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[&#x2007;5]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://segaretro.org/Silpheed/Reception">Silpheed/Reception</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_6"></a><a href="#back_6">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[&#x2007;6]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://web.archive.org/web/20120915035000/http://www.silpheed.org/">Silpheed.comp: Magazine articles</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_7"></a><a href="#back_7">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[&#x2007;7]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://gendev.spritesmind.net/forum/viewtopic.php?t=224">Silpheed backgrounds and cutscenes</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_8"></a><a href="#back_8">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[&#x2007;8]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://www.reddit.com/r/SegaCD/comments/1raev90/why_does_silpheeds_fmv_look_so_good/">Why DOES Silpheed's FMV look so good?</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_9"></a><a href="#back_9">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[&#x2007;9]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://www.reddit.com/r/SegaCD/comments/jw8e0e/sega_cd_silpheed_was_largely_just_spectacle_but/">Sega CD Silpheed Was Largely Just Spectacle, But That’s Okay</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_10"></a><a href="#back_10">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[10]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://archive.org/details/sega-cd-users-manual">Mega-CD V1 manual</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_11"></a><a href="#back_11">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[11]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://segaretro.org/images/archive/6/6f/20190509144929%21Mega-CD_Software_Development_Manual.pdf">MEGA-CD SOFTWARE
+DEVELOPMENT MANUAL</a></td>
+</tr></tbody></table></p> <hr>
+ <center>*

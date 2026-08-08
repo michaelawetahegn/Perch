@@ -1,0 +1,298 @@
+<html>
+<head>
+  <link rel="alternate" type="application/rss+xml"  title="RSS Feed for fabiensanglard.net" href="/rss.xml" />
+  <style type="text/css">
+
+    @font-face {
+      font-family: 'Roboto';
+      src: url('/font/roboto/static/Roboto-Regular.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: block;
+    }
+
+    @font-face {
+      font-family: 'Roboto';
+      src: url('/font/roboto/static/Roboto-Italic.ttf') format('truetype');
+      font-weight: normal;
+      font-style: italic;
+      font-display: block;
+    }
+
+    @font-face {
+      font-family: 'Roboto';
+      src: url('/font/roboto/static/Roboto-Bold.ttf') format('truetype');
+      font-weight: bold;
+      font-style: normal;
+      font-display: block;
+    }
+
+    @font-face {
+      font-family: 'Roboto';
+      src: url('/font/roboto/static/Roboto-BoldItalic.ttf') format('truetype');
+      font-weight: bold;
+      font-style: italic;
+      font-display: block;
+    }
+
+    html {
+      font-family: 'Roboto', sans-serif;
+      max-width: 800px;  /* For Desktop PC (see @media for Tablets/Phones) */
+      padding-left: 2%;
+      padding-right: 3%;
+      margin: 0 auto;
+      /* background: #F5F5F0; */
+      background: white;
+  	}
+
+    :root {
+      --title-font-size: 22px;
+      --body-font-size: inherit;
+    }
+
+    @media (max-width: 800px) {
+      :root {
+        --title-font-size: 18px;
+      }
+    }
+
+    @media (max-width: 500px) {
+      :root {
+        --title-font-size: 15px;
+        --body-font-size: 12px;
+      }
+    }
+
+    * {
+      font-size: var(--body-font-size);
+    }
+
+    h, div.heading{
+      display: block;
+      font-weight: bold;      
+      text-transform: uppercase;
+      margin-top: 4ch;
+    }
+
+    h::after {
+      content: "";
+      display: block;
+      border-top: 1px solid #ccc;
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    a {
+  color: #2a7ae2;
+  text-decoration: none;
+}
+a:visited {
+  color: rgb(23, 86, 169);
+}
+a:hover {
+  color: #111;
+  text-decoration: underline;
+}
+
+a.title, a.title:visited {
+  color: black;
+  text-decoration: none;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: var(--title-font-size);
+}
+a.title:hover {
+  color: black;
+  text-decoration: underline;
+}
+
+img {
+  border: 1px solid black;
+}
+
+figure {
+  margin: 0;
+  padding: 0;
+}
+
+figcaption {
+  padding-top: 1ch;
+  font-size: 85%;
+  text-align: center;
+}
+
+  .trivia {
+    border-left: 1px black solid;
+    padding-left: 1ch;
+  }
+
+  .trivia::before {
+  font-weight: bold;
+  text-decoration: underline;
+  padding-right: 1ch;
+  content: "Trivia:";
+  }
+
+  p, ul, ol , div{
+    text-align: justify;
+  }
+
+  sup {
+    font-size: 75%;
+    line-height: 0;
+    position: relative;
+    vertical-align: baseline;
+  }
+  
+  sup {
+    top: -0.2em;
+  }
+  
+
+  blockquote {
+  /* Text styling */
+  color: #828282;                /* Muted grey font color */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-style: italic;            /* Makes the whole blockquote italicized */
+
+  margin-left: 0;                /* Resets default browser indent */
+  margin-right: 0;
+  padding-left: 2ch;            /* Pushes text away from the left border */
+  text-align: justify;
+  
+  /* The iconic border */
+  border-left: 4px solid #e8e8e8; /* Soft, light grey accent line */
+}
+
+/* To match the link color inside the quote */
+blockquote a {
+  color: #2a7ae2;                /* Minima's default blue link color */
+  text-decoration: none;
+}
+
+blockquote a:hover {
+  text-decoration: underline;    /* Underline on hover */
+}
+
+blockquote cite::before {
+  content: "— ";
+}
+
+blockquote cite {
+  display: block;                /* Forces it onto a new line */
+  font-style: normal;            /* Optional: keeps the author name regular/upright for contrast */
+  margin-top: 10px;              /* Adds a little breathing room below the quote text */
+  color: #828282;                /* Matches the quote color */
+  text-align: right;
+}
+
+/* TARGETED RULES FOR THE REFERENCES FOOTER */
+  td.ref a:hover{
+    text-decoration: underline ;
+  }
+  td.ref a{
+    color: black;
+    text-decoration: none;
+  }
+
+  code {
+    /*font-size: 110%;*/
+    font-weight: bold;
+    background-color: #e1e1e1;
+    border-radius: 0.5ch;
+    padding-left: 0.3ch;
+    padding-right: 0.3ch;
+  }
+
+  pre {
+  border: solid black 1px;
+  background-color: #EEEEEE;
+  padding-left: 2ch;
+  padding-right: 1ch;
+  padding-top: 2ch;
+  padding-bottom: 1ch;
+  overflow: auto;
+}
+
+.red {
+  color: red;
+}
+
+td.ref:nth-child(1) a {
+  color: #2a7ae2;                  /* Matches primary link color */
+  text-decoration: none !important; /* Prevents ugly underline under the arrow */
+}
+
+      </style>
+  <title>A dock that finally wakes up reliably</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=12.0, minimum-scale=1.0, user-scalable=yes">
+</head>  
+  <body>
+    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 2ch;">
+      <a href="/" class="title">Fabien Sanglard - WEBSITE</a>
+      <div style="display: flex; gap: 1.5ch; align-items: center;">
+      <!-- Github -->
+      <a href="https://github.com/fabiensanglard">
+      <svg fill="#555" aria-hidden="true" data-component="Octicon" height="21" viewBox="0 0 24 24" version="1.1" width="21" data-view-component="true" class="octicon octicon-mark-github">
+    <path d="M10.226 17.284c-2.965-.36-5.054-2.493-5.054-5.256 0-1.123.404-2.336 1.078-3.144-.292-.741-.247-2.314.09-2.965.898-.112 2.111.36 2.83 1.01.853-.269 1.752-.404 2.853-.404 1.1 0 1.999.135 2.807.382.696-.629 1.932-1.1 2.83-.988.315.606.36 2.179.067 2.942.72.854 1.101 2 1.101 3.167 0 2.763-2.089 4.852-5.098 5.234.763.494 1.28 1.572 1.28 2.807v2.336c0 .674.561 1.056 1.235.786 4.066-1.55 7.255-5.615 7.255-10.646C23.5 6.188 18.334 1 11.978 1 5.62 1 .5 6.188.5 12.545c0 4.986 3.167 9.12 7.435 10.669.606.225 1.19-.18 1.19-.786V20.63a2.9 2.9 0 0 1-1.078.224c-1.483 0-2.359-.808-2.987-2.313-.247-.607-.517-.966-1.034-1.033-.27-.023-.359-.135-.359-.27 0-.27.45-.471.898-.471.652 0 1.213.404 1.797 1.235.45.651.921.943 1.483.943.561 0 .92-.202 1.437-.719.382-.381.674-.718.944-.943"></path>
+      </svg>
+      </a> 
+      <!-- Email -->
+      <a href="mailto:fabiensanglard.net@gmail.com">
+      <svg fill="#555" aria-hidden="true" height="27" viewBox="0 0 24 24" version="1.1" width="27" data-view-component="true" class="octicon octicon-mail">
+        <path d="M0 3 h24 v17.5 H0 Z M24 5.5 L12 13 L0 5.5 v2 L12 15 L24 7.5 Z"></path>
+      </svg>
+      </a>
+   <!-- RSS -->
+   <a href="/rss.xml">
+   <svg fill="#555" height="20" width="20" version="1.1" id="Layer_1" viewBox="-271 273 256 256" xml:space="preserve">
+<g>
+	<path d="M-271,360v48.9c31.9,0,62.1,12.6,84.7,35.2c22.6,22.6,35.1,52.8,35.1,84.8v0.1h49.1c0-46.6-19-88.7-49.6-119.4
+		C-182.2,379-224.4,360.1-271,360z"/>
+	<path d="M-237,460.9c-9.4,0-17.8,3.8-24,10s-10,14.6-10,24c0,9.3,3.8,17.7,10,23.9c6.2,6.1,14.6,9.9,24,9.9s17.8-3.7,24-9.9
+		s10-14.6,10-23.9c0-9.4-3.8-17.8-10-24C-219.2,464.7-227.6,460.9-237,460.9z"/>
+	<path d="M-90.1,348.1c-46.3-46.4-110.2-75.1-180.8-75.1v48.9C-156.8,322-64.1,414.9-64,529h49C-15,458.4-43.7,394.5-90.1,348.1z"/>
+</g>
+</svg>
+</a>
+      </div>
+
+    </div>
+    <br>
+<div style="margin-bottom: 2ch;text-transform: none;">
+Jul 11, 2026</div>
+<h>A dock that finally wakes up reliably</h>
+
+
+<p>For a long time, my top hardware frustration was to deal with a docked laptop that wouldn't wake up. It was sporadic but the scenario would be as follows.</p>
+
+<ol>
+<li>Arrive at my desk where the laptop is docked and asleep.</li>
+<li>Press keys on the USB keyboard. <span class="red">Nothing</span>. </li>
+<li>Press button on the USB mouse. <span class="red">Nothing</span>. </li>
+<li>Turn the monitor off and on again. <span class="red">Nothing</span>. </li>
+<li>Take laptop off the dock.</li>
+<li>Open laptop.</li>
+<li>Use the laptop keyboard to appease the DisplayPort gods.</li>
+<li>Witness the screen coming online.</li>
+<li>Re-dock the laptop.</li>
+<li>Resume working and internally curse this darn setup.</li>
+</ol>
+<p>Even the best Thunderbolt dock at the time, the CalDigit TS3, would occasionally fail to wake up the system. It was super annoying.</p>
+
+ 
+<h>Thunderbolt 4 is not enough</h>
+<p>When Thunderbolt 4 was announced in 2020, I was ecstatic. Intel's <a href="intel-thunderbolt4-announcement-press-deck.pdf">Thunderbolt 4 Announcement Press Deck</a> specifically mentioned solving my very problem with a section stating <i>Required PC wake from sleep when computer is connected to a Thunderbolt dock</i>. That meant the behavior was part of the (reportedly thorough) conformance test suite.</p>
+
+<figure style="text-align: center; "><a href="tb4_vs_others.webp"><img loading="lazy" src="tb4_vs_others.webp" width="1914" height="1074" style="width: 100%; height: auto; "/></a></figure> 
+<p>I got the CalDigit TS4 as soon as it was released, in 2022. It was perhaps a little bit better but overall I was disappointed to still sometimes encounter a machine that would not wake up. At this point, I had pretty much given up and filed Thunderbolt's "wake from sleep" promise in the "unreliable" folder, right next to <i>Bluetooth Pairing</i>.</p> 
+
+<h>Dock + Monitor</h>
+<p> Fast forward to 2025, when I needed to replace my aging BenQ and its dead pixels. I purchased an <a href="https://www.amazon.com/dp/B0DM6SHQTN">ASUS ROG Swift (PG27UCDM)</a>, mostly to see what the 240 Hz fuss was about ... and "wake up" became reliable.</p>
+
+<figure style="text-align: center; "><a href="monitor.webp"><img loading="lazy" src="monitor.webp" width="2258" height="1700" style="width: 100%; height: auto; "/></a><figcaption>ASUS ROG Swift 27” 4K QD-OLED Gaming Monitor (PG27UCDM) - 240Hz</figcaption></figure>
+<p>Since I switched the monitor, I have never experienced a failure. The system works perfectly, flawlessly waking the laptop and bringing the desktop online in under a second.</p>
+
+<p>To this day, I have no idea why it works. Maybe the old Ben-Q firmware was buggy. Maybe it simply took too long to wake up. I still have the same <i>MacBook Pro 16" M1 Max</i> and <i>ThinkPad X1 Carbon Gen 9</i>, did they receive firmware updates? Either way, I thought I'd share the details of my configuration, in case someone else is dealing with the same frustration.</p>
+ <hr>
+ <center>*

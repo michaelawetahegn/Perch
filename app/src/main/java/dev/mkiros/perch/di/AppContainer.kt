@@ -5,6 +5,7 @@ import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.net.ConnectivityMonitor
 import dev.mkiros.perch.data.net.FeedFetcher
 import dev.mkiros.perch.data.net.PerchHttp
+import dev.mkiros.perch.data.repo.ArticleTextRepository
 import dev.mkiros.perch.data.repo.EntryRepository
 import dev.mkiros.perch.data.repo.FeedRepository
 import dev.mkiros.perch.data.repo.FolderRepository
@@ -40,13 +41,21 @@ class AppContainer(
     val settings: SettingsStore = SettingsStore.inMemory(),
 ) {
 
+    /** One fetcher for feeds, discovery and article pages — one client, one set of limits. */
+    private val fetcher: FeedFetcher by lazy { FeedFetcher(httpClient) }
+
     val feeds: FeedRepository by lazy {
         FeedRepository(
             feedDao = database.feedDao(),
             entryDao = database.entryDao(),
-            fetcher = FeedFetcher(httpClient),
+            fetcher = fetcher,
             clock = clock,
         )
+    }
+
+    /** U10: the article screen's way of getting text a feed did not ship. */
+    val articleText: ArticleTextRepository by lazy {
+        ArticleTextRepository(entryDao = database.entryDao(), fetcher = fetcher, clock = clock)
     }
 
     val folders: FolderRepository by lazy {

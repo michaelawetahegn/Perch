@@ -38,7 +38,12 @@ class RssParser(private val dates: DateParser = DateParser()) {
         val link = resolveUrl(base, item.childText("link"))
         val publishedRaw = item.childText("pubdate", "dc:date", "date", "published")
         val publishedAt = dates.parse(publishedRaw)
-        val contentHtml = item.childElement("content:encoded", "description", "summary")?.markup()
+        val body = item.childElement("content:encoded", "description", "summary")
+        val contentHtml = body?.markup()
+        // §0's gpuopen shape: a `<description>` with no `<content:encoded>` beside it is a
+        // teaser far more often than it is a short post, and nothing downstream can tell.
+        val bodyIsExcerpt = contentHtml != null &&
+            !body.tagName().equals("content:encoded", ignoreCase = true)
         // The entry's own page is what its relative URLs were written against.
         val imageBase = link ?: base
 
@@ -54,6 +59,7 @@ class RssParser(private val dates: DateParser = DateParser()) {
             contentHtml = contentHtml,
             imageUrl = LeadImage.fromItem(item, imageBase)
                 ?: LeadImage.fromBody(contentHtml, imageBase),
+            bodyIsExcerpt = bodyIsExcerpt,
         )
     }
 

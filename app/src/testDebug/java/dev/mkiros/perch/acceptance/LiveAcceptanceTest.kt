@@ -315,6 +315,7 @@ class LiveAcceptanceTest {
                 val viewModel = ArticleViewModel(
                     entries = container.entries,
                     feeds = container.feeds,
+                    articleText = container.articleText,
                     entryId = sample.entryId,
                     zone = ZoneOffset.UTC,
                 )

@@ -1,0 +1,764 @@
+<html>
+<head>
+  <link rel="alternate" type="application/rss+xml"  title="RSS Feed for fabiensanglard.net" href="/rss.xml" />
+  <style type="text/css">
+
+    @font-face {
+      font-family: 'fabfont';
+      src: url('/font/DejaVuSansMono.woff2');
+      font-display: block;
+    }
+
+    @font-face {
+      font-family: 'fabfont';
+      src: url('/font/DejaVuSansMono-Bold.woff2');
+      font-weight: bold;
+      font-display: block;
+    }
+
+    * {
+       font-size: 16px;
+    }
+
+    html {
+      font-family: fabfont,  monospace;
+      max-width: 900px;  /* For Desktop PC (see @media for Tablets/Phones) */
+      padding-left: 2%;
+      padding-right: 3%;
+      margin: 0 auto;
+      background: #F5F5F0;
+  	} 
+    
+
+
+  	a {
+      color: black;
+      font-weight: bold;
+    }
+
+    img {
+      border: none; 
+    }
+
+    p {
+      margin-top: 0px;
+      text-align: justify;
+    }
+    sup {
+      vertical-align: 0.3em;
+      font-size: 0.65em;
+    }   
+
+    pre {
+      font-family: fabfont, monospace;
+      background-color: white; 
+      border: 1px solid Black; 
+      padding-left: 2%;
+      padding-top: 1ch;
+      padding-bottom: 1ch;
+      /* Only take care of X overflow since this is the only part that can be too wide.
+         The Y axis will never overflow.
+      */
+      overflow: hidden;
+    }
+
+    div.heading {
+      font-weight: bold;      
+      text-transform: uppercase;
+      margin-top: 4ch;
+    }
+
+    /** {
+      font-size: 16px;
+    }*/
+    @media (max-width: 500px) { /* For small screen decices */
+      * {
+        font-size: 12px; 
+      }
+    }   
+    .title {
+      text-decoration: none;
+    }
+
+    img.pixel, canvas.pixel {
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: crisp-edges;
+    }
+
+    blockquote { 
+    background-color: #f3f3f3;
+    border: dashed 1px grey; 
+    width: 97.5%; 
+    font-style: italic; 
+    text-align: justify;
+
+    padding: 1ch; 
+    padding-top: 2ch; 
+    padding-bottom: 2ch;     
+    
+    margin : 0ch; 
+    margin-bottom: 2ch; 
+    margin-top: 0ch;
+  }
+
+  blockquote div {
+    text-transform: none;
+    text-align: right;
+    width: 100%;
+  }
+
+  code {
+    /*font-size: 110%;*/
+    font-weight: bold;
+    background-color: #e1e1e1;
+    border-radius: 0.5ch;
+    padding-left: 0.3ch;
+    padding-right: 0.3ch;
+  }
+
+  .trivia {
+    border-left: 1px black solid;
+    padding-left: 1ch;
+  }
+
+  .trivia::before {
+  font-weight: bold;
+  text-decoration: underline;
+  padding-right: 1ch;
+  content: "Trivia:";
+  }
+  
+table.hard , table.hard th, table.hard td {
+  border: 1px solid black;
+  border-collapse: collapse;
+  padding-left: 1ch;
+}
+table.hard  td {
+  padding-right: 1ch;
+  padding-top: 0.8ch;
+  padding-bottom: 0.8ch;
+  text-align: right;
+}
+
+table.hard th {
+  font-weight: bold;
+  background-color: #BBB;
+  
+}
+
+
+
+  </style>
+  <title>How Michael Abrash doubled Quake framerate</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=12.0, minimum-scale=1.0, user-scalable=yes">
+</head>  
+  <body><br><center>
+    <div style="display: inline-block; vertical-align:middle;">
+<a href="/" class="title"><b>FABIEN SANGLARD'S WEBSITE</b><br>
+</a><hr/><div style="text-align: justify;display: inline-block; width: 100%;">
+
+<a class="title" href="mailto:fabiensanglard.net@gmail.com">CONTACT</a> &nbsp;&nbsp;&nbsp;<a class="title" href="/rss.xml">RSS</a> &nbsp;&nbsp;&nbsp;&nbsp;<a class="title" href="https://paypal.me/fabiensanglard">DONATE</a></div></div>
+
+</center><br><br>
+<div style="margin-bottom: 2ch;text-transform: none;">
+Feb 14, 2026</div>
+<div class='heading'>How Michael Abrash doubled Quake framerate</div><hr/>
+<style type="text/css">
+img {
+  border: 1px black solid ;
+  margin-bottom: 2ch;
+}  
+small {
+  font-size: 80%;
+}
+
+.dos {
+  color: white; background-color: black;
+}
+
+</style> 
+
+<p>With the 1999 release of the Quake source code, came a <a href="https://github.com/id-Software/Quake/blob/master/readme.txt">readme.txt</a> written by John Carmack. There is a particular sentence in that text that piqued my curiosity.</p>
+
+<pre>
+Masm is also required to build the assembly language files.  It is possible to
+change a #define and build with only C code, but the software rendering versions
+lose almost <b>half its speed</b>.
+</pre>
+   
+<p>Quake would be twice as fast thanks to its hand-crafted assembly? Let's find out if that is true, how it works, and what are the most important optimizations.</p>
+
+
+<div class='heading'>Establishing stock fps on my machine</div><hr/><p>Before doing anything with the source I needed to establish what was the framerate of the released version of <code>winquake.exe</code> on my Pentium MMX 233MHz.</p>
+
+<pre class="dos">
+
+C:\winquake> winquake.exe -wavonly +d_subdiv16 0 +timedemo demo1
+
+</pre>   
+
+<p class="trivia">I disabled <code>d_subdiv16</code> because it has no C implementation (that will make C vs ASM comparison impossible). This makes the engine fallback to D_DrawSpans8 instead of D_DrawSpans16 (perspective sampling every 8 pixels instead of 16). <code>-wav</code> is the fastest audio backend (also known as <a href="../winquake">"fastvid" option in wq.bat)</a>.</p>
+
+<a href="42.3.png"><img loading="lazy" src="42.3.png" width="1600" height="1200" style="width: 100%; height: auto; image-rendering:pixelated;"/></a><p>Stock winquake completed <code>timedemo demo1</code> at 42.3fps.</p>
+
+<div class='heading'>Building with ASM</div><hr/>    
+<p>Following the steps in <a href="../compile_like_1997">Let's compile like it's 1997!</a>, I built <code>winquake.exe</code> in release mode <u>with</u> the ASM optimizations. I really hoped VC++6 compiler did not get significant improvement<a name="back_1" style="text-decoration: none;" href="#footnote_1"><sup>[1]</sup></a> over VC++4 (the version id software used to ship winquake in 1997).</p>
+
+<pre class="dos">
+
+C:\winquake> WinQuake_ASM.exe -wavonly +d_subdiv16 0 +timedemo demo1
+
+</pre>   
+
+
+<a href="42.2.png"><img loading="lazy" src="42.2.png" width="1600" height="1200" style="width: 100%; height: auto; image-rendering:pixelated;"/></a>
+<p>I was relieved to see <a href="WinQuake_fab_ASM.exe">WinQuake_ASM.exe</a> run at nearly the same framerate, 42.2 fps. I was on a good track.</p>
+
+<div class='heading'>Building without ASM</div><hr/><p>As John Carmack mentioned, building without ASM only requires setting <code>id386</code> to <code>0</code> in <code>quakedef.h</code>.</p>
+
+<a href="1.png"><img loading="lazy" src="1.png" width="1024" height="768" style="width: 100%; height: auto; image-rendering:pixelated;"/></a>
+<p>That broke the linker because a VC6 project meant running on an Intel CPU at the time.</p>
+
+<a href="2.png"><img loading="lazy" src="2.png" width="1024" height="768" style="width: 100%; height: auto; image-rendering:pixelated;"/></a><p>All I had to do was to add <a href="nhttps://github.com/id-Software/Quake/blob/master/WinQuake/nonintel.c">nointel.c</a> to the project and I had a working executable.</p>
+
+<a href="nointel.c.png"><img loading="lazy" src="nointel.c.png" width="1024" height="768" style="width: 100%; height: auto; image-rendering:pixelated;"/></a>
+<div class='heading'>Quake without ASM optimizations</div><hr/><p>With a successful release build, it was time to run <a href="WinQuakeNo_ASM.exe">WinQuake_No_ASM.exe</a>.</p>
+
+<pre class="dos">
+
+C:\winquake> WinQuake_No_ASM.exe -wavonly +d_subdiv16 0 +timedemo demo1
+
+</pre>   
+
+<a href="22.7.png"><img loading="lazy" src="22.7.png" width="1600" height="1200" style="width: 100%; height: auto; image-rendering:pixelated;"/></a>
+<p>Son of a BLiT! The game indeed runs at <b><span style="color: red;">22.7fps</span></b> instead of <b><span style="color: green;">42.2fps</span></b>! As John Carmack warned, Quake framerate is halved without Michael Abrash's optimizations!.</p>
+  
+
+<div class='heading'>Diving into the assembly</div><hr/><p>There is a lot of assembly in Quake. In total, grep found 63 functions spread across 21 files.</p>
+<pre>$ find . -name "*.s" | wc -l
+21</pre>
+
+<pre>
+$ find . -name "*.s" -exec grep -H ".globl C(" {} \;
+./server/worlda.s:.globl C(SV_HullPointContents)
+./server/math.s:.globl C(BoxOnPlaneSide)
+./client/d_copy.s:.globl C(VGA_UpdatePlanarScreen)
+./client/d_copy.s:.globl C(VGA_UpdateLinearScreen)
+./client/d_draw.s:.globl C(D_DrawSpans8)
+./client/d_draw.s:.globl C(D_DrawZSpans)
+./client/surf16.s:.globl C(R_Surf16Start)
+./client/surf16.s:.globl C(R_DrawSurfaceBlock16)
+./client/surf16.s:.globl C(R_Surf16End)
+./client/surf16.s:.globl C(R_Surf16Patch)
+./client/d_scana.s:.globl C(D_DrawTurbulent8Span)
+./client/r_drawa.s:.globl C(R_ClipEdge)
+./client/d_parta.s:.globl C(D_DrawParticle)
+./client/d_polysa.s:.globl C(D_PolysetCalcGradients)
+./client/d_polysa.s:.globl C(D_PolysetRecursiveTriangle)
+./client/d_polysa.s:.globl C(D_PolysetAff8Start)
+./client/d_polysa.s:.globl C(D_PolysetDrawSpans8)
+./client/d_polysa.s:.globl C(D_PolysetAff8End)
+./client/d_polysa.s:.globl C(D_Aff8Patch)
+./client/d_polysa.s:.globl C(D_PolysetDraw)
+./client/d_polysa.s:.globl C(D_PolysetScanLeftEdge)
+./client/d_polysa.s:.globl C(D_PolysetDrawFinalVerts)
+./client/d_polysa.s:.globl C(D_DrawNonSubdiv)
+./client/sys_wina.s:.globl C(MaskExceptions)
+./client/sys_wina.s:.globl C(unmaskexceptions)
+./client/sys_wina.s:.globl C(Sys_LowFPPrecision)
+./client/sys_wina.s:.globl C(Sys_HighFPPrecision)
+./client/sys_wina.s:.globl C(Sys_PushFPCW_SetHigh)
+./client/sys_wina.s:.globl C(Sys_PopFPCW)
+./client/sys_wina.s:.globl C(Sys_SetFPCW)
+./client/math.s:.globl C(Invert24To16)
+./client/math.s:.globl C(TransformVector)
+./client/math.s:.globl C(BoxOnPlaneSide)
+./client/d_draw16.s:.globl C(D_DrawSpans16)
+./client/r_aclipa.s:.globl C(R_Alias_clip_bottom)
+./client/r_aclipa.s:.globl C(R_Alias_clip_top)
+./client/r_aclipa.s:.globl C(R_Alias_clip_right)
+./client/r_aclipa.s:.globl C(R_Alias_clip_left)
+./client/snd_mixa.s:.globl C(SND_PaintChannelFrom8)
+./client/snd_mixa.s:.globl C(Snd_WriteLinearBlastStereo16)
+./client/r_aliasa.s:.globl C(R_AliasTransformAndProjectFinalVerts)
+./client/d_spr8.s:.globl C(D_SpriteDrawSpans)
+./client/r_edgea.s:.globl C(R_EdgeCodeStart)
+./client/r_edgea.s:.globl C(R_InsertNewEdges)
+./client/r_edgea.s:.globl C(R_RemoveEdges)
+./client/r_edgea.s:.globl C(R_StepActiveU)
+./client/r_edgea.s:.globl C(R_GenerateSpans)
+./client/r_edgea.s:.globl C(R_EdgeCodeEnd)
+./client/r_edgea.s:.globl C(R_SurfacePatch)
+./client/surf8.s:.globl C(R_Surf8Start)
+./client/surf8.s:.globl C(R_DrawSurfaceBlock8_mip0)
+./client/surf8.s:.globl C(R_DrawSurfaceBlock8_mip1)
+./client/surf8.s:.globl C(R_DrawSurfaceBlock8_mip2)
+./client/surf8.s:.globl C(R_DrawSurfaceBlock8_mip3)
+./client/surf8.s:.globl C(R_Surf8End)
+./client/surf8.s:.globl C(R_Surf8Patch)
+./client/sys_dosa.s:.globl C(MaskExceptions)
+./client/sys_dosa.s:.globl C(unmaskexceptions)
+./client/sys_dosa.s:.globl C(Sys_LowFPPrecision)
+./client/sys_dosa.s:.globl C(Sys_HighFPPrecision)
+./client/sys_dosa.s:.globl C(Sys_PushFPCW_SetHigh)
+./client/sys_dosa.s:.globl C(Sys_PopFPCW)
+./client/sys_dosa.s:.globl C(Sys_SetFPCW)
+</pre>
+<p>As a comparison, DOOM has only two <code>.asm</code> files and three functions to speed up the engine.</p>
+
+<p>A lot of these functions can be discarded from this study. Some do things that cannot be done in C like setting the floating-point unit precision or setting up the High-precision counter (<span class="box" style="background-color: blue;">&nbsp;&nbsp;</span>). Some are not used (<span class="box" style="background-color: green;">&nbsp;&nbsp;</span>). Some are duplicated (one for server, one for client). Some optimizations use self-modifying code requiring markers so the <code>.text</code> region can be updated from <code>r</code> to <code>rw</code> and patched (<span class="box" style="background-color: red;">&nbsp;&nbsp;</span>).</p>
+
+<pre>
+$ find . -name "*.s" -exec grep -H ".globl C(" {} \;
+./server/worlda.s:.globl C(SV_HullPointContents)
+<span style="color: grey;">./server/math.s:.globl C(BoxOnPlaneSide)</span>           // Duplicate from ./client/math.s
+<span style="color: green;">./client/d_copy.s:.globl C(VGA_UpdatePlanarScreen)</span> // DOS
+<span style="color: green;">./client/d_copy.s:.globl C(VGA_UpdateLinearScreen)</span> // DOS
+</span>./client/d_draw.s:.globl C(D_DrawSpans8)
+./client/d_draw.s:.globl C(D_DrawZSpans)
+<span style="color: red;">./client/surf16.s:.globl C(R_Surf16Start)</span>
+<span style="color: green;">./client/surf16.s:.globl C(R_DrawSurfaceBlock16)</span>   // Experimental 16-bit rendering
+<span style="color: red;">./client/surf16.s:.globl C(R_Surf16End)</span>
+<span style="color: red;">./client/surf16.s:.globl C(R_Surf16Patch)</span>
+./client/d_scana.s:.globl C(D_DrawTurbulent8Span)
+./client/r_drawa.s:.globl C(R_ClipEdge)
+./client/d_parta.s:.globl C(D_DrawParticle)
+./client/d_polysa.s:.globl C(D_PolysetCalcGradients)
+./client/d_polysa.s:.globl C(D_PolysetRecursiveTriangle)
+<span style="color: red;">./client/d_polysa.s:.globl C(D_PolysetAff8Start)</span>
+./client/d_polysa.s:.globl C(D_PolysetDrawSpans8)
+<span style="color: red;">./client/d_polysa.s:.globl C(D_PolysetAff8End)</span>
+<span style="color: red;">../client/d_polysa.s:.globl C(D_Aff8Patch)</span>
+./client/d_polysa.s:.globl C(D_PolysetDraw)
+./client/d_polysa.s:.globl C(D_PolysetScanLeftEdge)
+./client/d_polysa.s:.globl C(D_PolysetDrawFinalVerts)
+./client/d_polysa.s:.globl C(D_DrawNonSubdiv)
+<span style="color: blue;">./client/sys_wina.s:.globl C(MaskExceptions)
+./client/sys_wina.s:.globl C(unmaskexceptions)
+./client/sys_wina.s:.globl C(Sys_LowFPPrecision)
+./client/sys_wina.s:.globl C(Sys_HighFPPrecision)
+./client/sys_wina.s:.globl C(Sys_PushFPCW_SetHigh)
+./client/sys_wina.s:.globl C(Sys_PopFPCW)
+./client/sys_wina.s:.globl C(Sys_SetFPCW)</span>
+<span style="color: green;">./client/math.s:.globl C(Invert24To16)</span>
+./client/math.s:.globl C(TransformVector)
+./client/math.s:.globl C(BoxOnPlaneSide)
+./client/d_draw16.s:.globl C(D_DrawSpans16)
+./client/r_aclipa.s:.globl C(R_Alias_clip_bottom)
+./client/r_aclipa.s:.globl C(R_Alias_clip_top)
+./client/r_aclipa.s:.globl C(R_Alias_clip_right)
+./client/r_aclipa.s:.globl C(R_Alias_clip_left)
+./client/snd_mixa.s:.globl C(SND_PaintChannelFrom8)
+./client/snd_mixa.s:.globl C(Snd_WriteLinearBlastStereo16)
+./client/r_aliasa.s:.globl C(R_AliasTransformAndProjectFinalVerts)
+./client/d_spr8.s:.globl C(D_SpriteDrawSpans)
+<span style="color: red;">./client/r_edgea.s:.globl C(R_EdgeCodeStart)</span>
+./client/r_edgea.s:.globl C(R_InsertNewEdges)
+./client/r_edgea.s:.globl C(R_RemoveEdges)
+./client/r_edgea.s:.globl C(R_StepActiveU)
+./client/r_edgea.s:.globl C(R_GenerateSpans)
+<span style="color: red;">./client/r_edgea.s:.globl C(R_EdgeCodeEnd)</span>
+<span style="color: red;">./client/r_edgea.s:.globl C(R_SurfacePatch)</span>
+<span style="color: red;">./client/surf8.s:.globl C(R_Surf8Start)</span>
+./client/surf8.s:.globl C(R_DrawSurfaceBlock8_mip0)
+./client/surf8.s:.globl C(R_DrawSurfaceBlock8_mip1)
+./client/surf8.s:.globl C(R_DrawSurfaceBlock8_mip2)
+./client/surf8.s:.globl C(R_DrawSurfaceBlock8_mip3)
+<span style="color: red;">./client/surf8.s:.globl C(R_Surf8End)</span>
+<span style="color: red;">./client/surf8.s:.globl C(R_Surf8Patch)</span>
+<span style="color: green;">./client/sys_dosa.s:.globl C(MaskExceptions)
+./client/sys_dosa.s:.globl C(unmaskexceptions)
+./client/sys_dosa.s:.globl C(Sys_LowFPPrecision)
+./client/sys_dosa.s:.globl C(Sys_HighFPPrecision)
+./client/sys_dosa.s:.globl C(Sys_PushFPCW_SetHigh)
+./client/sys_dosa.s:.globl C(Sys_PopFPCW)
+./client/sys_dosa.s:.globl C(Sys_SetFPCW)</span>
+</pre>
+
+<p>This still leaves 32 methods pertaining to math, sound, render, and draw. The distinction between R_ and D_ is not obvious. The R_ code is in charge of *what* to draw. The D_ code is in charge of *how* to draw it.</p>
+ 
+<pre>
+<span style="color: ;"><b>//******* DRAW *******</b></span>
+./client/d_spr8.s:.globl C(D_SpriteDrawSpans)            // Draw sprite facing camera
+./client/d_draw.s:.globl C(D_DrawSpans8)                 // World draw  8 pixels persp
+./client/d_draw.s:.globl C(D_DrawZSpans)                 // World write to Z-Buffer
+./client/d_draw16.s:.globl C(D_DrawSpans16)              // World draw 16 pixels persp
+./client/d_scana.s:.globl C(D_DrawTurbulent8Span)
+./client/d_parta.s:.globl C(D_DrawParticle)
+./client/d_polysa.s:.globl C(D_PolysetCalcGradients)     // All the polysets are for
+./client/d_polysa.s:.globl C(D_PolysetRecursiveTriangle) // alias models rendering. 
+./client/d_polysa.s:.globl C(D_PolysetDrawSpans8)        
+./client/d_polysa.s:.globl C(D_PolysetDraw)
+./client/d_polysa.s:.globl C(D_PolysetScanLeftEdge)
+./client/d_polysa.s:.globl C(D_PolysetDrawFinalVerts)
+./client/d_polysa.s:.globl C(D_DrawNonSubdiv)            // Also model drawing
+<span style="color: ;"><b>//******* MATH *******</b></span>
+./client/math.s:.globl C(TransformVector)
+./client/math.s:.globl C(BoxOnPlaneSide)
+./server/worlda.s:.globl C(SV_HullPointContents)
+<span style="color: ;"><b>//*******  SOUND *******</b></span>
+./client/snd_mixa.s:.globl C(SND_PaintChannelFrom8)
+./client/snd_mixa.s:.globl C(Snd_WriteLinearBlastStereo16)
+<span style="color: ;"><b>//******* RENDER *******</b></span>
+./client/r_drawa.s:.globl C(R_ClipEdge)
+./client/r_aclipa.s:.globl C(R_Alias_clip_bottom)
+./client/r_aclipa.s:.globl C(R_Alias_clip_top)
+./client/r_aclipa.s:.globl C(R_Alias_clip_right)
+./client/r_aclipa.s:.globl C(R_Alias_clip_left)
+./client/r_aliasa.s:.globl C(R_AliasTransformAndProjectFinalVerts)
+./client/r_edgea.s:.globl C(R_InsertNewEdges)
+./client/r_edgea.s:.globl C(R_RemoveEdges)
+./client/r_edgea.s:.globl C(R_StepActiveU)
+./client/r_edgea.s:.globl C(R_GenerateSpans)
+./client/surf8.s:.globl C(R_DrawSurfaceBlock8_mip0)       // Surface caching generation
+./client/surf8.s:.globl C(R_DrawSurfaceBlock8_mip1)       // Surface caching generation
+./client/surf8.s:.globl C(R_DrawSurfaceBlock8_mip2)       // Surface caching generation
+./client/surf8.s:.globl C(R_DrawSurfaceBlock8_mip3)       // Surface caching generation
+</pre>
+
+<p>The next thing to do, before going deeper was to quantify how much each function contributes to improving the framerate from 22.7fps to 42.2fps. To find out, I modified the engine to enable one ASM function at a time and ran the same timedemo over and over again.</p>
+
+<table class="hard" style="width:100%;margin-bottom: 2ch;">
+  <tr>
+    <th style="width:25%;">Function Name</th>
+    <th>Frames per Second (fps) gain</th> 
+  </tr>
+  <tr>
+    <td>D_DrawSpans8</td>
+    <td>12.6</td>
+  </tr>
+  <tr>
+    <td>R_DrawSurfaceBlock8_mip*</td>
+    <td>&nbsp;4.2</td>
+  </tr>
+  <tr>
+    <td>D_Polyset*</td>
+    <td>&nbsp;2.2</td>
+  </tr>
+  <tr>
+    <td>D_DrawZSpans</td>
+    <td>&nbsp;0.2</td>
+  </tr>
+  <tr>
+    <td>D_DrawParticle</td>
+    <td>&nbsp;0.1</td>
+  </tr>
+  <tr>
+    <td>Others</td>
+    <td>&nbsp;0.6</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>Total: 19.5</td>
+</tr>
+</table>
+
+<p>Without surprise, the most important optimizations are in the low-level drawing routines with <code>D_DrawSpans8</code> to render the walls, <code>R_DrawSurfaceBlock8X</code> to combine texture and lightmap into a surface, and <code>D_Polyset*</code> to draw the models. The rest barely registered on my (rather crude) benchmark.</p>
+
+
+<a href="chart.svg"><img loading="lazy" src="chart.svg" width="759" height="309" style="width: 100%; height: auto; image-rendering:pixelated; margin-bottom:1ch;"/></a><center><i>How much each ASM function improves framerate from 22.7fps to 42.2fps.</i></center>
+
+<p class="trivia" style="margin-top:2ch;">The Polyset* functions are intertwined in such a way they cannot be individually switched to C/ASM. They have to be all C or all ASM.</p>
+
+
+
+
+<p>The ASM optimizations I found often involve loop unrolling, self-modifying code, avoiding mis-predictions, leveraging the Pentium FPU pipeline to hide latency, and creating "overlap" where both Pentium U/V pipelines and the FPU pipeline are executing instructions in parallel.</p>
+
+<p>Here are a few detailed functions. For those willing to go ever deeper in that rabbit hole, I suggest reading <i>Optimizations for Intel's
+32-Bit Processors (Feb 94)</i><a name="back_2" style="text-decoration: none;" href="#footnote_2"><sup>[2]</sup></a> which covers Pentium extensively. Be warned it is more powerful than 20g of melatonin.</p>
+
+
+
+
+<div class='heading'>TransformVector</div><hr/><p>The function <code>TransformVector</code> is a good introduction to the P5 FPU. It is a simple matrix-vector multiplication., used extensively to project everything in screen space, from world polygons, model/alias polygons, and sprites.</p>
+<pre>
+typedef float vec_t;
+typedef vec3_t[3];
+
+vec3_t  vpn, vright, vup;  
+
+#define DotProduct(x,y) (x[0]*y[0]+x[1]*y[1]+x[2]*y[2])
+
+void TransformVector (vec3_t in, vec3_t out) {
+  out[0] = DotProduct(in,vright);
+  out[1] = DotProduct(in,vup);
+  out[2] = DotProduct(in,vpn);    
+}
+</pre>
+
+
+
+<p>Let's look at the assembly. I kept mabrash's asm in AT&T notation<a name="back_3" style="text-decoration: none;" href="#footnote_3"><sup>[3]</sup></a> on the left. On the right is what VC6 generated, in Intel notation, decompiled by Ninja.</p>
+
+<table style="width:100%;margin-bottom: 2ch;">
+  <tr>
+    <td style="width:45%;"><pre><b>// Abrash version </b>
+
+.globl C(TransformVector)
+
+movl  in(%esp),%eax
+movl  out(%esp),%edx
+
+flds  (%eax)    
+fmuls C(vright) 
+flds  (%eax)    
+fmuls C(vup)    
+flds  (%eax)    
+fmuls C(vpn)    
+
+flds  4(%eax)   
+fmuls C(vright)+4 
+flds  4(%eax)   
+fmuls C(vup)+4  
+flds  4(%eax)   
+fmuls C(vpn)+4  
+fxch  %st(2)    
+
+faddp %st(0),%st(5) 
+faddp %st(0),%st(3) 
+faddp %st(0),%st(1) 
+
+flds  8(%eax)   
+fmuls C(vright)+8 
+flds  8(%eax)   
+fmuls C(vup)+8    
+flds  8(%eax)   
+fmuls C(vpn)+8    
+fxch  %st(2)    
+
+faddp %st(0),%st(5) 
+faddp %st(0),%st(3) 
+faddp %st(0),%st(1) 
+
+fstps 8(%edx)   
+fstps 4(%edx)   
+fstps (%edx)     
+
+ret
+</pre>
+    </td>
+    <td style="width:55%;"><pre><b>// VC6 output</b>
+
+float* TransformVector(float* a1, float* a2)
+
+mov     eax, dword [esp+0x4 {a1}]
+mov     ecx, dword [esp+0x8 {a2}]
+
+fld     st0, dword [0x2970]  <span style="color: grey;">// vright.x</span>
+fmul    st0, dword [eax]
+fld     st0, dword [0x2978]  <span style="color: grey;">// vright.y</span>
+fmul    st0, dword [eax+0x8] 
+faddp   st1, st0
+fld     st0, dword [0x2974]  <span style="color: grey;">// vright.z</span>
+fmul    st0, dword [eax+0x4]
+faddp   st1, st0
+fstp    dword [ecx], st0
+
+fld     st0, dword [0x2974]  <span style="color: grey;">// vup.x</span>
+fmul    st0, dword [eax]
+fld     st0, dword [0x297c]  <span style="color: grey;">// vup.y</span>
+fmul    st0, dword [eax+0x8]
+faddp   st1, st0
+fld     st0, dword [0x2978]  <span style="color: grey;">// vup.z</span>
+fmul    st0, dword [eax+0x4]
+faddp   st1, st0
+fstp    dword [ecx+0x4], st0
+
+fld     st0, dword [0x296c]  <span style="color: grey;">// vpn.x</span>
+fmul    st0, dword [eax]
+fld     st0, dword [0x2974]  <span style="color: grey;">// vpn.y</span>
+fmul    st0, dword [eax+0x8]
+faddp   st1, st0
+fld     st0, dword [0x2970]  <span style="color: grey;">// vpn.z</span>
+fmul    st0, dword [eax+0x4]
+faddp   st1, st0
+fstp    dword [ecx+0x8], st0
+
+
+
+
+
+
+retn     {__return_addr}</pre></td>
+  </tr>
+</table>
+
+
+<p><b><u>VC6 output:</u></b> The FPU is used like a 487 FPU. Namely an un-pipelined stack where operands are picked up from the top of the stack and results are pushed back on the top of the stack (if you know how a JVM works, that is the same principle). Instructions are found in the same order as on the code, one dot-product after another. And each dot product is *, *, +, *, +. The whole sequence looks as follows.</p>
+
+<pre>*, *, +, *, +, store
+*, *, +, *, +, store
+*, *, +, *, +, store</pre>
+
+<p>This approach incurs stalls. A <code>fmul</code> takes three cycles<a name="back_4" style="text-decoration: none;" href="#footnote_4"><sup>[4]</sup></a> to return a result. This means that each <code>fadd</code> stalls for two cycles while waiting for <code>fmul</code> result to be available.</p>
+
+
+<p><b><u>Abrash version:</u></b> That is a radically different approach. It enqueue as many independent (result not depending on previous operation) instructions as possible in the pipeline. On a 487 that would be a problem because the operands would have to be re-organized with costly <code>fxch</code> (4 cycles!) to swap their location on the stack.</p>
+
+
+<p> But <code>fxch</code> is free (0 cycle) on Pentium. This instruction allows developers to use nearly all the registers (<code>s</code>) in the FPU stack. It turns the cumbersome legacy FPU stack into a convenient register array.</p>
+
+<p>This allows to calculate three dot products in parallel, with three partial sums on the x87 stack at all times. And the computation looks as follows.</p>
+
+<pre>* * * * * *
++ + +
+* * *
++ + +
+store, store, store
+</pre>
+
+<p>By the time it does the additions, the results of the multiplication are already available. This hides <codE>fmul</codE> latency and lets the P5 avoid stalls completely. </p>
+
+<p><b><u>Store optimization:</u></b> Another optimization in Abrash's version, are the stores (<code>fstps</code>) located at the end instead of being mixed with other operations like in the VC6 output. Storing a value (fstp) immediately after calculating results in a 1-cycle stall because the write-back stage of the pipeline cannot be bypassed<a name="back_5" style="text-decoration: none;" href="#footnote_5"><sup>[5]</sup></a>. Having the stores at the end ensures that the last faddp has enough cycles to complete before the fstp tries to move that data into memory.</p>
+
+<div class='heading'>Invert24To16</div><hr/>
+<p>This function is not actually used in Quake. It is likely one of these optimizations that Michael Abrash wrote and had to be abandoned because John Carmack rewrote the engine completely.</p>
+
+<blockquote>
+Michael Abrash focused on the x86 assembly optimizations. There were some times where he had spent a lot of effort on a low level routine, then I changed the architecture and he had to start over, which I felt a little bad about, even though it was net-positive.<br/>
+<br/>He did use a NeXT for some things (he managed the code merges between us), but he had to do his assembly timings on DOS.
+<br>
+
+<br>
+        <div>- Conversation with John Carmack</div>
+    </blockquote>
+
+
+
+
+<pre>
+fixed16_t Invert24To16(fixed16_t val) {
+  if (val < 256)
+    return (0xFFFFFFFF);
+
+  return (fixed16_t)
+      (((double)0x10000 * (double)0x1000000 / (double)val) + 0.5);
+}
+</pre>
+
+<p>What is cool to see is that no stone were left unturned. Here the main goal of the rewrite is to avoid a call to Microsoft costly CRT <code>__ftol</code> function.</p>
+
+<table style="width:100%;margin-bottom: 2ch;">
+  <tr>
+    <td style="width:55%;"><pre>.globl C(Invert24To16)
+
+  movl  val(%esp),%ecx
+  movl  $0x100,%edx // 0x10000000000 dividend
+  cmpl  %edx,%ecx
+  jle   LOutOfRange
+
+  subl  %eax,%eax
+  divl  %ecx
+
+  ret
+
+LOutOfRange:
+  movl  $0xFFFFFFFF,%eax
+  ret</pre></td>
+    <td style="width:45%;">
+<pre>int32_t _Invert24To16(int32_t arg1)
+
+cmp     dword [esp+0x4 {arg1}], 0x100
+jge     0xf04
+
+or      eax, 0xffffffff  {0xffffffff}
+retn     {__return_addr}
+
+fild    st0, dword [esp+0x4 {arg1}]
+fdivr   st0, qword [__real@4270000]
+fadd    st0, qword [__real@3fe0000]
+jmp     __ftol
+
+
+
+</pre>
+
+    </td>
+  </tr>
+</table>
+
+
+
+<div class='heading'>R_DrawSurfaceBlock8_mipX</div><hr/><p>By the time the engine reaches R_DrawSurfaceBlock8, it has determined which part of a wall is visible. Now the <b>R_</b>enderer needs to "bake" the lightmap into the texture. The result is called a "Surface" (that is later handed to the <b>D_</b>rawer which rasterizes to the framebuffer). Michael Abrash describes this part extensively in <a href="https://www.phatcode.net/res/224/files/html/ch68/68-01.html">Chapter 68: Quake’s Lighting Model</a> so I won't elaborate more on it.</p>
+ 
+<p class="trivia">There are four R_DrawSurfaceBlock8_mip functions. One for each level of mipmap. Here is a clickable image modified engine to show where each level triggers.</p> 
+<script>
+  function flip(i) {
+    if (i.src.endsWith("mipmap.png")) i.src = "mipmap2.png";
+    else i.src = "mipmap.png";
+  }
+</script>
+
+<img src="mipmap2.png" style="width:100%;image-rendering:pixelated;margin-bottom:1ch;" onclick="flip(this); " />
+<center><i>Click me to see the four mipmap distances.</i></center>
+
+
+<p style="margin-top: 2ch;">The C version of all four functions is <a href="https://github.com/id-Software/Quake/blob/bf4ac424ce754894ac8f1dae6a3981954bc9852d/WinQuake/r_surf.c#L343">here</a>. The ASM versions are <a href="https://github.com/id-Software/Quake/blob/bf4ac424ce754894ac8f1dae6a3981954bc9852d/WinQuake/surf8.s#L47">here</a>. And the VC6 output for <code>R_DrawSurfaceBlock8_mip0</code> is <a href="R_DrawSurfaceBlock8_mip0.txt">here</a>.</p>
+
+<p>The most obvious optimization is the self-modifying code. Several memory locations are <a href="https://github.com/id-Software/Quake/blob/bf4ac424ce754894ac8f1dae6a3981954bc9852d/WinQuake/surf8.s#L121">hard-coded to 0x12345678</a> and patched in <a href="https://github.com/id-Software/Quake/blob/bf4ac424ce754894ac8f1dae6a3981954bc9852d/WinQuake/surf8.s#L766">R_Surf8Patch</a> just before R_DrawSurfaceBlock8 is called. The patching bakes the colormap base into the instruction stream which avoids using a register to keep the base. Moreover, this avoids an extra ADD to lookup the colormap.</p>
+
+<p>The inner "b" loop is fully unrolled. This further saves a register by avoiding a loop counter. And one misprediction is avoided on the last iteration (the P5 always picks the backward jmp destination in order to excel at loops).</p>
+
+<p>Given the importance of this function, I understand better now why Michael Abrash mentioned it in his book.</p>
+
+<blockquote>
+As it turns out, the raw speed of surface-based lighting is pretty good. Although an extra step is required to build the surface, moving lighting and tiling into a separate loop from texture mapping allows each of the two loops to be optimized very effectively, with almost all variables kept in registers.</br>
+</br>The surface-building inner loop is particularly efficient, because it consists of nothing more than interpolating intensity, combining it with a texel and using the result to look up a lit texel color, and storing the results with a dword write every four texels.</br>
+</br>In assembly language, we got this code down to 2.25 cycles per lit texel in Quake. <br>
+
+<br>
+        <div>- Michael Abrash, Chapter 68: Quake’s Lighting Model</div>
+</blockquote>
+
+ 
+
+<div class='heading'>D_DrawSpans8</div><hr/><p>Quake uses an Active Edge Table to render polygons as horizontal spans (I wrote about that <a href="../quake2/quake2_software_renderer.php">15 years ago</a> if you want to see it in action). The <a href="https://github.com/id-Software/Quake/blob/bf4ac424ce754894ac8f1dae6a3981954bc9852d/WinQuake/d_scan.c#L257">C version</a> is a pretty big function which spans over 218 lines of code. VC6 <a href="D_DrawSpans8.txt">generated</a> 256 lines of ASM. And the <a href="https://github.com/id-Software/Quake/blob/bf4ac424ce754894ac8f1dae6a3981954bc9852d/WinQuake/d_draw.s#L91">hand-optimized version</a> is a 650 lines juggernaut.</p>
+
+<p>D_DrawSpans8 receives a list of spans (a portion of a surface) to be rasterized to the framebuffer. The goal is to be perspective correct every 8 pixels (vs D_DrawSpans16 which does it every 16 pixels) and interpolate the rest.</p>
+
+<p>The biggest challenge of this function is that interpolating Z in screenspace does not work. In order to be perspective-correct, the interpolation must be done on 1/z. A division is the worst thing you can ask from the P5 FPU since it can take up to 39 cycles on a P5.</p>
+
+
+<p>The main optimization here is a huge "overlap" where an <code>FDIV</code> is issued for the next 8-pixel span at the very beginning of the current span. While the FPU is doing that division for 30+ cycles, the CPU's integer U and V pipelines draw the current 8 pixels. Many comments mention how the divide is "in-flight".  A funny comment from Michael Abrash assesses of the extensive care he put to do other things in the integer pipelines while fdiv is running in the floating-point pipeline.</p>
+
+<pre> fdiv  %st(1),%st(0) <span style="color: grey;">// this is what we've gone to all this trouble to</span>
+                     <span style="color: grey;">// overlap</span>
+</pre>
+
+
+
+<p>To avoid a mis-prediction on the last part of a span (which may feature less than 8 pixels, a Jump table is used. The code calculates the number of pixels to draw in the span, looks up a memory address in a table, and jumps directly to a label like Entry3_8. Zero mis-prediction possible here.</p>
+
+<p>There are other tiny optimizations but given how white hot this function is, everything counts. This is the case of clamp. In the C version, it performs two tests, one for "too high" and another one for "below zero" which is two branches that can result in mis-predictions.  By using <code>ja</code> (Jump if Above), an unsigned comparison on signed integers, both high and low conditions are tested at once (if the value is negative, it turns into a very big integer that is above "too high"). This is super neat.</p>
+
+<p class="trivia"> Throughout the ASM code of Quake, there are several mentions where Michael was looking for "overlap". This seems to indicate an obsession to find places where the FPU and the integer pipeline could process instructions in parallel.</p>
+<pre> 
+  // TODO: any overlap from rearranging?
+
+</pre>
+
+<p>Like it was the case for R_DrawSurfaceBlock8_mip, Michael Abrash brought up D_DrawSpans in his <i>Graphic Programming Black Book</i> which underlines further how paramount this optimization was at the time.</p>
+
+<blockquote>
+The texture-mapping inner loop, which overlaps an FDIV for floating-point perspective correction with integer pixel drawing in 16-pixel bursts, has been squeezed down to 7.5 cycles per pixel on a Pentium, so the combined inner loop times for building and drawing a surface is roughly in the neighborhood of 10 cycles per pixel which is fast enough to do 40 frames/second at 640×400 on a Pentium/100.<br>
+
+<br>
+        <div>- Michael Abrash, Chapter 68: Quake’s Lighting Model</div>
+</blockquote>
+
+
+
+<div class='heading'>Going deeper</div><hr/>
+<p>If you want to dig deeper, <a href="objs.zip">here</a> are the objs resulting from a compilation of Quake with assembly optimizations disabled. The disassembly can easily be extracted with Binary Ninja.</p>
+
+
+
+<style type='text/css'>td.ref {  padding-bottom: 0ch; width:0;}</style><div class='heading'>References</div><hr/><p id='paperbox' style='text-align:left;'><table><tbody style='vertical-align: top;'><tr><td class='ref' style='width:1ch;'><a name="footnote_1"></a><a href="#back_1">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[1]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://web.archive.org/web/20170308210026/https://www.malsmith.net/blog/visual-c-visual-history/#:~:text=One%20subtle%20change%20that%20happened%20at%20this%20time%20was%20seperating%20Visual%20C%2B%2B%20between%20two%20editions%2C%20a%20standard%20and%20professional%20version.%20The%20important%20difference%20is%20that%20the%20standard%20edition%20does%20not%20have%20an%20optimizing%20compiler">A visual history of Visual C++</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_2"></a><a href="#back_2">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[2]</td><td style='width:100%;text-align:left;' class='ref'><a href="241799-002.pdf">Optimizations for Intel's 32-Bit Processors</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_3"></a><a href="#back_3">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[3]</td><td style='width:100%;text-align:left;' class='ref'>GMU assembler uses AT&T. This notation was used so it would compile on Linux as well.</td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_4"></a><a href="#back_4">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[4]</td><td style='width:100%;text-align:left;' class='ref'><a href="ieee_micro_1993_alpert.pdf">Architecture of the Pentium Microprocessor</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_5"></a><a href="#back_5">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[5]</td><td style='width:100%;text-align:left;' class='ref'><a href="241799-002.pdf">A floating-point store must wait an extra cycle for its floating-point operand</a></td>
+</tr></tbody></table></p> <hr>
+ <center>*

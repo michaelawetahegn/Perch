@@ -50,6 +50,9 @@ class AtomParser(private val dates: DateParser = DateParser()) {
         val publishedRaw = entry.childText("published", "updated", "dc:date", "issued", "modified")
         val publishedAt = dates.parse(publishedRaw)
         val contentHtml = content(entry)
+        // Atom's own excerpt/article distinction, which is RSS's under different names:
+        // `summary` is the blurb, `content` is the article (U10, PLAN-2 §0).
+        val bodyIsExcerpt = contentHtml != null && entry.childElement("content") == null
         // The entry's own page is what its relative URLs were written against.
         val imageBase = link ?: entryBase
 
@@ -65,6 +68,7 @@ class AtomParser(private val dates: DateParser = DateParser()) {
             contentHtml = contentHtml,
             imageUrl = LeadImage.fromEntry(entry, imageBase)
                 ?: LeadImage.fromBody(contentHtml, imageBase),
+            bodyIsExcerpt = bodyIsExcerpt,
         )
     }
 

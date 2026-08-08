@@ -36,7 +36,7 @@ abstract class PerchDatabase : RoomDatabase() {
         const val NAME = "perch.db"
 
         /** Bumping this requires a [MIGRATIONS] entry from `VERSION - 1`. */
-        const val VERSION = 3
+        const val VERSION = 4
 
         /**
          * Folders (U03). Creates the table, seeds Uncategorized as id 1, and files every
@@ -105,8 +105,25 @@ abstract class PerchDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Full text (U10). Two additive columns and no backfill, because both defaults are
+         * true of every row already on the phone: nothing has been extracted yet, and the
+         * excerpt flag is a fact the parser will supply on the next refresh anyway. Marking
+         * old rows as excerpts on a guess would send Perch off to fetch 42 sites' worth of
+         * pages the first time the reader opened anything.
+         */
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE `entries` ADD COLUMN `bodyIsExcerpt` INTEGER NOT NULL DEFAULT 0",
+                )
+                db.execSQL("ALTER TABLE `entries` ADD COLUMN `fullTextAt` INTEGER")
+            }
+        }
+
         /** Every migration the app has ever shipped, in order. */
-        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3)
+        val MIGRATIONS: Array<Migration> =
+            arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
 
         /**
          * Puts Uncategorized in place on a fresh install, so that "every source belongs to

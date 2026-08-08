@@ -4,8 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import dev.mkiros.perch.data.db.entity.EntryEntity
+import dev.mkiros.perch.data.extract.FullText
 import dev.mkiros.perch.data.parse.ArticleBlock
 import dev.mkiros.perch.data.parse.ArticleLowering
+import dev.mkiros.perch.data.repo.ArticleTextRepository
 import dev.mkiros.perch.data.repo.EntryRepository
 import dev.mkiros.perch.data.repo.FeedRepository
 import dev.mkiros.perch.di.AppContainer
@@ -35,6 +38,12 @@ sealed interface ArticleUiState {
      * @param isSaved on the *Read later* queue, and [isLiked] *Liked* (U09). They are on
      *   the loaded state rather than in a flow of their own so the two top-bar toggles
      *   cannot draw a state the rest of the screen has not caught up with.
+     * @param isFetchingFullText Perch is off getting the article from the entry's own page
+     *   (U10). The body stays on screen while it runs — whatever the feed gave us is what
+     *   there is to read until something better arrives.
+     * @param canLoadFullText whether *Load full article* is offered: true whenever this
+     *   body did **not** come from an extraction. The trigger is a heuristic and will
+     *   sometimes decide a stub is an article, so the reader is never stuck with one.
      */
     data class Loaded(
         val title: String,
@@ -45,6 +54,8 @@ sealed interface ArticleUiState {
         val link: String?,
         val isSaved: Boolean = false,
         val isLiked: Boolean = false,
+        val isFetchingFullText: Boolean = false,
+        val canLoadFullText: Boolean = false,
     ) : ArticleUiState
 }
 
@@ -59,6 +70,7 @@ sealed interface ArticleUiState {
 class ArticleViewModel(
     private val entries: EntryRepository,
     private val feeds: FeedRepository,
+    private val articleText: ArticleTextRepository,
     private val entryId: Long,
     private val zone: ZoneId = ZoneId.systemDefault(),
 ) : ViewModel() {
@@ -74,24 +86,76 @@ class ArticleViewModel(
                 return@launch
             }
             val source = feeds.find(entry.feedId)
-            val blocks = ArticleLowering.toBlocks(entry.contentHtml)
-            _state.value = ArticleUiState.Loaded(
-                title = entry.title,
-                standfirst = standfirst(entry.summary, blocks),
-                byline = byline(
-                    source = source?.let { it.customTitle ?: it.title },
-                    author = entry.author,
-                    publishedAt = entry.publishedAt,
-                ),
-                blocks = blocks,
-                summary = entry.summary?.takeIf { it.isNotBlank() },
-                link = entry.link,
-                isSaved = entry.isSaved,
-                isLiked = entry.isStarred,
+            byline = byline(
+                source = source?.let { it.customTitle ?: it.title },
+                author = entry.author,
+                publishedAt = entry.publishedAt,
             )
+            _state.value = loaded(entry)
             entries.setRead(entryId, isRead = true)
+
+            // U10. The body is already on screen, so this is never a wait the reader is
+            // held behind — worst case they read the excerpt while the article arrives.
+            // An entry whose body already came from an extraction is left alone: the page
+            // has been read once and re-reading it would say the same thing.
+            if (entry.fullTextAt == null &&
+                FullText.needsExtraction(entry.contentHtml, entry.bodyIsExcerpt)
+            ) {
+                fetchFullText()
+            }
         }
     }
+
+    /**
+     * *Load full article*, from the overflow (U10).
+     *
+     * The trigger is a heuristic: it will sometimes read a genuinely short post as a stub,
+     * and sometimes miss an excerpt dressed up to look like an article. This is the way
+     * out of the second case, and it is why the action is offered whenever the body did
+     * not already come from an extraction rather than only when the heuristic fired.
+     */
+    fun loadFullArticle() {
+        val loaded = _state.value as? ArticleUiState.Loaded ?: return
+        if (loaded.isFetchingFullText || !loaded.canLoadFullText) return
+        viewModelScope.launch { fetchFullText() }
+    }
+
+    private suspend fun fetchFullText() {
+        update { it.copy(isFetchingFullText = true) }
+        val recovered = runCatching { articleText.loadFullText(entryId) }.getOrNull()
+        // A failed or thinner extraction returns null and changes nothing, which is the
+        // point: the reader keeps whatever the feed gave them, and the "Read on the web"
+        // fallback is still there under an empty body.
+        if (recovered == null) {
+            update { it.copy(isFetchingFullText = false) }
+        } else {
+            _state.value = loaded(recovered)
+        }
+    }
+
+    private fun loaded(entry: EntryEntity): ArticleUiState.Loaded {
+        val blocks = ArticleLowering.toBlocks(entry.contentHtml)
+        return ArticleUiState.Loaded(
+            title = entry.title,
+            standfirst = standfirst(entry.summary, blocks),
+            byline = byline,
+            blocks = blocks,
+            summary = entry.summary?.takeIf { it.isNotBlank() },
+            link = entry.link,
+            isSaved = entry.isSaved,
+            isLiked = entry.isStarred,
+            isFetchingFullText = false,
+            canLoadFullText = entry.fullTextAt == null && entry.link != null,
+        )
+    }
+
+    private inline fun update(block: (ArticleUiState.Loaded) -> ArticleUiState.Loaded) {
+        val current = _state.value as? ArticleUiState.Loaded ?: return
+        _state.value = block(current)
+    }
+
+    /** Computed once from the feed and the entry; re-lowering a body does not change it. */
+    private var byline: String = ""
 
     /**
      * The top bar's *Read later* toggle (U09).
@@ -179,7 +243,14 @@ class ArticleViewModel(
 
     companion object {
         fun factory(container: AppContainer, entryId: Long) = viewModelFactory {
-            initializer { ArticleViewModel(container.entries, container.feeds, entryId) }
+            initializer {
+                ArticleViewModel(
+                    entries = container.entries,
+                    feeds = container.feeds,
+                    articleText = container.articleText,
+                    entryId = entryId,
+                )
+            }
         }
 
         private const val SEPARATOR = " · "

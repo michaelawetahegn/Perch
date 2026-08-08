@@ -17,6 +17,7 @@ import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.net.PerchHttp
+import dev.mkiros.perch.data.repo.ArticleTextRepository
 import dev.mkiros.perch.di.AppContainer
 import dev.mkiros.perch.ui.theme.PerchTheme
 import java.time.Clock
@@ -264,6 +265,10 @@ class ArticleScreenTest {
         val viewModel = ArticleViewModel(
             entries = container.entries,
             feeds = container.feeds,
+            // U10's extraction is deliberately inert here: these tests are about what the
+            // renderer does with a body, and every one of their bodies is short enough to
+            // trip the trigger. `ArticleFullTextTest` is where the fetch is exercised.
+            articleText = ArticleTextRepository(database.entryDao(), { null }, clock),
             entryId = entryId,
             zone = ZoneOffset.UTC,
         )

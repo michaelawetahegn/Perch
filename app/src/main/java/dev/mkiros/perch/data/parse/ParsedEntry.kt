@@ -12,6 +12,10 @@ import java.time.Instant
  *   date; the repository then substitutes `fetchedAt`.
  * @param publishedIsEstimated true when [publishedAt] did not come from the entry itself.
  * @param contentHtml the richest content the feed offered, still unsanitized.
+ * @param bodyIsExcerpt true when the richest thing on offer was a `<description>` /
+ *   `<summary>` — a blurb standing in for an article (U10, PLAN-2 §0). False when the feed
+ *   shipped real content, and false when it shipped nothing at all: an absent body is not
+ *   an excerpt, it is an absence, and the two want different words in the UI.
  */
 data class ParsedEntry(
     val guid: String,
@@ -22,4 +26,5 @@ data class ParsedEntry(
     val publishedIsEstimated: Boolean,
     val contentHtml: String?,
     val imageUrl: String?,
+    val bodyIsExcerpt: Boolean = false,
 )

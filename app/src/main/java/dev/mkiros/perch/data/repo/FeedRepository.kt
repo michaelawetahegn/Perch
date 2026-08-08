@@ -423,6 +423,7 @@ class FeedRepository(
             contentHtml = safeHtml,
             imageUrl = imageUrl,
             readAt = null,
+            bodyIsExcerpt = bodyIsExcerpt,
             fetchedAt = fetchedAt,
         )
     }

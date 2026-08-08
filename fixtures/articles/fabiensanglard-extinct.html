@@ -1,0 +1,407 @@
+<html>
+<head>
+  <link rel="alternate" type="application/rss+xml"  title="RSS Feed for fabiensanglard.net" href="/rss.xml" />
+  <style type="text/css">
+
+    @font-face {
+      font-family: 'Roboto';
+      src: url('/font/roboto/static/Roboto-Regular.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: block;
+    }
+
+    @font-face {
+      font-family: 'Roboto';
+      src: url('/font/roboto/static/Roboto-Italic.ttf') format('truetype');
+      font-weight: normal;
+      font-style: italic;
+      font-display: block;
+    }
+
+    @font-face {
+      font-family: 'Roboto';
+      src: url('/font/roboto/static/Roboto-Bold.ttf') format('truetype');
+      font-weight: bold;
+      font-style: normal;
+      font-display: block;
+    }
+
+    @font-face {
+      font-family: 'Roboto';
+      src: url('/font/roboto/static/Roboto-BoldItalic.ttf') format('truetype');
+      font-weight: bold;
+      font-style: italic;
+      font-display: block;
+    }
+
+    html {
+      font-family: 'Roboto', sans-serif;
+      max-width: 800px;  /* For Desktop PC (see @media for Tablets/Phones) */
+      padding-left: 2%;
+      padding-right: 3%;
+      margin: 0 auto;
+      /* background: #F5F5F0; */
+      background: white;
+  	}
+
+    :root {
+      --title-font-size: 22px;
+      --body-font-size: inherit;
+    }
+
+    @media (max-width: 800px) {
+      :root {
+        --title-font-size: 18px;
+      }
+    }
+
+    @media (max-width: 500px) {
+      :root {
+        --title-font-size: 15px;
+        --body-font-size: 12px;
+      }
+    }
+
+    * {
+      font-size: var(--body-font-size);
+    }
+
+    h, div.heading{
+      display: block;
+      font-weight: bold;      
+      text-transform: uppercase;
+      margin-top: 4ch;
+    }
+
+    h::after {
+      content: "";
+      display: block;
+      border-top: 1px solid #ccc;
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    a {
+  color: #2a7ae2;
+  text-decoration: none;
+}
+a:visited {
+  color: rgb(23, 86, 169);
+}
+a:hover {
+  color: #111;
+  text-decoration: underline;
+}
+
+a.title, a.title:visited {
+  color: black;
+  text-decoration: none;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: var(--title-font-size);
+}
+a.title:hover {
+  color: black;
+  text-decoration: underline;
+}
+
+img {
+  border: 1px solid black;
+}
+
+figure {
+  margin: 0;
+  padding: 0;
+}
+
+figcaption {
+  padding-top: 1ch;
+  font-size: 85%;
+  text-align: center;
+}
+
+  .trivia {
+    border-left: 1px black solid;
+    padding-left: 1ch;
+  }
+
+  .trivia::before {
+  font-weight: bold;
+  text-decoration: underline;
+  padding-right: 1ch;
+  content: "Trivia:";
+  }
+
+  p, ul, ol , div{
+    text-align: justify;
+  }
+
+  sup {
+    font-size: 75%;
+    line-height: 0;
+    position: relative;
+    vertical-align: baseline;
+  }
+  
+  sup {
+    top: -0.2em;
+  }
+  
+
+  blockquote {
+  /* Text styling */
+  color: #828282;                /* Muted grey font color */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-style: italic;            /* Makes the whole blockquote italicized */
+
+  margin-left: 0;                /* Resets default browser indent */
+  margin-right: 0;
+  padding-left: 2ch;            /* Pushes text away from the left border */
+  text-align: justify;
+  
+  /* The iconic border */
+  border-left: 4px solid #e8e8e8; /* Soft, light grey accent line */
+}
+
+/* To match the link color inside the quote */
+blockquote a {
+  color: #2a7ae2;                /* Minima's default blue link color */
+  text-decoration: none;
+}
+
+blockquote a:hover {
+  text-decoration: underline;    /* Underline on hover */
+}
+
+blockquote cite::before {
+  content: "— ";
+}
+
+blockquote cite {
+  display: block;                /* Forces it onto a new line */
+  font-style: normal;            /* Optional: keeps the author name regular/upright for contrast */
+  margin-top: 10px;              /* Adds a little breathing room below the quote text */
+  color: #828282;                /* Matches the quote color */
+  text-align: right;
+}
+
+/* TARGETED RULES FOR THE REFERENCES FOOTER */
+  td.ref a:hover{
+    text-decoration: underline ;
+  }
+  td.ref a{
+    color: black;
+    text-decoration: none;
+  }
+
+  code {
+    /*font-size: 110%;*/
+    font-weight: bold;
+    background-color: #e1e1e1;
+    border-radius: 0.5ch;
+    padding-left: 0.3ch;
+    padding-right: 0.3ch;
+  }
+
+  pre {
+  border: solid black 1px;
+  background-color: #EEEEEE;
+  padding-left: 2ch;
+  padding-right: 1ch;
+  padding-top: 2ch;
+  padding-bottom: 1ch;
+  overflow: auto;
+}
+
+.red {
+  color: red;
+}
+
+td.ref:nth-child(1) a {
+  color: #2a7ae2;                  /* Matches primary link color */
+  text-decoration: none !important; /* Prevents ugly underline under the arrow */
+}
+
+      </style>
+  <title>Don't you mean extinct?</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=12.0, minimum-scale=1.0, user-scalable=yes">
+</head>  
+  <body>
+    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 2ch;">
+      <a href="/" class="title">Fabien Sanglard - WEBSITE</a>
+      <div style="display: flex; gap: 1.5ch; align-items: center;">
+      <!-- Github -->
+      <a href="https://github.com/fabiensanglard">
+      <svg fill="#555" aria-hidden="true" data-component="Octicon" height="21" viewBox="0 0 24 24" version="1.1" width="21" data-view-component="true" class="octicon octicon-mark-github">
+    <path d="M10.226 17.284c-2.965-.36-5.054-2.493-5.054-5.256 0-1.123.404-2.336 1.078-3.144-.292-.741-.247-2.314.09-2.965.898-.112 2.111.36 2.83 1.01.853-.269 1.752-.404 2.853-.404 1.1 0 1.999.135 2.807.382.696-.629 1.932-1.1 2.83-.988.315.606.36 2.179.067 2.942.72.854 1.101 2 1.101 3.167 0 2.763-2.089 4.852-5.098 5.234.763.494 1.28 1.572 1.28 2.807v2.336c0 .674.561 1.056 1.235.786 4.066-1.55 7.255-5.615 7.255-10.646C23.5 6.188 18.334 1 11.978 1 5.62 1 .5 6.188.5 12.545c0 4.986 3.167 9.12 7.435 10.669.606.225 1.19-.18 1.19-.786V20.63a2.9 2.9 0 0 1-1.078.224c-1.483 0-2.359-.808-2.987-2.313-.247-.607-.517-.966-1.034-1.033-.27-.023-.359-.135-.359-.27 0-.27.45-.471.898-.471.652 0 1.213.404 1.797 1.235.45.651.921.943 1.483.943.561 0 .92-.202 1.437-.719.382-.381.674-.718.944-.943"></path>
+      </svg>
+      </a> 
+      <!-- Email -->
+      <a href="mailto:fabiensanglard.net@gmail.com">
+      <svg fill="#555" aria-hidden="true" height="27" viewBox="0 0 24 24" version="1.1" width="27" data-view-component="true" class="octicon octicon-mail">
+        <path d="M0 3 h24 v17.5 H0 Z M24 5.5 L12 13 L0 5.5 v2 L12 15 L24 7.5 Z"></path>
+      </svg>
+      </a>
+   <!-- RSS -->
+   <a href="/rss.xml">
+   <svg fill="#555" height="20" width="20" version="1.1" id="Layer_1" viewBox="-271 273 256 256" xml:space="preserve">
+<g>
+	<path d="M-271,360v48.9c31.9,0,62.1,12.6,84.7,35.2c22.6,22.6,35.1,52.8,35.1,84.8v0.1h49.1c0-46.6-19-88.7-49.6-119.4
+		C-182.2,379-224.4,360.1-271,360z"/>
+	<path d="M-237,460.9c-9.4,0-17.8,3.8-24,10s-10,14.6-10,24c0,9.3,3.8,17.7,10,23.9c6.2,6.1,14.6,9.9,24,9.9s17.8-3.7,24-9.9
+		s10-14.6,10-23.9c0-9.4-3.8-17.8-10-24C-219.2,464.7-227.6,460.9-237,460.9z"/>
+	<path d="M-90.1,348.1c-46.3-46.4-110.2-75.1-180.8-75.1v48.9C-156.8,322-64.1,414.9-64,529h49C-15,458.4-43.7,394.5-90.1,348.1z"/>
+</g>
+</svg>
+</a>
+      </div>
+
+    </div>
+    <br>
+<div style="margin-bottom: 2ch;text-transform: none;">
+Jul 10, 2026</div>
+<h>Don't you mean extinct?</h>
+
+<p>In 1993, Jurassic Park came out and revolutionized the use of CGI in films<a name="back_1" style="text-decoration: none;" href="#footnote_1"><sup>[1]</sup></a>. To the public the experience was magic. But for some of the people in the movie industry, it was a rude awakening.</p>
+
+
+    <p>Director Steven Spielberg had hired stop-motion master<a name="back_2" style="text-decoration: none;" href="#footnote_2"><sup>[2]</sup></a> Phil Tippett<a name="back_3" style="text-decoration: none;" href="#footnote_3"><sup>[3]</sup></a> to bring the film's full-body dinosaurs to life using his <a href="https://www.youtube.com/watch?v=4BLL3r_Iydw">go-motion</a> technique. Spielberg was highly skeptical that computer-generated imagery (CGI) could realistically depict a dinosaur<a name="back_4" style="text-decoration: none;" href="#footnote_4"><sup>[4]</sup></a>. But Dennis Muren and the digital artists at Industrial Light & Magic (ILM) worked on a proof-of-concept using CGI. They rendered a fully textured, photorealistic <a href="https://www.youtube.com/watch?v=nXxfjtN43ZA">T. rex chasing a herd of Gallimimus</a> in full sunlight.</p>
+
+
+
+<blockquote>
+    <p>I went down with [visual effects supervisor] Dennis Muren when he presented the T-Rex test to Steven and Steven went, ‘Wow, that’s what we’re going to do,’ and he asked me how I would feel and I said, ‘I feel extinct’<a name="back_5" style="text-decoration: none;" href="#footnote_5"><sup>[5]</sup></a>.</p>    
+    
+    <p>I did seem like everything that I had built up until that time was like, "We are not going to do that anymore"<a name="back_6" style="text-decoration: none;" href="#footnote_6"><sup>[6]</sup></a>.</p>    
+    <cite>Phil Tippett</cite>
+</blockquote>
+
+
+<blockquote>
+Tippett, who had already selected a crew of thirty and was gearing up for the massive go-motion assignment, was understandably devastated by the turn of events.
+    <cite><a href="https://www.amazon.com/Making-Jurassic-Park-Don-Shay/dp/034538122X">The Making of Jurassic Park</a></cite>
+</blockquote>
+
+<p>I have been thinking of this anecdote a lot lately. I see a lot of pessimism<a name="back_7" style="text-decoration: none;" href="#footnote_7"><sup>[7]</sup></a> around programmers. The anxiety of becoming obsolete is particularly palpable online<a name="back_8" style="text-decoration: none;" href="#footnote_8"><sup>[8]</sup></a><a name="back_9" style="text-decoration: none;" href="#footnote_9"><sup>[9]</sup></a>.</p>
+
+
+<h>Evolve</h>
+<p>The best way to avoid becoming extinct is to evolve. I liked zkmon's take from <i>Hacker News</i>.</p>
+
+<blockquote>
+    <p>Ride the wave. You rode it when websites/webapps were the wave. I came into software industry before internet, kept changing my horse. You are never too old to learn new tricks. The new wave create new kind of work and workers. Be one of them. Ride the beast, master the tools. It's the same game again.</p>
+    <cite><a href="https://news.ycombinator.com/item?id=48435521">zkmon (Hacke Nnews)</a></cite>
+</blockquote>
+
+<p>While the current episode reminds zkmon of the mid-90s web, it makes me think of the field of Computer Graphics in the early 2000s and the rise of "Mobile First" in early 2010s. Every generation of programmers will likely have seen a form of r-evolution. This is indeed <i>the same game again</i>. Life is flux<a name="back_10" style="text-decoration: none;" href="#footnote_10"><sup>[10]</sup></a>. LLMs are yet another tool. To evolve is to invest the time to learn how it works and how to best use it.</p>
+
+
+
+<h>Learn how LLMs work</h> 
+<p>The best resource I found to learn how LLMs work is <a href="https://www.youtube.com/@AndrejKarpathy">Andrej Karpathy's channel</a>. The man obviously cares deeply about LLMs and really wants you to get them. His series of videos so far is 25 hours of pure gold.</p>
+
+<p>A nice follow-up is the book <a href="https://www.amazon.com/dp/1633437167?ref_=ppx_hzsearch_conn_dt_b_fed_asin_title_31">Build a Large Language Model (From Scratch)</a> by Sebastian Raschka. There are many drawings in full-color with rare <a href="not_draw_the_owl.webp">Now Draw the Owl</a> moments. This is a really good book.</p>
+
+<h>Learn how to write code with LLMs</h>
+<p>Writing every line by hand is no longer the norm. Those who refuse to use an LLM will fall behind because they won't be able to produce as much - and I know several developers who refuse to use agents. John Carmack recently had an interesting take about coding.</p>
+
+
+<blockquote>
+    <p>“Coding” was never the source of value, and people shouldn't get overly attached to it. Problem solving is the core skill. The discipline and precision demanded by traditional programming will remain valuable transferable attributes, but they won't be a barrier to entry.</p>
+    <p>Many times over the years I have thought about a great programmer I knew that loved assembly language to the point of not wanting to move to C. I have to fight some similar feelings of my own around using existing massive codebases and inefficient languages, but I push through.</p>
+    <cite><a href="https://x.com/ID_AA_Carmack/status/1762110222321975442">John Carmack</a></cite>
+</blockquote>
+
+
+<p>Even though I am not writing code, I am still indirectly producing code. And there is considerable discretion about <i>what</i> one can generate. If I go "full-vibe-code" and let an LLM run, I can produce 1000x what I used to and find myself with an indecipherable mess. Is that a bad thing? If I work on a prototype or a small personal project, it does not matter. But for everything else, code quality still matters tremendously. LLMs may claim they still understand the project and suggest solutions, but I have seen them fail spectacularly and hallucinate.</p>
+
+<p>It remains important to be able to read the code and understand the architecture. It may sound like a given, but I have seen many developers fail to do so. As a result, I reduce my velocity by iterating over my PR until it reaches the same level of quality I would have produced "by hand". Every time I notice something I don't like, I add it to my <code>~/.gemini/GEMINI.md</code>/<code>~/.claude/CLAUDE.md</code> so the agent can emulate my style. Over the past months, I have added quite a few lines like the following.</p>
+    
+<pre>- Don't use magic numbers or strings. Use a const or even better, an enum when appropriate.
+- Reduce code indentation. Avoid Arrow Anti-Pattern. Leverage early return and continue.
+- Use enums instead of boolean for function parameters. .
+- Respect layering. Don't punch holes through the layers.
+- Let the reader of the code breathe. Add empty lines between logical blocks of code. 
+  Add a small, to the point, comment to explain *what* the block does and *why*.
+</pre>
+
+<p>The greatest difficulty I have encountered is "context switching". Working on multiple projects / independent features allows me to drive multiple agents simultaneously. It is quite a mental gymnastics to keep up. I have seen reports of "mental burnout" and I have also personally experienced increased mental fatigue. This is definitely something to monitor.</p>
+
+<h>Code Review in the age of LLMs</h>    
+
+<p>Given how much better the tools are, I have much higher expectations during code reviews.</p>
+
+
+<p>There is little excuse for poor <b>commit messages</b> now. There are many guides about how to write a good commit message. <a href="https://chris.beams.io/git-commit#seven-rules">Here</a> is the best one I ever came across. It takes 1 minute to ask an LLM to summarize it and transform it into directives that one can add to their <code>GEMINI.md</code>/<code>CLAUDE.md</code>.</p>
+
+<pre>When you write a commit message, follow these 7 rules:
+Rule 1: Separate the subject line from the body with a single blank line.
+Rule 2: Limit the subject line to 50 characters (72 is the absolute hard limit).
+Rule 3: Capitalize the first letter of the subject line.
+Rule 4: Do not end the subject line with a period.
+Rule 5: Use the imperative mood in the subject line (e.g., "Fix bug," "Add feature," 
+        not "Fixed" or "Adds"). Test formula: It must complete the sentence: "If applied,
+        this commit will [your subject line here]".
+Rule 6: Wrap the body text manually at 72 characters to prevent Git formatting issues.
+Rule 7: Use the body to explain what and why vs. how. Assume the code explains the how;
+        the message must explain the context and reasoning. 
+</pre>
+
+
+<p>Since authoring code is much less of an effort, I expect SWEs to take much more care into designing elegant solutions. I have little scruples in asking for improved <b>code clarity</b>/<b>code simplicity</b> if the PR is a mess.</p>
+
+<p>The same goes for PR <b>code size</b>. It used to be tedious to break a PR into smaller, easier-to-review, parts. This is no longer the case and I have no problems asking an author to break down their PRs unless they have a good reason for it.</p>
+
+
+<p>Many code review tools now have integrated LLMs. You can create your own preferred prompt to automatically perform a first pass. For codebases I own, I have added the content of my <code>GEMINI.md</code>/<code>CLAUDE.md</code> which I can trigger with one click. Before sending a PR for review, the first thing I do is ask for the LLM to criticize/look for mistakes. This avoids wasting the reviewer's time on the other end.</p>
+
+<p>Writing <b>tests</b> used to be a pain. This is no longer the case. It is ok to request unit tests/CI tests for each PR. These have never been more important since large refactors are becoming increasingly common. Human and LLM review may miss stuff but good tests should catch breakages.</p>
+
+<p>It is more ok to refuse to take <b>dependencies</b> now. It used to be the go-to solution to avoid writing anything moderately complex. As recently as this morning, I asked an LLM to write a Levenshtein distance function instead of adding a dependency to my project.</p>  
+
+
+
+<h>Smaller teams</h>   
+<p>We can accomplish more with smaller teams. We may not be far from the '90s model, when a team of four could produce professional software. I was able to revive projects I had abandoned because I deemed them too time-consuming or complex. Last month I completed the <a href="../silpheed/">reverse engineering of the Silpheed video format</a> and I am making good process on Ikaruga for Dreamcast and Zelda: A Link to the Past on SNES.</p>
+
+
+<h>If you can't beat them, join them</h> 
+<p>The LLM scene is fascinating. And amusingly the very subject to study is also a great tool to help keep up. An LLM will help to dive into any codebase and give pointers about the overall architecture. I have been enjoying reading how <a href="https://llama-cpp.com/">llama-cpp</a>, <a href="https://opencode.ai/">OpenCode</a>, <a href="https://ollama.com/">ollama</a>, and <a href="https://vllm.ai/">vLLM</a> work. There are also many hardware solutions, like <a href="https://tenstorrent.com/en">Tenstorrent</a>, <a href="https://www.etched.com/">Etched</a>, <a href="https://matx.com/">MatX</a>, <a href="https://www.d-matrix.ai">d-Matrix</a>, or <a href="https://www.cerebras.ai/">Cerebras Systems</a> that are super interesting to follow.</p>
+
+<p>Reading research papers was difficult at first since I have always had a difficult relationship with mathematics notation. LLMs helped to catch up with shortcomings. Having a buddy offer their opinion, and double checking it, helps a lot to ramp up.</p>
+
+
+<h>Find the motivation</h>
+<p>Most importantly, there is the problem of finding the motivation to learn. There are many good reasons to avoid making the effort, among them stories of people finding success by moving on.</p>
+
+
+<p>To keep on going or not is a decision that belongs to each of us. It is the result of a process involving conviction and inspiration. While the former comes from within, I sometimes find the latter in success stories. This takes me back to the anecdote at the beginning of the article. I did not pick Phil Tippett's story randomly. While many know the misquoted "Don't you meant extinct?" part, what happened next is less notorious.</p>
+
+
+<div style="padding-left:1ch; border-left: 1px solid black;">
+    <p>Despite the initial shock, Tippett, at 41 years old, was far from being "extinct". Spielberg kept him on as the film's "Dinosaur Supervisor." Because the computer animators at ILM were programmers and tech artists rather than traditional performance animators, they had no idea how to make a creature move with weight, timing, and biological intent.</p>
+    
+    <p>Tippett co-developed the Dinosaur Input Device (DID)<a name="back_11" style="text-decoration: none;" href="#footnote_11"><sup>[11]</sup></a>, a highly articulated physical armature connected to sensors, with ILM. Then his team physically manipulated the DID just like stop-motion, and the computer translated those movements into the digital space.</p>
+
+    <p> Phil Tippett (along with Dennis Muren, Stan Winston, and Michael Lantieri) won the Academy Award for Best Visual Effects for Jurassic Park in 1994<a name="back_12" style="text-decoration: none;" href="#footnote_12"><sup>[12]</sup></a>. His company, <i>Tippett Studio</i>, lived on to take part in movies such as StarShip Troopers, Dragonheart, and seventy-five other titles<a name="back_13" style="text-decoration: none;" href="#footnote_13"><sup>[13]</sup></a>.</p>
+
+</div>
+
+<!-- <p>I have loved creating things and tinkering with computers for as far as I can remember. I still love it, perhaps even more now. I am going to stick around for a while.</p> -->
+
+<style type='text/css'>td.ref {  padding-bottom: 0ch; width:0;}</style><div class='heading'>References</div><hr/><p id='paperbox' style='text-align:left;'><table><tbody style='vertical-align: top;'><tr><td class='ref' style='width:1ch;'><a name="footnote_1"></a><a href="#back_1">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[&#x2007;1]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://www.ilm.com/creating-dinosaurs-jurassic-park">Breathing Life into the Dinosaurs of Jurassic Park</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_2"></a><a href="#back_2">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[&#x2007;2]</td><td style='width:100%;text-align:left;' class='ref'>"Master", as in <i>Return of the Jedi</i>, <i>Dragonslayer</i>, and <i>Robocop</i> to name only a few.</td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_3"></a><a href="#back_3">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[&#x2007;3]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://www.amazon.com/Making-Jurassic-Park-Don-Shay/dp/034538122X">The Making of Jurassic Park</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_4"></a><a href="#back_4">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[&#x2007;4]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://www.youtube.com/watch?v=8r01mk6F_Pk">Making The Dinosaurs | Jurassic Park Documentary</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_5"></a><a href="#back_5">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[&#x2007;5]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://beforesandafters.com/2020/03/15/the-oral-history-of-the-dinosaur-input-device-or-how-to-survive-the-near-death-of-stop-motion">The oral history of the Dinosaur Input Device</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_6"></a><a href="#back_6">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[&#x2007;6]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://www.youtube.com/watch?v=JNJ2oYvzSCc">The Making of Jurassic Park | Full Documentary</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_7"></a><a href="#back_7">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[&#x2007;7]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://x.com/deedydas/status/2068238634600554699">Most software engineers are facing an identity crisis bordering on depression.</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_8"></a><a href="#back_8">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[&#x2007;8]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://human-in-the-loop.bearblog.dev/llms-are-eroding-my-software-engineering-career-and-i-dont-know-what-to-do/">LLMs are eroding my software engineering career and I don't know what to do.</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_9"></a><a href="#back_9">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[&#x2007;9]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://www.reddit.com/r/developers/comments/1rx08aw/do_developers_feel_real_fear_of_ai_taking_their/?utm_source=chatgpt.com">Do developers feel real fear of AI taking their jobs?</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_10"></a><a href="#back_10">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[10]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://www.worldhistory.org/article/75/heraclitus-life-is-flux/">Heraclitus: Life Is Flux</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_11"></a><a href="#back_11">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[11]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://vfxblog.com/dinosaurinputdevice/">The oral history of the Dinosaur Input Device</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_12"></a><a href="#back_12">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[12]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://www.oscars.org/oscars/ceremonies/1994#:~:text=JURASSIC%20PARK-,Dennis%20Muren%2C%20Stan%20Winston%2C%20Phil%20Tippett%2C%20Michael%20Lantieri,-NOMINEES">The 66th Academy Awards | 1994</a></td>
+</tr><tr><td class='ref' style='width:1ch;'><a name="footnote_13"></a><a href="#back_13">^</a></td><td  class='ref' style='width:4ch;font-variant-numeric: tabular-nums;text-align: right;white-space: pre;'>[13]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://en.wikipedia.org/wiki/Tippett_Studio">Tippett Studio</a></td>
+</tr></tbody></table></p> <hr>
+ <center>*

@@ -20,6 +20,13 @@ import androidx.room.PrimaryKey
  * @param isSaved *Read later* (PLAN-2 §0): a queue the reader fills and empties by hand.
  *   Reading a saved entry does not clear it.
  * @param isStarred *Liked*. Carried since v1 as a column with no UI; U04 gives it one.
+ * @param bodyIsExcerpt true when [contentHtml] came from a `<description>` / `<summary>`
+ *   with no `<content:encoded>` / `<content>` beside it — the feed offered a blurb, not an
+ *   article (U10, PLAN-2 §0). It is a fact about the *feed*, unrecoverable from the body
+ *   once both have been flattened into one column, which is why it is stored.
+ * @param fullTextAt when Perch fetched the article off the entry's own page, or null if
+ *   [contentHtml] is still whatever the feed gave us. It is what stops a refresh from
+ *   overwriting a recovered article, and what disables *Load full article*.
  *
  * The three reader-owned flags — [isRead], [isSaved], [isStarred] — are independent, and
  * each pairs with a nullable timestamp that is set when the flag goes on and nulled when
@@ -61,5 +68,7 @@ data class EntryEntity(
     val savedAt: Long? = null,
     val isStarred: Boolean = false,
     val starredAt: Long? = null,
+    val bodyIsExcerpt: Boolean = false,
+    val fullTextAt: Long? = null,
     val fetchedAt: Long,
 )

@@ -21,18 +21,25 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -119,6 +126,9 @@ fun ArticleScreen(
                             )
                         }
                     }
+                    if (loaded != null) {
+                        Overflow(loaded, onLoadFullArticle = viewModel::loadFullArticle)
+                    }
                 },
             )
         },
@@ -138,8 +148,57 @@ fun ArticleScreen(
                         .align(Alignment.Center)
                         .padding(horizontal = Dimens.screenHorizontal),
                 )
-                is ArticleUiState.Loaded -> Article(current) { url -> openInBrowser(context, url) }
+                is ArticleUiState.Loaded -> Column(modifier = Modifier.fillMaxSize()) {
+                    // A hairline under the app bar rather than a spinner over the text:
+                    // the body — excerpt or not — stays readable the whole time the
+                    // article is being fetched (U10).
+                    if (current.isFetchingFullText) {
+                        LinearProgressIndicator(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag(ArticleTestTags.FULL_TEXT_PROGRESS),
+                        )
+                    }
+                    Article(current) { url -> openInBrowser(context, url) }
+                }
             }
+        }
+    }
+}
+
+/**
+ * The overflow, which exists for one action: *Load full article* (U10).
+ *
+ * It is enabled whenever the body did not already come from an extraction, not only when
+ * the automatic trigger declined to fire. The trigger is a heuristic and will sometimes
+ * read an excerpt as an article; this is how the reader gets out of that without leaving
+ * the app, which is the whole point of the task.
+ */
+@Composable
+private fun Overflow(state: ArticleUiState.Loaded, onLoadFullArticle: () -> Unit) {
+    var open by rememberSaveable { mutableStateOf(false) }
+
+    Box {
+        IconButton(
+            onClick = { open = true },
+            modifier = Modifier.testTag(ArticleTestTags.OVERFLOW),
+        ) {
+            Icon(
+                imageVector = Icons.Filled.MoreVert,
+                contentDescription = stringResource(R.string.action_more),
+                modifier = Modifier.size(Dimens.icon),
+            )
+        }
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.article_load_full_text)) },
+                enabled = state.canLoadFullText && !state.isFetchingFullText,
+                onClick = {
+                    open = false
+                    onLoadFullArticle()
+                },
+                modifier = Modifier.testTag(ArticleTestTags.LOAD_FULL_TEXT),
+            )
         }
     }
 }
@@ -273,6 +332,9 @@ object ArticleTestTags {
     const val LIKE = "article:like"
     const val SAVE = "article:save"
     const val READ_ON_WEB = "article:read-on-web"
+    const val OVERFLOW = "article:overflow"
+    const val LOAD_FULL_TEXT = "article:load-full-text"
+    const val FULL_TEXT_PROGRESS = "article:full-text-progress"
     const val CODE = "article:code"
     const val IMAGE = "article:image"
     const val QUOTE = "article:quote"

@@ -46,7 +46,12 @@ class RdfParser(private val dates: DateParser = DateParser()) {
         val link = resolveUrl(base, item.childText("link"))
         val publishedRaw = item.childText("dc:date", "dcterms:issued", "pubDate", "date")
         val publishedAt = dates.parse(publishedRaw)
-        val contentHtml = item.childElement("content:encoded", "description")?.markup()
+        val body = item.childElement("content:encoded", "description")
+        val contentHtml = body?.markup()
+        // RSS 1.0 draws the same line RSS 2.0 does: `content:encoded` is the article and
+        // `description` is the blurb (U10, PLAN-2 §0).
+        val bodyIsExcerpt = contentHtml != null &&
+            !body.tagName().equals("content:encoded", ignoreCase = true)
         // The entry's own page is what its relative URLs were written against.
         val imageBase = link ?: base
 
@@ -64,6 +69,7 @@ class RdfParser(private val dates: DateParser = DateParser()) {
             contentHtml = contentHtml,
             imageUrl = LeadImage.fromItem(item, imageBase)
                 ?: LeadImage.fromBody(contentHtml, imageBase),
+            bodyIsExcerpt = bodyIsExcerpt,
         )
     }
 

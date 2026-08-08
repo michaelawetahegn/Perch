@@ -27,6 +27,7 @@ import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.debug.DebugSeeder
 import dev.mkiros.perch.data.settings.SettingsStore
+import dev.mkiros.perch.data.repo.ArticleTextRepository
 import dev.mkiros.perch.di.AppContainer
 import dev.mkiros.perch.ui.article.ArticleScreen
 import dev.mkiros.perch.ui.collection.CollectionTestTags
@@ -380,6 +381,8 @@ class DesignScreenshotTest {
         val viewModel = ArticleViewModel(
             entries = container.entries,
             feeds = container.feeds,
+            // Offline and deterministic: a screenshot must not depend on a page fetch.
+            articleText = ArticleTextRepository(container.database.entryDao(), { null }, clock),
             entryId = entryId,
             zone = ZoneOffset.UTC,
         )

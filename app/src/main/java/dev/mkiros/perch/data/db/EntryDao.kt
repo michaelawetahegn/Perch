@@ -291,6 +291,11 @@ abstract class EntryDao {
      * single fetch, so anything not listed here is silently erased once a day by the
      * refresh worker — which is what would empty a to-read list nobody touched.
      *
+     * An article Perch went and fetched (U10) is preserved on the same grounds and with
+     * one extra condition: the feed wins if it has *more* to say than the extraction did.
+     * Without this a recovered article would survive exactly until the next refresh, and a
+     * reader who opened it twice would see it collapse back to a stub the second time.
+     *
      * @return how many entries were genuinely new.
      */
     @Transaction
@@ -302,6 +307,8 @@ abstract class EntryDao {
                 insert(entry)
                 inserted++
             } else {
+                val keepExtracted = existing.fullTextAt != null &&
+                    (entry.contentHtml?.length ?: 0) <= (existing.contentHtml?.length ?: 0)
                 update(
                     entry.copy(
                         id = existing.id,
@@ -311,6 +318,8 @@ abstract class EntryDao {
                         savedAt = existing.savedAt,
                         isStarred = existing.isStarred,
                         starredAt = existing.starredAt,
+                        contentHtml = if (keepExtracted) existing.contentHtml else entry.contentHtml,
+                        fullTextAt = if (keepExtracted) existing.fullTextAt else null,
                     ),
                 )
             }
