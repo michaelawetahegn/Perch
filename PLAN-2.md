@@ -32,8 +32,10 @@ Deleting a folder moves its sources to Uncategorized — it never deletes source
 Folder order is user-controlled (`sortIndex`); Uncategorized sorts last.
 
 **The two grouping dimensions are not the same dimension.** Time is a *filter*, folder is
-a *section*. Home has a chip row — **Today · Past Week · Past Month · Past Year · All
-Time** (default Today) — which filters by `publishedAt`, and the surviving entries are
+a *section*. Home has **one dropdown** — Today · Past Week · Past Month · Past Year · All
+Time, default Today, **exactly one active at a time** — which filters by `publishedAt`. It
+is a dropdown and not a row of chips: five always-visible buttons spend a band of the
+screen restating four options the user is not choosing. The surviving entries are
 sectioned under folder headers in folder order, exactly like the Feedly reference. When the drawer scopes
 to a single source or folder, the section headers collapse away (there is only one).
 "Today" means *since local midnight*, not "the last 24 h". An empty bucket renders the
@@ -73,7 +75,7 @@ folder or a source. Rules that hold regardless of visual treatment:
 - The bar is visible on all three list destinations and **hidden on the article screen**.
 - Each tab keeps its own scroll position and its own state across switches (nav
   `saveState`/`restoreState`), and survives process death.
-- The time filter (chips) belongs to **Feed only** — To-Read and Liked ignore it, per the
+- The time filter belongs to **Feed only** — To-Read and Liked ignore it, per the
   read-later rule above.
 - **Back never quits from anywhere but the top of the Feed** (the Reddit rule). In order:
   an open drawer/sheet/dialog closes; the image viewer closes; an article returns to the
@@ -245,6 +247,26 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
         `./gradlew test` green.
       - Rung: screenshot
 
+- [ ] **U08a — The time range is a dropdown, not a row of chips. TDD + screenshot.** U07
+      shipped the five ranges as a chip row. It is checked and stays checked — this is the
+      follow-on, not a reopening.
+      Replace the row with a single control that shows the **active** range and nothing
+      else (default *Today*), opening a menu of the five on tap with the current one marked
+      selected. Five always-visible chips spend a horizontal band restating the four options
+      the user is not choosing; a dropdown spends a word.
+      Keep every behaviour U07 established: DataStore persistence across process death,
+      Feed-only scope, and the empty-bucket widen affordance — which now *changes the
+      dropdown's selection*, so the control and the empty state must agree afterwards.
+      Placement and treatment are the session's call per §0; it must survive the longest
+      range label at font scale 1.3 without clipping, and read as a control rather than a
+      title. Amend §0's wording, DESIGN.md §5, and anything U07 wrote that still says
+      "chips".
+      - Done: tests assert exactly one range is ever active, that selecting from the menu
+        re-queries and persists across process death, and that the widen affordance moves
+        the dropdown's own selection; a dark screenshot of the closed control and one of
+        the open menu; `./gradlew test` green.
+      - Rung: screenshot
+
 - [ ] **U09 — To-Read and Liked: bottom bar + the actions that fill them. TDD + screenshot.**
       Add the §0 `NavigationBar` with **Feed · To-Read · Liked** and the two new
       destinations, both rendering the same `EntryRow` as Feed, sorted by `savedAt` /
@@ -269,6 +291,64 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
         the chain and assert the app is not finished until Feed is at the top**; both empty
         states covered; one dark-theme screenshot of To-Read with the bar;
         `./gradlew test` green.
+      - Rung: screenshot
+
+- [ ] **U09a — Multi-select delete for sources and folders. TDD + screenshot.** Removing
+      sources one dialog at a time is the chore that makes people stop curating.
+      **Long-press** a source in the drawer enters selection mode: every row gains a
+      checkbox, the drawer header becomes a contextual bar showing the count with close and
+      delete actions, and tapping toggles rows until the user leaves.
+      **Selection is homogeneous** — a selection started on a source takes only sources, one
+      started on a folder takes only folders. Mixed selection makes one delete verb mean two
+      different things at once. Uncategorized is selectable in neither mode (§0: undeletable).
+      Two different deletes, because they carry different risk:
+      - **Folders** obey §0 — the sources inside move to Uncategorized and nothing is lost.
+        That is cheap to reverse, so it gets an **undo snackbar** (reuse T26's) and no
+        dialog, and the snackbar says what actually happened: "3 folders deleted · 12
+        sources moved to Uncategorized".
+      - **Sources** cascade-delete their entries, **including saved and liked ones** — the
+        exact loss U04 exists to prevent, so it cannot be a silent snackbar. Confirm with a
+        dialog naming the count, and when any selected source holds saved or liked entries,
+        say how many are about to go. Deleting is then final.
+      Selection mode is the **first rung** of §0's back chain — back leaves selection before
+      it closes the drawer. Rotation and process death must not silently drop a selection.
+      - Done: tests cover enter-on-long-press, toggling, the homogeneous-selection rule,
+        Uncategorized being unselectable, folder-delete reassigning rather than cascading
+        (assert the feeds still exist afterwards), the saved/liked count surfacing in the
+        source dialog, undo restoring folders *and* membership, and back leaving selection
+        before closing the drawer; one dark screenshot of selection mode with 3 rows
+        selected; `./gradlew test` green.
+      - Rung: screenshot
+
+- [ ] **U09b — Brand: logo, launcher icon, README. TDD + screenshot.** Source art is at `design/brand/perch-logo-source.png`
+      (84×88) and `perch-logo-with-text-source.png` (124×138): a serif **P** on a document
+      with rule lines and an amber block, wordmark beneath.
+      **They are far too small to scale — do not upscale them.** Redraw the mark as an
+      Android `VectorDrawable` using the PNGs as the design reference, and recolour it into
+      the existing palette (tonal from `#3F6E5A`, `ui/theme/Color.kt`) rather than pasting
+      foreign brand colours over the app. The amber block is the mark's one accent — map it
+      to a theme role and keep it; it is what stops the icon reading as a grey document.
+      **The launcher icon is where logos actually go wrong.** minSdk is 26, so adaptive
+      icons only — no legacy density ladder needed. Ship `mipmap-anydpi-v26/ic_launcher.xml`
+      with `background`, `foreground` **and** `monochrome` (Android 13 themed icons). The
+      foreground lives on a 108dp canvas of which **only the centre 66dp is guaranteed
+      visible** — launchers mask to circles, squircles and rounded squares — so the mark
+      needs real safe-zone padding and an opaque background layer. A mark drawn to the
+      canvas edge gets its corners eaten on most phones.
+      **In the app:** the wordmark in the drawer header, the mark in the no-sources-yet
+      empty state. Both must hold up in light and dark. A splash screen is optional and the
+      session's call; `androidx.core:core-splashscreen` would be a new dependency, so
+      justify it in NOTES.md or skip it.
+      **README:** lead with the wordmark, then one sentence on what Perch is, a screenshot
+      row, install, build, feature list. Cut whatever does not survive that structure — it
+      is the first thing anyone sees.
+      - Done: a Robolectric test renders the `AdaptiveIconDrawable` through **circle,
+        squircle and rounded-square** masks into `build/perch-screenshots/` and asserts the
+        mark's ink stays inside the safe circle so nothing is clipped; light+dark
+        screenshots of the drawer header and the empty state; **look at every one of those
+        PNGs and critique it** — fit, optical centring, weight at small size, contrast on
+        both themes — max 2 fix iterations, residuals to NOTES.md; README renders with the
+        logo and no broken image links; `./gradlew test` green.
       - Rung: screenshot
 
 - [ ] **U07a — Page the lists; stop loading everything. TDD.** A `Flow<List<EntryEntity>>`
