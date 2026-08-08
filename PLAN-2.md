@@ -77,7 +77,7 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
 
 ## Phase 0 — Save the working state
 
-- [ ] **U01 — Publish v0.1.0 to GitHub.** The v0.1 build works and is unbacked-up. Fix
+- [x] **U01 — Publish v0.1.0 to GitHub.** The v0.1 build works and is unbacked-up. Fix
       that first, before any code changes. Remote: `git@github.com:michaelawetahegn/Perch.git`
       (`gh` is already authenticated as `michaelawetahegn`; SSH to github.com works).
       1. **Audit what is about to become public.** `git ls-files` is 22 MB / ~200 files.
