@@ -49,6 +49,9 @@ class AtomParser(private val dates: DateParser = DateParser()) {
         // it is only a fallback — sorting by it would keep resurfacing old posts.
         val publishedRaw = entry.childText("published", "updated", "dc:date", "issued", "modified")
         val publishedAt = dates.parse(publishedRaw)
+        val contentHtml = content(entry)
+        // The entry's own page is what its relative URLs were written against.
+        val imageBase = link ?: entryBase
 
         return ParsedEntry(
             guid = plainText(entry.childText("id"))
@@ -59,8 +62,9 @@ class AtomParser(private val dates: DateParser = DateParser()) {
             author = authorName(entry) ?: feedAuthor,
             publishedAt = publishedAt ?: feedUpdatedAt,
             publishedIsEstimated = publishedAt == null,
-            contentHtml = content(entry),
-            imageUrl = leadImage(entry, entryBase),
+            contentHtml = contentHtml,
+            imageUrl = LeadImage.fromEntry(entry, imageBase)
+                ?: LeadImage.fromBody(contentHtml, imageBase),
         )
     }
 
@@ -96,24 +100,6 @@ class AtomParser(private val dates: DateParser = DateParser()) {
                 ?.let(::escapeMarkup)
             else -> element.markup()
         }
-    }
-
-    /**
-     * The lead image, if the feed volunteers one. An `<link rel="enclosure">` is just as
-     * often a podcast MP3, so the media type decides — never the mere presence of the element.
-     */
-    private fun leadImage(entry: Element, base: String?): String? {
-        val enclosure = entry.childElements("link")
-            .firstOrNull {
-                it.attr("rel").equals("enclosure", ignoreCase = true) &&
-                    it.attr("type").startsWith("image/", ignoreCase = true)
-            }
-        enclosure?.let { return resolveUrl(base, it.attr("href")) }
-
-        val media = entry.childElements("media:content")
-            .firstOrNull { it.attr("type").startsWith("image/", ignoreCase = true) }
-            ?: entry.childElement("media:thumbnail")
-        return resolveUrl(base, media?.attr("url"))
     }
 
     /** The author's name, from `author/name`, `dc:creator`, or a bare mailbox. */

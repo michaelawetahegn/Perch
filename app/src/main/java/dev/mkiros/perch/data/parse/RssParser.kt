@@ -38,6 +38,9 @@ class RssParser(private val dates: DateParser = DateParser()) {
         val link = resolveUrl(base, item.childText("link"))
         val publishedRaw = item.childText("pubdate", "dc:date", "date", "published")
         val publishedAt = dates.parse(publishedRaw)
+        val contentHtml = item.childElement("content:encoded", "description", "summary")?.markup()
+        // The entry's own page is what its relative URLs were written against.
+        val imageBase = link ?: base
 
         return ParsedEntry(
             guid = item.childText("guid")?.let { plainText(it) }
@@ -48,9 +51,9 @@ class RssParser(private val dates: DateParser = DateParser()) {
             author = personName(item.childText("dc:creator", "author", "dc:publisher")),
             publishedAt = publishedAt ?: feedUpdatedAt,
             publishedIsEstimated = publishedAt == null,
-            contentHtml = item.childElement("content:encoded", "description", "summary")
-                ?.markup(),
-            imageUrl = item.leadImageUrl(base),
+            contentHtml = contentHtml,
+            imageUrl = LeadImage.fromItem(item, imageBase)
+                ?: LeadImage.fromBody(contentHtml, imageBase),
         )
     }
 

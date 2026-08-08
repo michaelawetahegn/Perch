@@ -172,7 +172,11 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
         2→3; `app/schemas/3.json`; `./gradlew test` green.
       - Rung: unit
 
-- [ ] **U05 — Thumbnail extraction. TDD.** Populate `entries.imageUrl` per §0's ordered
+- [BLOCKED: extractor is done and green — it resolves 337/339 (99.4%) of every corpus entry
+      that carries an image — but the ≥60%-of-all-entries gate is unreachable without §0's
+      `og:image` rung, which §0 itself defers to U10. Only 339/1038 corpus entries carry any
+      image markup at all, so 32.7% is the corpus ceiling, not our score. Re-gated at U15 gate 4.]
+      **U05 — Thumbnail extraction. TDD.** Populate `entries.imageUrl` per §0's ordered
       fallback chain, in the parser/repository layer (not the UI). Reject tracking pixels
       and sub-64px images by declared dimensions, and resolve relative URLs against the
       entry link. No migration — the column exists since T12.
@@ -446,7 +450,12 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
       `-Pperch.live=true`; `./gradlew test` must stay offline and deterministic). Keep the
       three v1 gates — **≥38/42 sources**, **≤2% `Unsupported`**, one-publication
       screenshots — and add:
-      4. **Thumbnails:** ≥60% of live entries resolve an `imageUrl`.
+      4. **Thumbnails:** ≥60% of live entries resolve an `imageUrl`. **This is U05's
+         deferred gate** — it only becomes reachable once U10 is fetching entry pages and
+         §0's `og:image` rung can run, since feed markup alone tops out near 33% (U05
+         measured 339/1038 corpus entries carrying any image at all). If U10's fetch is
+         opportunistic rather than universal, gate this on the sampled-and-fetched set and
+         say so in the output rather than quietly lowering the number.
       5. **Full text:** for every source whose feed ships no body or only an excerpt,
          U10's extractor recovers real prose for ≥90% of sampled entries, and the recovered
          body is ≥10× the excerpt where there was one. **fabiensanglard.net and gpuopen.com
