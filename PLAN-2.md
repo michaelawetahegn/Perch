@@ -139,7 +139,7 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
 
 ## Phase 1 — Schema, one migration per task
 
-- [ ] **U03 — Folders: schema, DAO, repository. TDD.** `FolderEntity(id, name, sortIndex,
+- [x] **U03 — Folders: schema, DAO, repository. TDD.** `FolderEntity(id, name, sortIndex,
       createdAt)` with a unique index on `name`; `feeds.folderId` non-null FK
       `ON DELETE SET DEFAULT`-equivalent behaviour implemented in the DAO (Room can't
       express it — do the reassignment in a transaction). Migration **1→2** creates the

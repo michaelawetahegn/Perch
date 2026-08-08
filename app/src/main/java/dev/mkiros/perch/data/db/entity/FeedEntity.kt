@@ -1,6 +1,8 @@
 package dev.mkiros.perch.data.db.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
@@ -13,8 +15,24 @@ import androidx.room.PrimaryKey
  *   never overwrites it. Display name is `customTitle ?: title`.
  * @param etag conditional-GET validators handed back to the server on the next fetch.
  * @param lastError null means healthy; non-null is what the drawer's `⚠` renders from.
+ * @param folderId the section this source appears under (PLAN-2 §0), never null. The
+ *   foreign key deliberately does **not** cascade: SQLite's `ON DELETE SET DEFAULT` is
+ *   not expressible through Room, and cascading here would delete subscriptions when a
+ *   user tidied their folders. `FolderDao.deleteAndReassign` moves them instead, in one
+ *   transaction, and this constraint is what makes forgetting to do so a loud failure
+ *   rather than a silent orphan.
  */
-@Entity(tableName = "feeds", indices = [Index(value = ["feedUrl"], unique = true)])
+@Entity(
+    tableName = "feeds",
+    foreignKeys = [
+        ForeignKey(
+            entity = FolderEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["folderId"],
+        ),
+    ],
+    indices = [Index(value = ["feedUrl"], unique = true), Index(value = ["folderId"])],
+)
 data class FeedEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val feedUrl: String,
@@ -30,4 +48,8 @@ data class FeedEntity(
     val consecutiveFailures: Int = 0,
     val addedAt: Long,
     val sortIndex: Int = 0,
+    // Literal because an annotation argument must be a compile-time constant; it is
+    // FolderEntity.UNCATEGORIZED_ID, and migration 1 → 2 defaults the column to the same.
+    @ColumnInfo(defaultValue = "1")
+    val folderId: Long = FolderEntity.UNCATEGORIZED_ID,
 )

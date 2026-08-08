@@ -1,6 +1,5 @@
 package dev.mkiros.perch.data.repo
 
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.FeedDao
@@ -44,10 +43,7 @@ class OpmlRepositoryTest {
     @After
     fun tearDown() = db.close()
 
-    private fun newDatabase() = Room.inMemoryDatabaseBuilder(
-        ApplicationProvider.getApplicationContext(),
-        PerchDatabase::class.java,
-    ).build()
+    private fun newDatabase() = PerchDatabase.inMemory(ApplicationProvider.getApplicationContext())
 
     private fun feed(index: Int) = FeedEntity(
         feedUrl = "https://source$index.example/feed.xml",

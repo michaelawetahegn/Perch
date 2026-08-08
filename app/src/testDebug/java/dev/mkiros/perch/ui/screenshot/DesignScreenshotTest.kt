@@ -8,7 +8,6 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.PerchDatabase
@@ -68,9 +67,7 @@ class DesignScreenshotTest {
     @Before
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        database = Room.inMemoryDatabaseBuilder(context, PerchDatabase::class.java)
-            .allowMainThreadQueries()
-            .build()
+        database = PerchDatabase.inMemory(context)
         container = AppContainer(
             database = database,
             httpClient = PerchHttp.client(cacheDir = null),

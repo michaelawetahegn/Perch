@@ -7,7 +7,6 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.PerchDatabase
@@ -50,9 +49,7 @@ class PerchNavHostTest {
     @Before
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        database = Room.inMemoryDatabaseBuilder(context, PerchDatabase::class.java)
-            .allowMainThreadQueries()
-            .build()
+        database = PerchDatabase.inMemory(context)
         container = AppContainer(
             database = database,
             httpClient = PerchHttp.client(cacheDir = null),

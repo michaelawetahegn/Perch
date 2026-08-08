@@ -101,7 +101,19 @@ maestro/*.yaml
 ## 4. Data model
 
 ```kotlin
-@Entity(tableName = "feeds", indices = [Index(value=["feedUrl"], unique=true)])
+// v0.2 (PLAN-2 §0, U03). Every source belongs to exactly one folder; id 1 is the
+// built-in "Uncategorized", which is undeletable, unrenameable, and sorts last.
+@Entity(tableName = "folders", indices = [Index(value=["name"], unique=true)])
+data class FolderEntity(
+  @PrimaryKey(autoGenerate = true) val id: Long = 0,
+  val name: String,
+  val sortIndex: Int = 0,       // user order; Uncategorized is pinned last regardless
+  val createdAt: Long,
+)
+
+@Entity(tableName = "feeds",
+        foreignKeys = [ForeignKey(FolderEntity::class, ["id"], ["folderId"])],  // NO ACTION
+        indices = [Index(value=["feedUrl"], unique=true), Index("folderId")])
 data class FeedEntity(
   @PrimaryKey(autoGenerate = true) val id: Long = 0,
   val feedUrl: String,          // resolved feed URL (post-discovery, post-redirect)
@@ -117,7 +129,10 @@ data class FeedEntity(
   val consecutiveFailures: Int = 0,
   val addedAt: Long,
   val sortIndex: Int = 0,
-)
+  val folderId: Long = 1,       // v0.2; DEFAULT 1 = Uncategorized. Deleting a folder
+)                               // reassigns its sources (FolderDao.deleteAndReassign),
+                                // never cascades — SQLite's ON DELETE SET DEFAULT is
+                                // not expressible through Room, so the DAO does it.
 
 @Entity(tableName="entries", foreignKeys=[…CASCADE on feedId…],
         indices=[Index(value=["feedId","guid"], unique=true), Index("publishedAt"), Index("isRead")])
@@ -140,10 +155,9 @@ data class EntryEntity(
 )
 ```
 
-Room schema exported to `app/schemas/`. Pre-1.0 migrations use
-`fallbackToDestructiveMigration()`; **the moment the first APK is installed for daily
-use (task T31), destructive migration is removed** and real `Migration` objects are
-required.
+Room schema exported to `app/schemas/`. **Destructive migration was removed at T31** —
+v0.1 is installed for daily use, so every schema change ships a real `Migration` plus its
+`app/schemas/N.json`. Version 1 is v0.1's baseline; version 2 adds folders (U03).
 
 ## 5. Parsing contract (the standing tests defend this)
 

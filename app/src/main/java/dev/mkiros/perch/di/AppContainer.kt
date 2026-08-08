@@ -7,6 +7,7 @@ import dev.mkiros.perch.data.net.FeedFetcher
 import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.repo.EntryRepository
 import dev.mkiros.perch.data.repo.FeedRepository
+import dev.mkiros.perch.data.repo.FolderRepository
 import dev.mkiros.perch.data.repo.OpmlRepository
 import dev.mkiros.perch.data.settings.SettingsStore
 import okhttp3.OkHttpClient
@@ -46,6 +47,10 @@ class AppContainer(
             fetcher = FeedFetcher(httpClient),
             clock = clock,
         )
+    }
+
+    val folders: FolderRepository by lazy {
+        FolderRepository(folderDao = database.folderDao(), clock = clock)
     }
 
     val entries: EntryRepository by lazy {

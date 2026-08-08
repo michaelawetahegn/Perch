@@ -15,7 +15,6 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.PerchDatabase
@@ -84,9 +83,7 @@ class HomeRefreshTest {
         }
         server.start()
         val context = ApplicationProvider.getApplicationContext<Context>()
-        database = Room.inMemoryDatabaseBuilder(context, PerchDatabase::class.java)
-            .allowMainThreadQueries()
-            .build()
+        database = PerchDatabase.inMemory(context)
         container = AppContainer(
             database = database,
             httpClient = PerchHttp.client(cacheDir = null),

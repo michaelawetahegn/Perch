@@ -1,7 +1,6 @@
 package dev.mkiros.perch.work
 
 import android.content.Context
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.ListenableWorker
 import androidx.work.testing.TestListenableWorkerBuilder
@@ -48,10 +47,7 @@ class RefreshWorkerTest {
 
     @Before
     fun setUp() {
-        db = Room.inMemoryDatabaseBuilder(
-            ApplicationProvider.getApplicationContext(),
-            PerchDatabase::class.java,
-        ).build()
+        db = PerchDatabase.inMemory(ApplicationProvider.getApplicationContext())
         feeds = db.feedDao()
         entries = db.entryDao()
         server = MockWebServer()

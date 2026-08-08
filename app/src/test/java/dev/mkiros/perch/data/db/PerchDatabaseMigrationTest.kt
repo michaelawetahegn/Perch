@@ -56,7 +56,7 @@ class PerchDatabaseMigrationTest {
 
     @Test
     fun `the database is built without a destructive fallback`() {
-        val source = repoRoot()
+        val source = ExportedSchemas.repoRoot()
             .resolve("app/src/main/java/dev/mkiros/perch/data/db/PerchDatabase.kt")
             .readText()
 
@@ -66,26 +66,11 @@ class PerchDatabaseMigrationTest {
         )
     }
 
-    private fun exportedVersions(): List<Int> =
-        schemaDir().listFiles()
-            ?.mapNotNull { it.name.removeSuffix(".json").toIntOrNull() }
-            ?.sorted()
-            .orEmpty()
+    private fun exportedVersions(): List<Int> = ExportedSchemas.exportedVersions()
 
     private fun schemaDir(): File {
-        val dir = repoRoot().resolve("app/schemas/${PerchDatabase::class.qualifiedName}")
+        val dir = ExportedSchemas.dir()
         assertTrue("no exported schemas at $dir", dir.isDirectory)
         return dir
-    }
-
-    /** Walks up from the working directory, which is `:app` under Gradle and the root elsewhere. */
-    private fun repoRoot(): File {
-        val start = System.getProperty("user.dir") ?: "."
-        var dir: File? = File(start).absoluteFile
-        while (dir != null) {
-            if (File(dir, "app/schemas").isDirectory) return dir
-            dir = dir.parentFile
-        }
-        error("app/schemas not found above $start")
     }
 }

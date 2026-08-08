@@ -8,7 +8,6 @@ import androidx.activity.ComponentActivity
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import coil.Coil
 import coil.ImageLoader
@@ -91,9 +90,7 @@ class LiveAcceptanceTest {
     @Before
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        database = Room.inMemoryDatabaseBuilder(context, PerchDatabase::class.java)
-            .allowMainThreadQueries()
-            .build()
+        database = PerchDatabase.inMemory(context)
         container = AppContainer(
             database = database,
             httpClient = PerchHttp.client(cacheDir = null),

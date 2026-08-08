@@ -1,6 +1,5 @@
 package dev.mkiros.perch.data.repo
 
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
@@ -42,10 +41,7 @@ class EntryRepositoryTest {
 
     @Before
     fun openDatabase() {
-        db = Room.inMemoryDatabaseBuilder(
-            ApplicationProvider.getApplicationContext(),
-            PerchDatabase::class.java,
-        ).build()
+        db = PerchDatabase.inMemory(ApplicationProvider.getApplicationContext())
         feeds = db.feedDao()
         entries = db.entryDao()
         repo = EntryRepository(

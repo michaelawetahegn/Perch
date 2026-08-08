@@ -13,7 +13,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.Configuration
 import androidx.work.WorkInfo
@@ -85,9 +84,7 @@ class SettingsScreenTest {
                 .setExecutor(SynchronousExecutor())
                 .build(),
         )
-        database = Room.inMemoryDatabaseBuilder(context, PerchDatabase::class.java)
-            .allowMainThreadQueries()
-            .build()
+        database = PerchDatabase.inMemory(context)
         container = AppContainer(
             database = database,
             httpClient = PerchHttp.client(cacheDir = null),

@@ -1,7 +1,6 @@
 package dev.mkiros.perch.data.db
 
 import android.database.sqlite.SQLiteConstraintException
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
@@ -28,10 +27,7 @@ class PerchDatabaseTest {
 
     @Before
     fun openDatabase() {
-        db = Room.inMemoryDatabaseBuilder(
-            ApplicationProvider.getApplicationContext(),
-            PerchDatabase::class.java,
-        ).build()
+        db = PerchDatabase.inMemory(ApplicationProvider.getApplicationContext())
         feeds = db.feedDao()
         entries = db.entryDao()
     }

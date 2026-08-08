@@ -1,6 +1,5 @@
 package dev.mkiros.perch.debug
 
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.PerchDatabase
@@ -37,9 +36,7 @@ class DebugSeederTest {
     @Before
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<android.app.Application>()
-        db = Room.inMemoryDatabaseBuilder(context, PerchDatabase::class.java)
-            .allowMainThreadQueries()
-            .build()
+        db = PerchDatabase.inMemory(context)
         feeds = FeedRepository(
             feedDao = db.feedDao(),
             entryDao = db.entryDao(),
