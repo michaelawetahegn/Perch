@@ -6,7 +6,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 /**
- * The `· 3h ago` half of a row's metadata line (DESIGN.md §5).
+ * The `/ 5h` half of a row's metadata line (DESIGN.md §5).
  *
  * Deliberately a pure function of two instants rather than a composable reading a
  * `Clock`: the moment "now" is decided belongs to the state that produced the list, so a
@@ -17,6 +17,11 @@ import java.util.Locale
  * The scale coarsens the way memory does: minutes for the last hour, hours for the last
  * day, days for the last week, then an actual date. "Ago" stops carrying information
  * somewhere around a week.
+ *
+ * U08 made it **compact** — `47min`, `5h`, `1d` — to match
+ * `design/reference/feed-row-reference.jpg`. The word "ago" was carrying no information
+ * that `Source / 5h` on a reading list does not already imply, and it was doing so on the
+ * one line that has to survive a long source name beside a 96dp thumbnail.
  */
 object RelativeTime {
 
@@ -27,10 +32,10 @@ object RelativeTime {
         val elapsed = now - publishedAt
         return when {
             // A feed's clock may be slightly ahead of ours; that is not the future.
-            elapsed < MINUTE -> "just now"
-            elapsed < HOUR -> "${elapsed / MINUTE}m ago"
-            elapsed < DAY -> "${elapsed / HOUR}h ago"
-            elapsed < WEEK -> "${elapsed / DAY}d ago"
+            elapsed < MINUTE -> "now"
+            elapsed < HOUR -> "${elapsed / MINUTE}min"
+            elapsed < DAY -> "${elapsed / HOUR}h"
+            elapsed < WEEK -> "${elapsed / DAY}d"
             else -> absolute(publishedAt, now, zone)
         }
     }

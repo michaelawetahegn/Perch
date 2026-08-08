@@ -42,14 +42,17 @@ val PerchTypography = Typography(
         lineHeight = 32.sp,
     ),
     // Entry title in a list row — max 3 lines, ellipsised by the row. §3.
+    // w600 rather than w500 since U08: the row's only remaining text hierarchy is title
+    // against metadata, so the title has to carry it on its own.
     titleMedium = TextStyle(
         fontFamily = Sans,
-        fontWeight = FontWeight.Medium,
+        fontWeight = FontWeight.SemiBold,
         fontSize = 16.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.15.sp,
     ),
-    // Entry snippet in a list row — max 2 lines. §3.
+    // Body copy in the app furniture — settings summaries, sheet confirmations, empty
+    // states. (It was the list row's snippet until U08 removed it.) §3.
     bodyMedium = TextStyle(
         fontFamily = Sans,
         fontWeight = FontWeight.Normal,

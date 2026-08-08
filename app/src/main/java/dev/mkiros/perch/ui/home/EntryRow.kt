@@ -1,11 +1,13 @@
 package dev.mkiros.perch.ui.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -15,30 +17,52 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
+import coil.compose.SubcomposeAsyncImageContent
 import dev.mkiros.perch.R
 import dev.mkiros.perch.data.db.EntryListItem
 import dev.mkiros.perch.ui.theme.Dimens
 
 /**
- * One entry in the reading list (DESIGN.md §5).
+ * Handles for the row's parts, which are inside its merged semantics node.
+ *
+ * The row itself has none: it wears whatever tag its caller passes in — `HomeTestTags.ENTRY`
+ * on home — and a second `testTag` on the same node would silently replace it.
+ */
+object EntryRowTestTags {
+    const val TITLE = "entry:title"
+    const val META = "entry:meta"
+
+    /** The square the image lives in, drawn at the same size in every state. */
+    const val THUMBNAIL = "entry:thumb"
+    const val THUMBNAIL_IMAGE = "entry:thumb:image"
+    const val THUMBNAIL_PLACEHOLDER = "entry:thumb:placeholder"
+}
+
+/**
+ * One entry in the reading list (DESIGN.md §5, U08), built to
+ * `design/reference/feed-row-reference.jpg` — structure from the reference, colour from
+ * our own dark scheme:
  *
  * ```
- * ● Title (≤3 lines)
- *   Snippet (≤2 lines)
- *   Source · 3h ago          [thumb]
+ * ● Title, up to three lines     ┌────────┐
+ *   Source / 5h                  │ thumb  │
+ *                                └────────┘
  * ```
  *
  * The unread dot is `primary` and is the only coloured thing on the row (§2); a read row
  * drops its title to `onSurfaceVariant` and loses the dot, and that contrast delta is the
  * entire read/unread affordance — no strikethrough, no opacity, no badge. The dot's
  * gutter is reserved whether or not the dot is drawn, so titles stay on one left edge.
+ *
+ * U08 dropped the two-line snippet: the thumbnail now does the work of telling the reader
+ * what an entry is about, and a row carrying both is a card in everything but name.
  */
 @Composable
 fun EntryRow(
@@ -75,17 +99,8 @@ fun EntryRow(
                 },
                 maxLines = TITLE_MAX_LINES,
                 overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.testTag(EntryRowTestTags.TITLE),
             )
-            EntrySnippet.forTitle(item.title, item.summary)?.let { snippet ->
-                Spacer(modifier = Modifier.size(Dimens.xs))
-                Text(
-                    text = snippet,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = SNIPPET_MAX_LINES,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
             Spacer(modifier = Modifier.size(Dimens.xs))
             Text(
                 text = stringResource(
@@ -97,24 +112,68 @@ fun EntryRow(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.testTag(EntryRowTestTags.META),
             )
         }
 
-        item.imageUrl?.let { url ->
-            Spacer(modifier = Modifier.size(Dimens.md))
-            AsyncImage(
-                model = url,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(Dimens.thumbnail)
-                    .clip(RoundedCornerShape(Dimens.imageCorner))
-                    .background(MaterialTheme.colorScheme.surfaceContainer),
-                alignment = Alignment.Center,
-            )
-        }
+        Spacer(modifier = Modifier.size(Dimens.thumbnailGap))
+        Thumbnail(url = item.imageUrl)
     }
 }
 
+/**
+ * The row's trailing square — an image when there is one, and otherwise the outlined
+ * placeholder the reference draws.
+ *
+ * **All four states occupy this identical square.** No image is a designed state, not a
+ * failure (PLAN-2 §0): most of the sources here are text-only blogs that will never
+ * have one, an image in flight resolves in its own time, and an image URL harvested from
+ * a feed months ago may well 404. If any of those collapsed the square or shrank it, the
+ * list would reflow under the reader's thumb as images arrived — so `loading` and `error`
+ * both land on the same placeholder as `null`, and none of them shows a broken-image
+ * glyph. (`ArticleFigure` collapses on a load error, which is right *there* — a gap
+ * mid-article is better than an empty frame — and wrong here.)
+ */
+@Composable
+private fun Thumbnail(url: String?) {
+    val shape = RoundedCornerShape(Dimens.thumbnailCorner)
+    Box(
+        modifier = Modifier
+            .size(Dimens.thumbnail)
+            .clip(shape)
+            .testTag(EntryRowTestTags.THUMBNAIL),
+    ) {
+        if (url == null) {
+            Placeholder(shape)
+            return@Box
+        }
+        SubcomposeAsyncImage(
+            model = url,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize(),
+            loading = { Placeholder(shape) },
+            error = { Placeholder(shape) },
+            success = {
+                SubcomposeAsyncImageContent(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .testTag(EntryRowTestTags.THUMBNAIL_IMAGE),
+                )
+            },
+        )
+    }
+}
+
+/** An empty frame: a hairline `outlineVariant` outline on the surface, nothing inside. */
+@Composable
+private fun Placeholder(shape: RoundedCornerShape) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .border(Dimens.hairline, MaterialTheme.colorScheme.outlineVariant, shape)
+            .testTag(EntryRowTestTags.THUMBNAIL_PLACEHOLDER),
+    )
+}
+
 private const val TITLE_MAX_LINES = 3
-private const val SNIPPET_MAX_LINES = 2

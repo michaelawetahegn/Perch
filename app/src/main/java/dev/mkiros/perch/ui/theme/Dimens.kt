@@ -49,8 +49,22 @@ object Dimens {
      */
     val unreadGutter = lg
 
-    /** The optional lead image on a list row. §5 — trailing, square, cropped. */
-    val thumbnail = 64.dp
+    /**
+     * The lead image on a list row (§5, U08) — trailing, square, cropped. 96dp rather
+     * than 64: at 64 the image is an icon beside the text, at 96 it is the second thing
+     * the eye lands on, which is what the reference row does with it.
+     *
+     * It is not optional. A row with no image, a row still loading one and a row whose
+     * image failed all reserve this exact square, so nothing in the list moves sideways
+     * or collapses as images arrive.
+     */
+    val thumbnail = 96.dp
+
+    /** The thumbnail's corner radius — `medium`, the app's sheet/dialog radius. §4. */
+    val thumbnailCorner = md
+
+    /** Air between the title column and the thumbnail. */
+    val thumbnailGap = md
 
     /** Empty states: one centred icon above the copy. §7. */
     val emptyIcon = 48.dp

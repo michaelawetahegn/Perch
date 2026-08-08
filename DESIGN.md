@@ -46,9 +46,9 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
 | Role | Token | Use |
 |---|---|---|
 | `headlineSmall` | 24/32 | Article title on the article screen |
-| `titleMedium` | 16/24, w500 | Entry title in list rows (max **3 lines**, ellipsis) |
-| `bodyMedium` | 14/20 | Entry snippet in list rows (max **2 lines**) |
-| `labelMedium` | 12/16 | Source name · relative time metadata line |
+| `titleMedium` | 16/24, **w600** | Entry title in list rows (max **3 lines**, ellipsis) |
+| `bodyMedium` | 14/20 | Body copy in app furniture — settings, sheets, empty states |
+| `labelMedium` | 12/16 | `Source / 5h` metadata line under a row's title |
 | `titleLarge` | 22/28 | Top app bar title (`LargeTopAppBar` on home) |
 
 **The article surface has its own serif type scale — see §8.** App furniture is sans
@@ -68,8 +68,9 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
 ## 4. Spacing, density, shape
 
 - 4dp grid. Tokens in `ui/theme/Dimens.kt`: `xs 4 · sm 8 · md 12 · lg 16 · xl 24 · xxl 32`.
-- Screen horizontal padding **16dp**. List rows: 16dp horizontal, **12dp vertical**,
-  giving ~88dp tall rows with a 3-line title — comfortable-compact.
+- Screen horizontal padding **16dp**. List rows: 16dp horizontal, **12dp vertical**.
+  Since U08 the 96dp thumbnail sets the floor, so a row is ~120dp whether its title runs
+  to one line or three — comfortable-compact, and uniform.
 - Row separation is **whitespace + a hairline `outlineVariant` divider inset 16dp from
   the left**, not cards. Cards on a feed list are noise.
 - Corners: `medium` (12dp) for sheets/dialogs/code blocks, `full` for chips and the FAB.
@@ -92,9 +93,9 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
 │ ─────────────────────────────────────│
 │ Folder name                          │  ← section header, accent colour
 │ EntryRow ×N  (pull-to-refresh)       │
-│  ● Title (≤3 lines)                  │
-│    Snippet (≤2 lines)                │
-│    Source · 3h ago          [thumb]  │
+│  ● Title (≤3 lines)        ┌───────┐ │
+│    Source / 5h             │ thumb │ │
+│                            └───────┘ │
 │ Next folder                          │
 │ EntryRow ×N                          │
 └──────────────────────────────────────┘
@@ -118,6 +119,18 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
   over a reading list is a Material cargo-cult.
 ```
 
+- **The entry row (U08),** built to `design/reference/feed-row-reference.jpg`: title
+  (`titleMedium` w600, ≤3 lines) over a `Source / 5h` metadata line in
+  `onSurfaceVariant`, and a **96dp square thumbnail** on the right with 12dp corners,
+  cropped. Relative time is compact — `47min`, `5h`, `1d`, `3d`, then a date past a week.
+  **No snippet:** the thumbnail does that work, and a row with both is a card in
+  everything but name.
+  The thumbnail square is **always reserved**. No image, an image in flight, and an image
+  that 404s all draw the same hairline `outlineVariant` frame in the same footprint — a
+  list that reflows as images arrive moves the row out from under the reader's thumb.
+  Never a broken-image glyph, never a collapsed row. (The *article* surface does the
+  opposite and collapses a failed figure — §8. A gap mid-sentence beats an empty frame;
+  in a list, a stable footprint beats both.)
 - **Article screen:** `TopAppBar` with back, `Open in browser` (Custom Tab), and
   overflow (`Mark unread`, `Share`). Title, then `source · author · date`, then a
   hairline, then body. Scroll position survives rotation.

@@ -1,6 +1,9 @@
 package dev.mkiros.perch.ui.screenshot
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -9,6 +12,10 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.test.core.app.ApplicationProvider
+import coil.Coil
+import coil.ImageLoader
+import coil.map.Mapper
+import coil.request.Options
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.net.PerchHttp
@@ -27,6 +34,7 @@ import dev.mkiros.perch.ui.theme.ThemeMode
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -89,6 +97,7 @@ class DesignScreenshotTest {
 
     @After
     fun tearDown() {
+        Coil.reset()
         database.close()
     }
 
@@ -196,7 +205,47 @@ class DesignScreenshotTest {
             .id
     }
 
+    /**
+     * Home's rows are half thumbnail since U08, and Robolectric has no network — so
+     * without a loader that answers, every shot of the list would be a wall of
+     * placeholders and the critique could not judge the thing it exists to judge. This
+     * maps any URL to a flat 16:9 bitmap, so a row whose entry carries an `imageUrl`
+     * (krebsonsecurity and blog.regehr.org, in this seed) draws an image and the rest draw
+     * the placeholder — the mix U08 asks to see.
+     *
+     * The article shot deliberately gets no loader: a failed figure collapsing is that
+     * screen's designed behaviour (§8) and the T25 tests own it.
+     */
+    private fun stubThumbnails() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        Coil.setImageLoader(
+            ImageLoader.Builder(context)
+                .components { add(FlatColourImages(context)) }
+                .dispatcher(Dispatchers.Main.immediate)
+                .fetcherDispatcher(Dispatchers.Main.immediate)
+                .decoderDispatcher(Dispatchers.Main.immediate)
+                .transformationDispatcher(Dispatchers.Main.immediate)
+                .build(),
+        )
+    }
+
+    /** Every URL becomes the same muted slab — a stand-in for a lead image, not a mock of one. */
+    private class FlatColourImages(private val context: Context) : Mapper<String, Drawable> {
+        override fun map(data: String, options: Options): Drawable {
+            val bitmap = Bitmap.createBitmap(WIDTH, HEIGHT, Bitmap.Config.ARGB_8888)
+            bitmap.eraseColor(COLOUR)
+            return BitmapDrawable(context.resources, bitmap)
+        }
+
+        private companion object {
+            const val WIDTH = 320
+            const val HEIGHT = 180
+            const val COLOUR = 0xFF5B7F6E.toInt()
+        }
+    }
+
     private fun showHome(mode: ThemeMode) {
+        stubThumbnails()
         homeViewModel = HomeViewModel(
             entries = container.entries,
             feeds = container.feeds,

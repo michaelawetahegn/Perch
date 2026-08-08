@@ -224,7 +224,7 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
         state offers the widen affordance; `./gradlew test` green.
       - Rung: unit
 
-- [ ] **U08 — The entry row, redesigned. TDD + screenshot.** Rebuild `EntryRow` to the
+- [x] **U08 — The entry row, redesigned. TDD + screenshot.** Rebuild `EntryRow` to the
       reference at **`design/reference/feed-row-reference.jpg`** (a Feedly light-mode
       capture — build the **dark** equivalent, matching structure not colour): **title** (titleMedium, w600, ≤3 lines) on the left, **`Source / 5h`** metadata
       beneath it in `onSurfaceVariant`, and a **thumbnail on the right** — ~96dp, 12dp

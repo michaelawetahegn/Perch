@@ -44,7 +44,7 @@ import org.robolectric.RobolectricTestRunner
  * what order rows come in, what the screen says when there is nothing to show, and what
  * selecting a source does to both the list and the bar.
  *
- * "Now" is a fixed [Clock] rather than the wall clock, so `3h ago` is an assertion and
+ * "Now" is a fixed [Clock] rather than the wall clock, so `3h` is an assertion and
  * not a race. Everything is seeded straight into an in-memory database — the screen is
  * driven by the same Room flows the real app uses, no fake repository in between.
  *
@@ -91,7 +91,7 @@ class HomeScreenTest {
     }
 
     @Test
-    fun `a row shows its title, its snippet, and its source with a relative time`() {
+    fun `a row shows its title and its source with a relative time, and no snippet`() {
         val feedId = seedFeed(title = "Null Program")
         seedEntry(
             feedId = feedId,
@@ -103,9 +103,11 @@ class HomeScreenTest {
         showHome()
 
         compose.onNodeWithText("An Async Runtime in C").assertIsDisplayed()
+        compose.onNodeWithText("Null Program / 3h").assertIsDisplayed()
+        // U08 dropped the snippet: the thumbnail does that work now, and the reference row
+        // is title + metadata only.
         compose.onNodeWithText("Coroutines without a language runtime, in about 200 lines.")
-            .assertIsDisplayed()
-        compose.onNodeWithText("Null Program · 3h ago").assertIsDisplayed()
+            .assertDoesNotExist()
     }
 
     @Test
@@ -115,7 +117,7 @@ class HomeScreenTest {
 
         showHome()
 
-        compose.onNodeWithText("Chris Wellons · 2d ago").assertIsDisplayed()
+        compose.onNodeWithText("Chris Wellons / 2d").assertIsDisplayed()
     }
 
     @Test

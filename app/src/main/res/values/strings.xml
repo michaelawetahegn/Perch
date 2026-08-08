@@ -8,8 +8,8 @@
     <string name="action_open_sources">Open sources</string>
 
     <!-- Home: the entry list -->
-    <!-- Source name · relative time, the metadata line under a row's snippet. -->
-    <string name="home_entry_meta">%1$s · %2$s</string>
+    <!-- Source name / relative time, the metadata line under a row's title (U08). -->
+    <string name="home_entry_meta">%1$s / %2$s</string>
 
     <!-- Home: empty states, one per cause (DESIGN.md §7) -->
     <string name="home_empty_no_sources_title">Add your first source</string>

@@ -1,0 +1,294 @@
+package dev.mkiros.perch.ui.home
+
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
+import androidx.activity.ComponentActivity
+import androidx.compose.foundation.layout.Column
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.test.assertHeightIsEqualTo
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertWidthIsEqualTo
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.unit.dp
+import androidx.test.core.app.ApplicationProvider
+import coil.Coil
+import coil.ImageLoader
+import coil.ImageLoader.Builder
+import coil.intercept.Interceptor
+import coil.map.Mapper
+import coil.request.ErrorResult
+import coil.request.ImageResult
+import coil.request.Options
+import com.google.common.truth.Truth.assertThat
+import dev.mkiros.perch.data.db.EntryListItem
+import dev.mkiros.perch.ui.theme.Dimens
+import dev.mkiros.perch.ui.theme.PerchTheme
+import java.io.IOException
+import java.time.Instant
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.awaitCancellation
+import org.junit.After
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+
+/**
+ * The redesigned row (U08), against `design/reference/feed-row-reference.jpg`.
+ *
+ * The thumbnail is the whole reason this test exists. A reading list scrolls past
+ * hundreds of rows and most of them have **no usable image** — absent, still loading, or
+ * a 404 — so the placeholder is the common case, not the edge case. Every state has to
+ * occupy the identical footprint, or the list jitters as images arrive and the reader's
+ * thumb lands on the wrong article. That is asserted here as a dimension rather than
+ * eyeballed in a screenshot.
+ *
+ * Each Coil state is produced by its own stub loader rather than by a real request: a
+ * mapper returning a drawable succeeds, an interceptor returning [ErrorResult] fails, and
+ * one that never returns stays loading. No network, no timing.
+ */
+@RunWith(RobolectricTestRunner::class)
+@Config(qualifiers = "w411dp-h891dp-xhdpi")
+class EntryRowTest {
+
+    @get:Rule
+    val compose = createAndroidComposeRule<ComponentActivity>()
+
+    private val context: Context get() = ApplicationProvider.getApplicationContext()
+
+    @After
+    fun tearDown() {
+        Coil.reset()
+    }
+
+    // ---- the row ---------------------------------------------------------------
+
+    @Test
+    fun `a row shows its title over its source and a compact time`() {
+        show(item(title = "An Async Runtime in C", sourceTitle = "Null Program"))
+
+        compose.onNodeWithText("An Async Runtime in C").assertIsDisplayed()
+        compose.onNodeWithText("Null Program / 5h").assertIsDisplayed()
+    }
+
+    @Test
+    fun `each relative-time band reads the way the reference does`() {
+        val bands = listOf(
+            "47min" to 47 * MINUTE,
+            "5h" to 5 * HOUR,
+            "1d" to DAY,
+            "3d" to 3 * DAY,
+            "30 Jul" to 8 * DAY,
+        )
+        showAll(
+            bands.mapIndexed { index, (label, elapsed) ->
+                item(id = index + 1L, title = "Entry $label", publishedAt = NOW - elapsed)
+            },
+        )
+
+        bands.forEach { (label, _) ->
+            compose.onNodeWithText("Simon Willison / $label").assertIsDisplayed()
+        }
+    }
+
+    @Test
+    fun `a title longer than three lines is clamped rather than pushing the row taller`() {
+        val sentence = "Everything you ever wanted to know about the compiler you use"
+        showAll(
+            listOf(
+                item(id = 1, title = List(3) { sentence }.joinToString(" ")),
+                item(id = 2, title = List(12) { sentence }.joinToString(" ")),
+            ),
+        )
+
+        // titleMedium is 16sp on a 24sp line, so three lines is 72dp at font scale 1.
+        val limit = with(compose.density) { THREE_LINES.roundToPx() }
+        assertThat(titleHeights().max()).isAtMost(limit)
+        // Four times the text, the same box: the clamp is doing the work, not luck.
+        assertThat(titleHeights()).hasSize(1)
+    }
+
+    // ---- the thumbnail, in every one of its states ------------------------------
+
+    @Test
+    fun `an entry with no image draws the placeholder, not a broken glyph`() {
+        show(item(imageUrl = null))
+
+        assertPlaceholder()
+    }
+
+    @Test
+    fun `an image that is still loading draws the placeholder`() {
+        install(PendingForever)
+        show(item(imageUrl = IMAGE_URL))
+
+        assertPlaceholder()
+    }
+
+    @Test
+    fun `an image whose load fails draws the placeholder`() {
+        install(AlwaysFails)
+        show(item(imageUrl = IMAGE_URL))
+
+        assertPlaceholder()
+    }
+
+    @Test
+    fun `an image that loads replaces the placeholder in the same footprint`() {
+        install(StubImages(IMAGE_URL, context))
+        show(item(imageUrl = IMAGE_URL))
+
+        thumbnail(EntryRowTestTags.THUMBNAIL_IMAGE).assertIsDisplayed()
+        thumbnail(EntryRowTestTags.THUMBNAIL_PLACEHOLDER).assertDoesNotExist()
+        assertThumbnailFootprint()
+    }
+
+    @Test
+    fun `the row is the same height whether its image is absent, loaded or failed`() {
+        install(StubImages(IMAGE_URL, context))
+        showAll(
+            listOf(
+                item(id = 1, imageUrl = null),
+                item(id = 2, imageUrl = IMAGE_URL),
+                item(id = 3, imageUrl = MISSING_URL),
+            ),
+        )
+
+        val heights = compose.onAllNodesWithTag(ROW)
+            .fetchSemanticsNodes()
+            .map { it.size.height }
+        assertThat(heights).hasSize(3)
+        assertThat(heights.toSet()).hasSize(1)
+    }
+
+    // ---- helpers ---------------------------------------------------------------
+
+    private fun assertPlaceholder() {
+        thumbnail(EntryRowTestTags.THUMBNAIL_PLACEHOLDER).assertIsDisplayed()
+        thumbnail(EntryRowTestTags.THUMBNAIL_IMAGE).assertDoesNotExist()
+        assertThumbnailFootprint()
+    }
+
+    private fun assertThumbnailFootprint() {
+        thumbnail(EntryRowTestTags.THUMBNAIL)
+            .assertWidthIsEqualTo(Dimens.thumbnail)
+            .assertHeightIsEqualTo(Dimens.thumbnail)
+    }
+
+    /** The thumbnail's parts are inside the row's merged node, so ask the unmerged tree. */
+    private fun thumbnail(tag: String) = compose.onNodeWithTag(tag, useUnmergedTree = true)
+
+    /** The distinct rendered title heights on screen, in pixels. */
+    private fun titleHeights(): Set<Int> =
+        compose.onAllNodesWithTag(EntryRowTestTags.TITLE, useUnmergedTree = true)
+            .fetchSemanticsNodes()
+            .map { it.size.height }
+            .toSet()
+
+    private fun install(interceptor: Interceptor) =
+        install(Builder(context).components { add(interceptor) })
+
+    private fun install(mapper: Mapper<String, Drawable>) =
+        install(Builder(context).components { add(mapper) })
+
+    private fun install(builder: Builder) {
+        Coil.setImageLoader(
+            builder
+                .dispatcher(Dispatchers.Main.immediate)
+                .fetcherDispatcher(Dispatchers.Main.immediate)
+                .decoderDispatcher(Dispatchers.Main.immediate)
+                .transformationDispatcher(Dispatchers.Main.immediate)
+                .build(),
+        )
+    }
+
+    private fun show(item: EntryListItem) = showAll(listOf(item))
+
+    private fun showAll(items: List<EntryListItem>) {
+        compose.setContent {
+            PerchTheme(dynamicColor = false) {
+                Column {
+                    items.forEach {
+                        // The row wears its caller's tag, the way home's does.
+                        EntryRow(
+                            item = it,
+                            now = NOW,
+                            onClick = {},
+                            modifier = Modifier.testTag(ROW),
+                        )
+                    }
+                }
+            }
+        }
+        compose.waitForIdle()
+    }
+
+    private fun item(
+        id: Long = 1,
+        title: String = "An Async Runtime in C",
+        sourceTitle: String = "Simon Willison",
+        imageUrl: String? = null,
+        publishedAt: Long = NOW - 5 * HOUR,
+        isRead: Boolean = false,
+    ) = EntryListItem(
+        id = id,
+        feedId = 1,
+        title = title,
+        summary = "A summary the redesigned row deliberately no longer shows.",
+        imageUrl = imageUrl,
+        publishedAt = publishedAt,
+        isRead = isRead,
+        sourceTitle = sourceTitle,
+        folderId = 1,
+        folderName = "Uncategorized",
+    )
+
+    /** Maps exactly one URL to a real drawable; anything else falls through and errors. */
+    private class StubImages(private val url: String, private val context: Context) :
+        Mapper<String, Drawable> {
+        override fun map(data: String, options: Options): Drawable? =
+            if (data == url) {
+                BitmapDrawable(
+                    context.resources,
+                    Bitmap.createBitmap(WIDTH, HEIGHT, Bitmap.Config.ARGB_8888),
+                )
+            } else {
+                null
+            }
+
+        private companion object {
+            const val WIDTH = 320
+            const val HEIGHT = 180
+        }
+    }
+
+    /** A request that never completes — the row a reader sees while an image is in flight. */
+    private object PendingForever : Interceptor {
+        override suspend fun intercept(chain: Interceptor.Chain): ImageResult =
+            awaitCancellation()
+    }
+
+    /** A 404, without needing a network to produce one. */
+    private object AlwaysFails : Interceptor {
+        override suspend fun intercept(chain: Interceptor.Chain): ImageResult =
+            ErrorResult(null, chain.request, IOException("404"))
+    }
+
+    private companion object {
+        val NOW: Long = Instant.parse("2026-08-07T12:00:00Z").toEpochMilli()
+        const val MINUTE = 60_000L
+        const val HOUR = 60 * MINUTE
+        const val DAY = 24 * HOUR
+        const val ROW = "test:row"
+        const val IMAGE_URL = "https://example.com/lead.png"
+        const val MISSING_URL = "https://example.invalid/gone.png"
+        val THREE_LINES = 76.dp
+    }
+}

@@ -5,39 +5,46 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import org.junit.Test
 
-/** The metadata line's clock (DESIGN.md §5): coarser the further back an entry sits. */
+/**
+ * The metadata line's clock (DESIGN.md §5, U08): coarser the further back an entry sits,
+ * and **compact** — the row says `47min`, not `47 minutes ago`. The reference row
+ * (`design/reference/feed-row-reference.jpg`) sets `Source / 5h` on one line beside a
+ * thumbnail, and "ago" is a word the position of the text already implies.
+ */
 class RelativeTimeTest {
 
     private val utc = ZoneId.of("UTC")
     private val now = ZonedDateTime.of(2026, 8, 7, 12, 0, 0, 0, utc).toInstant().toEpochMilli()
 
     @Test
-    fun `something published seconds ago reads as just now`() {
-        assertThat(format(now - 30 * SECOND)).isEqualTo("just now")
+    fun `something published seconds ago reads as now`() {
+        assertThat(format(now - 30 * SECOND)).isEqualTo("now")
     }
 
     @Test
     fun `a feed clock running ahead of ours is not the future`() {
-        assertThat(format(now + 5 * MINUTE)).isEqualTo("just now")
+        assertThat(format(now + 5 * MINUTE)).isEqualTo("now")
     }
 
     @Test
     fun `the last hour is counted in minutes`() {
-        assertThat(format(now - 5 * MINUTE)).isEqualTo("5m ago")
-        assertThat(format(now - 59 * MINUTE)).isEqualTo("59m ago")
+        assertThat(format(now - 5 * MINUTE)).isEqualTo("5min")
+        assertThat(format(now - 47 * MINUTE)).isEqualTo("47min")
+        assertThat(format(now - 59 * MINUTE)).isEqualTo("59min")
     }
 
     @Test
     fun `the last day is counted in hours`() {
-        assertThat(format(now - HOUR)).isEqualTo("1h ago")
-        assertThat(format(now - 3 * HOUR)).isEqualTo("3h ago")
-        assertThat(format(now - 23 * HOUR)).isEqualTo("23h ago")
+        assertThat(format(now - HOUR)).isEqualTo("1h")
+        assertThat(format(now - 5 * HOUR)).isEqualTo("5h")
+        assertThat(format(now - 23 * HOUR)).isEqualTo("23h")
     }
 
     @Test
     fun `the last week is counted in days`() {
-        assertThat(format(now - DAY)).isEqualTo("1d ago")
-        assertThat(format(now - 6 * DAY)).isEqualTo("6d ago")
+        assertThat(format(now - DAY)).isEqualTo("1d")
+        assertThat(format(now - 3 * DAY)).isEqualTo("3d")
+        assertThat(format(now - 6 * DAY)).isEqualTo("6d")
     }
 
     @Test
