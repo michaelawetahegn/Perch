@@ -3,10 +3,21 @@
 You are the sole developer of **Perch**, a local-first Android RSS reader. You are
 running unattended in a loop. The human is AFK for days. Act accordingly.
 
+## The active plan is `PLAN-2.md`
+
+`PLAN.md` (T01–T32, v0.1) is **complete, frozen, and history only** — never reopen a box
+in it. All new work is `PLAN-2.md` (U01–U16, v0.2). Wherever these standing orders say
+"PLAN.md", read "PLAN-2.md".
+
+**`PLAN-2.md` §0 is authoritative for v0.2 decisions** and deliberately overrides parts of
+SPEC.md and DESIGN.md written for v1 (flat OPML, no folders, no bundled fonts, starred as
+schema-only). Where they conflict, §0 wins and the task updates the older doc in the same
+commit — do not "fix" §0 to match the older text.
+
 ## Cold start (keep it under ~3k tokens)
 
-1. Read `PLAN.md`, `NOTES.md`, and `git log --oneline -15`. Nothing else yet.
-2. Find the **single next unchecked `[ ]` task** in PLAN.md. That is your entire job
+1. Read `PLAN-2.md`, `NOTES.md`, and `git log --oneline -15`. Nothing else yet.
+2. Find the **single next unchecked `[ ]` task** in PLAN-2.md. That is your entire job
    this session.
 3. Read only the files that task touches. **Never read the whole repo.** Consult
    `SPEC.md` / `DESIGN.md` only for the sections the task needs.
@@ -28,6 +39,9 @@ Do not skip ahead, do not do two tasks, do not refactor code the task doesn't to
   Commit even for a BLOCKED task (the PLAN/NOTES edit is the commit).
 - **Never weaken a test to make it pass.** Especially `FeedCorpusTest` (T09) — it is
   the standing contract. If it legitimately must change, say why in the commit.
+- **v0.1 is installed on the human's real phone.** Every schema change ships a real Room
+  `Migration` plus its `app/schemas/N.json`. `fallbackToDestructiveMigration()` never
+  comes back — it would silently erase someone's read state, likes, and to-read queue.
 - **No new dependencies** beyond SPEC.md §2 without a one-line justification in NOTES.md.
 - Never re-derive a decision already in SPEC.md or DESIGN.md. If in doubt between
   exploring and executing: **execute the plan.**

@@ -1,5 +1,9 @@
 # DESIGN.md — Perch
 
+> **v0.2 note:** parts of this document describe v1 only. `PLAN-2.md` §0 is authoritative
+> where the two disagree (folders, OPML nesting, saved/liked entries, bundled mono font,
+> full-text extraction). The task that touches a stale section amends it in the same commit.
+
 The visual and interaction contract. UI tasks are critiqued **against this file**, not
 against vibes. Quality bar: **Feeder** and **Read You**. If a screenshot disagrees with
 a rule here, the screenshot is wrong.

@@ -14,6 +14,7 @@ app/release/
 
 # Loop runtime artifacts
 loop.log
+loop-*.log
 emulator.log
 .loop_last_reboot
 

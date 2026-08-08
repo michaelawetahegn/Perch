@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # loop.sh — the Ralph loop for Perch.
 #
-# Runs Claude Code headlessly, one PLAN.md task per session, until PLAN.md has no
+# Runs Claude Code headlessly, one $PLAN task per session, until that plan has no
 # unchecked `[ ]` tasks left. Survives usage limits by napping. Stops loudly if it
 # stalls. Designed to be started once and left alone for days:
 #
@@ -12,8 +12,11 @@ set -uo pipefail
 cd "$(dirname "$0")"
 
 # ── knobs ────────────────────────────────────────────────────────────────────
+# The active plan. PLAN.md (v0.1, T01–T32) is complete and frozen; PLAN-2.md (v0.2)
+# is what CLAUDE.md now points sessions at. Change this one line to start a PLAN-3.
+PLAN=${PLAN:-PLAN-2.md}
 PROMPT="Read CLAUDE.md and continue"
-LOG="loop.log"
+LOG=${LOG:-"loop-$(basename "$PLAN" .md | tr 'A-Z' 'a-z').log"}
 SLEEP_BETWEEN=${SLEEP_BETWEEN:-30}        # pause between normal sessions (s)
 LIMIT_SLEEP=${LIMIT_SLEEP:-600}           # nap on usage/rate limit (s) = 10 min.
                                           # A limited session fails instantly and costs
@@ -45,7 +48,7 @@ rule(){ printf '%s\n' "───────────────────
 # `grep -c … || echo 0` prints "0" TWICE and silently breaks the exit test.
 count_matching() {
   local n
-  n=$(grep -c "$1" PLAN.md 2>/dev/null) || n=0
+  n=$(grep -c "$1" "$PLAN" 2>/dev/null) || n=0
   printf '%s' "${n:-0}"
 }
 remaining() { count_matching '^- \[ \]'; }
@@ -131,10 +134,10 @@ maybe_nightly_reboot() {
 
 # ── start ────────────────────────────────────────────────────────────────────
 command -v claude >/dev/null 2>&1 || { echo "FATAL: 'claude' CLI not on PATH"; exit 1; }
-[ -f PLAN.md ] || { echo "FATAL: PLAN.md not found in $(pwd)"; exit 1; }
+[ -f "$PLAN" ] || { echo "FATAL: $PLAN not found in $(pwd)"; exit 1; }
 
 rule
-say "Ralph loop starting — $(remaining) task(s) pending in PLAN.md"
+say "Ralph loop starting — $(remaining) task(s) pending in $PLAN"
 reclaim
 boot_emulator
 
@@ -146,7 +149,7 @@ while :; do
   left=$(remaining)
   if [ "$left" -eq 0 ]; then
     rule
-    say "✅ PLAN.md has no unchecked tasks left. $(blocked) blocked. Loop complete."
+    say "✅ $PLAN has no unchecked tasks left. $(blocked) blocked. Loop complete."
     say "APK: see NOTES.md"
     rule
     exit 0
@@ -162,7 +165,7 @@ while :; do
 
   session=$((session + 1))
   before=$(head_sha)
-  next=$(grep -m1 '^- \[ \]' PLAN.md | cut -c1-100)
+  next=$(grep -m1 '^- \[ \]' "$PLAN" | cut -c1-100)
   rule
   say "session #$session · $left task(s) left · next: ${next#- \[ \] }"
 
@@ -196,7 +199,7 @@ while :; do
       rule
       say "🛑 STALLED: $STALL_LIMIT consecutive sessions produced no commit. Stopping."
       say "🛑 Silent thrash is worse than stopping. Check the tail of $LOG and NOTES.md,"
-      say "🛑 then fix or mark the offending task [BLOCKED: …] in PLAN.md and rerun ./loop.sh."
+      say "🛑 then fix or mark the offending task [BLOCKED: …] in $PLAN and rerun ./loop.sh."
       rule
       printf '\a'
       exit 2

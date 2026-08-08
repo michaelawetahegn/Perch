@@ -1,5 +1,9 @@
 # SPEC.md — Perch, a local-first Android RSS reader
 
+> **v0.2 note:** parts of this document describe v1 only. `PLAN-2.md` §0 is authoritative
+> where the two disagree (folders, OPML nesting, saved/liked entries, bundled mono font,
+> full-text extraction). The task that touches a stale section amends it in the same commit.
+
 Frozen decisions. **Future sessions do not re-deliberate anything in this file.**
 If a pinned version fails to resolve, bump to the nearest available version, note it
 in one line in NOTES.md, and move on.
