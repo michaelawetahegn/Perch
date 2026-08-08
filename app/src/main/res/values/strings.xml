@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Perch</string>
+    <!-- Under the logotype in the drawer header (U09b). Set in caps by the source
+         lockup, not by a text transform, so it translates as written. -->
+    <string name="brand_tagline">RSS READER</string>
 
     <!-- Home -->
     <string name="home_title_unread">Unread</string>

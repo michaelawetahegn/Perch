@@ -4,4 +4,11 @@
          so the launch window does not flash a different background before Compose draws. -->
     <color name="perch_window_background">#F2FBF7</color>
     <color name="perch_launcher_background">#3F6E5A</color>
+
+    <!-- The Perch mark (U09b). Fixed artwork, so these do not follow the theme: they are
+         PerchBrand.paper / .ink / .accent in `ui/theme/Brand.kt`, restated because a
+         VectorDrawable cannot read a Kotlin constant. -->
+    <color name="perch_mark_paper">#F2FBF7</color>
+    <color name="perch_mark_ink">#002115</color>
+    <color name="perch_mark_accent">#C78E35</color>
 </resources>

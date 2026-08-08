@@ -38,6 +38,28 @@ Three words: **quiet, legible, fast.**
   affordance. No strikethrough, no opacity tricks, no badges on rows.
 - Contrast floor: body text ≥ 4.5:1, metadata ≥ 3:1 against its own surface, in both
   schemes. Never `onSurfaceVariant` on `surfaceContainerHighest` for body copy.
+- **`tertiary` is amber** (U09b), not the default hue+60 off the seed. The Perch mark's
+  one accent is an amber block; an app whose only warm colour lives in its logo has two
+  identities. Nothing consumed `tertiary` before, so the amber ramp lands in M3's
+  contrasting-accent role and the mark and the scheme share a hue.
+
+### The brand (U09b)
+
+- The mark is **redrawn**, never scaled from `design/brand/*-source.png` — those are
+  84×88 and 124×138. Its geometry lives once, as path data in `ui/theme/Brand.kt`,
+  and the launcher's two vector layers restate the same strings under a test that fails
+  if they drift.
+- The mark does **not** follow the theme. Paper stays paper and ink stays ink in light
+  and dark: a document that inverts stops reading as paper and starts reading as a
+  different logo. Only the wordmark's lettering follows `onSurface`.
+- **Launcher icon:** adaptive only (minSdk 26), with `background`, `foreground` **and**
+  `monochrome`. All ink stays inside the centre **66dp circle** — the only region every
+  launcher mask is guaranteed to show. The monochrome layer is drawn *lighter* than the
+  colour one and leaves the sheets hollow; with no paper fill separating them, strokes
+  at full weight close into a black slab.
+- **In the app:** the full lockup heads the drawer, and the mark stands in for an icon
+  in the no-sources-yet empty state — the one moment the reader is looking at Perch
+  rather than at their feeds. It stands down whenever the drawer is in selection mode.
 
 ## 3. Typography
 
@@ -102,6 +124,8 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
 │  ▣ Feed    ▤ To-Read    ♡ Liked      │  ← U09 NavigationBar; hidden on the article
 └──────────────────────────────────────┘
   ModalNavigationDrawer (swipe / hamburger) — scopes the Feed, nothing else:
+    ▤ Perch                     ← U09b lockup; stands down in selection mode
+      RSS READER
     All unread            (12)
     ─────────────────────────
     ⌄ Folder name         (9) ⋮  ← chevron: expand/collapse · name: scope the list
@@ -204,7 +228,7 @@ Restrained and standard. Material 3 defaults; do not hand-roll easing.
 | State | Rule |
 |---|---|
 | **Loading** | First load only: 6 shimmer-free skeleton rows (`surfaceContainer` blocks). Refreshes use the pull indicator, never a blocking spinner, never a full-screen replace. |
-| **Empty** | Centred icon (48dp, `onSurfaceVariant`), one-line title, one-line explanation, one action button. Distinct copy per case: *no sources yet* → "Add your first source"; *all read* → "You're all caught up" + "Show read entries"; *source has no entries* → "Nothing here yet"; *empty time window* (U07) → "Nothing in this window" + **Show &lt;next window&gt; instead**, never a blank screen. |
+| **Empty** | Centred icon (48dp, `onSurfaceVariant`; the 72dp brand mark in the *no sources yet* case — U09b), one-line title, one-line explanation, one action button. Distinct copy per case: *no sources yet* → "Add your first source"; *all read* → "You're all caught up" + "Show read entries"; *source has no entries* → "Nothing here yet"; *empty time window* (U07) → "Nothing in this window" + **Show &lt;next window&gt; instead**, never a blank screen. |
 | **Error** | Per-source failures **never block the list**. The feed shows its last-known entries plus a `⚠` in the drawer; tapping shows the message + Retry. Global failure (all feeds failed) = inline banner above the list, dismissible, with Retry. |
 | **Offline** | Detected via connectivity, shown as a slim inline banner: "Offline — showing saved entries". Cached content stays fully readable and navigable. Never a blocking dialog. |
 
@@ -301,7 +325,8 @@ The polish pass (T29) walks this list per screen. Every line is pass/fail.
 - [ ] Empty, loading, error, offline all reachable and all styled — no bare white screen.
 - [ ] Rotation and process-death restore scroll position and the active filter.
 - [ ] Refresh never blocks scrolling; the list never jumps under the finger.
-- [ ] App icon is a real adaptive icon, not the green Android robot.
+- [x] App icon is a real adaptive icon, not the green Android robot — and its ink
+      survives the circle, squircle and rounded-square masks (U09b).
 - [ ] Content descriptions on every icon-only control (TalkBack can traverse a row and
       reach: open, source, read-state).
 - [ ] First launch with zero sources looks intentional, not broken.

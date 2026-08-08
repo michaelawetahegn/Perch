@@ -1,30 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The Perch mark: feed arcs radiating from a point that rests on a perch. Drawn
-     inside the 66dp adaptive-icon safe zone (centre 54,54 · radius 33). -->
+<!--
+  The Perch mark (U09b): two stacked sheets, a serif P, rule lines, one amber block.
+
+  Every path here is a verbatim copy of a constant in `ui/theme/Brand.kt` — a
+  VectorDrawable cannot read a Kotlin string, so `LauncherIconTest` asserts the two
+  copies still agree rather than trusting them to.
+
+  All ink sits inside the centre 66dp circle (centre 54,54 · radius 33), which is the
+  only part of a 108dp adaptive-icon layer every launcher mask is guaranteed to show.
+  The same test measures that and fails the build if an edit pushes past it.
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+
+    <!-- The sheet behind, showing only as a sliver down the right edge. -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M38,61m-5,0a5,5 0 1,0 10,0a5,5 0 1,0 -10,0" />
+        android:fillColor="@color/perch_mark_paper"
+        android:strokeColor="@color/perch_mark_ink"
+        android:strokeWidth="3.2"
+        android:strokeLineJoin="round"
+        android:pathData="M42,39 H73 A3,3 0 0 1 76,42 V69 A3,3 0 0 1 73,72 H42 A3,3 0 0 1 39,69 V42 A3,3 0 0 1 42,39 Z" />
+
+    <!-- The sheet in front, which carries everything else. -->
     <path
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="6"
-        android:fillColor="#00000000"
-        android:strokeLineCap="round"
-        android:pathData="M38,46 A15,15 0 0,1 53,61" />
+        android:fillColor="@color/perch_mark_paper"
+        android:strokeColor="@color/perch_mark_ink"
+        android:strokeWidth="3.2"
+        android:strokeLineJoin="round"
+        android:pathData="M35,32 H67 A3,3 0 0 1 70,35 V73 A3,3 0 0 1 67,76 H35 A3,3 0 0 1 32,73 V35 A3,3 0 0 1 35,32 Z" />
+
+    <!-- The serif P: outer silhouette, counter wound the other way, foot serif, top flag. -->
     <path
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="6"
-        android:fillColor="#00000000"
-        android:strokeLineCap="round"
-        android:pathData="M38,34 A27,27 0 0,1 65,61" />
+        android:fillColor="@color/perch_mark_ink"
+        android:pathData="M38.5,37 H42.9 A4.7,4.7 0 0 1 42.9,46.4 H41.7 V52 H38.5 Z M41.7,44 H42.9 A2.3,2.3 0 0 0 42.9,39.4 H41.7 Z M37,50.6 H43.2 V52 H37 Z M37.5,37 H41.7 V38.4 H37.5 Z" />
+
+    <!-- Headline rules. -->
     <path
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="6"
-        android:fillColor="#00000000"
-        android:strokeLineCap="round"
-        android:pathData="M32,72 L76,72" />
+        android:strokeColor="@color/perch_mark_ink"
+        android:strokeWidth="2.6"
+        android:pathData="M52,40 H65 M52,45 H65 M52,50 H65" />
+
+    <!-- The heavier rule dividing headline from body. -->
+    <path
+        android:strokeColor="@color/perch_mark_ink"
+        android:strokeWidth="3.2"
+        android:pathData="M37,56.5 H65" />
+
+    <!-- The mark's one accent. -->
+    <path
+        android:fillColor="@color/perch_mark_accent"
+        android:strokeColor="@color/perch_mark_ink"
+        android:strokeWidth="2"
+        android:pathData="M37,60 H48.5 V71.5 H37 Z" />
+
+    <!-- Body rules. -->
+    <path
+        android:strokeColor="@color/perch_mark_ink"
+        android:strokeWidth="2.6"
+        android:pathData="M52,62 H65 M52,66 H65 M52,70 H65" />
 </vector>

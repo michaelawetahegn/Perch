@@ -321,7 +321,7 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
         selected; `./gradlew test` green.
       - Rung: screenshot
 
-- [ ] **U09b — Brand: logo, launcher icon, README. TDD + screenshot.** Source art is at `design/brand/perch-logo-source.png`
+- [x] **U09b — Brand: logo, launcher icon, README. TDD + screenshot.** Source art is at `design/brand/perch-logo-source.png`
       (84×88) and `perch-logo-with-text-source.png` (124×138): a serif **P** on a document
       with rule lines and an amber block, wordmark beneath.
       **They are far too small to scale — do not upscale them.** Redraw the mark as an

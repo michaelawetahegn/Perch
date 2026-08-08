@@ -92,6 +92,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.mkiros.perch.R
 import dev.mkiros.perch.ui.source.AddSourceSheet
 import dev.mkiros.perch.ui.source.AddSourceViewModel
+import dev.mkiros.perch.ui.brand.PerchMark
+import dev.mkiros.perch.ui.brand.PerchWordmark
 import dev.mkiros.perch.ui.theme.Dimens
 import kotlinx.coroutines.launch
 
@@ -684,6 +686,16 @@ private fun SourceDrawer(
                     onDelete = onDeleteSelection,
                 )
             } else {
+                // The lockup, not a title: the drawer is the only surface in the app that
+                // is unambiguously *Perch* rather than someone's feed, so it is where the
+                // name belongs. In selection mode the contextual bar takes the band, and
+                // the wordmark stands down rather than competing with the count.
+                PerchWordmark(
+                    modifier = Modifier.padding(
+                        horizontal = Dimens.brandHeaderHorizontal,
+                        vertical = Dimens.brandHeaderVertical,
+                    ),
+                )
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Default.Inbox, contentDescription = null) },
                     label = { Text(stringResource(R.string.drawer_all_unread)) },
@@ -1246,7 +1258,8 @@ private fun EmptyState(
     // of time. So it says so and offers the one step out (§0), rather than claiming the
     // reader is caught up on things they have never seen.
     val emptyWindow = hasSources && widerFilter != null
-    val icon: ImageVector
+    // Null means the brand mark rather than a glyph — see the no-sources branch below.
+    val icon: ImageVector?
     val title: String
     val body: String
     when {
@@ -1263,7 +1276,11 @@ private fun EmptyState(
         }
 
         else -> {
-            icon = Icons.Default.RssFeed
+            // An app with nothing in it yet is the one moment the reader is looking at
+            // Perch rather than at their feeds, so this state shows the mark. A generic
+            // RSS glyph here says "this is a feed reader" to someone who just installed
+            // one; the mark says which.
+            icon = null
             title = stringResource(R.string.home_empty_no_sources_title)
             body = stringResource(R.string.home_empty_no_sources_body)
         }
@@ -1276,12 +1293,16 @@ private fun EmptyState(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(Dimens.emptyIcon),
-        )
+        if (icon == null) {
+            PerchMark(size = Dimens.brandMark)
+        } else {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(Dimens.emptyIcon),
+            )
+        }
         Spacer(modifier = Modifier.size(Dimens.lg))
         Text(
             text = title,
@@ -1297,7 +1318,9 @@ private fun EmptyState(
             textAlign = TextAlign.Center,
             modifier = Modifier.width(Dimens.emptyContentWidth),
         )
-        if (emptyWindow && widerFilter != null) {
+        // `emptyWindow` is only true when `widerFilter` is non-null, so the smart cast
+        // inside carries; re-testing it here is what the compiler warns about.
+        if (emptyWindow) {
             Spacer(modifier = Modifier.size(Dimens.xl))
             Button(
                 onClick = onWiden,

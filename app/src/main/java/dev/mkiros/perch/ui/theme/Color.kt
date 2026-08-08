@@ -10,8 +10,14 @@ import androidx.compose.ui.graphics.Color
  * (DESIGN.md §2). Tonal palettes generated from the seed **`#3F6E5A`** — a muted forest
  * green — at the standard Material 3 tone stops, then assigned to roles with the
  * baseline M3 mapping. Chroma per palette follows M3: primary keeps the seed hue at
- * full chroma, secondary a third of it, tertiary is hue+60 at half, and the two
- * neutrals are near-grey with just enough green to read as one family.
+ * full chroma, secondary a third of it, and the two neutrals are near-grey with just
+ * enough green to read as one family.
+ *
+ * **Tertiary is the brand amber** (U09b), not the M3-default hue+60 off the seed. The
+ * Perch mark's one accent is an amber block; an app whose only warm accent lives in the
+ * logo and nowhere in the scheme has two colour identities. Tertiary is M3's contrasting
+ * accent role and nothing consumed it, so the amber ramp lands there and the mark's
+ * accent and the scheme's accent are the same hue. See [PerchBrand].
  *
  * These raw tones are private on purpose: nothing outside this file may name a tone.
  * Screens address colour through `MaterialTheme.colorScheme` roles only, so the dynamic
@@ -33,12 +39,13 @@ private val Secondary80 = Color(0xFFBACAC2)
 private val Secondary90 = Color(0xFFD6E6DE)
 private val Secondary100 = Color(0xFFFFFFFF)
 
-private val Tertiary10 = Color(0xFF021F25)
-private val Tertiary20 = Color(0xFF19343B)
-private val Tertiary30 = Color(0xFF304B52)
-private val Tertiary40 = Color(0xFF47636A)
-private val Tertiary80 = Color(0xFFAECBD4)
-private val Tertiary90 = Color(0xFFCAE8F0)
+// The amber ramp, generated from the mark's own accent (#C78E35) at the same tone stops.
+private val Tertiary10 = Color(0xFF271900)
+private val Tertiary20 = Color(0xFF412D00)
+private val Tertiary30 = Color(0xFF5D4200)
+private val Tertiary40 = Color(0xFF7B5800)
+private val Tertiary80 = Color(0xFFEDBF48)
+private val Tertiary90 = Color(0xFFFFDEA6)
 private val Tertiary100 = Color(0xFFFFFFFF)
 
 private val Neutral00 = Color(0xFF000000)

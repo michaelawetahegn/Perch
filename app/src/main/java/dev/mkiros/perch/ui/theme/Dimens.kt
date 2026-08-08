@@ -66,6 +66,30 @@ object Dimens {
     /** Air between the title column and the thumbnail. */
     val thumbnailGap = md
 
+    // --- the brand (U09b) ---
+    /**
+     * The mark in the drawer header. Small enough to sit beside the logotype without
+     * becoming a second headline, large enough that the amber block is still a block.
+     */
+    val brandMarkSmall = xxl
+
+    /** The mark standing in for an icon in the no-sources-yet empty state. */
+    val brandMark = 72.dp
+
+    /** Air between the mark and the logotype in the horizontal lockup. */
+    val brandGap = md
+
+    /** The drawer header's own padding — it sits above the drawer's first item. */
+    val brandHeaderVertical = xl
+
+    /**
+     * Where the wordmark's left edge lands in the drawer. Not [drawerRowPadding]: a
+     * `NavigationDrawerItem` is inset by [md] and then insets its own icon by 16dp, so
+     * matching the rows means matching that sum. Left at 16 the lockup hangs a visible
+     * 12dp outside the column of icons under it.
+     */
+    val brandHeaderHorizontal = 28.dp
+
     /** Empty states: one centred icon above the copy. §7. */
     val emptyIcon = 48.dp
 

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The themed-icon (Android 13+) layer. The system throws away the colour and keeps the
+  shape, so this is the same mark drawn in one ink with the sheets left *hollow*: filled
+  in, a page-shaped mark tints to a featureless slab and every other themed icon on the
+  home screen is a legible outline next to it.
+
+  The accent block is outlined rather than filled for the same reason: in colour it is the
+  mark's lightest shape, and a solid plate would turn the lower half into a blot. Strokes
+  are *lighter* than the colour layer, not heavier — with no paper fill separating them,
+  the rules at full weight close up into a black field. Every path is identical, and
+  `LauncherIconTest` holds it to that.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <path
+        android:strokeColor="#FF000000"
+        android:strokeWidth="2.8"
+        android:strokeLineJoin="round"
+        android:pathData="M42,39 H73 A3,3 0 0 1 76,42 V69 A3,3 0 0 1 73,72 H42 A3,3 0 0 1 39,69 V42 A3,3 0 0 1 42,39 Z" />
+
+    <path
+        android:strokeColor="#FF000000"
+        android:strokeWidth="2.8"
+        android:strokeLineJoin="round"
+        android:pathData="M35,32 H67 A3,3 0 0 1 70,35 V73 A3,3 0 0 1 67,76 H35 A3,3 0 0 1 32,73 V35 A3,3 0 0 1 35,32 Z" />
+
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M38.5,37 H42.9 A4.7,4.7 0 0 1 42.9,46.4 H41.7 V52 H38.5 Z M41.7,44 H42.9 A2.3,2.3 0 0 0 42.9,39.4 H41.7 Z M37,50.6 H43.2 V52 H37 Z M37.5,37 H41.7 V38.4 H37.5 Z" />
+
+    <path
+        android:strokeColor="#FF000000"
+        android:strokeWidth="2"
+        android:pathData="M52,40 H65 M52,45 H65 M52,50 H65" />
+
+    <path
+        android:strokeColor="#FF000000"
+        android:strokeWidth="2.4"
+        android:pathData="M37,56.5 H65" />
+
+    <!-- Outlined, not filled: the accent block is the *lightest* shape in the colour
+         mark, and a solid plate here would make the mark's lower half read as a blot. -->
+    <path
+        android:strokeColor="#FF000000"
+        android:strokeWidth="2"
+        android:pathData="M37,60 H48.5 V71.5 H37 Z" />
+
+    <path
+        android:strokeColor="#FF000000"
+        android:strokeWidth="2"
+        android:pathData="M52,62 H65 M52,66 H65 M52,70 H65" />
+</vector>
