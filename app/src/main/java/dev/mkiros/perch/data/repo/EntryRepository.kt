@@ -8,9 +8,10 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import java.time.Clock
 
 /**
- * Read state: the one piece of an entry that belongs to the reader rather than to the
- * feed. Everything here is either a reactive count (the UI must move on its own) or a
- * state flip stamped from an injected [Clock] so tests can assert *when*.
+ * Reader state: the part of an entry that belongs to the reader rather than to the feed —
+ * read, saved (*Read later*) and liked, three independent flags (PLAN-2 §0). Everything
+ * here is either a reactive count or list (the UI must move on its own) or a state flip
+ * stamped from an injected [Clock] so tests can assert *when*.
  */
 class EntryRepository(
     private val entryDao: EntryDao,
@@ -61,6 +62,43 @@ class EntryRepository(
     suspend fun toggleRead(entryId: Long) {
         val entry = entryDao.findById(entryId) ?: return
         setRead(entryId, isRead = !entry.isRead)
+    }
+
+    // ---- read later and liked (U04) --------------------------------------------
+
+    /**
+     * The To-Read queue, most recently saved first, exempt from home's time filter
+     * (PLAN-2 §0). Read entries stay in it — only the reader takes something out.
+     */
+    fun observeSaved(): Flow<List<EntryListItem>> =
+        entryDao.observeSaved().distinctUntilChanged()
+
+    /** The Liked list, most recently liked first. Same exemption as [observeSaved]. */
+    fun observeLiked(): Flow<List<EntryListItem>> =
+        entryDao.observeLiked().distinctUntilChanged()
+
+    /**
+     * Files an entry under *Read later*, or takes it off the queue.
+     *
+     * Un-saving nulls `savedAt` for the same reason marking unread nulls `readAt`: the
+     * timestamp is the flag's evidence, and a cleared flag that keeps its timestamp is a
+     * row that two different queries can disagree about.
+     */
+    suspend fun setSaved(entryId: Long, isSaved: Boolean) {
+        entryDao.setSaved(
+            id = entryId,
+            isSaved = isSaved,
+            savedAt = if (isSaved) clock.millis() else null,
+        )
+    }
+
+    /** *Liked* — the `isStarred` column, which has had no UI since T12, finally used. */
+    suspend fun setLiked(entryId: Long, isLiked: Boolean) {
+        entryDao.setStarred(
+            id = entryId,
+            isStarred = isLiked,
+            starredAt = if (isLiked) clock.millis() else null,
+        )
     }
 
     /**

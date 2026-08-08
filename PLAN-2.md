@@ -157,7 +157,7 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
         tests cover delete-reassigns and the unique-name conflict; `./gradlew test` green.
       - Rung: unit
 
-- [ ] **U04 — Read later, liked, mark-unread: schema + repository. TDD.** Migration
+- [x] **U04 — Read later, liked, mark-unread: schema + repository. TDD.** Migration
       **2→3** adds `entries.isSaved` (default 0), `savedAt`, `starredAt`, plus indices on
       `isSaved` and `isStarred`. `isStarred` keeps its column and becomes *Liked* in the
       domain language. Repository: `setSaved`, `setLiked`, `setRead(entryId, read)` where

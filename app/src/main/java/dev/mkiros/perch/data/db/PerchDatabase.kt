@@ -36,7 +36,7 @@ abstract class PerchDatabase : RoomDatabase() {
         const val NAME = "perch.db"
 
         /** Bumping this requires a [MIGRATIONS] entry from `VERSION - 1`. */
-        const val VERSION = 2
+        const val VERSION = 3
 
         /**
          * Folders (U03). Creates the table, seeds Uncategorized as id 1, and files every
@@ -73,8 +73,40 @@ abstract class PerchDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Read later and liked (U04). Adds the two timestamps that make those lists
+         * orderable, and the indices the two destinations select on.
+         *
+         * The one non-mechanical statement is the `starredAt` backfill. `isStarred` has
+         * existed since v1 with no UI to set it, so in practice no install has a starred
+         * row — but a row that was somehow starred would arrive with a null `starredAt`
+         * and sort off the end of the Liked list permanently. `fetchedAt` is the only
+         * timestamp on hand that relates to when the reader could have seen it, and a
+         * defensible position beats an invisible one.
+         */
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE `entries` ADD COLUMN `isSaved` INTEGER NOT NULL DEFAULT 0",
+                )
+                db.execSQL("ALTER TABLE `entries` ADD COLUMN `savedAt` INTEGER")
+                db.execSQL("ALTER TABLE `entries` ADD COLUMN `starredAt` INTEGER")
+                db.execSQL(
+                    "UPDATE `entries` SET `starredAt` = `fetchedAt` " +
+                        "WHERE `isStarred` = 1 AND `starredAt` IS NULL",
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS `index_entries_isSaved` ON `entries` (`isSaved`)",
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS `index_entries_isStarred` " +
+                        "ON `entries` (`isStarred`)",
+                )
+            }
+        }
+
         /** Every migration the app has ever shipped, in order. */
-        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2)
+        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3)
 
         /**
          * Puts Uncategorized in place on a fresh install, so that "every source belongs to

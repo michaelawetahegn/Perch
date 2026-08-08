@@ -135,7 +135,8 @@ data class FeedEntity(
                                 // not expressible through Room, so the DAO does it.
 
 @Entity(tableName="entries", foreignKeys=[…CASCADE on feedId…],
-        indices=[Index(value=["feedId","guid"], unique=true), Index("publishedAt"), Index("isRead")])
+        indices=[Index(value=["feedId","guid"], unique=true), Index("publishedAt"),
+                 Index("isRead"), Index("isSaved"), Index("isStarred")])
 data class EntryEntity(
   @PrimaryKey(autoGenerate = true) val id: Long = 0,
   val feedId: Long,
@@ -148,16 +149,20 @@ data class EntryEntity(
   val summary: String?,         // plain-text snippet, ≤300 chars, for the list row
   val contentHtml: String?,     // sanitized HTML for the article screen
   val imageUrl: String?,        // lead image if the feed offers one
-  val isRead: Boolean = false,
+  val isRead: Boolean = false,      // the three reader-owned flags are independent (U04)
   val readAt: Long?,
-  val isStarred: Boolean = false,   // schema only; no UI in v1
+  val isSaved: Boolean = false,     // "Read later"; a queue the reader clears, not reading
+  val savedAt: Long? = null,
+  val isStarred: Boolean = false,   // "Liked"; permanent
+  val starredAt: Long? = null,
   val fetchedAt: Long,
 )
 ```
 
 Room schema exported to `app/schemas/`. **Destructive migration was removed at T31** —
 v0.1 is installed for daily use, so every schema change ships a real `Migration` plus its
-`app/schemas/N.json`. Version 1 is v0.1's baseline; version 2 adds folders (U03).
+`app/schemas/N.json`. Version 1 is v0.1's baseline; version 2 adds folders (U03); version 3 adds read-later and
+the liked/saved timestamps (U04).
 
 ## 5. Parsing contract (the standing tests defend this)
 
@@ -247,7 +252,9 @@ pasted URL already parses as a feed, skip discovery entirely.
   10s backoff → exponential.
 - A feed with `consecutiveFailures >= 5` drops to a 6h floor until it succeeds.
 - Retention: keep unread forever; delete read entries older than 30 days on each
-  successful refresh, but never delete an entry still present in the current feed body.
+  successful refresh, but never delete an entry still present in the current feed body,
+  and never one the reader saved or liked (U04) — retention bounds storage, it does not
+  overrule the reader.
 
 ## 8. Read state
 

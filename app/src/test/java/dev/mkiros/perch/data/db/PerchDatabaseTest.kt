@@ -173,6 +173,36 @@ class PerchDatabaseTest {
         assertThat(after?.isStarred).isTrue()
     }
 
+    /**
+     * The whole point of U04. A parsed entry carries no saved or liked state — those
+     * columns come back 0/null on every fetch — so if [EntryDao.upsertAll] wrote them
+     * through, the next refresh would silently empty the to-read list and the Liked list.
+     * The user reads a queue they filled; the feed does not get a vote.
+     */
+    @Test
+    fun `re-upserting an entry preserves the saved and liked state the user set`() = runTest {
+        val id = feeds.insert(feed(feedUrl = "https://a.example/feed"))
+        entries.upsertAll(listOf(entry(id, guid = "g1", title = "draft")))
+        val stored = entries.findByGuid(id, "g1")!!
+        entries.update(
+            stored.copy(
+                isSaved = true,
+                savedAt = 7_007L,
+                isStarred = true,
+                starredAt = 8_008L,
+            ),
+        )
+
+        entries.upsertAll(listOf(entry(id, guid = "g1", title = "corrected")))
+
+        val after = entries.findByGuid(id, "g1")
+        assertThat(after?.title).isEqualTo("corrected")
+        assertThat(after?.isSaved).isTrue()
+        assertThat(after?.savedAt).isEqualTo(7_007L)
+        assertThat(after?.isStarred).isTrue()
+        assertThat(after?.starredAt).isEqualTo(8_008L)
+    }
+
     @Test
     fun `removing a feed removes its entries and leaves the others alone`() = runTest {
         val doomed = feeds.insert(feed(feedUrl = "https://a.example/feed"))

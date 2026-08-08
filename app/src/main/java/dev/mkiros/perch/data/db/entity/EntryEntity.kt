@@ -17,7 +17,13 @@ import androidx.room.PrimaryKey
  *   [publishedIsEstimated].
  * @param summary plain-text snippet (≤300 chars) for the list row.
  * @param contentHtml sanitized HTML for the article screen.
- * @param isStarred schema only; there is no starring UI in v1.
+ * @param isSaved *Read later* (PLAN-2 §0): a queue the reader fills and empties by hand.
+ *   Reading a saved entry does not clear it.
+ * @param isStarred *Liked*. Carried since v1 as a column with no UI; U04 gives it one.
+ *
+ * The three reader-owned flags — [isRead], [isSaved], [isStarred] — are independent, and
+ * each pairs with a nullable timestamp that is set when the flag goes on and nulled when
+ * it goes off. Nowhere in the app is one derived from another.
  */
 @Entity(
     tableName = "entries",
@@ -33,6 +39,8 @@ import androidx.room.PrimaryKey
         Index(value = ["feedId", "guid"], unique = true),
         Index(value = ["publishedAt"]),
         Index(value = ["isRead"]),
+        Index(value = ["isSaved"]),
+        Index(value = ["isStarred"]),
     ],
 )
 data class EntryEntity(
@@ -49,6 +57,9 @@ data class EntryEntity(
     val imageUrl: String?,
     val isRead: Boolean = false,
     val readAt: Long?,
+    val isSaved: Boolean = false,
+    val savedAt: Long? = null,
     val isStarred: Boolean = false,
+    val starredAt: Long? = null,
     val fetchedAt: Long,
 )

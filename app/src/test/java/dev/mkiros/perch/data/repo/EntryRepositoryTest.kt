@@ -313,21 +313,163 @@ class EntryRepositoryTest {
         assertThat(listed.map { it.title }).containsExactly("Entry a1")
     }
 
+    // ---- read later and liked (U04) --------------------------------------------
+
+    @Test
+    fun `saving an entry for later stamps when it was saved`() = runTest {
+        val a = feeds.insert(feed("https://a.example/feed"))
+        val id = insertEntry(a, "a1")
+
+        repo.setSaved(id, isSaved = true)
+
+        val stored = entries.findById(id)
+        assertThat(stored?.isSaved).isTrue()
+        assertThat(stored?.savedAt).isEqualTo(now)
+    }
+
+    @Test
+    fun `taking an entry off the to-read list forgets when it was saved`() = runTest {
+        val a = feeds.insert(feed("https://a.example/feed"))
+        val id = insertEntry(a, "a1")
+        repo.setSaved(id, isSaved = true)
+
+        repo.setSaved(id, isSaved = false)
+
+        val stored = entries.findById(id)
+        assertThat(stored?.isSaved).isFalse()
+        assertThat(stored?.savedAt).isNull()
+    }
+
+    @Test
+    fun `liking an entry stamps when, and unliking forgets`() = runTest {
+        val a = feeds.insert(feed("https://a.example/feed"))
+        val id = insertEntry(a, "a1")
+
+        repo.setLiked(id, isLiked = true)
+        assertThat(entries.findById(id)?.isStarred).isTrue()
+        assertThat(entries.findById(id)?.starredAt).isEqualTo(now)
+
+        repo.setLiked(id, isLiked = false)
+        assertThat(entries.findById(id)?.isStarred).isFalse()
+        assertThat(entries.findById(id)?.starredAt).isNull()
+    }
+
+    /** Three independent flags: acting on one must not disturb the other two. */
+    @Test
+    fun `saving, liking and reading an entry are independent of each other`() = runTest {
+        val a = feeds.insert(feed("https://a.example/feed"))
+        val id = insertEntry(a, "a1")
+
+        repo.setSaved(id, isSaved = true)
+        repo.setLiked(id, isLiked = true)
+        repo.setRead(id, isRead = true)
+        repo.setRead(id, isRead = false)
+
+        val stored = entries.findById(id)
+        assertThat(stored?.isSaved).isTrue()
+        assertThat(stored?.isStarred).isTrue()
+        assertThat(stored?.isRead).isFalse()
+        assertThat(stored?.readAt).isNull()
+    }
+
+    /**
+     * Most recently saved first — a to-read queue is read from the top, and the order the
+     * feed published in has nothing to do with the order the user filed things in.
+     */
+    @Test
+    fun `the to-read list is newest-saved first, not newest-published first`() = runTest {
+        val a = feeds.insert(feed("https://a.example/feed"))
+        val older = insertEntry(a, "a1", publishedAt = 1_700_000_000_000L)
+        val newer = insertEntry(a, "a2", publishedAt = 1_700_000_900_000L)
+
+        repo.setSaved(newer, isSaved = true)
+        savedAt(now + 1) { it.setSaved(older, isSaved = true) }
+
+        assertThat(repo.observeSaved().first().map { it.id })
+            .containsExactly(older, newer).inOrder()
+    }
+
+    @Test
+    fun `the liked list is newest-liked first`() = runTest {
+        val a = feeds.insert(feed("https://a.example/feed"))
+        val first = insertEntry(a, "a1")
+        val second = insertEntry(a, "a2")
+
+        repo.setLiked(first, isLiked = true)
+        savedAt(now + 1) { it.setLiked(second, isLiked = true) }
+
+        assertThat(repo.observeLiked().first().map { it.id })
+            .containsExactly(second, first).inOrder()
+    }
+
+    /** Reading something you saved does not un-save it: the queue is cleared by hand. */
+    @Test
+    fun `a saved entry stays on the to-read list after it has been read`() = runTest {
+        val a = feeds.insert(feed("https://a.example/feed"))
+        val id = insertEntry(a, "a1")
+        repo.setSaved(id, isSaved = true)
+
+        repo.setRead(id, isRead = true)
+
+        val listed = repo.observeSaved().first()
+        assertThat(listed.map { it.id }).containsExactly(id)
+        assertThat(listed.single().isRead).isTrue()
+    }
+
+    @Test
+    fun `the to-read and liked lists move on their own as entries are filed`() = runTest {
+        val a = feeds.insert(feed("https://a.example/feed"))
+        val id = insertEntry(a, "a1")
+
+        repo.observeSaved().test {
+            assertThat(awaitItem()).isEmpty()
+
+            repo.setSaved(id, isSaved = true)
+
+            assertThat(awaitItem().map { it.title }).containsExactly("Entry a1")
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `an entry the user only liked is absent from the to-read list`() = runTest {
+        val a = feeds.insert(feed("https://a.example/feed"))
+        val id = insertEntry(a, "a1")
+
+        repo.setLiked(id, isLiked = true)
+
+        assertThat(repo.observeSaved().first()).isEmpty()
+        assertThat(repo.observeLiked().first().map { it.id }).containsExactly(id)
+    }
+
     // ---- fixtures --------------------------------------------------------------
+
+    /** Runs [block] against a repository whose clock reads [millis], for ordering tests. */
+    private suspend fun savedAt(millis: Long, block: suspend (EntryRepository) -> Unit) =
+        block(
+            EntryRepository(
+                entryDao = entries,
+                clock = Clock.fixed(Instant.ofEpochMilli(millis), ZoneOffset.UTC),
+            ),
+        )
 
     private suspend fun titles(includeRead: Boolean): List<String> =
         repo.observeEntries(includeRead = includeRead).first().map { it.title }
 
     private suspend fun unreadIds(): List<Long> = entries.unreadIds(feedId = null)
 
-    private suspend fun insertEntry(feedId: Long, guid: String): Long = entries.insert(
+    private suspend fun insertEntry(
+        feedId: Long,
+        guid: String,
+        publishedAt: Long = 1_700_000_000_000L,
+    ): Long = entries.insert(
         EntryEntity(
             feedId = feedId,
             guid = guid,
             title = "Entry $guid",
             link = "https://example.com/$guid",
             author = null,
-            publishedAt = 1_700_000_000_000L,
+            publishedAt = publishedAt,
             publishedIsEstimated = false,
             summary = null,
             contentHtml = null,

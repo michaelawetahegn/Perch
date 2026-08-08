@@ -105,6 +105,48 @@ abstract class EntryDao {
         ids.chunked(MAX_IDS_PER_STATEMENT).forEach { setReadForIds(it, isRead, readAt) }
     }
 
+    // ---- read later and liked (U04) -------------------------------------------
+
+    /**
+     * The To-Read destination: the same row shape as home, ordered by when the reader
+     * filed it rather than by when it was published.
+     *
+     * Read entries stay in it. Saving is a decision the reader makes and unmakes; reading
+     * something you saved is not the same as being done with it, so nothing here filters
+     * on `isRead`. It is also exempt from the time filter by construction — a to-read list
+     * that hides last month's articles is not a to-read list (PLAN-2 §0).
+     */
+    @Query(
+        """
+        SELECT e.id AS id, e.feedId AS feedId, e.title AS title, e.summary AS summary,
+               e.imageUrl AS imageUrl, e.publishedAt AS publishedAt, e.isRead AS isRead,
+               COALESCE(NULLIF(TRIM(f.customTitle), ''), f.title) AS sourceTitle
+        FROM entries e JOIN feeds f ON f.id = e.feedId
+        WHERE e.isSaved = 1
+        ORDER BY e.savedAt DESC, e.id DESC
+        """,
+    )
+    abstract fun observeSaved(): Flow<List<EntryListItem>>
+
+    /** The Liked destination. Same rules as [observeSaved], ordered by when it was liked. */
+    @Query(
+        """
+        SELECT e.id AS id, e.feedId AS feedId, e.title AS title, e.summary AS summary,
+               e.imageUrl AS imageUrl, e.publishedAt AS publishedAt, e.isRead AS isRead,
+               COALESCE(NULLIF(TRIM(f.customTitle), ''), f.title) AS sourceTitle
+        FROM entries e JOIN feeds f ON f.id = e.feedId
+        WHERE e.isStarred = 1
+        ORDER BY e.starredAt DESC, e.id DESC
+        """,
+    )
+    abstract fun observeLiked(): Flow<List<EntryListItem>>
+
+    @Query("UPDATE entries SET isSaved = :isSaved, savedAt = :savedAt WHERE id = :id")
+    abstract suspend fun setSaved(id: Long, isSaved: Boolean, savedAt: Long?)
+
+    @Query("UPDATE entries SET isStarred = :isStarred, starredAt = :starredAt WHERE id = :id")
+    abstract suspend fun setStarred(id: Long, isStarred: Boolean, starredAt: Long?)
+
     // ---- retention ------------------------------------------------------------
 
     /**
@@ -116,12 +158,16 @@ abstract class EntryDao {
      * anything the body still carries is newer than the moment that refresh began, and a
      * feed with a thousand entries needs no `IN (…)` clause to say so.
      *
+     * Saved and liked entries are exempt (U04). A read-later queue that a background sweep
+     * empties after thirty days is not a queue, and *Liked* is documented as permanent —
+     * retention exists to bound storage, not to overrule the reader.
+     *
      * @return how many rows were pruned.
      */
     @Query(
         """
         DELETE FROM entries
-        WHERE feedId = :feedId AND isRead = 1
+        WHERE feedId = :feedId AND isRead = 1 AND isSaved = 0 AND isStarred = 0
           AND publishedAt < :publishedBefore AND fetchedAt < :fetchedBefore
         """,
     )
@@ -145,8 +191,11 @@ abstract class EntryDao {
      * be silently dropped. Matching on the identity the feed actually gives us and
      * carrying the old row's id forward is what makes a refetch a no-op.
      *
-     * Read state ([EntryEntity.isRead], [EntryEntity.readAt], [EntryEntity.isStarred])
-     * belongs to the reader, never to the feed, so it is preserved across the update.
+     * Reader state belongs to the reader, never to the feed, so **every** flag and its
+     * timestamp is carried over from the existing row: read, saved (*Read later*) and
+     * starred (*Liked*). A parsed entry arrives with all six at their defaults on every
+     * single fetch, so anything not listed here is silently erased once a day by the
+     * refresh worker — which is what would empty a to-read list nobody touched.
      *
      * @return how many entries were genuinely new.
      */
@@ -164,7 +213,10 @@ abstract class EntryDao {
                         id = existing.id,
                         isRead = existing.isRead,
                         readAt = existing.readAt,
+                        isSaved = existing.isSaved,
+                        savedAt = existing.savedAt,
                         isStarred = existing.isStarred,
+                        starredAt = existing.starredAt,
                     ),
                 )
             }

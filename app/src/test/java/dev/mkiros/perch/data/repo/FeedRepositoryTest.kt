@@ -172,6 +172,48 @@ class FeedRepositoryTest {
             assertThat(entries.findById(readId)!!.isRead).isTrue()
         }
 
+    /**
+     * U04's contract, asserted end to end rather than at the DAO: a real feed is fetched
+     * and parsed twice, and everything the reader did to an entry between the two runs
+     * survives the second one.
+     *
+     * A parsed entry carries `isSaved = false`, `savedAt = null`, `starredAt = null` every
+     * single time, so a refresh that wrote a parsed row through verbatim would quietly
+     * empty the to-read list — the one failure mode a user would never think to report as
+     * a bug, because the list would simply look like they had never saved anything.
+     */
+    @Test
+    fun `a fresh parse of the same feed keeps saved, liked and unread state`() = runTest {
+        val snapshot = corpusSnapshot("ciechanow-ski.xml")
+        server.enqueue(ok(snapshot))
+        server.enqueue(ok(snapshot))
+        val id = addFeed()
+        repo.refresh(id)
+        val entryId = entries.unreadIds(id).first()
+        val stored = entries.findById(entryId)!!
+        entries.update(
+            stored.copy(
+                isSaved = true,
+                savedAt = 111L,
+                isStarred = true,
+                starredAt = 222L,
+                isRead = true,
+                readAt = 333L,
+            ),
+        )
+        entries.setRead(listOf(entryId), isRead = false, readAt = null)
+
+        repo.refresh(id)
+
+        val after = entries.findById(entryId)!!
+        assertThat(after.isSaved).isTrue()
+        assertThat(after.savedAt).isEqualTo(111L)
+        assertThat(after.isStarred).isTrue()
+        assertThat(after.starredAt).isEqualTo(222L)
+        assertThat(after.isRead).isFalse()
+        assertThat(after.readAt).isNull()
+    }
+
     @Test
     fun `a 304 is a success that parses nothing and writes no entries`() = runTest {
         server.enqueue(
@@ -307,6 +349,31 @@ class FeedRepositoryTest {
             assertThat(entries.findByGuid(id, "unread")).isNotNull()
             assertThat(entries.findByGuid(id, "gone")).isNull()
         }
+
+    /**
+     * Retention bounds storage; it does not overrule the reader. A saved article swept out
+     * from under the to-read list thirty days later is the same silent emptying U04 exists
+     * to prevent, only slower — and *Liked* is documented as permanent.
+     */
+    @Test
+    fun `retention never sweeps an entry the reader saved or liked`() = runTest {
+        val old = now - java.time.Duration.ofDays(40).toMillis()
+        server.enqueue(ok(rss(item("a1"))))
+        val id = addFeed()
+        entries.insert(
+            storedEntry(id, "saved", publishedAt = old, isRead = true, fetchedAt = old, isSaved = true),
+        )
+        entries.insert(
+            storedEntry(id, "liked", publishedAt = old, isRead = true, fetchedAt = old, isStarred = true),
+        )
+        entries.insert(storedEntry(id, "gone", publishedAt = old, isRead = true, fetchedAt = old))
+
+        repo.refresh(id)
+
+        assertThat(entries.findByGuid(id, "saved")).isNotNull()
+        assertThat(entries.findByGuid(id, "liked")).isNotNull()
+        assertThat(entries.findByGuid(id, "gone")).isNull()
+    }
 
     @Test
     fun `a failed refresh prunes nothing`() = runTest {
@@ -494,6 +561,8 @@ class FeedRepositoryTest {
         publishedAt: Long,
         isRead: Boolean,
         fetchedAt: Long,
+        isSaved: Boolean = false,
+        isStarred: Boolean = false,
     ) = dev.mkiros.perch.data.db.entity.EntryEntity(
         feedId = feedId,
         guid = guid,
@@ -507,6 +576,10 @@ class FeedRepositoryTest {
         imageUrl = null,
         isRead = isRead,
         readAt = if (isRead) publishedAt else null,
+        isSaved = isSaved,
+        savedAt = if (isSaved) publishedAt else null,
+        isStarred = isStarred,
+        starredAt = if (isStarred) publishedAt else null,
         fetchedAt = fetchedAt,
     )
 
