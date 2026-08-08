@@ -6,8 +6,9 @@ Working memory for unattended sessions, per CLAUDE.md §NOTES.md discipline. **U
 
 - Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM. No physical device; WHPX
   **enabled**. Paths/JDKs/wrappers are in CLAUDE.md §Environment — do not re-record them here.
-- **The memory fix for the session-#11 host freeze is in `.wslconfig`, `gradle.properties` and
-  `loop.sh`; the `.wslconfig` half still needs a `wsl --shutdown` that has not happened.**
+- **Host froze twice (v0.1 #11, v0.2 #5): the `.wslconfig` 7 GB cap only took effect at the
+  second `wsl --shutdown`. Confirm it is live with `/proc/meminfo` MemTotal ~6.9 GB — if it
+  reads ~9.9 GB the cap is not applied and a freeze is coming.**
 
 ## Log
 - 2026-08-07 — T04–T09: 42 manifest rows, **39 snapshots** (`scripts/harvest.sh`); shared parser
