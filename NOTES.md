@@ -1,9 +1,8 @@
 # NOTES.md
 
-Working memory for unattended sessions. **Keep under 100 lines.** Environment quirks,
-blocked-task diagnoses, excluded feeds, residual polish, the final APK path. Not a diary:
-prune anything a future session no longer needs, and delete any workaround that now lives
-in a script or in CLAUDE.md.
+Working memory for unattended sessions, per CLAUDE.md §NOTES.md discipline: environment
+quirks, blocked-task diagnoses, excluded feeds, residual polish, the final APK path.
+**Under 100 lines** — prune anything a future session no longer needs.
 
 ## Environment facts (measured at bootstrap, 2026-08-07)
 
@@ -49,11 +48,10 @@ in a script or in CLAUDE.md.
   asserts **0/2644 `Unsupported`** — stricter than T32 gate 2's ≤2%, and it names offending tags.
   Chrome regexes are whole-block matches, so **T25 must not re-strip anything**.
 - 2026-08-07 — T25 done: `ui/article/{RichText,ArticleBody,ArticleScreen,ArticleViewModel}.kt`
-  (debug 425, release 369). `ArticleBody` is total over the nine blocks with **no source-specific
-  branch** — a source that renders wrong is a T25a lowering bug. Opening marks read. An image
-  **collapses the whole figure on a load error**, so testing one needs a Coil loader that succeeds
-  (`Coil.setImageLoader` + a stub `Mapper`). **T29 residual:** Compose cannot colour or offset an
-  underline, so §8's 1dp-primary-offset-3dp link rule is a plain one; inline code has no chip padding.
+  `ArticleBody` is total over the nine blocks with **no source-specific branch** — a source that
+  renders wrong is a T25a lowering bug. An image **collapses the whole figure on a load error**, so
+  testing one needs a Coil loader that succeeds (`Coil.setImageLoader` + a stub `Mapper`). **Residual:**
+  Compose cannot colour or offset an underline, so §8's link rule is plain; inline code has no chip padding.
 - 2026-08-07 — T26 done: pull-to-refresh, undo snackbar, `HomeBanner` (offline > selected-source
   error > all-failing), `data/net/ConnectivityMonitor` (`AlwaysOnline` is the `AppContainer`
   default, so no test needs a shadow network). Robolectric gesture traps, if a later task adds
@@ -83,14 +81,19 @@ in a script or in CLAUDE.md.
   bar and the drawer sheet sit flush at y=0 in every capture — an artifact, not a layout bug; the
   §9 lines for font scale 1.3, rotation/process-death and TalkBack traversal are not checkable from
   pixels and this pass did not verify them; T25's link-underline and inline-code residuals stand.
-- 2026-08-07 — T30 done: `maestro/regression.yaml`, green end to end. **Maestro-on-Windows won; the
-  TCP-adb fallback was never needed.** `~/.maestro/{bin,lib}` was copied to `C:\perch-stage\maestro-cli`
-  and `C:\perch-stage\maestro.bat` sets `JAVA_HOME`/`ANDROID_HOME` around it. To run:
-  `cp maestro/regression.yaml /mnt/c/perch-stage/maestro/`, then from `/mnt/c`
+- 2026-08-07 — T30 done: `maestro/regression.yaml`, green. **Maestro-on-Windows won; the TCP-adb
+  fallback was never needed.** To re-run: `cp maestro/regression.yaml /mnt/c/perch-stage/maestro/`
+  (`device.sh stage` will **not** overwrite an existing dir), then from `/mnt/c`
   `cmd.exe /c "C:\perch-stage\maestro.bat --device emulator-5554 test C:\perch-stage\maestro\regression.yaml"`.
-  **`device.sh stage` does not overwrite a directory that already exists** — copy the flow yourself or
-  you will spend an attempt debugging a stale file. Two facts the flow rests on: `PerchNavHost` now sets
-  `testTagsAsResourceId`, the only handle an out-of-process driver has on a Compose node — it does
-  **not** reach the add-source sheet or any dialog, which are their own windows and are addressed by
-  label; and a Maestro text selector must match a node's text *entirely*, so anything that can land on
-  a merged row (`SourceRow` carries label + unread count) is written as a `.*…*.` regex.
+  `PerchNavHost` sets `testTagsAsResourceId` — the only handle an out-of-process driver has on a
+  Compose node, and it does **not** reach the sheet or dialogs (own windows; address those by label).
+  A Maestro text selector matches a node's text *entirely*, so merged rows need a `.*…*.` regex.
+- 2026-08-07 — T31 done: `fallbackToDestructiveMigration()` is **gone for good**. Version 1 is the
+  shipped baseline; `PerchDatabase.MIGRATIONS` is the ordered list and `PerchDatabaseMigrationTest`
+  fails the build on a version bump with no matching migration, a stale `app/schemas/N.json`, or the
+  fallback reappearing. Also fixed a real flake `clean test` exposed: `WorkManagerTestInitHelper`'s
+  `SynchronousExecutor` does **not** cover WorkManager's own task executor, so `cancelUniqueWork`
+  lands asynchronously — `WorkSchedulerTest` now polls in wall-clock time.
+  **APK: `/home/michael/source/rss-reader/app/build/outputs/apk/debug/app-debug.apk`** — 19,411,514 B
+  (18.5 MiB), built 2026-08-07 19:18 by `./gradlew clean test assembleDebug`; install it with
+  `./scripts/device.sh install app/build/outputs/apk/debug/app-debug.apk`.

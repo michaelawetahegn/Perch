@@ -70,7 +70,9 @@ class WorkSchedulerTest {
 
         WorkScheduler.setInterval(context, RefreshInterval.Manual)
 
-        assertThat(scheduled().none { !it.state.isFinished }).isTrue()
+        // The cancel lands on WorkManager's own task executor, which the configured
+        // SynchronousExecutor does not cover, so read the state back in wall-clock time.
+        assertThat(awaitCancelled()).isTrue()
     }
 
     @Test
@@ -104,4 +106,14 @@ class WorkSchedulerTest {
 
     private fun scheduled(): List<WorkInfo> =
         workManager.getWorkInfosForUniqueWork(WorkScheduler.UNIQUE_NAME).get()
+
+    /** Polls for up to five seconds; returns the final verdict either way so a stall fails. */
+    private fun awaitCancelled(): Boolean {
+        val deadline = System.nanoTime() + Duration.ofSeconds(5).toNanos()
+        while (System.nanoTime() < deadline) {
+            if (scheduled().none { !it.state.isFinished }) return true
+            Thread.sleep(25)
+        }
+        return scheduled().none { !it.state.isFinished }
+    }
 }

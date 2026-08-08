@@ -300,7 +300,7 @@ production code but no test is a defect — reopen the box.
       - Done: the Maestro run exits 0 on a clean install of the current APK.
       - Rung: maestro
 
-- [ ] **T31 — Ship.** Remove `fallbackToDestructiveMigration()` and add a real migration
+- [x] **T31 — Ship.** Remove `fallbackToDestructiveMigration()` and add a real migration
       baseline. `./gradlew clean test assembleDebug`. Write the absolute APK path, its
       size, the build timestamp, and install instructions to NOTES.md. Final
       `git log --oneline` sanity check.
