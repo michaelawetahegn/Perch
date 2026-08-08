@@ -8,6 +8,15 @@ captures/
 .externalNativeBuild/
 app/release/
 
+# Signing (U02). The real key lives at ~/.perch/, outside the tree — these
+# patterns are a second line of defence in case one is ever copied in here.
+# A committed keystore is a key you have to abandon, and abandoning it means
+# every future install wipes someone's read state.
+*.jks
+*.keystore
+*.p12
+signing.properties
+
 # IDE
 .idea/
 *.hprof

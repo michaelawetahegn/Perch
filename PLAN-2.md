@@ -117,7 +117,7 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
         output are pasted into the commit message.
       - Rung: build
 
-- [ ] **U02 — Stable signing key + upgrade-in-place.** Today's APK is signed by the
+- [x] **U02 — Stable signing key + upgrade-in-place.** Today's APK is signed by the
       auto-generated debug keystore. That works only by luck of it still existing on this
       machine; it is not a key you can ever rotate to, and it is not portable.
       Generate `~/.perch/perch-release.jks` (**outside the repo, 10000-day validity**) and

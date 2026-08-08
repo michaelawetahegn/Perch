@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Auto Backup, API 26–30 (android:fullBackupContent). See data_extraction_rules.xml
+  for the API 31+ equivalent; both must stay in sync.
+
+  allowBackup="true" without this file backs up a default set that we do not
+  control. What is actually worth carrying to a new phone is exactly two things:
+  the Room database (sources, entries, read/liked/saved state) and the settings
+  DataStore. Naming them makes an <include> list, which excludes everything else
+  by default — notably WorkManager's own SharedPreferences, whose scheduling
+  state must be rebuilt on the new device, not restored onto it.
+
+  The database domain lists the -wal and -shm sidecars alongside perch.db: Room
+  runs in WAL mode, so a backup of the main file alone can restore a database
+  missing its most recent commits.
+-->
+<full-backup-content>
+    <include domain="database" path="perch.db" />
+    <include domain="database" path="perch.db-wal" />
+    <include domain="database" path="perch.db-shm" />
+    <include domain="file" path="datastore/perch-settings.preferences_pb" />
+</full-backup-content>
