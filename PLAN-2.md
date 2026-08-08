@@ -54,9 +54,16 @@ the first `<img>` in the sanitized body whose dimensions aren't tracking-pixel-s
 fetch a page just for a thumbnail). No image is a first-class state, not a failure — the
 row draws the placeholder from the reference, not a broken-image glyph.
 
-**Full text.** A feed that ships titles and links only (fabiensanglard.net is the case
-that motivated this) is not a broken feed and not a rendering bug — there is genuinely no
-text to render. Perch fetches the article page and extracts it. See U10.
+**Full text.** Two different feeds look like the same bug and neither is one:
+- **No body at all** — fabiensanglard.net ships `<title>`+`<link>`+`<pubDate>`, 144 items,
+  nothing else. "This entry has no text in the feed" is *accurate*.
+- **An excerpt standing in for the body** — gpuopen.com ships a 194-character
+  `<description>` teaser and **no `content:encoded`**. The article renders, it is just the
+  blurb. This is the more common shape and the more confusing one, because it looks like
+  truncation rather than absence.
+
+In both cases the text is on the page, not in the feed, so Perch goes and gets it. **The
+goal is that visiting the site is never required to read an article.** See U10.
 
 **Signing.** From U02, every APK is signed with one stable key so a sideloaded update
 installs *over* the previous one and the database survives. Losing that key means every
@@ -210,9 +217,10 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
 
 ## Phase 3 — The reading surface
 
-- [ ] **U10 — Full-text extraction for content-less feeds. TDD.** fabiensanglard.net ships
-      `<title>`+`<link>` and nothing else — 144 items, zero content — so "This entry has no
-      text in the feed" is *accurate*, and the fix is to go get the text.
+- [ ] **U10 — Full text for feeds that don't ship it. TDD.** The single most important task
+      in this plan: **reading an article must never require visiting the site.** Covers both
+      §0 shapes — fabiensanglard.net (no body at all) and gpuopen.com (a 194-char
+      `<description>` teaser with no `content:encoded`, which renders as a stub).
       New `data/extract/ArticleExtractor.kt`: a Readability-style scored extraction over
       jsoup (already a dependency — **do not add one**; if you conclude a library is
       genuinely necessary, justify it in NOTES.md per CLAUDE.md). Score candidate blocks by
