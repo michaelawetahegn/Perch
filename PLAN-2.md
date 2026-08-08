@@ -65,6 +65,23 @@ row draws the placeholder from the reference, not a broken-image glyph.
 In both cases the text is on the page, not in the feed, so Perch goes and gets it. **The
 goal is that visiting the site is never required to read an article.** See U10.
 
+**Top-level navigation is a bottom bar, not the drawer.** Three destinations —
+**Feed · To-Read · Liked** — in a Material 3 `NavigationBar`. They are peers the user
+switches between constantly, and a peer switch that costs a drawer open is a peer switch
+that doesn't happen. The drawer keeps what it is actually good at: scoping the Feed to a
+folder or a source. Rules that hold regardless of visual treatment:
+- The bar is visible on all three list destinations and **hidden on the article screen**.
+- Each tab keeps its own scroll position and its own state across switches (nav
+  `saveState`/`restoreState`), and survives process death.
+- The time filter (chips) belongs to **Feed only** — To-Read and Liked ignore it, per the
+  read-later rule above.
+- System back from To-Read or Liked returns to Feed; back from Feed exits.
+
+**The UI's visual decisions are the implementing session's to make.** §0 fixes *behaviour
+and information architecture*; icons, labels, badge counts, ordering, empty-state
+illustration, and the exact bottom-bar treatment are the session's call, judged against
+DESIGN.md and the screenshot critique — do not come back for permission on a visual choice.
+
 **Signing.** From U02, every APK is signed with one stable key so a sideloaded update
 installs *over* the previous one and the database survives. Losing that key means every
 future install is a wipe, so it lives outside the repo and NOTES.md says where.
@@ -168,9 +185,10 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
 
 ## Phase 2 — The feed, redesigned
 
-- [ ] **U06 — Folders in the drawer. TDD + screenshot.** Drawer becomes: All unread ·
-      Read later · Liked · hairline · folder sections (expandable, unread count on the
-      header, sources nested beneath) · Add source · Settings. Long-press a source →
+- [ ] **U06 — Folders in the drawer. TDD + screenshot.** The drawer scopes the Feed; it does
+      **not** hold To-Read or Liked (those are bottom-bar destinations — see §0 and U09).
+      Drawer becomes: All unread · hairline · folder sections (expandable, unread count on
+      the header, sources nested beneath) · Add source · Settings. Long-press a source →
       rename / move to folder / remove. Folder header overflow → rename / delete.
       "New folder" from the Add-source sheet and from the drawer.
       Remember the T22 Robolectric traps: `compose.waitUntil` only advances the *virtual*
@@ -215,16 +233,26 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
         `./gradlew test` green.
       - Rung: screenshot
 
-- [ ] **U09 — Read later, liked, mark unread: the UI. TDD.** Row long-press sheet gains
-      *Save for later*, *Like*, *Mark unread/read*, *Share*. Article screen top bar gains
-      like + save toggles with filled/outlined state. Drawer's Read later and Liked
-      destinations render the same `EntryRow`, sorted by when they were saved/liked, with
-      their own empty states. Un-saving from the Saved list animates the row out with an
-      undo snackbar (reuse T26's).
+- [ ] **U09 — To-Read and Liked: bottom bar + the actions that fill them. TDD + screenshot.**
+      Add the §0 `NavigationBar` with **Feed · To-Read · Liked** and the two new
+      destinations, both rendering the same `EntryRow` as Feed, sorted by `savedAt` /
+      `starredAt` descending, each with its own empty state that says what the list is
+      *for* rather than just that it is empty.
+      Actions that populate them: row long-press sheet gains *Save for later*, *Like*,
+      *Mark unread/read*, *Share*; the article top bar gains like + save toggles with
+      filled/outlined state. Un-saving from To-Read animates the row out with an undo
+      snackbar (reuse T26's).
+      Update DESIGN.md §5's navigation diagram and SPEC.md §10's destination list in the
+      same commit — both still describe a four-destination, drawer-only v1.
+      Nav plumbing is the part that silently breaks: use one `NavHost` with
+      `saveState`/`restoreState` and `launchSingleTop` so switching tabs does not stack
+      duplicates, and confirm the bar does not appear over the article screen.
       - Done: Robolectric tests assert each action flips the right DB column and that the
-        Saved list reflects it through the Flow; both empty states covered;
-        `./gradlew test` green.
-      - Rung: unit
+        target list reflects it through the Flow; a test switches Feed → To-Read → Feed and
+        asserts the Feed scroll position and selected time-filter chip survived; a test
+        asserts the bar is absent on `article/{id}`; both empty states covered; one
+        dark-theme screenshot of To-Read with the bar; `./gradlew test` green.
+      - Rung: screenshot
 
 ## Phase 3 — The reading surface
 
@@ -279,12 +307,23 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
       Python, JavaScript/TypeScript, Rust, Go, shell, XML/HTML, JSON, SQL, and a
       no-op passthrough for anything else. Tokenise to `AnnotatedString` with colours
       taken from **theme roles in `ui/theme/`**, working in both light and dark.
-      Highlighting is presentation only: `ArticleBlock.Code.text` stays verbatim, and code
-      still never wraps and still scrolls horizontally.
+      **Line numbers.** Code blocks get a left gutter of right-aligned line numbers in the
+      same mono face, dimmed to `onSurfaceVariant`, its width sized to the widest number so
+      the code's left edge never shifts mid-block. Two details make or break it: the gutter
+      is **pinned** — when the code scrolls horizontally the numbers stay put, or they slide
+      out of view and the feature is worse than useless — and the numbers are **not part of
+      the text**, so selecting or copying a block yields runnable code with no numbers in it.
+      A one-line block may omit the gutter; that is the session's call.
+      Highlighting and numbering are presentation only: `ArticleBlock.Code.text` stays
+      verbatim, and code still never wraps and still scrolls horizontally.
       - Done: tokeniser tests per language including a string-containing-a-keyword and an
         unterminated-comment case (a highlighter that throws on malformed code is a crash
-        in a reader); an unknown language renders unstyled, not blank; light+dark
-        screenshots of a `nullprogram.com` C post and a Kotlin post; `./gradlew test` green.
+        in a reader); an unknown language renders unstyled, not blank; a test asserts the
+        gutter numbers a 100+ line block correctly (alignment at the 9→10 and 99→100
+        widths) and that the copied/selected text equals `Code.text` exactly, numbers
+        excluded; light+dark screenshots of a `nullprogram.com` C post and a Kotlin post,
+        one of them scrolled horizontally to show the gutter staying pinned;
+        `./gradlew test` green.
       - Rung: screenshot
 
 - [ ] **U12 — Tap-to-zoom image viewer. TDD + screenshot.** Tapping an image in an article
