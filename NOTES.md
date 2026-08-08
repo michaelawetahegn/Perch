@@ -85,15 +85,13 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   what stops the refresh straight after a restore undoing it. The export carries only entries a reader touched, so a
   restore can turn a flag **on** and never off, and is idempotent by construction. Codec is `org.json` (no new
   dependency) — **so its tests need Robolectric**; on a bare JVM every `JSONObject` method is a stub.
-- 2026-08-08 — **Full-suite-only flakes (two, same shape).** `WorkSchedulerTest` "choosing manual…" and
-  `ArticleTextRepositoryTest` "…og image…" fail in a full `./gradlew test`, pass alone. **`runTest` bills the previous
-  test's leaked coroutine to whoever runs next** (`UncaughtExceptionsBeforeTest` at `@Before`, then `@After` dies on an
-  uninitialised `db`) — the named test is the victim. Suspect **`SettingsStore.create`'s unowned
-  `CoroutineScope(IO+SupervisorJob)`**, never cancelled, writing onto a wiped Robolectric data dir. **PLAN-3 box.**
+- 2026-08-08 — **Full-suite-only flakes: `./gradlew test` is green only on a lucky ordering** (`WorkSchedulerTest`,
+  `ArticleTextRepositoryTest`). `runTest` bills an earlier test's leaked coroutine to whoever runs next, so the named
+  test is never the culprit — **do not "fix" the victim**. Diagnosis and repro plan: **issue #1**.
 - 2026-08-08 — **U15/U16 — v0.2.0 shipped.** Nine live gates green (counts in commit `bd2eb89`); **`clean` is
   deliberately omitted** from `clean test assembleRelease` — it deletes `build/perch-screenshots/`, the evidence the
   Done-condition asks for. APK: versionCode 3, release-signed `61367c04…fce489`,
-  `app/build/outputs/apk/release/app-release.apk`. v0.1.0 was debug-signed, so **that one** upgrade needs an uninstall.
-- 2026-08-08 — **Residual polish, v0.2 (none blocks release).** No window insets anywhere (viewer close sits under
-  the status bar); empty state cannot be pulled; mid-selection a folder header does nothing; themed launcher icon's P
-  closes up at 48dp; no rule between code gutter and code; no edge affordance on a wide table.
+  `app/build/outputs/apk/release/app-release.apk`. **v0.1.0 was debug-signed — that one hop needs a bridge (issue #2).**
+- 2026-08-08 — **Open defects are GitHub issues now, not NOTES entries.** #1 suite flakes · #2 v0.1→v0.2 needs a
+  signing bridge · #3 no window insets · #4 extractor drops Squarespace tables · #5 inert folder header
+  mid-selection · #6 empty state cannot be pulled · #7 visual polish · #8 live gate 1 has no headroom.
