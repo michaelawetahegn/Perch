@@ -207,7 +207,7 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
         ≥2 folders; `./gradlew test` green.
       - Rung: screenshot
 
-- [ ] **U07 — Time filter + folder sections on home. TDD.** Implement §0's two dimensions:
+- [x] **U07 — Time filter + folder sections on home. TDD.** Implement §0's two dimensions:
       a chip row (Today · This Week · This Month · All, default **Today**), entries
       sectioned under folder headers. The bucket boundary is local midnight via
       `java.time` with an injectable `Clock` — a test that can't pin "today" is not a test.

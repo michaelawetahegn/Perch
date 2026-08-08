@@ -31,13 +31,18 @@ class EntryRepository(
      *   filters are independent predicates rather than a hierarchy, so a caller that has
      *   picked a source does not also have to work out which folder it is in.
      * @param includeRead Settings' "show read entries"; false is the unread inbox.
+     * @param publishedAfter home's time window (U07), inclusive; null is All Time. A
+     *   window, unlike the other two filters, is a *reading* decision rather than a
+     *   subscription one — it never applies to the To-Read or Liked lists (PLAN-2 §0).
      */
     fun observeEntries(
         feedId: Long? = null,
         folderId: Long? = null,
         includeRead: Boolean = false,
+        publishedAfter: Long? = null,
     ): Flow<List<EntryListItem>> =
-        entryDao.observeListItems(feedId, folderId, includeRead).distinctUntilChanged()
+        entryDao.observeListItems(feedId, folderId, includeRead, publishedAfter)
+            .distinctUntilChanged()
 
     /** The unread inbox — [observeEntries] as home reads it by default. */
     fun observeUnreadEntries(feedId: Long? = null): Flow<List<EntryListItem>> =
@@ -110,14 +115,18 @@ class EntryRepository(
 
     /**
      * Marks everything unread as read, scoped exactly as [observeEntries] is — to one
-     * source, to one folder, or to neither.
+     * source, to one folder, to one time window, or to none of them.
      *
      * Returns the token [undoMarkAllRead] needs. The token names the exact entries this
      * call flipped, so undo cannot resurrect an entry the user had already read before
      * the batch, nor one they read after it.
      */
-    suspend fun markAllRead(feedId: Long?, folderId: Long? = null): MarkAllReadUndo {
-        val flipped = entryDao.unreadIds(feedId, folderId)
+    suspend fun markAllRead(
+        feedId: Long?,
+        folderId: Long? = null,
+        publishedAfter: Long? = null,
+    ): MarkAllReadUndo {
+        val flipped = entryDao.unreadIds(feedId, folderId, publishedAfter)
         entryDao.setRead(flipped, isRead = true, readAt = clock.millis())
         return MarkAllReadUndo(flipped)
     }

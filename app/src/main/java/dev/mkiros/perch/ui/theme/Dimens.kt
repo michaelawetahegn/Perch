@@ -123,6 +123,16 @@ object Dimens {
     val ruleWidth = xxl
     val ruleSpacing = xxl
 
+    /**
+     * Home's chip row (U07) and the folder headers below it. The row keeps its own
+     * padding rather than borrowing the list's, because it sits above the scroll and its
+     * chips need air on all four sides where a row only needs it on two.
+     */
+    val chipRowVertical = sm
+    val chipGap = sm
+    val sectionHeaderTop = lg
+    val sectionHeaderBottom = sm
+
     /** Editorial link underline: 1dp thick, offset 3dp below the baseline. §8. */
     val linkUnderline = 1.dp
     val linkUnderlineOffset = 3.dp

@@ -4,6 +4,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,6 +35,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.RssFeed
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
@@ -41,6 +43,7 @@ import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -242,6 +245,10 @@ fun HomeScreen(
                         onDismiss = viewModel::dismissBanner,
                     )
                 }
+                TimeFilterChips(
+                    selected = uiState.timeFilter,
+                    onSelect = viewModel::selectTimeFilter,
+                )
                 PullToRefreshBox(
                     isRefreshing = isRefreshing,
                     onRefresh = viewModel::refresh,
@@ -253,7 +260,9 @@ fun HomeScreen(
                         uiState.isLoading -> SkeletonList()
                         uiState.entries.isEmpty() -> EmptyState(
                             hasSources = uiState.hasSources,
+                            widerFilter = uiState.widerFilter,
                             onAddSource = ::addSource,
+                            onWiden = viewModel::widenTimeFilter,
                         )
                         else -> EntryList(state = uiState, onOpenEntry = onOpenEntry)
                     }
@@ -813,6 +822,20 @@ object HomeTestTags {
     fun folderBadge(folderId: Long) = "home:folder:$folderId:badge"
     fun folderExpand(folderId: Long) = "home:folder:$folderId:expand"
     fun folderOverflow(folderId: Long) = "home:folder:$folderId:more"
+
+    /** U07's chip row, and one handle per chip. */
+    const val CHIP_ROW = "home:chips"
+
+    fun timeChip(filter: TimeFilter) = "home:chip:${filter.name}"
+
+    /**
+     * A folder section header *in the list*, as opposed to the folder's row in the
+     * drawer — the two carry the same name and the assertions have to tell them apart.
+     */
+    fun section(folderId: Long) = "home:section:$folderId"
+
+    /** The empty bucket's way out, which only the bucket case has. */
+    const val EMPTY_WIDEN = "home:empty:widen"
 }
 
 /**
@@ -831,14 +854,23 @@ private fun EntryList(
     val listState = rememberLazyListState()
     LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
         itemsIndexed(state.entries, key = { _, item -> item.id }) { index, item ->
+            // A header is due wherever the folder changes, which is a question about this
+            // row and the one before it — never about the list as a whole. U07a keeps
+            // that property when the list stops arriving all at once.
+            val startsSection = state.showSections &&
+                (index == 0 || state.entries[index - 1].folderId != item.folderId)
+            val endsSection = state.showSections && index < state.entries.lastIndex &&
+                state.entries[index + 1].folderId != item.folderId
             Column(modifier = Modifier.animateItem()) {
+                if (startsSection) SectionHeader(folderId = item.folderId, name = item.folderName)
                 EntryRow(
                     item = item,
                     now = state.nowMillis,
                     onClick = { onOpenEntry(item.id) },
                     modifier = Modifier.testTag(HomeTestTags.ENTRY),
                 )
-                if (index < state.entries.lastIndex) {
+                // The header below is the break; a rule as well would be two.
+                if (index < state.entries.lastIndex && !endsSection) {
                     HorizontalDivider(
                         modifier = Modifier.padding(start = Dimens.dividerInset),
                         color = MaterialTheme.colorScheme.outlineVariant,
@@ -847,6 +879,74 @@ private fun EntryList(
             }
         }
     }
+}
+
+/**
+ * A folder's heading in the list (PLAN-2 §0, U07).
+ *
+ * Set in the accent colour rather than in `onSurface`: it is furniture the eye should be
+ * able to skip past when scanning titles, and colour separates it from the row titles
+ * without spending the vertical space a rule or a filled bar would.
+ */
+@Composable
+private fun SectionHeader(folderId: Long, name: String) {
+    Text(
+        text = name,
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.primary,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                start = Dimens.rowHorizontal,
+                end = Dimens.rowHorizontal,
+                top = Dimens.sectionHeaderTop,
+                bottom = Dimens.sectionHeaderBottom,
+            )
+            .testTag(HomeTestTags.section(folderId)),
+    )
+}
+
+/**
+ * PLAN-2 §0's time filter: five windows, narrowest first, one always selected.
+ *
+ * It sits above the list rather than inside it, so it does not scroll away — the reader
+ * has to be able to see what window they are in at the point they wonder why an article
+ * is missing. Scrollable horizontally because five chips do not fit a narrow phone, and a
+ * chip row that wraps to two lines eats the top of the list.
+ */
+@Composable
+private fun TimeFilterChips(selected: TimeFilter, onSelect: (TimeFilter) -> Unit) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(Dimens.chipGap),
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .padding(
+                horizontal = Dimens.screenHorizontal,
+                vertical = Dimens.chipRowVertical,
+            )
+            .testTag(HomeTestTags.CHIP_ROW),
+    ) {
+        TimeFilter.entries.forEach { filter ->
+            FilterChip(
+                selected = filter == selected,
+                onClick = { onSelect(filter) },
+                label = { Text(stringResource(filter.labelRes())) },
+                modifier = Modifier.testTag(HomeTestTags.timeChip(filter)),
+            )
+        }
+    }
+}
+
+/** The chips' labels, in §0's words. */
+internal fun TimeFilter.labelRes(): Int = when (this) {
+    TimeFilter.Today -> R.string.home_filter_today
+    TimeFilter.PastWeek -> R.string.home_filter_week
+    TimeFilter.PastMonth -> R.string.home_filter_month
+    TimeFilter.PastYear -> R.string.home_filter_year
+    TimeFilter.AllTime -> R.string.home_filter_all
 }
 
 /**
@@ -893,18 +993,38 @@ private fun SkeletonBar(widthFraction: Float, height: Dp) {
  * T27 and attaches to the other case the same way.)
  */
 @Composable
-private fun EmptyState(hasSources: Boolean, onAddSource: () -> Unit) {
+private fun EmptyState(
+    hasSources: Boolean,
+    widerFilter: TimeFilter?,
+    onAddSource: () -> Unit,
+    onWiden: () -> Unit,
+) {
+    // An empty *window* is a third situation, and the one most likely to be mistaken for
+    // a broken app: the articles are there, the reader is just looking at a narrow slice
+    // of time. So it says so and offers the one step out (§0), rather than claiming the
+    // reader is caught up on things they have never seen.
+    val emptyWindow = hasSources && widerFilter != null
     val icon: ImageVector
     val title: String
     val body: String
-    if (hasSources) {
-        icon = Icons.Default.DoneAll
-        title = stringResource(R.string.home_empty_all_read_title)
-        body = stringResource(R.string.home_empty_all_read_body)
-    } else {
-        icon = Icons.Default.RssFeed
-        title = stringResource(R.string.home_empty_no_sources_title)
-        body = stringResource(R.string.home_empty_no_sources_body)
+    when {
+        emptyWindow -> {
+            icon = Icons.Default.Schedule
+            title = stringResource(R.string.home_empty_window_title)
+            body = stringResource(R.string.home_empty_window_body)
+        }
+
+        hasSources -> {
+            icon = Icons.Default.DoneAll
+            title = stringResource(R.string.home_empty_all_read_title)
+            body = stringResource(R.string.home_empty_all_read_body)
+        }
+
+        else -> {
+            icon = Icons.Default.RssFeed
+            title = stringResource(R.string.home_empty_no_sources_title)
+            body = stringResource(R.string.home_empty_no_sources_body)
+        }
     }
 
     Column(
@@ -935,7 +1055,15 @@ private fun EmptyState(hasSources: Boolean, onAddSource: () -> Unit) {
             textAlign = TextAlign.Center,
             modifier = Modifier.width(Dimens.emptyContentWidth),
         )
-        if (!hasSources) {
+        if (emptyWindow && widerFilter != null) {
+            Spacer(modifier = Modifier.size(Dimens.xl))
+            Button(
+                onClick = onWiden,
+                modifier = Modifier.testTag(HomeTestTags.EMPTY_WIDEN),
+            ) {
+                Text(stringResource(R.string.home_empty_widen, stringResource(widerFilter.labelRes())))
+            }
+        } else if (!hasSources) {
             Spacer(modifier = Modifier.size(Dimens.xl))
             Button(
                 onClick = onAddSource,

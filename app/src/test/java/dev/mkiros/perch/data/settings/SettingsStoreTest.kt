@@ -1,6 +1,7 @@
 package dev.mkiros.perch.data.settings
 
 import com.google.common.truth.Truth.assertThat
+import dev.mkiros.perch.ui.home.TimeFilter
 import dev.mkiros.perch.ui.theme.ThemeMode
 import dev.mkiros.perch.work.RefreshInterval
 import java.io.File
@@ -37,6 +38,7 @@ class SettingsStoreTest {
             assertThat(settings.refreshInterval).isEqualTo(RefreshInterval.Hourly)
             assertThat(settings.themeMode).isEqualTo(ThemeMode.System)
             assertThat(settings.showReadEntries).isFalse()
+            assertThat(settings.timeFilter).isEqualTo(TimeFilter.Today)
         }
 
     @Test
@@ -60,6 +62,15 @@ class SettingsStoreTest {
         withStore { it.setShowReadEntries(true) }
 
         assertThat(withStore { it.settings.first() }.showReadEntries).isTrue()
+    }
+
+    @Test
+    fun `the chosen time window survives a restart`() = runTest {
+        // The chip is the one setting the reader changes several times a session, so it
+        // has to come back the way they left it — including across process death.
+        withStore { it.setTimeFilter(TimeFilter.PastMonth) }
+
+        assertThat(withStore { it.settings.first() }.timeFilter).isEqualTo(TimeFilter.PastMonth)
     }
 
     @Test

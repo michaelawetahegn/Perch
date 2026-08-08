@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStoreFile
+import dev.mkiros.perch.ui.home.TimeFilter
 import dev.mkiros.perch.ui.theme.ThemeMode
 import dev.mkiros.perch.work.RefreshInterval
 import java.io.File
@@ -37,6 +38,12 @@ data class PerchSettings(
     val refreshInterval: RefreshInterval = RefreshInterval.Default,
     /** When true the list keeps entries after they are read, instead of an unread inbox. */
     val showReadEntries: Boolean = false,
+    /**
+     * How far back home reaches (U07). Persisted rather than remembered in the view model
+     * because the chip is the setting a reader changes most often, and coming back to an
+     * app that has quietly reset it to Today is how a reader loses their place.
+     */
+    val timeFilter: TimeFilter = TimeFilter.Default,
 )
 
 /**
@@ -59,6 +66,8 @@ class SettingsStore(private val store: DataStore<Preferences>) {
                 refreshInterval = prefs[REFRESH_INTERVAL]
                     .toEnum(RefreshInterval.entries, RefreshInterval.Default),
                 showReadEntries = prefs[SHOW_READ_ENTRIES] ?: false,
+                timeFilter = prefs[TIME_FILTER]
+                    .toEnum(TimeFilter.entries, TimeFilter.Default),
             )
         }
         .distinctUntilChanged()
@@ -78,10 +87,15 @@ class SettingsStore(private val store: DataStore<Preferences>) {
         store.edit { it[SHOW_READ_ENTRIES] = show }
     }
 
+    suspend fun setTimeFilter(filter: TimeFilter) {
+        store.edit { it[TIME_FILTER] = filter.name }
+    }
+
     companion object {
         private val THEME_MODE = stringPreferencesKey("theme_mode")
         private val REFRESH_INTERVAL = stringPreferencesKey("refresh_interval")
         private val SHOW_READ_ENTRIES = booleanPreferencesKey("show_read_entries")
+        private val TIME_FILTER = stringPreferencesKey("time_filter")
 
         /** The real one, backed by a file in the app's data directory. */
         fun create(context: Context): SettingsStore = SettingsStore(

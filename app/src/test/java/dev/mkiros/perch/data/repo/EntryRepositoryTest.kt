@@ -5,9 +5,11 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.EntryDao
 import dev.mkiros.perch.data.db.FeedDao
+import dev.mkiros.perch.data.db.FolderDao
 import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.db.entity.FeedEntity
+import dev.mkiros.perch.data.db.entity.FolderEntity
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -33,6 +35,7 @@ class EntryRepositoryTest {
 
     private lateinit var db: PerchDatabase
     private lateinit var feeds: FeedDao
+    private lateinit var folders: FolderDao
     private lateinit var entries: EntryDao
     private lateinit var repo: EntryRepository
 
@@ -43,6 +46,7 @@ class EntryRepositoryTest {
     fun openDatabase() {
         db = PerchDatabase.inMemory(ApplicationProvider.getApplicationContext())
         feeds = db.feedDao()
+        folders = db.folderDao()
         entries = db.entryDao()
         repo = EntryRepository(
             entryDao = entries,
@@ -313,6 +317,99 @@ class EntryRepositoryTest {
         assertThat(listed.map { it.title }).containsExactly("Entry a1")
     }
 
+    // ---- the time window and folder sections (U07) -----------------------------
+
+    @Test
+    fun `the reading list can be bounded to entries published since a moment`() = runTest {
+        val a = feeds.insert(feed("https://a.example/feed"))
+        insertEntry(a, "old", publishedAt = MIDNIGHT - 1)
+        insertEntry(a, "new", publishedAt = MIDNIGHT)
+
+        val listed = repo.observeEntries(publishedAfter = MIDNIGHT).first()
+
+        // The boundary is inclusive: an entry published *at* midnight is today's.
+        assertThat(listed.map { it.title }).containsExactly("Entry new")
+    }
+
+    @Test
+    fun `no boundary lists every entry however old`() = runTest {
+        val a = feeds.insert(feed("https://a.example/feed"))
+        insertEntry(a, "old", publishedAt = MIDNIGHT - 1)
+        insertEntry(a, "new", publishedAt = MIDNIGHT)
+
+        val listed = repo.observeEntries(publishedAfter = null).first()
+
+        assertThat(listed.map { it.title }).containsExactly("Entry new", "Entry old")
+    }
+
+    @Test
+    fun `mark all read is bounded by the same window the list is`() = runTest {
+        val a = feeds.insert(feed("https://a.example/feed"))
+        val old = insertEntry(a, "old", publishedAt = MIDNIGHT - 1)
+        insertEntry(a, "new", publishedAt = MIDNIGHT)
+
+        repo.markAllRead(feedId = null, publishedAfter = MIDNIGHT)
+
+        // Marking "everything" read must mean everything the reader can see, or a chip
+        // set to Today silently reads a year of articles the reader never looked at.
+        assertThat(entries.findById(old)?.isRead).isFalse()
+    }
+
+    @Test
+    fun `the list is sectioned by folder in folder order, newest first inside a folder`() =
+        runTest {
+            val ai = folders.insert(folder(name = "AI", sortIndex = 1))
+            val security = folders.insert(folder(name = "Security", sortIndex = 0))
+            val inAi = feeds.insert(feed("https://ai.example/feed", folderId = ai))
+            val inSecurity = feeds.insert(feed("https://sec.example/feed", folderId = security))
+            insertEntry(inAi, "ai-old", publishedAt = MIDNIGHT)
+            insertEntry(inAi, "ai-new", publishedAt = MIDNIGHT + 2)
+            insertEntry(inSecurity, "sec", publishedAt = MIDNIGHT + 1)
+
+            val listed = repo.observeEntries().first()
+
+            assertThat(listed.map { it.title })
+                .containsExactly("Entry sec", "Entry ai-new", "Entry ai-old").inOrder()
+        }
+
+    @Test
+    fun `uncategorized sections last however it is sorted`() = runTest {
+        val ai = folders.insert(folder(name = "AI", sortIndex = 9))
+        val loose = feeds.insert(feed("https://loose.example/feed"))
+        val inAi = feeds.insert(feed("https://ai.example/feed", folderId = ai))
+        insertEntry(loose, "loose", publishedAt = MIDNIGHT + 5)
+        insertEntry(inAi, "ai", publishedAt = MIDNIGHT)
+
+        val listed = repo.observeEntries().first()
+
+        assertThat(listed.map { it.title }).containsExactly("Entry ai", "Entry loose").inOrder()
+    }
+
+    @Test
+    fun `every row carries the folder it belongs to, so a section needs no lookup`() = runTest {
+        val ai = folders.insert(folder(name = "AI", sortIndex = 0))
+        val inAi = feeds.insert(feed("https://ai.example/feed", folderId = ai))
+        insertEntry(inAi, "a1")
+
+        val row = repo.observeEntries().first().single()
+
+        assertThat(row.folderId).isEqualTo(ai)
+        assertThat(row.folderName).isEqualTo("AI")
+    }
+
+    @Test
+    fun `the to-read list ignores the window entirely`() = runTest {
+        val a = feeds.insert(feed("https://a.example/feed"))
+        val ancient = insertEntry(a, "ancient", publishedAt = MIDNIGHT - 400L * DAY_MS)
+
+        repo.setSaved(ancient, isSaved = true)
+        repo.setLiked(ancient, isLiked = true)
+
+        // A to-read list that hides last month's articles is not a to-read list (§0).
+        assertThat(repo.observeSaved().first().map { it.title }).containsExactly("Entry ancient")
+        assertThat(repo.observeLiked().first().map { it.title }).containsExactly("Entry ancient")
+    }
+
     // ---- read later and liked (U04) --------------------------------------------
 
     @Test
@@ -479,7 +576,10 @@ class EntryRepositoryTest {
         ),
     )
 
-    private fun feed(feedUrl: String) = FeedEntity(
+    private fun feed(
+        feedUrl: String,
+        folderId: Long = FolderEntity.UNCATEGORIZED_ID,
+    ) = FeedEntity(
         feedUrl = feedUrl,
         siteUrl = "https://example.com/",
         title = "Example",
@@ -492,5 +592,15 @@ class EntryRepositoryTest {
         lastError = null,
         addedAt = 1_700_000_000_000L,
         sortIndex = 0,
+        folderId = folderId,
     )
+
+    private fun folder(name: String, sortIndex: Int) =
+        FolderEntity(name = name, sortIndex = sortIndex, createdAt = 1_700_000_000_000L)
+
+    private companion object {
+        /** A window boundary, in the same neighbourhood as the entries' default stamp. */
+        const val MIDNIGHT = 1_700_000_000_000L
+        const val DAY_MS = 86_400_000L
+    }
 }

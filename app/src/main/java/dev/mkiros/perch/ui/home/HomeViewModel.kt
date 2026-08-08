@@ -133,6 +133,9 @@ sealed interface HomeBanner {
  *   one source while the list shows another.
  * @param banner the one strip above the list, or null. It never replaces the list: a
  *   failing source keeps its cached entries on screen (§7).
+ * @param timeFilter how far back [entries] reaches (U07). It is a filter, not a section:
+ *   it decides which rows survive, and the folder each survivor sits under is a separate
+ *   question the row answers itself.
  */
 data class HomeUiState(
     val isLoading: Boolean = true,
@@ -144,9 +147,26 @@ data class HomeUiState(
     val scope: HomeScope = HomeScope.All,
     val selectedTitle: String? = null,
     val banner: HomeBanner? = null,
+    val timeFilter: TimeFilter = TimeFilter.Default,
 ) {
     val selectedFeedId: Long? get() = scope.feedId
     val selectedFolderId: Long? get() = scope.folderId
+
+    /**
+     * Whether the list draws folder headers (PLAN-2 §0).
+     *
+     * Scoping the drawer to one folder or one source collapses them away — there is only
+     * one section, and a header over the whole list says nothing the app bar has not
+     * already said. So does a reader who has never made a second folder.
+     *
+     * Deliberately answered from the scope and the folder *list*, never from the entries:
+     * "how many distinct folders are in this list" is a question only the whole list can
+     * answer, and U07a is about to stop having the whole list.
+     */
+    val showSections: Boolean get() = scope is HomeScope.All && folders.size > 1
+
+    /** The empty bucket's way out (§0): the next window out, or null at All Time. */
+    val widerFilter: TimeFilter? get() = timeFilter.wider
 }
 
 /**
@@ -157,9 +177,9 @@ class HomeViewModel(
     private val entries: EntryRepository,
     private val feeds: FeedRepository,
     private val folders: FolderRepository,
-    clock: Clock,
+    private val clock: Clock,
     connectivity: ConnectivityMonitor = ConnectivityMonitor.AlwaysOnline,
-    settings: SettingsStore = SettingsStore.inMemory(),
+    private val settings: SettingsStore = SettingsStore.inMemory(),
 ) : ViewModel() {
 
     /** Total unread, for the drawer's "All unread" row and the bar's subtitle. */
@@ -181,19 +201,41 @@ class HomeViewModel(
         settings.settings.map { it.showReadEntries }.distinctUntilChanged()
 
     /**
-     * The list, re-queried per scope and per "show read entries". The scope is carried
-     * *out* of the `flatMapLatest` alongside the rows it produced, so a selection change
-     * can never leave the app bar showing the new scope over the old scope's entries.
+     * The chip row's selection (U07), read from DataStore rather than held here so it
+     * survives process death — and so the widen affordance and the chips are the same
+     * one piece of state, whichever of them the reader used.
+     */
+    private val timeFilter: Flow<TimeFilter> =
+        settings.settings.map { it.timeFilter }.distinctUntilChanged()
+
+    /** What one collection of the list query produced, and what produced it. */
+    private data class ListData(
+        val scope: HomeScope,
+        val timeFilter: TimeFilter,
+        val items: List<EntryListItem>,
+    )
+
+    /**
+     * The list, re-queried per scope, per window, and per "show read entries". All three
+     * are carried *out* of the `flatMapLatest` alongside the rows they produced, so a
+     * selection or a chip change can never leave the bar and the chip row describing a
+     * list that is still the previous query's.
+     *
+     * `since` is resolved here, once per query, rather than inside [TimeFilter]: the
+     * boundary is a moment in time, and re-deriving it per row would let a list straddle
+     * midnight and disagree with itself.
      */
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val filteredEntries: Flow<Pair<HomeScope, List<EntryListItem>>> =
-        combine(scope, showReadEntries, ::Pair).flatMapLatest { (scope, showRead) ->
-            entries.observeEntries(
-                feedId = scope.feedId,
-                folderId = scope.folderId,
-                includeRead = showRead,
-            ).map { scope to it }
-        }
+    private val filteredEntries: Flow<ListData> =
+        combine(scope, showReadEntries, timeFilter, ::Triple)
+            .flatMapLatest { (scope, showRead, filter) ->
+                entries.observeEntries(
+                    feedId = scope.feedId,
+                    folderId = scope.folderId,
+                    includeRead = showRead,
+                    publishedAfter = filter.since(clock),
+                ).map { ListData(scope, filter, it) }
+            }
 
     /** Everything the drawer draws, gathered before the top-level `combine` runs out of arity. */
     private data class DrawerData(
@@ -231,7 +273,8 @@ class HomeViewModel(
         drawer,
         connectivity.observeOnline(),
         globalErrorDismissed,
-    ) { (scope, unread), drawer, online, dismissed ->
+    ) { list, drawer, online, dismissed ->
+        val scope = list.scope
         // A fully-read source is absent from the count map rather than mapped to 0.
         val items = drawer.sources.map { feed ->
             SourceUiItem(
@@ -262,7 +305,7 @@ class HomeViewModel(
         }
         HomeUiState(
             isLoading = false,
-            entries = unread,
+            entries = list.items,
             hasSources = items.isNotEmpty(),
             nowMillis = clock.millis(),
             sources = items,
@@ -270,6 +313,7 @@ class HomeViewModel(
             scope = resolved,
             selectedTitle = selected?.title ?: selectedFolder?.name,
             banner = bannerFor(items, selected, online, dismissed),
+            timeFilter = list.timeFilter,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), HomeUiState())
 
@@ -303,6 +347,22 @@ class HomeViewModel(
     /** Filters the list to one folder's sources (U06). */
     fun selectFolder(folderId: Long) {
         scope.value = HomeScope.Folder(folderId)
+    }
+
+    /**
+     * Narrows or widens home's window (U07). Written straight to DataStore rather than to
+     * a local flow, so the chips, the widen affordance and the next launch all read the
+     * one value.
+     */
+    fun selectTimeFilter(filter: TimeFilter) {
+        viewModelScope.launch { settings.setTimeFilter(filter) }
+    }
+
+    /** The empty bucket's affordance: one step out, or nothing at All Time. */
+    fun widenTimeFilter() {
+        viewModelScope.launch {
+            settings.current().timeFilter.wider?.let { settings.setTimeFilter(it) }
+        }
     }
 
     /** Shows or hides one folder's sources in the drawer. Presentation only. */
@@ -373,13 +433,26 @@ class HomeViewModel(
     /**
      * Marks everything in the current scope read and arms the undo snackbar.
      *
+     * "The current scope" includes U07's window: the reader is looking at Today, so Today
+     * is what gets read. Flipping a year of unseen articles because the chip happened to
+     * be narrow is the one mistake here that undo would not obviously invite them to fix.
+     *
      * A no-op batch arms nothing: offering to undo zero entries is a snackbar that does
      * nothing whichever button the reader presses.
      */
     fun markAllRead() {
         val scope = scope.value
         viewModelScope.launch {
-            val undo = entries.markAllRead(feedId = scope.feedId, folderId = scope.folderId)
+            // Read from the store rather than from [uiState], which is `WhileSubscribed`
+            // and therefore reports its *initial* value to a caller arriving while
+            // nothing is collecting — the one moment when getting this wrong would read
+            // a window the reader never chose.
+            val since = settings.current().timeFilter.since(clock)
+            val undo = entries.markAllRead(
+                feedId = scope.feedId,
+                folderId = scope.folderId,
+                publishedAfter = since,
+            )
             if (undo.count > 0) _pendingUndo.value = undo
         }
     }

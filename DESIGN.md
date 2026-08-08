@@ -88,10 +88,15 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
 │  ⋮ overflow: Mark all read, Refresh, │
 │    Show read entries, Settings       │
 │ ─────────────────────────────────────│
+│ (Today)(Past Week)(Past Month)…      │  ← U07 time filter; scrolls, never scrolls away
+│ ─────────────────────────────────────│
+│ Folder name                          │  ← section header, accent colour
 │ EntryRow ×N  (pull-to-refresh)       │
 │  ● Title (≤3 lines)                  │
 │    Snippet (≤2 lines)                │
 │    Source · 3h ago          [thumb]  │
+│ Next folder                          │
+│ EntryRow ×N                          │
 └──────────────────────────────────────┘
   ModalNavigationDrawer (swipe / hamburger) — scopes the Feed, nothing else:
     All unread            (12)
@@ -104,6 +109,11 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
     + Add source                → bottom sheet (which also picks the folder)
     + New folder                → name dialog
     Settings
+  Time is a *filter* and folder is a *section* (PLAN-2 §0): the chips decide which
+  entries survive, the headers decide where the survivors sit. Sections collapse away
+  when the drawer has scoped the list to one folder or source, and when there is only
+  one folder to begin with. The chips belong to the Feed alone — To-Read and Liked
+  ignore them.
   FAB is NOT used on home. Adding a source is a drawer/overflow action; a FAB
   over a reading list is a Material cargo-cult.
 ```
@@ -134,7 +144,7 @@ Restrained and standard. Material 3 defaults; do not hand-roll easing.
 | State | Rule |
 |---|---|
 | **Loading** | First load only: 6 shimmer-free skeleton rows (`surfaceContainer` blocks). Refreshes use the pull indicator, never a blocking spinner, never a full-screen replace. |
-| **Empty** | Centred icon (48dp, `onSurfaceVariant`), one-line title, one-line explanation, one action button. Distinct copy per case: *no sources yet* → "Add your first source"; *all read* → "You're all caught up" + "Show read entries"; *source has no entries* → "Nothing here yet". |
+| **Empty** | Centred icon (48dp, `onSurfaceVariant`), one-line title, one-line explanation, one action button. Distinct copy per case: *no sources yet* → "Add your first source"; *all read* → "You're all caught up" + "Show read entries"; *source has no entries* → "Nothing here yet"; *empty time window* (U07) → "Nothing in this window" + **Show &lt;next window&gt; instead**, never a blank screen. |
 | **Error** | Per-source failures **never block the list**. The feed shows its last-known entries plus a `⚠` in the drawer; tapping shows the message + Retry. Global failure (all feeds failed) = inline banner above the list, dismissible, with Retry. |
 | **Offline** | Detected via connectivity, shown as a slim inline banner: "Offline — showing saved entries". Cached content stays fully readable and navigable. Never a blocking dialog. |
 

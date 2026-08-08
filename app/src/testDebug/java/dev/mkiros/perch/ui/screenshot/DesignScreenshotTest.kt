@@ -13,12 +13,14 @@ import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.debug.DebugSeeder
+import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.di.AppContainer
 import dev.mkiros.perch.ui.article.ArticleScreen
 import dev.mkiros.perch.ui.article.ArticleUiState
 import dev.mkiros.perch.ui.article.ArticleViewModel
 import dev.mkiros.perch.ui.home.HomeScreen
 import dev.mkiros.perch.ui.home.HomeViewModel
+import dev.mkiros.perch.ui.home.TimeFilter
 import dev.mkiros.perch.ui.source.AddSourceViewModel
 import dev.mkiros.perch.ui.theme.PerchTheme
 import dev.mkiros.perch.ui.theme.ThemeMode
@@ -63,6 +65,16 @@ class DesignScreenshotTest {
 
     private val now = Instant.parse("2026-08-07T12:00:00Z")
     private val clock = Clock.fixed(now, ZoneOffset.UTC)
+
+    /**
+     * These tests are about the list, the drawer and the row — not about U07's window,
+     * which [dev.mkiros.perch.ui.home.HomeTimeFilterTest] owns. Home opens on Today, so
+     * without this every entry seeded a day or two back would be filtered out and the
+     * assertions would be about an empty screen.
+     */
+    private val settings = SettingsStore.inMemory().also {
+        runBlocking { it.setTimeFilter(TimeFilter.AllTime) }
+    }
 
     @Before
     fun setUp() {
@@ -190,6 +202,7 @@ class DesignScreenshotTest {
             feeds = container.feeds,
             folders = container.folders,
             clock = clock,
+            settings = settings,
         )
         val addSourceViewModel = AddSourceViewModel(container.feeds, container.folders)
         compose.setContent {

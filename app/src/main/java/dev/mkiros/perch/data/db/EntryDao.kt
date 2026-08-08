@@ -40,22 +40,37 @@ abstract class EntryDao {
      * @param folderId the drawer's per-folder scope (U06); null is every folder. It is a
      *   second predicate rather than a resolved list of feed ids because membership is a
      *   column on `feeds` that a move can change under us — the join already knows.
+     * @param publishedAfter U07's time window, inclusive; null is All Time. In SQL rather
+     *   than in the view model for the same reason as the other two, and because U07a
+     *   swaps this query for a `PagingSource` — a filter the UI applies afterwards would
+     *   page the rows it then threw away.
+     *
+     * Ordered by folder first and recency second, so §0's sections fall out of the row
+     * order itself: the section a row belongs to is a property of the row, and a header
+     * is due wherever the previous row's folder differs. Nothing has to hold the whole
+     * list to work that out, which is what keeps U07a's page boundaries honest.
      */
     @Query(
         """
         SELECT e.id AS id, e.feedId AS feedId, e.title AS title, e.summary AS summary,
                e.imageUrl AS imageUrl, e.publishedAt AS publishedAt, e.isRead AS isRead,
-               COALESCE(NULLIF(TRIM(f.customTitle), ''), f.title) AS sourceTitle
-        FROM entries e JOIN feeds f ON f.id = e.feedId
+               COALESCE(NULLIF(TRIM(f.customTitle), ''), f.title) AS sourceTitle,
+               fo.id AS folderId, fo.name AS folderName
+        FROM entries e
+        JOIN feeds f ON f.id = e.feedId
+        JOIN folders fo ON fo.id = f.folderId
         WHERE (:includeRead OR e.isRead = 0) AND (:feedId IS NULL OR e.feedId = :feedId)
           AND (:folderId IS NULL OR f.folderId = :folderId)
-        ORDER BY e.publishedAt DESC, e.id DESC
+          AND (:publishedAfter IS NULL OR e.publishedAt >= :publishedAfter)
+        ORDER BY (fo.id = 1) ASC, fo.sortIndex ASC, fo.name COLLATE NOCASE ASC,
+                 e.publishedAt DESC, e.id DESC
         """,
     )
     abstract fun observeListItems(
         feedId: Long?,
         folderId: Long?,
         includeRead: Boolean,
+        publishedAfter: Long?,
     ): Flow<List<EntryListItem>>
 
     @Query("SELECT * FROM entries WHERE id = :id")
@@ -91,19 +106,25 @@ abstract class EntryDao {
     /**
      * Unread ids, optionally scoped to one source or one folder. `null` means every one.
      *
-     * The scope has to match [observeListItems]' exactly: mark-all-read is "everything the
-     * reader is looking at", so a drawer scoped to a folder that flipped the whole inbox
-     * would be marking articles the reader cannot see as read.
+     * The scope has to match [observeListItems]' exactly — including U07's time window:
+     * mark-all-read is "everything the reader is looking at", so a drawer scoped to a
+     * folder that flipped the whole inbox would be marking articles the reader cannot see
+     * as read, and a chip set to Today that flipped a year of them would be worse.
      */
     @Query(
         """
         SELECT e.id FROM entries e JOIN feeds f ON f.id = e.feedId
         WHERE e.isRead = 0 AND (:feedId IS NULL OR e.feedId = :feedId)
           AND (:folderId IS NULL OR f.folderId = :folderId)
+          AND (:publishedAfter IS NULL OR e.publishedAt >= :publishedAfter)
         ORDER BY e.id
         """,
     )
-    abstract suspend fun unreadIds(feedId: Long?, folderId: Long?): List<Long>
+    abstract suspend fun unreadIds(
+        feedId: Long?,
+        folderId: Long?,
+        publishedAfter: Long? = null,
+    ): List<Long>
 
     @Query("UPDATE entries SET isRead = :isRead, readAt = :readAt WHERE id IN (:ids)")
     abstract suspend fun setReadForIds(ids: List<Long>, isRead: Boolean, readAt: Long?)
@@ -135,8 +156,11 @@ abstract class EntryDao {
         """
         SELECT e.id AS id, e.feedId AS feedId, e.title AS title, e.summary AS summary,
                e.imageUrl AS imageUrl, e.publishedAt AS publishedAt, e.isRead AS isRead,
-               COALESCE(NULLIF(TRIM(f.customTitle), ''), f.title) AS sourceTitle
-        FROM entries e JOIN feeds f ON f.id = e.feedId
+               COALESCE(NULLIF(TRIM(f.customTitle), ''), f.title) AS sourceTitle,
+               fo.id AS folderId, fo.name AS folderName
+        FROM entries e
+        JOIN feeds f ON f.id = e.feedId
+        JOIN folders fo ON fo.id = f.folderId
         WHERE e.isSaved = 1
         ORDER BY e.savedAt DESC, e.id DESC
         """,
@@ -148,8 +172,11 @@ abstract class EntryDao {
         """
         SELECT e.id AS id, e.feedId AS feedId, e.title AS title, e.summary AS summary,
                e.imageUrl AS imageUrl, e.publishedAt AS publishedAt, e.isRead AS isRead,
-               COALESCE(NULLIF(TRIM(f.customTitle), ''), f.title) AS sourceTitle
-        FROM entries e JOIN feeds f ON f.id = e.feedId
+               COALESCE(NULLIF(TRIM(f.customTitle), ''), f.title) AS sourceTitle,
+               fo.id AS folderId, fo.name AS folderName
+        FROM entries e
+        JOIN feeds f ON f.id = e.feedId
+        JOIN folders fo ON fo.id = f.folderId
         WHERE e.isStarred = 1
         ORDER BY e.starredAt DESC, e.id DESC
         """,
