@@ -62,8 +62,10 @@ Do not skip ahead, do not do two tasks, do not refactor code the task doesn't to
 
 - **System `java` is 8.** Gradle needs 17 — always export
   `JAVA_HOME=$HOME/.jdks/temurin-17` (T01 put Temurin 17.0.20 there) and put
-  `$JAVA_HOME/bin` first on `PATH`. Also set `org.gradle.java.home` in
-  `gradle.properties`. The exports also live at the end of `~/.bashrc`, but Ubuntu's
+  `$JAVA_HOME/bin` first on `PATH`. `org.gradle.java.home` is set in
+  **`~/.gradle/gradle.properties`**, not the repo's — the repo is public since U01 and
+  that path is machine-local (GRADLE_USER_HOME's file wins over the project's, so this
+  works; recreate it if a build picks the wrong JDK). The exports also live at the end of `~/.bashrc`, but Ubuntu's
   `.bashrc` returns early for non-interactive shells — **every session must export them
   itself**; do not assume they are inherited.
 - Installed by T01: cmdline-tools `latest`, platform-tools 37.0.1, platforms;android-35,

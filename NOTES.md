@@ -8,15 +8,13 @@ Working memory for unattended sessions, per CLAUDE.md §NOTES.md discipline. **U
   65 GB free on `C:`. No physical device; WHPX **enabled** (`emulator -accel-check` →
   `WHPX(10.0.19045) is installed and usable.`). Every path/JDK/wrapper this implies lives
   in CLAUDE.md §Environment — do not re-record it here.
-- Windows gateway from WSL: `172.18.144.1` (only if interop fails and adb must go TCP).
 - **2026-08-07 — host froze on memory (session #11); fixed in `.wslconfig`, `gradle.properties`
   and `loop.sh`. The `.wslconfig` half still needs a `wsl --shutdown` that has not happened.**
 
 ## Log
-- 2026-08-07 — T04 done: 42 manifest rows, **39 snapshots** (19 MB) via `scripts/harvest.sh`;
-  homepage HTML for the auto-discovery cases is in `fixtures/homepages/`. **3 exclusions:**
-  `danluu.com` (11.1 MB) and `projectzero.google` (13.2 MB) exceed SPEC.md §6's 8 MiB body cap, so
-  the app refuses them live; `research.nccgroup.com` publishes no feed anywhere — it is dead.
+- 2026-08-07 — T04 done: 42 manifest rows, **39 snapshots** (19 MB) via `scripts/harvest.sh`.
+  **3 exclusions:** `danluu.com` (11.1 MB) and `projectzero.google` (13.2 MB) exceed SPEC.md §6's
+  8 MiB body cap, so the app refuses them live; `research.nccgroup.com` publishes no feed — dead.
 - 2026-08-07 — T05–T09: four parsers + dispatch + `FeedCorpusTest` (39 snapshots; it `check`s ≥35
   exist, so it cannot go vacuous). Shared plumbing in `data/parse/FeedXml.kt` — reuse it.
 - 2026-08-07 — T12–T18 done (storage, HTTP, sync, worker). Three rules that outlive them:
@@ -31,9 +29,9 @@ Working memory for unattended sessions, per CLAUDE.md §NOTES.md discipline. **U
   (serif) is kept out of `PerchTypography` (sans) so furniture cannot render serif by accident.
   **Standing grep gate: no `Color(0x`, `N.dp`, `N.sp` outside `ui/theme/`.**
   `PerchTheme(dynamicColor = false)` pins the fallback scheme — the screenshot tests need it.
-- 2026-08-07 — T20 done: `di/AppContainer` + `ui/nav/PerchNavHost` + screen shells. **Compose UI
-  tests must live in `app/src/testDebug/`** — `ui-test-manifest` is a `debugImplementation`, so
-  `ComponentActivity` is missing from the release manifest and `./gradlew test` fails there.
+- 2026-08-07 — T20 done: `di/AppContainer`, `ui/nav/PerchNavHost`, screen shells. **Compose UI tests
+  must live in `app/src/testDebug/`** — `ui-test-manifest` is `debugImplementation`, so the release
+  manifest has no `ComponentActivity` and `./gradlew test` fails there.
 - 2026-08-07 — T22 done: source drawer + filter. Two standing Robolectric traps: **`compose.waitUntil`
   only advances the *virtual* clock** (poll in wall-clock time — `awaitInRealTime` in
   `ui/screenshot/ScreenshotSupport.kt`), and an **injected tap never reaches a node inside an opened
@@ -41,7 +39,6 @@ Working memory for unattended sessions, per CLAUDE.md §NOTES.md discipline. **U
 - 2026-08-07 — T25a done: `data/parse/{ArticleBlock,ArticleLowering}.kt`. Input **must** be
   `HtmlSanitizer` output; the mapper covers that whole allowlist, so `ArticleLoweringCorpusTest`
   asserts **0/2644 `Unsupported`** — stricter than T32 gate 2's ≤2%, and it names offending tags.
-  Chrome regexes are whole-block matches, so **T25 must not re-strip anything**.
 - 2026-08-07 — T25 done: `ui/article/{RichText,ArticleBody,ArticleScreen,ArticleViewModel}.kt`.
   `ArticleBody` is total over the nine blocks with **no source-specific branch** — a source that
   renders wrong is an `ArticleLowering` bug. An image **collapses the whole figure on a load error**,
@@ -52,23 +49,22 @@ Working memory for unattended sessions, per CLAUDE.md §NOTES.md discipline. **U
   default, so no test needs a shadow network). Gesture traps: `PullToRefreshBox` ignores a swipe
   unless its child scrolls, and refresh-prepended rows compose above the viewport, so assert on
   list state, never `assertIsDisplayed`. **Residual:** the empty state does not scroll, so it
-  cannot be pulled; the overflow's Refresh is the way out of it.
+  cannot be pulled — the overflow's Refresh is the way out.
 - 2026-08-07 — T28 done: `app/src/debug/{assets/seed,java/…/debug}` — 8 snapshots (760 KB) plus
   `index.tsv` (`file<TAB>real feed url`). Seeding goes through **`FeedRepository.add`**, so seeded
   rows are sanitized/summarized/deduped exactly like fetched ones and keep their **real** feed URL.
   The hook is a **debug-manifest `ContentProvider`**, so `PerchApp` carries no seeding branch and
-  release has neither classes nor assets (`NoSeederInReleaseTest`). Seeds only when zero sources
-  exist. Under Robolectric do not rely on the provider — construct `DebugSeeder` against your own DB.
+  release has neither classes nor assets (`NoSeederInReleaseTest`); it seeds only when zero sources
+  exist. Under Robolectric construct `DebugSeeder` against your own DB — the provider won't run.
 - 2026-08-07 — T29 done: `ui/screenshot/{Screenshots,DesignScreenshotTest}` → 6 PNGs in
   `screenshots/`. **Never `captureToImage()`:** it goes through `PixelCopy`, which blocks on a
   frame-commit callback a Robolectric window never delivers (2s timeout, nothing drawn). Under
   `@GraphicsMode(NATIVE)` a plain `View.draw(Canvas)` gives the same pixels synchronously; a sheet
   or dialog is its **own window**, so draw each extra Compose root's `rootView` over the decor view.
   **§9 residuals** (cosmetic): Robolectric reports zero window insets, so the app bar and drawer sit
-  flush at y=0 in every capture — an artifact; font scale 1.3, rotation/process-death and TalkBack
-  traversal are not checkable from pixels and were never verified.
-- 2026-08-07 — T30 done: `maestro/regression.yaml`, green. **Maestro-on-Windows won; the TCP-adb
-  fallback was never needed.** To re-run: `cp maestro/regression.yaml /mnt/c/perch-stage/maestro/`
+  flush at y=0 in every capture — an artifact. Font scale 1.3, rotation and TalkBack are unverified.
+- 2026-08-07 — T30 done: `maestro/regression.yaml`, green, driven from Windows. To re-run:
+  `cp maestro/regression.yaml /mnt/c/perch-stage/maestro/`
   (`device.sh stage` will **not** overwrite an existing dir), then from `/mnt/c`
   `cmd.exe /c "C:\perch-stage\maestro.bat --device emulator-5554 test C:\perch-stage\maestro\regression.yaml"`.
   `PerchNavHost` sets `testTagsAsResourceId` — an out-of-process driver's only handle on a Compose
@@ -77,8 +73,8 @@ Working memory for unattended sessions, per CLAUDE.md §NOTES.md discipline. **U
 - 2026-08-07 — T31 done: `fallbackToDestructiveMigration()` is **gone for good**. Version 1 is the
   shipped baseline; `PerchDatabase.MIGRATIONS` is the ordered list and `PerchDatabaseMigrationTest`
   fails the build on a version bump with no matching migration, a stale `app/schemas/N.json`, or the
-  fallback reappearing. Also: `WorkManagerTestInitHelper`'s `SynchronousExecutor` does **not** cover
-  WorkManager's own task executor, so `cancelUniqueWork` lands asynchronously — poll in wall-clock.
+  fallback reappearing. Also: `WorkManagerTestInitHelper`'s `SynchronousExecutor` misses WorkManager's
+  own task executor, so `cancelUniqueWork` lands asynchronously — poll in wall-clock.
 - 2026-08-07 — **T32 done — the build is complete.** `acceptance/LiveAcceptanceTest` (in `testDebug`,
   not `test`: gate 3 needs a Compose rule and `ui-test-manifest` is `debugImplementation`). Re-run:
   `./gradlew :app:testDebugUnitTest -Pperch.live=true --tests '*LiveAcceptance*'` — the property is
@@ -97,3 +93,7 @@ Working memory for unattended sessions, per CLAUDE.md §NOTES.md discipline. **U
   **APK: `/home/michael/source/rss-reader/app/build/outputs/apk/debug/app-debug.apk`** — 19,411,514 B
   (18.5 MiB), built 2026-08-07 20:14 by `./gradlew clean test assembleDebug`; install it with
   `./scripts/device.sh install app/build/outputs/apk/debug/app-debug.apk`.
+- 2026-08-07 — **U01: the repo is public** — `github.com/michaelawetahegn/Perch`, MIT, tag `v0.1.0`.
+  Two audit changes not to undo: `org.gradle.java.home` moved out of the tracked
+  `gradle.properties` into `~/.gradle/gradle.properties` (CLAUDE.md §Environment), and a
+  third-party consent `apiKey` in `fixtures/homepages/research-nccgroup-com.html` is redacted.
