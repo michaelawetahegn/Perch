@@ -7,6 +7,7 @@ import android.graphics.drawable.Drawable
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -24,6 +25,10 @@ import dev.mkiros.perch.debug.DebugSeeder
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.di.AppContainer
 import dev.mkiros.perch.ui.article.ArticleScreen
+import dev.mkiros.perch.ui.collection.CollectionTestTags
+import dev.mkiros.perch.ui.nav.NavTestTags
+import dev.mkiros.perch.ui.nav.PerchNavHost
+import dev.mkiros.perch.ui.nav.PerchTab
 import dev.mkiros.perch.ui.article.ArticleUiState
 import dev.mkiros.perch.ui.article.ArticleViewModel
 import dev.mkiros.perch.ui.home.HomeScreen
@@ -174,6 +179,24 @@ class DesignScreenshotTest {
         capture("add-source")
     }
 
+    /**
+     * U09's To-Read list under the bottom bar, rendered through the **real shell** rather
+     * than through [CollectionScreen] alone: the bar is the thing being looked at, and it
+     * lives outside the `NavHost` precisely so no one screen owns it.
+     */
+    @Test
+    fun `the To-Read list with the bottom bar`() {
+        seed()
+        saveSomeEntries(count = 6)
+        showShell(ThemeMode.Dark)
+        compose.onNodeWithTag(NavTestTags.tab(PerchTab.ToRead)).performClick()
+        compose.awaitInRealTime("the queue to load") {
+            compose.onAllNodesWithTag(CollectionTestTags.ENTRY).fetchSemanticsNodes().isNotEmpty()
+        }
+
+        capture("to-read-dark")
+    }
+
     @Test
     fun `the first launch with no sources`() {
         showHome(ThemeMode.Light)
@@ -301,6 +324,22 @@ class DesignScreenshotTest {
         "Systems" to listOf("nullprogram.com", "blog.regehr.org", "fabiensanglard.net"),
         "Security" to listOf("doar-e.github.io", "krebsonsecurity.com"),
     )
+
+    /** Files the newest [count] seeded entries under *Read later*, newest saved first. */
+    private fun saveSomeEntries(count: Int) = runBlocking {
+        database.entryDao().observeAll().first().take(count)
+            .forEach { container.entries.setSaved(it.id, isSaved = true) }
+    }
+
+    private fun showShell(mode: ThemeMode) {
+        stubThumbnails()
+        compose.setContent {
+            PerchTheme(mode = mode, dynamicColor = false) {
+                PerchNavHost(container = container)
+            }
+        }
+        compose.waitForIdle()
+    }
 
     private fun showArticle(entryId: Long) {
         val viewModel = ArticleViewModel(

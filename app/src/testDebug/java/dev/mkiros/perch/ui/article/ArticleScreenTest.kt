@@ -7,6 +7,7 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performSemanticsAction
@@ -207,6 +208,47 @@ class ArticleScreenTest {
 
         compose.onNodeWithTag(ArticleTestTags.STANDFIRST)
             .assertTextEquals("Why the obvious approach deadlocks.")
+    }
+
+    // ---- the top bar's two toggles (U09) ---------------------------------------
+
+    @Test
+    fun `the like toggle files the entry under Liked and flips its own label`() {
+        val entryId = seedEntry(seedFeed(title = "Null Program"), title = "An Async Runtime in C")
+        showArticle(entryId)
+
+        // Off: the outlined glyph, and the verb is the direction it is about to go.
+        compose.onNodeWithContentDescription("Like").assertExists()
+        tap(ArticleTestTags.LIKE)
+
+        await { runBlocking { container.entries.find(entryId) }?.isStarred == true }
+        compose.onNodeWithContentDescription("Remove from Liked").assertExists()
+    }
+
+    @Test
+    fun `the save toggle files the entry under To-Read and flips its own label`() {
+        val entryId = seedEntry(seedFeed(title = "Null Program"), title = "An Async Runtime in C")
+        showArticle(entryId)
+
+        compose.onNodeWithContentDescription("Save for later").assertExists()
+        tap(ArticleTestTags.SAVE)
+
+        await { runBlocking { container.entries.find(entryId) }?.isSaved == true }
+        compose.onNodeWithContentDescription("Remove from To-Read").assertExists()
+    }
+
+    /**
+     * Opening an article marks it read, and *Liked* is permanent — so a second visit must
+     * come back showing the toggle already on rather than reset to off.
+     */
+    @Test
+    fun `a liked entry opens with its toggle already on`() {
+        val entryId = seedEntry(seedFeed(title = "Null Program"), title = "An Async Runtime in C")
+        runBlocking { container.entries.setLiked(entryId, isLiked = true) }
+
+        showArticle(entryId)
+
+        compose.onNodeWithContentDescription("Remove from Liked").assertExists()
     }
 
     @Test

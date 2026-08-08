@@ -13,6 +13,13 @@ package dev.mkiros.perch.data.db
  *   looked up per item so that deciding whether a header is due needs nothing but this
  *   row and the one before it — the property U07a's page boundaries depend on.
  * @param folderName the header's text, joined for the same reason [sourceTitle] is.
+ * @param isSaved on the *Read later* queue (U04). Carried on the row because U09's
+ *   long-press sheet has to offer *Save for later* or *Remove from Read later* — a sheet
+ *   that has to go and ask the database which one it means opens showing the wrong verb.
+ * @param isStarred *Liked*, carried for the same reason.
+ * @param link the article's own address, and the only thing worth sharing from a row
+ *   (U09) — a reader forwarding an article means the article, not Perch's copy of it.
+ *   Null for a feed that ships items with no link at all.
  */
 data class EntryListItem(
     val id: Long,
@@ -25,4 +32,7 @@ data class EntryListItem(
     val sourceTitle: String,
     val folderId: Long,
     val folderName: String,
+    val isSaved: Boolean = false,
+    val isStarred: Boolean = false,
+    val link: String? = null,
 )

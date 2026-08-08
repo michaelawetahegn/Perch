@@ -259,11 +259,13 @@ pasted URL already parses as a feed, skip discovery entirely.
 ## 8. Read state
 
 - Opening an article marks it read (write-through, immediate; list row updates via Flow).
-- Long-press a row → toggle read/unread.
+- Long-press a row → the action sheet: save for later, like, mark read/unread, share (U09).
 - Overflow → **Mark all read** in the current scope (unified or single source),
   with an undo snackbar (5s window, single-level undo).
 - Unread counts per source and a total, exposed as a Room `Flow<Map<Long,Int>>` —
   computed by SQL `COUNT`, never in Kotlin.
+- Three independent reader-owned flags (PLAN-2 §0): `isRead`, `isSaved` (*Read later*),
+  `isStarred` (*Liked*). Clearing one nulls its timestamp; none of them implies another.
 
 ## 9. OPML
 
@@ -276,10 +278,25 @@ pasted URL already parses as a feed, skip discovery entirely.
 
 ## 10. Navigation
 
-Single activity, `NavHost`, 4 destinations:
-`home` (unified/filtered list; drawer holds the source list) → `article/{entryId}`
-→ `settings`. Add-source and rename/remove are bottom sheets and dialogs over `home`,
-not destinations. Back from an article returns to the list with scroll position intact.
+Single activity, one `NavHost`, **5 destinations** (amended by PLAN-2 §0 / U09 — v1's
+four-destination, drawer-only list is obsolete):
+
+- **`home`** — the Feed: the unified or scoped reading list. The drawer scopes it to a
+  folder or a source; it holds nothing else.
+- **`saved`** — *To-Read*, ordered by `savedAt` desc.
+- **`liked`** — *Liked*, ordered by `starredAt` desc.
+
+Those three are peers in a `NavigationBar`, switched with `saveState`/`restoreState` +
+`launchSingleTop` so each keeps its own scroll position and state. Neither `saved` nor
+`liked` takes the time filter — that belongs to the Feed alone.
+
+- **`article/{entryId}`** — the reading surface. The bar is **absent** here.
+- **`settings`**.
+
+Add-source, rename/remove, and the row-action sheet are sheets and dialogs over a
+destination, not destinations. Back is §0's ordered chain: overlay closes → article pops →
+To-Read/Liked returns to Feed → a scrolled Feed scrolls to top → only then does back leave
+the app. Returning from an article restores the list's scroll position.
 
 ## 11. Definition of done (project level)
 

@@ -268,7 +268,7 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
         the open menu; `./gradlew test` green.
       - Rung: screenshot
 
-- [ ] **U09 — To-Read and Liked: bottom bar + the actions that fill them. TDD + screenshot.**
+- [x] **U09 — To-Read and Liked: bottom bar + the actions that fill them. TDD + screenshot.**
       Add the §0 `NavigationBar` with **Feed · To-Read · Liked** and the two new
       destinations, both rendering the same `EntryRow` as Feed, sorted by `savedAt` /
       `starredAt` descending, each with its own empty state that says what the list is

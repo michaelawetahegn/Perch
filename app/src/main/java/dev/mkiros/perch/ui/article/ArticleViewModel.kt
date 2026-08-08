@@ -32,6 +32,9 @@ sealed interface ArticleUiState {
      * @param blocks the lowered body; empty means the feed carried no full text.
      * @param summary kept separately from [standfirst] because the empty-body fallback
      *   shows it even when it would have been redundant beside a body.
+     * @param isSaved on the *Read later* queue, and [isLiked] *Liked* (U09). They are on
+     *   the loaded state rather than in a flow of their own so the two top-bar toggles
+     *   cannot draw a state the rest of the screen has not caught up with.
      */
     data class Loaded(
         val title: String,
@@ -40,6 +43,8 @@ sealed interface ArticleUiState {
         val blocks: List<ArticleBlock>,
         val summary: String?,
         val link: String?,
+        val isSaved: Boolean = false,
+        val isLiked: Boolean = false,
     ) : ArticleUiState
 }
 
@@ -54,7 +59,7 @@ sealed interface ArticleUiState {
 class ArticleViewModel(
     private val entries: EntryRepository,
     private val feeds: FeedRepository,
-    entryId: Long,
+    private val entryId: Long,
     private val zone: ZoneId = ZoneId.systemDefault(),
 ) : ViewModel() {
 
@@ -81,9 +86,34 @@ class ArticleViewModel(
                 blocks = blocks,
                 summary = entry.summary?.takeIf { it.isNotBlank() },
                 link = entry.link,
+                isSaved = entry.isSaved,
+                isLiked = entry.isStarred,
             )
             entries.setRead(entryId, isRead = true)
         }
+    }
+
+    /**
+     * The top bar's *Read later* toggle (U09).
+     *
+     * The flag is echoed into [_state] as well as written, rather than re-read from the
+     * database: this screen loads once by id and has no flow behind it, so a toggle that
+     * only wrote would leave the icon showing the state the reader just left. The write is
+     * the truth; this is the same value, applied to the copy on screen.
+     */
+    fun toggleSaved() {
+        val loaded = _state.value as? ArticleUiState.Loaded ?: return
+        val next = !loaded.isSaved
+        _state.value = loaded.copy(isSaved = next)
+        viewModelScope.launch { entries.setSaved(entryId, next) }
+    }
+
+    /** *Liked*, the same way. */
+    fun toggleLiked() {
+        val loaded = _state.value as? ArticleUiState.Loaded ?: return
+        val next = !loaded.isLiked
+        _state.value = loaded.copy(isLiked = next)
+        viewModelScope.launch { entries.setLiked(entryId, next) }
     }
 
     /**

@@ -19,6 +19,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.BookmarkBorder
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -33,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.mkiros.perch.R
@@ -72,8 +77,37 @@ fun ArticleScreen(
                     }
                 },
                 actions = {
-                    val link = (state as? ArticleUiState.Loaded)?.link
-                    if (link != null) {
+                    val loaded = state as? ArticleUiState.Loaded
+                    if (loaded != null) {
+                        // Filled when on, outlined when off (U09). The two toggles read as
+                        // one pair, so they share the treatment: the glyph carries the
+                        // state, the tint only emphasises it.
+                        ToggleAction(
+                            on = loaded.isLiked,
+                            onIcon = Icons.Filled.Favorite,
+                            offIcon = Icons.Outlined.FavoriteBorder,
+                            labelRes = if (loaded.isLiked) {
+                                R.string.entry_action_unlike
+                            } else {
+                                R.string.entry_action_like
+                            },
+                            testTag = ArticleTestTags.LIKE,
+                            onClick = viewModel::toggleLiked,
+                        )
+                        ToggleAction(
+                            on = loaded.isSaved,
+                            onIcon = Icons.Filled.Bookmark,
+                            offIcon = Icons.Outlined.BookmarkBorder,
+                            labelRes = if (loaded.isSaved) {
+                                R.string.entry_action_unsave
+                            } else {
+                                R.string.entry_action_save
+                            },
+                            testTag = ArticleTestTags.SAVE,
+                            onClick = viewModel::toggleSaved,
+                        )
+                    }
+                    loaded?.link?.let { link ->
                         IconButton(
                             onClick = { openInBrowser(context, link) },
                             modifier = Modifier.testTag(ArticleTestTags.OPEN_IN_BROWSER),
@@ -107,6 +141,35 @@ fun ArticleScreen(
                 is ArticleUiState.Loaded -> Article(current) { url -> openInBrowser(context, url) }
             }
         }
+    }
+}
+
+/**
+ * One of the top bar's two state toggles.
+ *
+ * The label changes with the state rather than staying put — the content description is
+ * what a screen reader announces on press, and "Like" announced while un-liking is a lie.
+ */
+@Composable
+private fun ToggleAction(
+    on: Boolean,
+    onIcon: ImageVector,
+    offIcon: ImageVector,
+    labelRes: Int,
+    testTag: String,
+    onClick: () -> Unit,
+) {
+    IconButton(onClick = onClick, modifier = Modifier.testTag(testTag)) {
+        Icon(
+            imageVector = if (on) onIcon else offIcon,
+            contentDescription = stringResource(labelRes),
+            tint = if (on) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            },
+            modifier = Modifier.size(Dimens.icon),
+        )
     }
 }
 
@@ -207,6 +270,8 @@ object ArticleTestTags {
     const val BYLINE = "article:byline"
     const val STANDFIRST = "article:standfirst"
     const val OPEN_IN_BROWSER = "article:open-in-browser"
+    const val LIKE = "article:like"
+    const val SAVE = "article:save"
     const val READ_ON_WEB = "article:read-on-web"
     const val CODE = "article:code"
     const val IMAGE = "article:image"

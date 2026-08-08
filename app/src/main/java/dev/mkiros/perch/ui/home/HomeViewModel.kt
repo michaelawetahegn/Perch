@@ -472,6 +472,30 @@ class HomeViewModel(
         _pendingUndo.value = null
     }
 
+    // ---- one row's reader state (U09) -------------------------------------------
+
+    /**
+     * The three flags the long-press sheet toggles (PLAN-2 §0).
+     *
+     * Nothing here touches [uiState]: each is a single-column write, and the list is a
+     * Room `Flow` that re-emits on its own the moment the write lands. Optimistically
+     * editing the state as well would give the row two sources of truth that disagree for
+     * one frame — and marking read *removes* the row from the unread inbox, which is a
+     * change only the query can decide.
+     */
+    fun setSaved(entryId: Long, isSaved: Boolean) {
+        viewModelScope.launch { entries.setSaved(entryId, isSaved) }
+    }
+
+    fun setLiked(entryId: Long, isLiked: Boolean) {
+        viewModelScope.launch { entries.setLiked(entryId, isLiked) }
+    }
+
+    /** §0's explicit **Mark unread**, which also nulls `readAt` — see [EntryRepository.setRead]. */
+    fun setRead(entryId: Long, isRead: Boolean) {
+        viewModelScope.launch { entries.setRead(entryId, isRead) }
+    }
+
     /** Hides the "every source is failing" banner until the next refresh (DESIGN.md §7). */
     fun dismissBanner() {
         globalErrorDismissed.value = true

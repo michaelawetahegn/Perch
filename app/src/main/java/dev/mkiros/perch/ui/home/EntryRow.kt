@@ -1,8 +1,9 @@
 package dev.mkiros.perch.ui.home
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -64,17 +65,22 @@ object EntryRowTestTags {
  * U08 dropped the two-line snippet: the thumbnail now does the work of telling the reader
  * what an entry is about, and a row carrying both is a card in everything but name.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EntryRow(
     item: EntryListItem,
     now: Long,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onLongClick: (() -> Unit)? = null,
 ) {
     Row(
+        // The long press lives on the *same* node as the tap rather than on a wrapper
+        // around it (U09): an inner `clickable` consumes the pointer stream, so a
+        // combinedClickable outside this row would be a long press that never arrives.
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
             .padding(horizontal = Dimens.rowHorizontal, vertical = Dimens.rowVertical),
     ) {
         Box(modifier = Modifier.width(Dimens.unreadGutter)) {

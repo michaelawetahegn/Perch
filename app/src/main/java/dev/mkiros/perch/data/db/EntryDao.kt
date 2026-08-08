@@ -55,7 +55,8 @@ abstract class EntryDao {
         SELECT e.id AS id, e.feedId AS feedId, e.title AS title, e.summary AS summary,
                e.imageUrl AS imageUrl, e.publishedAt AS publishedAt, e.isRead AS isRead,
                COALESCE(NULLIF(TRIM(f.customTitle), ''), f.title) AS sourceTitle,
-               fo.id AS folderId, fo.name AS folderName
+               fo.id AS folderId, fo.name AS folderName,
+               e.isSaved AS isSaved, e.isStarred AS isStarred, e.link AS link
         FROM entries e
         JOIN feeds f ON f.id = e.feedId
         JOIN folders fo ON fo.id = f.folderId
@@ -157,7 +158,8 @@ abstract class EntryDao {
         SELECT e.id AS id, e.feedId AS feedId, e.title AS title, e.summary AS summary,
                e.imageUrl AS imageUrl, e.publishedAt AS publishedAt, e.isRead AS isRead,
                COALESCE(NULLIF(TRIM(f.customTitle), ''), f.title) AS sourceTitle,
-               fo.id AS folderId, fo.name AS folderName
+               fo.id AS folderId, fo.name AS folderName,
+               e.isSaved AS isSaved, e.isStarred AS isStarred, e.link AS link
         FROM entries e
         JOIN feeds f ON f.id = e.feedId
         JOIN folders fo ON fo.id = f.folderId
@@ -173,7 +175,8 @@ abstract class EntryDao {
         SELECT e.id AS id, e.feedId AS feedId, e.title AS title, e.summary AS summary,
                e.imageUrl AS imageUrl, e.publishedAt AS publishedAt, e.isRead AS isRead,
                COALESCE(NULLIF(TRIM(f.customTitle), ''), f.title) AS sourceTitle,
-               fo.id AS folderId, fo.name AS folderName
+               fo.id AS folderId, fo.name AS folderName,
+               e.isSaved AS isSaved, e.isStarred AS isStarred, e.link AS link
         FROM entries e
         JOIN feeds f ON f.id = e.feedId
         JOIN folders fo ON fo.id = f.folderId

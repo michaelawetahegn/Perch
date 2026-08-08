@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
@@ -39,6 +40,7 @@ import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
+import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -109,13 +111,18 @@ fun HomeScreen(
     onOpenEntry: (Long) -> Unit,
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
+    // Both hoisted so the shell can reason about them (U09): the back chain has to know
+    // whether the drawer is open, and Feed's scroll offset has to outlive a tab switch —
+    // which it cannot do if it is remembered inside the screen the switch tears down.
+    // They default to their own state so a test can still compose this screen alone.
+    drawerState: DrawerState = rememberDrawerState(DrawerValue.Closed),
+    listState: LazyListState = rememberLazyListState(),
 ) {
     val totalUnread by viewModel.totalUnread.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val pendingUndo by viewModel.pendingUndo.collectAsStateWithLifecycle()
     val collapsedFolders by viewModel.collapsedFolders.collectAsStateWithLifecycle()
-    val drawerState = rememberDrawerState(DrawerValue.Closed)
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -135,6 +142,9 @@ fun HomeScreen(
     // Non-null while "New folder…" was reached from a source's move dialog: the folder is
     // created and the source filed into it in one gesture, never two.
     var creatingFolderFor by rememberSaveable { mutableStateOf<Long?>(null) }
+    // Which row's long-press sheet is up (U09), held as an id for the same reason the
+    // source dialogs are: a refresh rewrites the row underneath us.
+    var entryActionsForId by rememberSaveable { mutableStateOf<Long?>(null) }
 
     fun sourceOf(id: Long?) = uiState.sources.firstOrNull { it.id == id }
 
@@ -264,7 +274,12 @@ fun HomeScreen(
                             onAddSource = ::addSource,
                             onWiden = viewModel::widenTimeFilter,
                         )
-                        else -> EntryList(state = uiState, onOpenEntry = onOpenEntry)
+                        else -> EntryList(
+                            state = uiState,
+                            listState = listState,
+                            onOpenEntry = onOpenEntry,
+                            onLongPressEntry = { entryActionsForId = it },
+                        )
                     }
                 }
             }
@@ -382,6 +397,29 @@ fun HomeScreen(
                     viewModel.createFolder(name)
                 },
                 onDismiss = { creatingFolder = false },
+            )
+        }
+
+        uiState.entries.firstOrNull { it.id == entryActionsForId }?.let { item ->
+            EntryActionsSheet(
+                item = item,
+                onToggleSaved = {
+                    entryActionsForId = null
+                    viewModel.setSaved(item.id, !item.isSaved)
+                },
+                onToggleLiked = {
+                    entryActionsForId = null
+                    viewModel.setLiked(item.id, !item.isStarred)
+                },
+                onToggleRead = {
+                    entryActionsForId = null
+                    viewModel.setRead(item.id, !item.isRead)
+                },
+                onShare = {
+                    entryActionsForId = null
+                    shareEntry(context, item.title, item.link)
+                },
+                onDismiss = { entryActionsForId = null },
             )
         }
 
@@ -800,6 +838,14 @@ object HomeTestTags {
     const val LIST = "home:list"
 
     /**
+     * The `LazyColumn` inside it. Separate from [LIST] because the two answer different
+     * gestures: [LIST] is the surface a pull starts on, this is the thing that scrolls —
+     * and U09's "the Feed's position survives a tab switch" is a question only this one
+     * can be asked.
+     */
+    const val ENTRY_LIST = "home:list:entries"
+
+    /**
      * Every row carries the same tag, so a device test taps `ENTRY` at `index: 0` rather
      * than at a screen coordinate that the app bar or a banner would shift.
      */
@@ -855,10 +901,14 @@ object HomeTestTags {
 @Composable
 private fun EntryList(
     state: HomeUiState,
+    listState: LazyListState,
     onOpenEntry: (Long) -> Unit,
+    onLongPressEntry: (Long) -> Unit,
 ) {
-    val listState = rememberLazyListState()
-    LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
+    LazyColumn(
+        state = listState,
+        modifier = Modifier.fillMaxSize().testTag(HomeTestTags.ENTRY_LIST),
+    ) {
         itemsIndexed(state.entries, key = { _, item -> item.id }) { index, item ->
             // A header is due wherever the folder changes, which is a question about this
             // row and the one before it — never about the list as a whole. U07a keeps
@@ -873,6 +923,7 @@ private fun EntryList(
                     item = item,
                     now = state.nowMillis,
                     onClick = { onOpenEntry(item.id) },
+                    onLongClick = { onLongPressEntry(item.id) },
                     modifier = Modifier.testTag(HomeTestTags.ENTRY),
                 )
                 // The header below is the break; a rule as well would be two.

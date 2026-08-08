@@ -84,7 +84,7 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
 ## 5. Navigation & structure
 
 ```
-┌ HOME ────────────────────────────────┐
+┌ FEED ────────────────────────────────┐
 │ LargeTopAppBar: "Unread" | source nm │  ← title reflects the active filter
 │  ⋮ overflow: Mark all read, Refresh, │
 │    Show read entries, Settings       │
@@ -98,6 +98,8 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
 │                            └───────┘ │
 │ Next folder                          │
 │ EntryRow ×N                          │
+│ ─────────────────────────────────────│
+│  ▣ Feed    ▤ To-Read    ♡ Liked      │  ← U09 NavigationBar; hidden on the article
 └──────────────────────────────────────┘
   ModalNavigationDrawer (swipe / hamburger) — scopes the Feed, nothing else:
     All unread            (12)
@@ -119,6 +121,29 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
   over a reading list is a Material cargo-cult.
 ```
 
+- **Top-level navigation is the bottom bar (U09), not the drawer.** Three peers —
+  **Feed · To-Read · Liked** — in a `NavigationBar` that is present on all three list
+  destinations and **absent on the article screen**. Selected tabs take the filled glyph,
+  unselected the outlined one: at a glance the shape reads before the tint. Each tab keeps
+  its own scroll position and its own state across switches (`saveState`/`restoreState`,
+  `launchSingleTop`), and the time range belongs to the Feed alone.
+  **To-Read** and **Liked** draw the same `EntryRow` as the Feed — they are the same
+  articles, and a second row shape would make them read as a different kind of object.
+  What changes is the ordering (when the reader filed it, not when it was published), the
+  absence of the drawer and the range, and the absence of folder sections: these lists are
+  ordered by the reader's own gesture, and a folder header would cut across the one
+  ordering that means anything in them. Each empty state says what its list is *for*.
+- **Row actions (U09)** live behind a long press, in a bottom sheet: *Save for later* ·
+  *Like* · *Mark read/unread* · *Share*. Each toggle names the direction it is about to
+  go — *Remove from To-Read*, never *Saved ✓* — because a verb that means one of two
+  things depending on a checkmark is a question asked before the reader can press it.
+  Taking something out of To-Read or Liked animates the row out and offers an undo
+  snackbar; adding to one offers nothing, because nothing vanished.
+- **Back is one ordered chain (PLAN-2 §0), not N handlers that happen to agree:**
+  an overlay closes → an article pops → To-Read/Liked returns to Feed → a scrolled Feed
+  scrolls to top → and only Feed-already-at-top leaves the app. The scroll-to-top rung is
+  not a navigation, so it must not animate as one.
+
 - **The time range (U08a)** is one control, not five: a text button carrying the active
   range and a chevron, set in the accent colour so it reads as a control rather than as a
   second title, opening a menu of the five with a tick against the active one. It says
@@ -139,14 +164,15 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
   Never a broken-image glyph, never a collapsed row. (The *article* surface does the
   opposite and collapses a failed figure — §8. A gap mid-sentence beats an empty frame;
   in a list, a stable footprint beats both.)
-- **Article screen:** `TopAppBar` with back, `Open in browser` (Custom Tab), and
-  overflow (`Mark unread`, `Share`). Title, then `source · author · date`, then a
+- **Article screen:** `TopAppBar` with back, the **Like and Read-later toggles** (filled
+  when on, outlined when off — U09), and `Open in browser` (Custom Tab). Title, then `source · author · date`, then a
   hairline, then body. Scroll position survives rotation.
 - **Add source sheet:** one text field (paste URL), one primary button. While resolving,
   the button becomes a spinner and the sheet shows the discovered feed title + entry
   count as confirmation *before* committing. Discovery failure renders inline under the
   field in `error`, with the URL still editable — never a toast, never a dead end.
-- Back always goes back. No custom back interception except closing the drawer/sheet.
+- Back always goes back, along the chain above. The only step that leaves the app is the
+  last one.
 
 ## 6. Motion
 

@@ -105,6 +105,29 @@
     <string name="add_source_error_unreachable">That address could not be reached</string>
     <string name="add_source_error_duplicate">You already follow %1$s</string>
 
+    <!-- The bottom bar's three destinations (PLAN-2 §0, U09) -->
+    <string name="tab_feed">Feed</string>
+    <!-- "To-Read", not "Saved": the label says what the list is for, not what the gesture was. -->
+    <string name="tab_to_read">To-Read</string>
+    <string name="tab_liked">Liked</string>
+
+    <!-- Long-press a row (U09). Every toggle names the direction it is about to go. -->
+    <string name="entry_action_save">Save for later</string>
+    <string name="entry_action_unsave">Remove from To-Read</string>
+    <string name="entry_action_like">Like</string>
+    <string name="entry_action_unlike">Remove from Liked</string>
+    <string name="entry_action_mark_read">Mark read</string>
+    <string name="entry_action_mark_unread">Mark unread</string>
+    <string name="entry_action_share">Share</string>
+
+    <!-- To-Read and Liked: what the list is for, said to a reader who has not filled it yet. -->
+    <string name="collection_empty_to_read_title">Nothing queued yet</string>
+    <string name="collection_empty_to_read_body">Long-press an entry and save it for later. It waits here until you take it off, however long that is.</string>
+    <string name="collection_empty_liked_title">Nothing liked yet</string>
+    <string name="collection_empty_liked_body">Like an entry to keep it. Liked entries stay for good, even after their source stops listing them.</string>
+    <string name="collection_removed_to_read">Removed from To-Read</string>
+    <string name="collection_removed_liked">Removed from Liked</string>
+
     <!-- Article -->
     <string name="action_back">Back</string>
     <string name="article_missing">This entry is no longer available</string>
