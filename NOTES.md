@@ -16,10 +16,10 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   frame callback Robolectric never delivers, while under `@GraphicsMode(NATIVE)` `View.draw(Canvas)` is synchronous;
   a sheet/dialog/dropdown is its **own window**, so draw its `rootView` over the decor view **translated by
   `getLocationOnScreen`**.
-- 2026-08-07 — **T32.** `acceptance/LiveAcceptanceTest` (in `testDebug`): `./gradlew :app:testDebugUnitTest
+- 2026-08-07 — **Live acceptance** (`acceptance/LiveAcceptanceTest`, `testDebug`): `./gradlew :app:testDebugUnitTest
   -Pperch.live=true --tests '*LiveAcceptance*'`. **Gate 1 sits on the 38/42 floor** — `danluu.com`/`projectzero.google`
-  bust SPEC §6's 8 MiB cap, `research.nccgroup.com` has no feed, `rachelbythebay.com` times out here; one more death
-  is a red run. **§8 residual, not ours:** the LLVM feed omits the spaces around inline `<code>`/`<a>` — do not "repair" it.
+  bust SPEC §6's 8 MiB cap, `research.nccgroup.com` has no feed, `rachelbythebay.com` times out; one more death is red.
+  **Not ours:** the LLVM feed omits the spaces around inline `<code>`/`<a>` — do not "repair" it.
 - 2026-08-07 — **U01: the repo is public** (MIT) — never un-redact the `apiKey` in `fixtures/homepages/research-nccgroup-com.html`.
 - 2026-08-07 — **U02: losing `~/.perch/perch-release.jks` or `signing.properties` makes every future install a data
   wipe** — you cannot rotate to a key you no longer have. Both `chmod 600`, outside the repo, **not backed up yet**.
@@ -90,11 +90,10 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   test's leaked coroutine to whoever runs next** (`UncaughtExceptionsBeforeTest` at `@Before`, then `@After` dies on an
   uninitialised `db`) — the named test is the victim. Suspect **`SettingsStore.create`'s unowned
   `CoroutineScope(IO+SupervisorJob)`**, never cancelled, writing onto a wiped Robolectric data dir. **PLAN-3 box.**
-- 2026-08-08 — **U15.** 38/42 pull · 0 `Unsupported`/25,882 blocks · 75.4% thumbnails · 92.5% full-text, ×39.9
-  aggregate · gpuopen 194→5269 · 3 folders round-tripped · 123 tables/2080 cells · paging 30 of 1037 · 16 shots.
-  **`clean` deliberately omitted** from the box's `clean test assembleRelease`: it deletes `build/perch-screenshots/`,
-  the evidence the Done-condition asks for. **v0.2 APK, release-signed `61367c04…fce489` (upgrades v0.1 in place):
-  `app/build/outputs/apk/release/app-release.apk`.**
+- 2026-08-08 — **U15/U16 — v0.2.0 shipped.** Nine live gates green (counts in commit `bd2eb89`); **`clean` is
+  deliberately omitted** from `clean test assembleRelease` — it deletes `build/perch-screenshots/`, the evidence the
+  Done-condition asks for. APK: versionCode 3, release-signed `61367c04…fce489`,
+  `app/build/outputs/apk/release/app-release.apk`. v0.1.0 was debug-signed, so **that one** upgrade needs an uninstall.
 - 2026-08-08 — **Residual polish, v0.2 (none blocks release).** No window insets anywhere (viewer close sits under
   the status bar); empty state cannot be pulled; mid-selection a folder header does nothing; themed launcher icon's P
   closes up at 48dp; no rule between code gutter and code; no edge affordance on a wide table.

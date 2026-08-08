@@ -564,7 +564,7 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
         `./gradlew test` is still green with no network.
       - Rung: screenshot
 
-- [ ] **U16 — Release v0.2.0.** Bump `versionCode` 3 / `versionName` `0.2.0`. Build the
+- [x] **U16 — Release v0.2.0.** Bump `versionCode` 3 / `versionName` `0.2.0`. Build the
       **release-signed** APK (U02's key). Update README.md with the new features and fresh
       screenshots. Tag `v0.2.0`, push, `gh release create v0.2.0` with notes written from
       this plan's phases, attaching `perch-0.2.0.apk`. Say explicitly in the notes that
