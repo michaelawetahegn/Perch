@@ -155,10 +155,15 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
       fallback chain, in the parser/repository layer (not the UI). Reject tracking pixels
       and sub-64px images by declared dimensions, and resolve relative URLs against the
       entry link. No migration — the column exists since T12.
-      - Done: unit tests for each rung of the fallback chain; a corpus test over the 39
+      **A missing image is a normal, designed state, not a failure.** Many of the 42 sources
+      are text-only blogs that will never have one. Resolve `imageUrl` to `null` — never to
+      a guessed, broken, or placeholder URL — and let U08's row draw the placeholder.
+      - Done: unit tests for each rung of the fallback chain, plus one asserting a text-only
+        entry yields `null` rather than a bad URL; a corpus test over the 39
         `fixtures/snapshots/` feeds asserting **≥60%** of entries resolve a thumbnail and
-        printing the per-source percentage table (paste the total into the commit message);
-        no test weakened.
+        printing the per-source percentage table, so sources that resolve 0% are visible and
+        can be attributed to the feed rather than to us (paste the total into the commit
+        message); no test weakened.
       - Rung: unit
 
 ## Phase 2 — The feed, redesigned
@@ -191,8 +196,13 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
       reference at **`design/reference/feed-row-reference.jpg`** (a Feedly light-mode
       capture — build the **dark** equivalent, matching structure not colour): **title** (titleMedium, w600, ≤3 lines) on the left, **`Source / 5h`** metadata
       beneath it in `onSurfaceVariant`, and a **thumbnail on the right** — ~96dp, 12dp
-      corners, `ContentScale.Crop`, with a 1dp outline placeholder of identical footprint
-      when there is no image so rows never jitter. Section headers use the accent colour.
+      corners, `ContentScale.Crop`. **The placeholder is not an edge case — spec it as
+      carefully as the image.** A row with no image, a row whose image is still loading, and
+      a row whose image 404s or times out must all occupy the *identical* footprint and draw
+      the same 1dp-outline placeholder, so the list never jitters, never collapses a row, and
+      never shows a broken-image glyph. Coil's `error` and `fallback` slots both point at it,
+      not just `placeholder`. (T25 collapses the whole figure on an image load error inside
+      an *article* — that is right there and wrong here; do not copy it.) Section headers use the accent colour.
       Relative time is compact (`47min`, `5h`, `1d`, `3d`, then a date past 7 days).
       Drop the 2-line snippet from the row — the reference doesn't have it and the
       thumbnail is doing that work now; update DESIGN.md §5's diagram to match.
@@ -200,7 +210,8 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
       (no `Color(0x`, `N.dp`, `N.sp` outside `ui/theme/`) still holds.
       - Done: dark screenshot of a populated list with a mix of image/no-image rows,
         critiqued against the reference (max 2 iterations, residuals to NOTES.md);
-        row tests cover the ≤3-line clamp, the placeholder, and each relative-time band;
+        row tests cover the ≤3-line clamp, the placeholder in all three of its cases
+        (absent / loading / load-failed), and each relative-time band;
         `./gradlew test` green.
       - Rung: screenshot
 
@@ -229,16 +240,30 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
       it to the **existing** `HtmlSanitizer` → `ArticleLowering` pipeline so extracted
       articles are lowered by the same code as feed bodies and get zero special treatment
       downstream.
-      Trigger: on article open, when `contentHtml` is null or its lowered prose is under
-      ~500 characters. Fetch through the existing `HttpClient` (SPEC §6 limits apply),
-      write the result back to `contentHtml`, and render a progress state while it runs.
-      Never block the list; never fetch on refresh (that would hammer 42 sites).
-      Harvest fixtures for the corpus: 5 article pages from fabiensanglard.net and 5 from
-      other thin feeds, saved under `fixtures/articles/`.
-      - Done: extractor unit tests over the 10 saved pages assert the extracted text
-        contains a known mid-article sentence and **excludes** the site nav and footer;
-        lowering the extracted HTML yields 0 `Unsupported`; a Robolectric test proves
-        opening a content-less entry populates `contentHtml` and renders paragraphs;
+      **Trigger — a length threshold alone is not enough.** Extract on article open when
+      any of: `contentHtml` is null or empty; its lowered prose is under ~1200 characters;
+      the body ends in a truncation marker (`…`, `[…]`, `Read more`, `Continue reading`,
+      `The post … appeared first on …`); or the item is RSS 2.0 with a `<description>` and
+      no `<content:encoded>` (the gpuopen shape — that combination means "excerpt" far more
+      often than it means "short post").
+      **Always offer the manual override.** The article overflow gets **Load full article**,
+      enabled whenever the body did not come from an extraction — the heuristic will be
+      wrong sometimes and the user must never be stuck with a stub.
+      Fetch through the existing `HttpClient` (SPEC §6 limits apply), write the result back
+      to `contentHtml`, and render a progress state while it runs. Never block the list;
+      never fetch on refresh (that would hammer 42 sites). If extraction fails or yields
+      less prose than the feed already had, **keep what the feed had** — never replace text
+      with less text — and fall back to today's "Read on the web".
+      Harvest fixtures under `fixtures/articles/`: 5 pages from fabiensanglard.net, 5 from
+      gpuopen.com, and 5 from other excerpt-only sources, covering at least one WordPress
+      site, one static-site generator, and one heavily-scripted page.
+      - Done: extractor unit tests over the 15 saved pages assert the extracted text
+        contains a known **mid-article** sentence *and* a known **final** sentence (an
+        extractor that truncates still passes a "contains" test), and **excludes** the site
+        nav, footer, cookie banner, and related-posts block; the gpuopen cases assert the
+        extracted body is ≥10× the length of the feed excerpt; lowering the extracted HTML
+        yields 0 `Unsupported`; Robolectric proves that opening a content-less entry **and**
+        an excerpt-only entry both populate `contentHtml` and render full paragraphs;
         `./gradlew test` green with no network.
       - Rung: unit
 
@@ -322,9 +347,12 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
       three v1 gates — **≥38/42 sources**, **≤2% `Unsupported`**, one-publication
       screenshots — and add:
       4. **Thumbnails:** ≥60% of live entries resolve an `imageUrl`.
-      5. **Full text:** for every source whose feed bodies are empty or under ~500 chars,
-         U10's extractor recovers real prose for ≥90% of sampled entries — fabiensanglard.net
-         must be one of them, by name.
+      5. **Full text:** for every source whose feed ships no body or only an excerpt,
+         U10's extractor recovers real prose for ≥90% of sampled entries, and the recovered
+         body is ≥10× the excerpt where there was one. **fabiensanglard.net and gpuopen.com
+         must both be named in the output**, since they are the two shapes this exists for.
+      5b. **Thumbnail coverage per source** is printed as a table, not just a total, so a
+         source resolving 0% is attributable rather than hidden inside the average.
       6. **Folders survive the round trip:** the live 42 split across folders, exported to
          OPML, reimported into an empty DB, compared exactly.
       7. **Screenshots** of the redesigned home (dark, ≥2 folder sections, mixed
