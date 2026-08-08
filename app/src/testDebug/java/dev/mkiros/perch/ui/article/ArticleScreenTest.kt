@@ -168,6 +168,34 @@ class ArticleScreenTest {
             .assertIsDisplayed()
     }
 
+    /**
+     * The summary is flattened prose, so it routinely runs past the body's first block —
+     * across a heading and on into the second paragraph. T32's live run found this on
+     * four of its five sampled sources: the opening was printed twice, once in italic and
+     * once in body text, which is the loudest way an article can fail to look like the
+     * one next to it.
+     */
+    @Test
+    fun `a summary running past the body's first block is still not repeated`() {
+        val feedId = seedFeed(title = "Embedded in Academia")
+        val entryId = seedEntry(
+            feedId = feedId,
+            title = "Bugfinding for LLVM's AArch64 Backend",
+            summary = "Overview [Co-authored by Ryan Berger.] An optimizing compiler has " +
+                "three parts. The problem, as they put it, is the backend…",
+            contentHtml = "<h2>Overview</h2><p>[Co-authored by Ryan Berger.]</p>" +
+                "<p>An optimizing compiler has three parts.</p>" +
+                "<blockquote><p>The problem, as they put it,</p>" +
+                "<img src=\"https://example.com/figure.png\" alt=\"\">" +
+                "<p>is the backend.</p></blockquote>",
+        )
+
+        showArticle(entryId)
+
+        compose.onNodeWithTag(ArticleTestTags.STANDFIRST).assertDoesNotExist()
+        compose.onNodeWithText("[Co-authored by Ryan Berger.]").assertIsDisplayed()
+    }
+
     @Test
     fun `a summary that adds something to the body runs as a standfirst`() {
         val feedId = seedFeed(title = "Null Program")

@@ -43,6 +43,20 @@ android {
     testOptions {
         unitTests.isIncludeAndroidResources = true
         unitTests.isReturnDefaultValues = true
+
+        // T32's live acceptance gate is the only test allowed to touch the network, and
+        // it opts in from the command line: `-Pperch.live=true`. A Gradle property is not
+        // visible to the test JVM, so it is forwarded as a system property here — which
+        // also makes it a task input, so toggling it re-runs the tests. A live run is
+        // never up-to-date: the point of it is that the internet changed.
+        unitTests.all {
+            val live = project.findProperty("perch.live")?.toString() ?: "false"
+            it.systemProperty("perch.live", live)
+            if (live == "true") {
+                it.outputs.upToDateWhen { false }
+                it.testLogging { showStandardStreams = true }
+            }
+        }
     }
 
     packaging {

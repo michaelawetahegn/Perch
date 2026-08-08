@@ -307,7 +307,7 @@ production code but no test is a defect — reopen the box.
       - Done: clean build green, `app-debug.apk` exists, APK path in NOTES.md.
       - Rung: build
 
-- [ ] **T32 — Live acceptance: the daily-driver gate.** The last task. Everything before
+- [x] **T32 — Live acceptance: the daily-driver gate.** The last task. Everything before
       this proves the code works against *fixtures*; this proves the app works against
       *the real internet*, and that all 42 sources come out looking like one publication.
       Lives in `app/src/test/.../acceptance/LiveAcceptanceTest.kt` but is **network-gated

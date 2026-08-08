@@ -1,13 +1,8 @@
 package dev.mkiros.perch.ui.screenshot
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.view.View
 import androidx.activity.ComponentActivity
-import androidx.compose.ui.platform.ViewRootForTest
 import androidx.compose.ui.semantics.SemanticsActions
-import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -28,7 +23,6 @@ import dev.mkiros.perch.ui.home.HomeViewModel
 import dev.mkiros.perch.ui.source.AddSourceViewModel
 import dev.mkiros.perch.ui.theme.PerchTheme
 import dev.mkiros.perch.ui.theme.ThemeMode
-import java.io.File
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
@@ -148,69 +142,14 @@ class DesignScreenshotTest {
      * Writes the whole screen to `screenshots/<name>.png` and asserts it is worth looking
      * at. The size floor is T29's Done-condition; the distinct-colour check is what
      * actually catches the failure that matters, a capture of a blank slab where the
-     * screen never composed.
-     *
-     * It draws the view tree onto a bitmap itself rather than calling `captureToImage()`:
-     * that goes through `PixelCopy` and first blocks on a frame-commit callback, which a
-     * Robolectric window never delivers — the capture times out after 2s having drawn
-     * nothing. With `@GraphicsMode(NATIVE)` a plain `View.draw(Canvas)` rasterizes the
-     * same real pixels, and it is synchronous.
+     * screen never composed. The drawing itself is [Screenshots.capture], which T32
+     * shares.
      */
     private fun capture(name: String) {
-        compose.waitForIdle()
-        val bitmap = Bitmap.createBitmap(
-            compose.activity.window.decorView.width,
-            compose.activity.window.decorView.height,
-            Bitmap.Config.ARGB_8888,
-        )
-        val canvas = Canvas(bitmap)
-        windowsFrontToBack().forEach { it.draw(canvas) }
+        val shot = Screenshots.capture(compose, compose.activity, Screenshots.dir("screenshots"), name)
 
-        val file = File(screenshotDir(), "$name.png")
-        file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
-
-        assertThat(file.length()).isGreaterThan(10_000L)
-        assertThat(distinctColours(bitmap)).isGreaterThan(8)
-    }
-
-    /**
-     * Every window on screen, activity first. A sheet or a dialog is a window of its own,
-     * so painting only the activity's decor view would screenshot the list with the
-     * add-source sheet missing; each extra Compose root is drawn over the one below it,
-     * scrim included, which is what the reader sees.
-     */
-    private fun windowsFrontToBack(): List<View> {
-        val decor = compose.activity.window.decorView
-        val others = compose.onAllNodes(isRoot()).fetchSemanticsNodes()
-            .map { (it.root as ViewRootForTest).view.rootView }
-            .filter { it !== decor }
-            .distinct()
-        return listOf(decor) + others
-    }
-
-    /** How many distinct colours a coarse sample of the bitmap contains. */
-    private fun distinctColours(bitmap: Bitmap): Int {
-        val seen = mutableSetOf<Int>()
-        var y = 0
-        while (y < bitmap.height) {
-            var x = 0
-            while (x < bitmap.width) {
-                seen += bitmap.getPixel(x, y)
-                x += SAMPLE_STRIDE
-            }
-            y += SAMPLE_STRIDE
-        }
-        return seen.size
-    }
-
-    /** `screenshots/` at the repository root, wherever the test's working directory is. */
-    private fun screenshotDir(): File {
-        var dir: File? = File("").absoluteFile
-        while (dir != null) {
-            if (File(dir, "PLAN.md").isFile) return File(dir, "screenshots").apply { mkdirs() }
-            dir = dir.parentFile
-        }
-        error("PLAN.md not found above ${File("").absolutePath}")
+        assertThat(shot.file.length()).isGreaterThan(10_000L)
+        assertThat(shot.distinctColours).isGreaterThan(8)
     }
 
     /** Fills the database from the T28 seed assets, the same way a debug install does. */
@@ -245,7 +184,7 @@ class DesignScreenshotTest {
                 )
             }
         }
-        await { !homeViewModel.uiState.value.isLoading }
+        compose.awaitInRealTime("the list to load") { !homeViewModel.uiState.value.isLoading }
     }
 
     private fun showArticle(entryId: Long) {
@@ -260,32 +199,8 @@ class DesignScreenshotTest {
                 ArticleScreen(viewModel = viewModel, onBack = {})
             }
         }
-        await { viewModel.state.value !is ArticleUiState.Loading }
-    }
-
-    /**
-     * Waits in *wall-clock* time, for the reason the other UI tests record: `waitUntil`
-     * only advances Compose's virtual clock, so its timeout can expire without Room's
-     * query executor — a real background thread here — ever being scheduled.
-     */
-    private fun await(predicate: () -> Boolean) {
-        val deadline = System.currentTimeMillis() + TIMEOUT_MS
-        while (System.currentTimeMillis() < deadline) {
-            compose.waitForIdle()
-            if (predicate()) {
-                compose.waitForIdle()
-                return
-            }
-            Thread.sleep(POLL_MS)
+        compose.awaitInRealTime("the article to load") {
+            viewModel.state.value !is ArticleUiState.Loading
         }
-        throw AssertionError("timed out waiting for the screen to load")
-    }
-
-    private companion object {
-        const val TIMEOUT_MS = 20_000L
-        const val POLL_MS = 10L
-
-        /** Every Nth pixel in both axes — enough to tell a rendered screen from a slab. */
-        const val SAMPLE_STRIDE = 7
     }
 }

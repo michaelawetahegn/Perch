@@ -87,16 +87,54 @@ class ArticleViewModel(
     }
 
     /**
-     * Most feeds derive `summary` by truncating the first paragraph, so running it above
-     * a body that opens with the same words reads as a stutter. The standfirst earns its
-     * place only when it is not the opening of what follows.
+     * Most feeds derive `summary` by truncating the body, so running it above a body that
+     * opens with the same words reads as a stutter. The standfirst earns its place only
+     * when it is not the opening of what follows.
+     *
+     * The comparison is against the body's opening *prose*, not its first block: the
+     * summary is flattened text, so 300 characters of it routinely span a heading and two
+     * or three paragraphs, and a first-block-only check misses every one of those. It
+     * stops at the first block that is not prose — an image or a code listing is a place
+     * the summary could not have come from, so anything past it is not a repetition.
      */
     private fun standfirst(summary: String?, blocks: List<ArticleBlock>): String? {
         val text = summary?.trim()?.takeIf { it.isNotEmpty() } ?: return null
         if (blocks.isEmpty()) return null
-        val opening = (blocks.first() as? ArticleBlock.Paragraph)?.text?.text?.trim().orEmpty()
-        return text.takeUnless { opening.startsWith(it.removeSuffix(ELLIPSIS)) }
+        val probe = text.removeSuffix(ELLIPSIS).collapsed()
+        return text.takeUnless { probe.isNotEmpty() && opening(blocks, probe.length).startsWith(probe) }
     }
+
+    /**
+     * At least [minChars] of the body as flat text, the way `summarize` flattens it —
+     * every block's words in order, joined by a single space.
+     *
+     * A block that carries no text is *skipped*, not a stopping point. A figure dropped
+     * mid-sentence is how a source with inline diagrams writes, and the summary reads
+     * straight through it; stopping there would leave the comparison short and print the
+     * lede twice.
+     */
+    private fun opening(blocks: List<ArticleBlock>, minChars: Int): String = buildString {
+        for (block in blocks) {
+            val prose = when (block) {
+                is ArticleBlock.Paragraph -> block.text.text
+                is ArticleBlock.Heading -> block.text.text
+                is ArticleBlock.Code -> block.text
+                is ArticleBlock.ListBlock -> block.items.joinToString(" ") { it.text }
+                is ArticleBlock.Table ->
+                    (block.header + block.rows.flatten()).joinToString(" ") { it.text }
+                // A pull-quote is prose the summary flattens like any other, and a lede
+                // that runs into the article's opening quotation is a common shape.
+                is ArticleBlock.Quote -> opening(block.blocks, minChars)
+                is ArticleBlock.Image, is ArticleBlock.Unsupported, ArticleBlock.Rule -> ""
+            }.collapsed()
+            if (prose.isEmpty()) continue
+            if (isNotEmpty()) append(' ')
+            append(prose)
+            if (length >= minChars) break
+        }
+    }
+
+    private fun String.collapsed(): String = trim().replace(WHITESPACE, " ")
 
     /**
      * `SOURCE · AUTHOR · 3 AUG 2026`, with the parts a given entry lacks simply absent —
@@ -116,6 +154,7 @@ class ArticleViewModel(
 
         private const val SEPARATOR = " · "
         private const val ELLIPSIS = "…"
+        private val WHITESPACE = Regex("""\s+""")
 
         private val DATE = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.getDefault())
     }
