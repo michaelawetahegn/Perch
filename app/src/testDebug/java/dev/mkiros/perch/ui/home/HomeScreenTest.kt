@@ -297,8 +297,13 @@ class HomeScreenTest {
         compose.onNodeWithTag(HomeTestTags.TITLE).assertTextEquals("Source One")
     }
 
-    // ---- rename and remove, from a long press in the drawer (T24) -----------------
+    // ---- rename and remove, from a long press in the drawer (T24, re-aimed by U09a) --
 
+    /**
+     * The long press starts a selection now (U09a) rather than opening a menu, so T24's
+     * two actions live on the contextual bar. They are offered only at exactly one ticked
+     * row, which is the case this asserts.
+     */
     @Test
     fun `long-pressing a source offers rename and remove`() {
         seedFeed(title = "Source One")
@@ -306,8 +311,8 @@ class HomeScreenTest {
         showHome()
         longPressInDrawer("Source One")
 
-        compose.onNodeWithTag(SourceActionTestTags.RENAME).assertIsDisplayed()
-        compose.onNodeWithTag(SourceActionTestTags.REMOVE).assertIsDisplayed()
+        compose.onNodeWithTag(SelectionTestTags.RENAME).assertIsDisplayed()
+        compose.onNodeWithTag(SelectionTestTags.DELETE).assertIsDisplayed()
     }
 
     @Test
@@ -316,9 +321,9 @@ class HomeScreenTest {
 
         showHome()
         longPressInDrawer("Source One")
-        tap(SourceActionTestTags.REMOVE)
+        tapDelete()
 
-        compose.onNodeWithTag(SourceActionTestTags.REMOVE_CONFIRM).assertIsDisplayed()
+        compose.onNodeWithTag(SelectionTestTags.DELETE_CONFIRM).assertIsDisplayed()
         assertThat(feedTitles()).containsExactly("Source One")
     }
 
@@ -329,10 +334,10 @@ class HomeScreenTest {
 
         showHome()
         longPressInDrawer("Source One")
-        tap(SourceActionTestTags.REMOVE)
-        tap(SourceActionTestTags.CANCEL)
+        tapDelete()
+        tap(SelectionTestTags.DELETE_CANCEL)
 
-        compose.onNodeWithTag(SourceActionTestTags.REMOVE_CONFIRM).assertDoesNotExist()
+        compose.onNodeWithTag(SelectionTestTags.DELETE_CONFIRM).assertDoesNotExist()
         assertThat(feedTitles()).containsExactly("Source One")
         assertThat(entryTitles()).containsExactly("Only in one")
     }
@@ -346,8 +351,8 @@ class HomeScreenTest {
 
         showHome()
         longPressInDrawer("Source One")
-        tap(SourceActionTestTags.REMOVE)
-        tap(SourceActionTestTags.REMOVE_CONFIRM)
+        tapDelete()
+        tap(SelectionTestTags.DELETE_CONFIRM)
         awaitState { state -> state.sources.none { it.title == "Source One" } }
 
         assertThat(feedTitles()).containsExactly("Source Two")
@@ -364,8 +369,8 @@ class HomeScreenTest {
         showHome()
         selectInDrawer("Source One")
         longPressInDrawer("Source One")
-        tap(SourceActionTestTags.REMOVE)
-        tap(SourceActionTestTags.REMOVE_CONFIRM)
+        tapDelete()
+        tap(SelectionTestTags.DELETE_CONFIRM)
         awaitState { it.selectedTitle == null }
 
         compose.onNodeWithTag(HomeTestTags.TITLE).assertTextEquals("Unread")
@@ -382,7 +387,7 @@ class HomeScreenTest {
 
         showHome()
         longPressInDrawer("nullprogram.com")
-        tap(SourceActionTestTags.RENAME)
+        tap(SelectionTestTags.RENAME)
         compose.onNodeWithTag(SourceActionTestTags.RENAME_FIELD)
             .performTextReplacement("Chris Wellons")
         tap(SourceActionTestTags.RENAME_CONFIRM)
@@ -404,7 +409,7 @@ class HomeScreenTest {
 
         showHome()
         longPressInDrawer("nullprogram.com")
-        tap(SourceActionTestTags.RENAME)
+        tap(SelectionTestTags.RENAME)
         compose.onNodeWithTag(SourceActionTestTags.RENAME_FIELD)
             .performTextReplacement("Chris Wellons")
         tap(SourceActionTestTags.CANCEL)
@@ -419,7 +424,7 @@ class HomeScreenTest {
 
         showHome()
         longPressInDrawer("Chris Wellons")
-        tap(SourceActionTestTags.RENAME)
+        tap(SelectionTestTags.RENAME)
         compose.onNodeWithTag(SourceActionTestTags.RENAME_FIELD).performTextClearance()
         tap(SourceActionTestTags.RENAME_CONFIRM)
         awaitState { state -> state.sources.any { it.title == "nullprogram.com" } }
@@ -478,6 +483,16 @@ class HomeScreenTest {
     private fun tap(testTag: String) {
         compose.onNodeWithTag(testTag).performSemanticsAction(SemanticsActions.OnClick)
         compose.waitForIdle()
+    }
+
+    /**
+     * The selection bar's delete, waited out (U09a). The confirmation cannot open until
+     * the database has said how many saved or liked entries the batch holds, so the tap
+     * and the dialog are a coroutine apart.
+     */
+    private fun tapDelete() {
+        tap(SelectionTestTags.DELETE)
+        awaitState { _ -> viewModel.sourceDeletePrompt.value != null }
     }
 
     /** A drawer badge is inside the item's merged semantics, so it needs the raw tree. */

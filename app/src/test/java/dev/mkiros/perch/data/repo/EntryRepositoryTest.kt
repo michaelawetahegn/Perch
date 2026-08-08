@@ -539,6 +539,50 @@ class EntryRepositoryTest {
         assertThat(repo.observeLiked().first().map { it.id }).containsExactly(id)
     }
 
+    // ---- what a source delete is about to cost (U09a) ---------------------------
+
+    /**
+     * The number U09a's confirmation dialog is built around. Deleting a source cascades to
+     * its entries, saved and liked ones included — the one loss U04 exists to prevent — so
+     * the dialog has to be able to say how much of the reader's own curation is in the
+     * blast radius before they press it.
+     */
+    @Test
+    fun `the reader-owned entries a source delete would take are counted across the batch`() =
+        runTest {
+            val curated = feeds.insert(feed("https://a.example/feed"))
+            val untouched = feeds.insert(feed("https://b.example/feed"))
+            val elsewhere = feeds.insert(feed("https://c.example/feed"))
+            repo.setSaved(insertEntry(curated, "a1"), isSaved = true)
+            repo.setLiked(insertEntry(curated, "a2"), isLiked = true)
+            insertEntry(curated, "a3")
+            insertEntry(untouched, "b1")
+            repo.setSaved(insertEntry(elsewhere, "c1"), isSaved = true)
+
+            val count = repo.countSavedOrLikedIn(listOf(curated, untouched))
+
+            assertThat(count).isEqualTo(2)
+        }
+
+    @Test
+    fun `an entry both saved and liked is counted once, not twice`() = runTest {
+        val feed = feeds.insert(feed("https://a.example/feed"))
+        val both = insertEntry(feed, "a1")
+        repo.setSaved(both, isSaved = true)
+        repo.setLiked(both, isLiked = true)
+
+        assertThat(repo.countSavedOrLikedIn(listOf(feed))).isEqualTo(1)
+    }
+
+    @Test
+    fun `a batch holding nothing the reader kept counts zero`() = runTest {
+        val feed = feeds.insert(feed("https://a.example/feed"))
+        insertEntry(feed, "a1")
+
+        assertThat(repo.countSavedOrLikedIn(listOf(feed))).isEqualTo(0)
+        assertThat(repo.countSavedOrLikedIn(emptyList())).isEqualTo(0)
+    }
+
     // ---- fixtures --------------------------------------------------------------
 
     /** Runs [block] against a repository whose clock reads [millis], for ordering tests. */

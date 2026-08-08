@@ -98,3 +98,11 @@ Working memory for unattended sessions, per CLAUDE.md §NOTES.md discipline. **U
   `EntryListItem` now carries `isSaved`/`isStarred`/`link`, so the sheet opens showing the right verb without a
   second query. **`EntryRow` owns its own `combinedClickable`** — an inner `clickable` eats the pointer stream, so a
   long press wrapped *around* the row never arrives.
+- 2026-08-08 — **U09a done: the drawer long press is multi-select now**, not U06's rename/move/remove menu — those two
+  moved onto the contextual bar at exactly one ticked row, and `SourceActionsDialog`/`RemoveSourceDialog` are gone.
+  `DrawerSelection` holds §0's two invariants (homogeneous; never Uncategorized) as a value, hoisted into
+  `PerchNavHost` as `rememberSaveable` beside `drawerState`. **The selection `BackHandler` must live inside
+  `ModalDrawerSheet`** — the root one in `PerchNavHost` is registered first and so loses to the drawer's own. A
+  batch delete's dialog is **a coroutine behind its tap** (the saved/liked count is a DB read), so a test taps and
+  then waits in wall-clock time; `waitForIdle` alone races it. **Residual polish:** mid-selection a folder header's
+  name is still a live-looking tap target that does nothing.

@@ -72,19 +72,48 @@
     <string name="folder_move_title">Move %1$s to</string>
     <string name="folder_new">New folder…</string>
 
-    <!-- Drawer: long-press a source to rename, move or remove it (DESIGN.md §5, U06) -->
-    <string name="source_action_rename">Rename</string>
-    <string name="source_action_move">Move to folder</string>
-    <string name="source_action_remove">Remove</string>
+    <!-- Drawer: rename a source (DESIGN.md §5, U06; reached from U09a's selection bar) -->
     <string name="source_rename_title">Rename source</string>
     <string name="source_rename_label">Display name</string>
     <!-- Clearing the field restores the name the feed publishes for itself. -->
     <string name="source_rename_hint">Leave empty to use %1$s</string>
     <string name="source_rename_confirm">Save</string>
-    <string name="source_remove_title">Remove %1$s?</string>
-    <string name="source_remove_body">Its entries go too. This cannot be undone.</string>
-    <string name="source_remove_confirm">Remove</string>
     <string name="action_cancel">Cancel</string>
+
+    <!-- Drawer: multi-select (U09a). Long-press starts it; the header becomes this bar. -->
+    <plurals name="selection_count">
+        <item quantity="one">%1$d selected</item>
+        <item quantity="other">%1$d selected</item>
+    </plurals>
+    <string name="selection_close">Leave selection</string>
+    <string name="selection_rename">Rename</string>
+    <string name="selection_move">Move to folder</string>
+    <string name="selection_delete">Delete</string>
+    <!-- Deleting sources cascades to their entries, so the dialog names what goes. -->
+    <plurals name="sources_delete_title">
+        <item quantity="one">Remove %1$d source?</item>
+        <item quantity="other">Remove %1$d sources?</item>
+    </plurals>
+    <plurals name="sources_delete_body">
+        <item quantity="one">Its entries go too. This cannot be undone.</item>
+        <item quantity="other">Their entries go too. This cannot be undone.</item>
+    </plurals>
+    <!-- The line that stops U04's whole point being lost silently. -->
+    <plurals name="sources_delete_curated">
+        <item quantity="one">%1$d saved or liked article will be deleted.</item>
+        <item quantity="other">%1$d saved or liked articles will be deleted.</item>
+    </plurals>
+    <string name="sources_delete_confirm">Remove</string>
+    <!-- Deleting folders costs nothing, so it is a snackbar and it says what happened. -->
+    <plurals name="folders_deleted">
+        <item quantity="one">%1$d folder deleted</item>
+        <item quantity="other">%1$d folders deleted</item>
+    </plurals>
+    <plurals name="folders_deleted_moved">
+        <item quantity="one">%1$d source moved to Uncategorized</item>
+        <item quantity="other">%1$d sources moved to Uncategorized</item>
+    </plurals>
+    <string name="folders_deleted_snackbar">%1$s · %2$s</string>
 
     <!-- Add source (DESIGN.md §5): paste, resolve, confirm, commit -->
     <string name="drawer_add_source">Add source</string>

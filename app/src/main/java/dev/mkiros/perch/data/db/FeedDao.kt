@@ -51,6 +51,10 @@ interface FeedDao {
     @Query("DELETE FROM feeds WHERE id = :id")
     suspend fun deleteById(id: Long)
 
+    /** U09a's batch unsubscribe, in one statement so the drawer redraws once, not N times. */
+    @Query("DELETE FROM feeds WHERE id IN (:ids)")
+    suspend fun deleteByIds(ids: List<Long>)
+
     @Query("SELECT COUNT(*) FROM feeds")
     suspend fun countAll(): Int
 

@@ -10,6 +10,7 @@ import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.net.ConnectivityMonitor
 import dev.mkiros.perch.data.repo.EntryRepository
 import dev.mkiros.perch.data.repo.FeedRepository
+import dev.mkiros.perch.data.repo.FolderDeleteUndo
 import dev.mkiros.perch.data.repo.FolderRepository
 import dev.mkiros.perch.data.repo.MarkAllReadUndo
 import dev.mkiros.perch.data.settings.SettingsStore
@@ -170,6 +171,19 @@ data class HomeUiState(
 }
 
 /**
+ * A source delete waiting on its confirmation (U09a).
+ *
+ * @param savedOrLikedCount how many of the entries about to be cascaded away the reader
+ *   saved or liked. Zero is a normal answer and the dialog simply omits the line.
+ */
+data class SourceDeletePrompt(
+    val feedIds: Set<Long>,
+    val savedOrLikedCount: Int,
+) {
+    val sourceCount: Int get() = feedIds.size
+}
+
+/**
  * Home's state: the reading list, the source drawer, the filter that ties them together,
  * and the refresh/error/offline surfacing around all three (T26).
  */
@@ -264,6 +278,18 @@ class HomeViewModel(
      */
     private val _pendingUndo = MutableStateFlow<MarkAllReadUndo?>(null)
     val pendingUndo: StateFlow<MarkAllReadUndo?> = _pendingUndo.asStateFlow()
+
+    /**
+     * What the last batch folder delete took, while its snackbar is up (U09a). Held for
+     * the same reason [_pendingUndo] is: the folders and their memberships are the only
+     * record of what to restore, and a rotation mid-snackbar must not lose it.
+     */
+    private val _pendingFolderUndo = MutableStateFlow<FolderDeleteUndo?>(null)
+    val pendingFolderUndo: StateFlow<FolderDeleteUndo?> = _pendingFolderUndo.asStateFlow()
+
+    /** The armed source delete, or null. Non-null is what puts the dialog on screen. */
+    private val _sourceDeletePrompt = MutableStateFlow<SourceDeletePrompt?>(null)
+    val sourceDeletePrompt: StateFlow<SourceDeletePrompt?> = _sourceDeletePrompt.asStateFlow()
 
     /** The reader dismissed the "everything is failing" banner; cleared by the next refresh. */
     private val globalErrorDismissed = MutableStateFlow(false)
@@ -395,6 +421,61 @@ class HomeViewModel(
         viewModelScope.launch { folders.deleteFolder(folderId) }
     }
 
+    // ---- multi-select delete (U09a) ---------------------------------------------
+
+    /**
+     * Deletes a whole batch of folders and arms the undo snackbar.
+     *
+     * No dialog, deliberately: §0 makes a folder a grouping and never an owner, so this
+     * costs the reader nothing they cannot get back with one tap. Confirming it would
+     * teach them to dismiss the confirmation that *does* matter — the source one.
+     */
+    fun deleteFolders(folderIds: Set<Long>) {
+        if (folderIds.isEmpty()) return
+        viewModelScope.launch {
+            val undo = folders.deleteFolders(folderIds)
+            if (undo.folderCount > 0) _pendingFolderUndo.value = undo
+        }
+    }
+
+    /** Puts back the folders that batch took, and every source's membership with them. */
+    fun undoDeleteFolders() {
+        val undo = _pendingFolderUndo.value ?: return
+        _pendingFolderUndo.value = null
+        viewModelScope.launch { folders.undoDeleteFolders(undo) }
+    }
+
+    /** The snackbar timed out or was swiped away; the batch stands. */
+    fun clearFolderUndo() {
+        _pendingFolderUndo.value = null
+    }
+
+    /**
+     * Asks what a source batch would cost, and arms the confirmation with the answer.
+     *
+     * The count is read here rather than in the dialog because it is a database question,
+     * and a dialog that opened first and filled its own number in a frame later would show
+     * "0 saved or liked articles" for exactly as long as it takes to read it.
+     */
+    fun promptRemoveSources(feedIds: Set<Long>) {
+        if (feedIds.isEmpty()) return
+        viewModelScope.launch {
+            _sourceDeletePrompt.value =
+                SourceDeletePrompt(feedIds, entries.countSavedOrLikedIn(feedIds))
+        }
+    }
+
+    /** Unsubscribes the armed batch. Entries go with the sources; there is no undo. */
+    fun confirmRemoveSources() {
+        val prompt = _sourceDeletePrompt.value ?: return
+        _sourceDeletePrompt.value = null
+        viewModelScope.launch { feeds.removeAll(prompt.feedIds) }
+    }
+
+    fun cancelRemoveSources() {
+        _sourceDeletePrompt.value = null
+    }
+
     fun moveSource(feedId: Long, folderId: Long) {
         viewModelScope.launch { folders.moveSource(feedId, folderId) }
     }
@@ -508,15 +589,6 @@ class HomeViewModel(
      */
     fun renameSource(feedId: Long, name: String) {
         viewModelScope.launch { feeds.rename(feedId, name) }
-    }
-
-    /**
-     * Unsubscribes, taking the source's entries with it (T24). The filter is not cleared
-     * here: [uiState] resolves the selection against the sources it just read, so the row
-     * vanishing is already what drops the filter, whoever removed it.
-     */
-    fun removeSource(feedId: Long) {
-        viewModelScope.launch { feeds.remove(feedId) }
     }
 
     companion object {

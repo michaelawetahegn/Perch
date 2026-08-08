@@ -7,7 +7,11 @@ import android.graphics.drawable.Drawable
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.filterToOne
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -34,6 +38,7 @@ import dev.mkiros.perch.ui.article.ArticleViewModel
 import dev.mkiros.perch.ui.home.HomeScreen
 import dev.mkiros.perch.ui.home.HomeTestTags
 import dev.mkiros.perch.ui.home.HomeViewModel
+import dev.mkiros.perch.ui.home.SelectionTestTags
 import dev.mkiros.perch.ui.home.TimeFilter
 import dev.mkiros.perch.ui.source.AddSourceViewModel
 import dev.mkiros.perch.ui.theme.PerchTheme
@@ -159,6 +164,32 @@ class DesignScreenshotTest {
         capture("drawer")
     }
 
+    /**
+     * U09a's selection mode, with three sources ticked. The shot is the check on the one
+     * thing the tests cannot see: whether the contextual bar reads as a *mode* — whether
+     * a reader glancing at it can tell the drawer has stopped being somewhere to navigate.
+     */
+    @Test
+    fun `the drawer in selection mode with three sources ticked`() {
+        seed()
+        sortIntoFolders()
+        showHome(ThemeMode.Dark)
+        compose.onNodeWithContentDescription("Open sources").performClick()
+        compose.waitForIdle()
+
+        val ticked = homeViewModel.uiState.value.sources.take(3)
+        assertThat(ticked).hasSize(3)
+        drawerRow(ticked.first().title).performSemanticsAction(SemanticsActions.OnLongClick)
+        compose.waitForIdle()
+        ticked.drop(1).forEach { source ->
+            drawerRow(source.title).performSemanticsAction(SemanticsActions.OnClick)
+            compose.waitForIdle()
+        }
+        compose.onNodeWithTag(SelectionTestTags.COUNT).assertTextEquals("3 selected")
+
+        capture("drawer-selection")
+    }
+
     @Test
     fun `an article on the reading surface`() {
         seed()
@@ -213,6 +244,10 @@ class DesignScreenshotTest {
      * screen never composed. The drawing itself is [Screenshots.capture], which T32
      * shares.
      */
+    /** A drawer row by its label. The same name is in the app bar and in the list too. */
+    private fun drawerRow(label: String) =
+        compose.onAllNodesWithText(label).filterToOne(hasClickAction())
+
     private fun capture(name: String) {
         val shot = Screenshots.capture(compose, compose.activity, Screenshots.dir("screenshots"), name)
 

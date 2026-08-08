@@ -10,7 +10,16 @@ package dev.mkiros.perch.ui.nav
  */
 enum class BackStep {
 
-    /** An open drawer, sheet or dialog. It goes first — it is on top of everything. */
+    /**
+     * The drawer's selection mode (U09a) empties, leaving the drawer open.
+     *
+     * Above [CloseOverlay] deliberately: selection only exists inside the open drawer, so
+     * if the drawer went first, back would throw away a batch the reader had assembled
+     * rather than undo one step of it.
+     */
+    LeaveSelection,
+
+    /** An open drawer, sheet or dialog. It goes next — it is on top of everything else. */
     CloseOverlay,
 
     /** An article returns to the list it was opened from. */
@@ -35,6 +44,10 @@ enum class BackStep {
 /**
  * Everything [nextBackStep] needs, gathered from wherever it actually lives.
  *
+ * @param selectionActive the drawer is in U09a's multi-select mode. Like [overlayOpen]
+ *   this rung is answered where it lives — by a handler inside the drawer sheet, which is
+ *   composed deeper than the drawer's own and so is reached first — and is modelled here
+ *   so the root handler stays out of its way rather than racing it.
  * @param overlayOpen the drawer, the add-source sheet, or any dialog. Those components
  *   each answer back themselves and, being composed deeper, win the dispatcher before the
  *   root handler is reached — this rung is what keeps the policy true anyway if one of
@@ -45,6 +58,7 @@ enum class BackStep {
  * @param feedScrolled Feed's list is not at its first row.
  */
 data class BackState(
+    val selectionActive: Boolean = false,
     val overlayOpen: Boolean = false,
     val onArticle: Boolean = false,
     val tab: PerchTab = PerchTab.Feed,
@@ -58,6 +72,7 @@ data class BackState(
  * is a thing to do *instead* of quitting, and they are tried in this order.
  */
 fun nextBackStep(state: BackState): BackStep = when {
+    state.selectionActive -> BackStep.LeaveSelection
     state.overlayOpen -> BackStep.CloseOverlay
     state.onArticle -> BackStep.PopArticle
     state.tab != PerchTab.Feed -> BackStep.ReturnToFeed

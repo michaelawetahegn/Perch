@@ -15,6 +15,26 @@ import org.junit.Test
  */
 class BackChainTest {
 
+    /**
+     * U09a's rung. Selection mode only ever exists *inside* the open drawer, so this is the
+     * one pair whose order is not merely tidy: get it wrong and the drawer shuts, taking
+     * the selection with it, and back has thrown away work rather than undone a step.
+     */
+    @Test
+    fun `back leaves selection before it closes the drawer`() {
+        val step = nextBackStep(
+            BackState(
+                selectionActive = true,
+                overlayOpen = true,
+                onArticle = true,
+                tab = PerchTab.Liked,
+                feedScrolled = true,
+            ),
+        )
+
+        assertThat(step).isEqualTo(BackStep.LeaveSelection)
+    }
+
     @Test
     fun `an open overlay closes before anything else happens`() {
         // Every other rung is also live: on an article, on a non-Feed tab, scrolled down.
@@ -73,6 +93,7 @@ class BackChainTest {
     @Test
     fun `nothing but Feed at the top ever reaches Exit`() {
         val states = listOf(
+            BackState(selectionActive = true, overlayOpen = true),
             BackState(overlayOpen = true),
             BackState(onArticle = true),
             BackState(tab = PerchTab.ToRead),
@@ -88,6 +109,7 @@ class BackChainTest {
     @Test
     fun `the steps are declared in the order they are tried`() {
         assertThat(BackStep.entries).containsExactly(
+            BackStep.LeaveSelection,
             BackStep.CloseOverlay,
             BackStep.PopArticle,
             BackStep.ReturnToFeed,

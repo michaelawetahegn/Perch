@@ -1,5 +1,6 @@
 package dev.mkiros.perch.ui.home
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -40,6 +41,7 @@ import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenu
@@ -65,6 +67,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -117,12 +120,21 @@ fun HomeScreen(
     // They default to their own state so a test can still compose this screen alone.
     drawerState: DrawerState = rememberDrawerState(DrawerValue.Closed),
     listState: LazyListState = rememberLazyListState(),
+    // Hoisted for the same reason (U09a): the back chain's first rung is "leave selection",
+    // and the shell has to be able to see one. `rememberSaveable` rather than `remember`
+    // because §0's rule is that a rotation or a process death must not quietly discard a
+    // batch the reader assembled by hand.
+    selection: MutableState<DrawerSelection> = rememberSaveable(
+        stateSaver = DrawerSelection.Saver,
+    ) { mutableStateOf(DrawerSelection.None) },
 ) {
     val totalUnread by viewModel.totalUnread.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val pendingUndo by viewModel.pendingUndo.collectAsStateWithLifecycle()
     val collapsedFolders by viewModel.collapsedFolders.collectAsStateWithLifecycle()
+    val folderUndo by viewModel.pendingFolderUndo.collectAsStateWithLifecycle()
+    val deletePrompt by viewModel.sourceDeletePrompt.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -130,9 +142,7 @@ fun HomeScreen(
     // Which source a dialog is about is held as an id, not as the item: the item is a
     // snapshot of a row that a refresh rewrites underneath us, and resolving it against
     // the current state means a source that disappears takes its dialog with it.
-    var actionsForId by rememberSaveable { mutableStateOf<Long?>(null) }
     var renamingId by rememberSaveable { mutableStateOf<Long?>(null) }
-    var removingId by rememberSaveable { mutableStateOf<Long?>(null) }
     var movingId by rememberSaveable { mutableStateOf<Long?>(null) }
     // Folder dialogs, held the same way and for the same reason.
     var folderActionsForId by rememberSaveable { mutableStateOf<Long?>(null) }
@@ -165,6 +175,49 @@ fun HomeScreen(
         addingSource = true
     }
 
+    // ---- selection mode (U09a) ---------------------------------------------------
+
+    fun leaveSelection() {
+        selection.value = DrawerSelection.None
+    }
+
+    /**
+     * The one selected row's id. Only ever read behind `count == 1`, which is the only
+     * state in which the bar offers rename or move at all.
+     */
+    fun theOne(): Long = selection.value.ids.first()
+
+    fun renameSelection() {
+        when (selection.value) {
+            is DrawerSelection.Sources -> renamingId = theOne()
+            is DrawerSelection.Folders -> renamingFolderId = theOne()
+            DrawerSelection.None -> Unit
+        }
+        leaveSelection()
+    }
+
+    fun moveSelection() {
+        if (selection.value is DrawerSelection.Sources) movingId = theOne()
+        leaveSelection()
+    }
+
+    /**
+     * The two deletes of U09a, which differ because their risk differs. Folders go
+     * straight through to an undo snackbar — nothing is lost. Sources arm a dialog and
+     * the selection stays ticked behind it, so cancelling leaves the batch intact rather
+     * than making the reader assemble it again.
+     */
+    fun deleteSelection() {
+        when (val ticked = selection.value) {
+            is DrawerSelection.Folders -> {
+                leaveSelection()
+                viewModel.deleteFolders(ticked.ids)
+            }
+            is DrawerSelection.Sources -> viewModel.promptRemoveSources(ticked.ids)
+            DrawerSelection.None -> Unit
+        }
+    }
+
     // The undo snackbar is driven off the armed batch rather than fired at the call site,
     // so the offer survives a rotation: the token is view-model state, and whatever
     // recomposes next puts the snackbar back up for whatever is left of its time.
@@ -188,6 +241,35 @@ fun HomeScreen(
         }
     }
 
+    // The folder batch delete's undo, armed the same way and for the same reason (U09a).
+    // It says what happened to the *sources* as well as to the folders, because "3 folders
+    // deleted" on its own leaves the reader wondering what it cost them.
+    LaunchedEffect(folderUndo) {
+        val undo = folderUndo ?: return@LaunchedEffect
+        val result = snackbarHostState.showSnackbar(
+            message = context.getString(
+                R.string.folders_deleted_snackbar,
+                context.resources.getQuantityString(
+                    R.plurals.folders_deleted,
+                    undo.folderCount,
+                    undo.folderCount,
+                ),
+                context.resources.getQuantityString(
+                    R.plurals.folders_deleted_moved,
+                    undo.movedSourceCount,
+                    undo.movedSourceCount,
+                ),
+            ),
+            actionLabel = undoLabel,
+            withDismissAction = false,
+            duration = SnackbarDuration.Short,
+        )
+        when (result) {
+            SnackbarResult.ActionPerformed -> viewModel.undoDeleteFolders()
+            SnackbarResult.Dismissed -> viewModel.clearFolderUndo()
+        }
+    }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         modifier = modifier,
@@ -196,11 +278,17 @@ fun HomeScreen(
                 state = uiState,
                 totalUnread = totalUnread,
                 collapsedFolders = collapsedFolders,
+                selection = selection.value,
                 onSelectSource = ::select,
                 onSelectFolder = ::selectFolder,
                 onToggleFolder = viewModel::toggleFolderExpanded,
                 onFolderActions = { folderActionsForId = it },
-                onSourceActions = { actionsForId = it },
+                onToggleSourceTick = { selection.value = selection.value.toggleSource(it) },
+                onToggleFolderTick = { selection.value = selection.value.toggleFolder(it) },
+                onLeaveSelection = ::leaveSelection,
+                onRenameSelection = ::renameSelection,
+                onMoveSelection = ::moveSelection,
+                onDeleteSelection = ::deleteSelection,
                 onAddSource = ::addSource,
                 onNewFolder = { creatingFolder = true },
                 onOpenSettings = {
@@ -292,25 +380,6 @@ fun HomeScreen(
             )
         }
 
-        sourceOf(actionsForId)?.let { source ->
-            SourceActionsDialog(
-                sourceTitle = source.title,
-                onRename = {
-                    actionsForId = null
-                    renamingId = source.id
-                },
-                onMove = {
-                    actionsForId = null
-                    movingId = source.id
-                },
-                onRemove = {
-                    actionsForId = null
-                    removingId = source.id
-                },
-                onDismiss = { actionsForId = null },
-            )
-        }
-
         sourceOf(movingId)?.let { source ->
             MoveSourceDialog(
                 sourceTitle = source.title,
@@ -340,14 +409,15 @@ fun HomeScreen(
             )
         }
 
-        sourceOf(removingId)?.let { source ->
-            RemoveSourceDialog(
-                sourceTitle = source.title,
+        deletePrompt?.let { prompt ->
+            DeleteSourcesDialog(
+                sourceCount = prompt.sourceCount,
+                savedOrLikedCount = prompt.savedOrLikedCount,
                 onConfirm = {
-                    removingId = null
-                    viewModel.removeSource(source.id)
+                    leaveSelection()
+                    viewModel.confirmRemoveSources()
                 },
-                onDismiss = { removingId = null },
+                onDismiss = viewModel::cancelRemoveSources,
             )
         }
 
@@ -578,11 +648,17 @@ private fun SourceDrawer(
     state: HomeUiState,
     totalUnread: Int,
     collapsedFolders: Set<Long>,
+    selection: DrawerSelection,
     onSelectSource: (Long?) -> Unit,
     onSelectFolder: (Long) -> Unit,
     onToggleFolder: (Long) -> Unit,
     onFolderActions: (Long) -> Unit,
-    onSourceActions: (Long) -> Unit,
+    onToggleSourceTick: (Long) -> Unit,
+    onToggleFolderTick: (Long) -> Unit,
+    onLeaveSelection: () -> Unit,
+    onRenameSelection: () -> Unit,
+    onMoveSelection: () -> Unit,
+    onDeleteSelection: () -> Unit,
     onAddSource: () -> Unit,
     onNewFolder: () -> Unit,
     onOpenSettings: () -> Unit,
@@ -590,22 +666,38 @@ private fun SourceDrawer(
     // An empty Uncategorized is noise on a first launch; an empty folder the reader made
     // is the folder they are about to fill, so it stays visible.
     val sections = state.folders.filter { it.sources.isNotEmpty() || !it.isBuiltIn }
+    val selecting = selection.isActive
 
     ModalDrawerSheet {
+        // §0's back chain, first rung (U09a). It lives here rather than in the shell
+        // because the drawer answers back itself and, being composed deeper, would win —
+        // back would shut the drawer and throw away a batch instead of undoing a step.
+        BackHandler(enabled = selecting, onBack = onLeaveSelection)
+
         Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-            NavigationDrawerItem(
-                icon = { Icon(Icons.Default.Inbox, contentDescription = null) },
-                label = { Text(stringResource(R.string.drawer_all_unread)) },
-                badge = {
-                    Text(
-                        text = totalUnread.toString(),
-                        modifier = Modifier.testTag(HomeTestTags.ALL_UNREAD_BADGE),
-                    )
-                },
-                selected = state.scope == HomeScope.All,
-                onClick = { onSelectSource(null) },
-                modifier = Modifier.padding(horizontal = Dimens.md),
-            )
+            if (selecting) {
+                SelectionBar(
+                    selection = selection,
+                    onLeave = onLeaveSelection,
+                    onRename = onRenameSelection,
+                    onMove = onMoveSelection,
+                    onDelete = onDeleteSelection,
+                )
+            } else {
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Inbox, contentDescription = null) },
+                    label = { Text(stringResource(R.string.drawer_all_unread)) },
+                    badge = {
+                        Text(
+                            text = totalUnread.toString(),
+                            modifier = Modifier.testTag(HomeTestTags.ALL_UNREAD_BADGE),
+                        )
+                    },
+                    selected = state.scope == HomeScope.All,
+                    onClick = { onSelectSource(null) },
+                    modifier = Modifier.padding(horizontal = Dimens.md),
+                )
+            }
             if (sections.isNotEmpty()) {
                 HorizontalDivider(modifier = Modifier.padding(Dimens.md))
             }
@@ -614,7 +706,11 @@ private fun SourceDrawer(
                     folder = folder,
                     selected = state.selectedFolderId == folder.id,
                     expanded = folder.id !in collapsedFolders,
-                    onSelect = { onSelectFolder(folder.id) },
+                    selection = selection,
+                    onSelect = {
+                        if (selecting) onToggleFolderTick(folder.id) else onSelectFolder(folder.id)
+                    },
+                    onLongPress = { onToggleFolderTick(folder.id) },
                     onToggle = { onToggleFolder(folder.id) },
                     onActions = { onFolderActions(folder.id) },
                 )
@@ -623,34 +719,45 @@ private fun SourceDrawer(
                         SourceRow(
                             source = source,
                             selected = state.selectedFeedId == source.id,
-                            onSelect = { onSelectSource(source.id) },
-                            onLongPress = { onSourceActions(source.id) },
+                            selection = selection,
+                            onSelect = {
+                                if (selecting) {
+                                    onToggleSourceTick(source.id)
+                                } else {
+                                    onSelectSource(source.id)
+                                }
+                            },
+                            onLongPress = { onToggleSourceTick(source.id) },
                         )
                     }
                 }
             }
-            HorizontalDivider(modifier = Modifier.padding(Dimens.md))
-            NavigationDrawerItem(
-                icon = { Icon(Icons.Default.Add, contentDescription = null) },
-                label = { Text(stringResource(R.string.drawer_add_source)) },
-                selected = false,
-                onClick = onAddSource,
-                modifier = Modifier.padding(horizontal = Dimens.md),
-            )
-            NavigationDrawerItem(
-                icon = { Icon(Icons.Default.CreateNewFolder, contentDescription = null) },
-                label = { Text(stringResource(R.string.drawer_new_folder)) },
-                selected = false,
-                onClick = onNewFolder,
-                modifier = Modifier.padding(horizontal = Dimens.md),
-            )
-            NavigationDrawerItem(
-                icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                label = { Text(stringResource(R.string.drawer_settings)) },
-                selected = false,
-                onClick = onOpenSettings,
-                modifier = Modifier.padding(horizontal = Dimens.md),
-            )
+            // The three ways out of the drawer are navigation, and navigating away mid
+            // selection is how a reader loses a batch they were halfway through building.
+            if (!selecting) {
+                HorizontalDivider(modifier = Modifier.padding(Dimens.md))
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Add, contentDescription = null) },
+                    label = { Text(stringResource(R.string.drawer_add_source)) },
+                    selected = false,
+                    onClick = onAddSource,
+                    modifier = Modifier.padding(horizontal = Dimens.md),
+                )
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.CreateNewFolder, contentDescription = null) },
+                    label = { Text(stringResource(R.string.drawer_new_folder)) },
+                    selected = false,
+                    onClick = onNewFolder,
+                    modifier = Modifier.padding(horizontal = Dimens.md),
+                )
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+                    label = { Text(stringResource(R.string.drawer_settings)) },
+                    selected = false,
+                    onClick = onOpenSettings,
+                    modifier = Modifier.padding(horizontal = Dimens.md),
+                )
+            }
         }
     }
 }
@@ -663,12 +770,15 @@ private fun SourceDrawer(
  * They are deliberately *not* merged into a single node — a merged row could offer only
  * one of the three, and expanding a folder is not the same gesture as reading it.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun FolderHeaderRow(
     folder: FolderUiItem,
     selected: Boolean,
     expanded: Boolean,
+    selection: DrawerSelection,
     onSelect: () -> Unit,
+    onLongPress: () -> Unit,
     onToggle: () -> Unit,
     onActions: () -> Unit,
 ) {
@@ -693,30 +803,47 @@ private fun FolderHeaderRow(
             .clip(CircleShape)
             .background(container),
     ) {
-        IconButton(
-            onClick = onToggle,
-            modifier = Modifier.testTag(HomeTestTags.folderExpand(folder.id)),
-        ) {
-            Icon(
-                imageVector = if (expanded) {
-                    Icons.Default.KeyboardArrowDown
-                } else {
-                    Icons.AutoMirrored.Filled.KeyboardArrowRight
-                },
-                contentDescription = stringResource(
-                    if (expanded) R.string.folder_collapse else R.string.folder_expand,
-                    folder.name,
-                ),
-                tint = content,
-                modifier = Modifier.size(Dimens.icon),
+        // Only a *folder* selection puts checkboxes on folders — the homogeneous rule is
+        // drawn, not merely enforced, or a source selection would offer a tick here that
+        // silently does nothing. Mid-source-selection the chevron stays, which is what
+        // lets a reader open a collapsed folder to reach the sources inside it.
+        if (selection is DrawerSelection.Folders) {
+            // The chevron's slot, taken over: a folder cannot be expanded and ticked at
+            // the same time, and the tick has to sit where the eye is already looking.
+            // Uncategorized draws a disabled box rather than none, so the reason it
+            // cannot be deleted reads as a rule rather than as a missing control.
+            Checkbox(
+                checked = selection.holdsFolder(folder.id),
+                onCheckedChange = { onLongPress() },
+                enabled = !folder.isBuiltIn,
+                modifier = Modifier.testTag(SelectionTestTags.folderCheckbox(folder.id)),
             )
+        } else {
+            IconButton(
+                onClick = onToggle,
+                modifier = Modifier.testTag(HomeTestTags.folderExpand(folder.id)),
+            ) {
+                Icon(
+                    imageVector = if (expanded) {
+                        Icons.Default.KeyboardArrowDown
+                    } else {
+                        Icons.AutoMirrored.Filled.KeyboardArrowRight
+                    },
+                    contentDescription = stringResource(
+                        if (expanded) R.string.folder_collapse else R.string.folder_expand,
+                        folder.name,
+                    ),
+                    tint = content,
+                    modifier = Modifier.size(Dimens.icon),
+                )
+            }
         }
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight()
-                .clickable(onClick = onSelect)
+                .combinedClickable(onClick = onSelect, onLongClick = onLongPress)
                 .semantics(mergeDescendants = true) {}
                 .padding(horizontal = Dimens.xs)
                 .testTag(HomeTestTags.folderHeader(folder.id)),
@@ -739,7 +866,7 @@ private fun FolderHeaderRow(
                 modifier = Modifier.testTag(HomeTestTags.folderBadge(folder.id)),
             )
         }
-        if (!folder.isBuiltIn) {
+        if (!folder.isBuiltIn && !selection.isActive) {
             IconButton(
                 onClick = onActions,
                 modifier = Modifier.testTag(HomeTestTags.folderOverflow(folder.id)),
@@ -774,6 +901,7 @@ private fun FolderHeaderRow(
 private fun SourceRow(
     source: SourceUiItem,
     selected: Boolean,
+    selection: DrawerSelection,
     onSelect: () -> Unit,
     onLongPress: () -> Unit,
 ) {
@@ -798,7 +926,18 @@ private fun SourceRow(
             .semantics(mergeDescendants = true) {}
             .padding(horizontal = Dimens.drawerRowPadding),
     ) {
-        if (source.hasError) {
+        // Likewise: only a source selection ticks sources (see [FolderHeaderRow]).
+        if (selection is DrawerSelection.Sources) {
+            // In the icon's slot, not beside it: a checkbox that pushed the row's contents
+            // sideways would reflow the whole drawer the moment selection began.
+            Checkbox(
+                checked = selection.holdsSource(source.id),
+                onCheckedChange = { onSelect() },
+                modifier = Modifier
+                    .size(Dimens.icon)
+                    .testTag(SelectionTestTags.sourceCheckbox(source.id)),
+            )
+        } else if (source.hasError) {
             Icon(
                 imageVector = Icons.Default.Warning,
                 contentDescription = stringResource(R.string.drawer_source_error),

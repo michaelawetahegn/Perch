@@ -14,7 +14,9 @@ import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -34,6 +36,7 @@ import dev.mkiros.perch.ui.article.ArticleViewModel
 import dev.mkiros.perch.ui.collection.Collection
 import dev.mkiros.perch.ui.collection.CollectionScreen
 import dev.mkiros.perch.ui.collection.CollectionViewModel
+import dev.mkiros.perch.ui.home.DrawerSelection
 import dev.mkiros.perch.ui.home.HomeScreen
 import dev.mkiros.perch.ui.home.HomeViewModel
 import dev.mkiros.perch.ui.settings.SettingsScreen
@@ -99,7 +102,15 @@ fun PerchNavHost(
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val feedListState = rememberLazyListState()
 
+    // The drawer's multi-select (U09a), hoisted for the same reason: it is the first rung
+    // of the back chain. `rememberSaveable` so neither a rotation nor a process death
+    // quietly discards a batch the reader ticked by hand.
+    val drawerSelection = rememberSaveable(stateSaver = DrawerSelection.Saver) {
+        mutableStateOf<DrawerSelection>(DrawerSelection.None)
+    }
+
     val backState = BackState(
+        selectionActive = drawerSelection.value.isActive,
         overlayOpen = drawerState.isOpen,
         onArticle = route == Routes.ARTICLE,
         tab = tab ?: PerchTab.Feed,
@@ -115,6 +126,7 @@ fun PerchNavHost(
     // stealing a predictive-back gesture mid-swipe.
     BackHandler(enabled = step != BackStep.Exit) {
         when (step) {
+            BackStep.LeaveSelection -> drawerSelection.value = DrawerSelection.None
             BackStep.CloseOverlay -> scope.launch { drawerState.close() }
             BackStep.PopArticle -> navController.popBackStack()
             BackStep.ReturnToFeed -> selectTab(navController, PerchTab.Feed)
@@ -150,6 +162,7 @@ fun PerchNavHost(
                     onOpenSettings = { navController.navigate(Routes.SETTINGS) },
                     drawerState = drawerState,
                     listState = feedListState,
+                    selection = drawerSelection,
                 )
             }
 

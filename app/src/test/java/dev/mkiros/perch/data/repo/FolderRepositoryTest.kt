@@ -145,6 +145,60 @@ class FolderRepositoryTest {
         assertThat(counts[graphics]).isNull()
     }
 
+    // ---- U09a: deleting several folders at once, reversibly ----------------------
+
+    @Test
+    fun `deleting several folders moves every one of their sources to Uncategorized`() = runTest {
+        val graphics = repo.createFolder("Graphics")
+        val security = repo.createFolder("Security")
+        val kept = listOf(
+            addSource("https://a.example/feed.xml", graphics),
+            addSource("https://b.example/feed.xml", graphics),
+            addSource("https://c.example/feed.xml", security),
+        )
+
+        val undo = repo.deleteFolders(setOf(graphics, security))
+
+        assertThat(undo.folderCount).isEqualTo(2)
+        assertThat(undo.movedSourceCount).isEqualTo(3)
+        assertThat(feedDao.getAll().map { it.id }).containsExactlyElementsIn(kept)
+        assertThat(feedDao.getAll().map { it.folderId })
+            .containsExactly(1L, 1L, 1L)
+        assertThat(repo.observeFolders().first().map { it.name })
+            .containsExactly(FolderEntity.UNCATEGORIZED_NAME)
+    }
+
+    @Test
+    fun `undoing a batch delete restores the folders and every source's membership`() = runTest {
+        val graphics = repo.createFolder("Graphics")
+        val security = repo.createFolder("Security")
+        val gpu = addSource("https://a.example/feed.xml", graphics)
+        val zdi = addSource("https://c.example/feed.xml", security)
+        val loose = addSource("https://d.example/feed.xml", FolderEntity.UNCATEGORIZED_ID)
+        val before = repo.observeFolders().first()
+
+        val undo = repo.deleteFolders(setOf(graphics, security))
+        repo.undoDeleteFolders(undo)
+
+        // The same rows, with the same ids and order — restoring under fresh ids would
+        // leave the drawer looking right and every membership pointing at nothing.
+        assertThat(repo.observeFolders().first()).isEqualTo(before)
+        assertThat(feedDao.findById(gpu)?.folderId).isEqualTo(graphics)
+        assertThat(feedDao.findById(zdi)?.folderId).isEqualTo(security)
+        assertThat(feedDao.findById(loose)?.folderId).isEqualTo(FolderEntity.UNCATEGORIZED_ID)
+    }
+
+    @Test
+    fun `a batch delete skips Uncategorized and deletes the rest`() = runTest {
+        val graphics = repo.createFolder("Graphics")
+
+        val undo = repo.deleteFolders(setOf(graphics, FolderEntity.UNCATEGORIZED_ID))
+
+        assertThat(undo.folderCount).isEqualTo(1)
+        assertThat(repo.findFolder(FolderEntity.UNCATEGORIZED_ID)).isNotNull()
+        assertThat(repo.findFolder(graphics)).isNull()
+    }
+
     private suspend fun addSource(feedUrl: String, folderId: Long): Long = feedDao.insert(
         FeedEntity(
             feedUrl = feedUrl,

@@ -69,6 +69,23 @@ abstract class FolderDao {
     @Query("UPDATE feeds SET folderId = :to WHERE folderId = :from")
     abstract suspend fun reassign(from: Long, to: Long)
 
+    /**
+     * Which sources are filed under [folderId]. U09a's undo needs this *before* the delete
+     * runs: once the reassignment has happened every one of them says Uncategorized, and
+     * the memberships the reader is being offered back no longer exist anywhere.
+     */
+    @Query("SELECT id FROM feeds WHERE folderId = :folderId")
+    abstract suspend fun feedIdsIn(folderId: Long): List<Long>
+
+    /**
+     * Puts folders back under the ids they had. `@Insert` rather than an upsert, and with
+     * the id carried in the row rather than regenerated: a restored folder that came back
+     * under a fresh id would look right in the drawer while every membership pointing at
+     * it dangled.
+     */
+    @Insert
+    abstract suspend fun insertAll(folders: List<FolderEntity>)
+
     @Query("DELETE FROM folders WHERE id = :id")
     abstract suspend fun deleteById(id: Long)
 

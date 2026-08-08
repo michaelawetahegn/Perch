@@ -192,6 +192,22 @@ abstract class EntryDao {
     @Query("UPDATE entries SET isStarred = :isStarred, starredAt = :starredAt WHERE id = :id")
     abstract suspend fun setStarred(id: Long, isStarred: Boolean, starredAt: Long?)
 
+    /**
+     * How much of the reader's own curation sits inside [feedIds] — what U09a's delete
+     * confirmation puts a number to before it cascades.
+     *
+     * `OR`, counted once per row: an entry that is both saved and liked is one article
+     * about to be lost, and a dialog that called it two would overstate the damage in the
+     * one place a reader is deciding whether to trust the number.
+     */
+    @Query(
+        """
+        SELECT COUNT(*) FROM entries
+        WHERE feedId IN (:feedIds) AND (isSaved = 1 OR isStarred = 1)
+        """,
+    )
+    abstract suspend fun countSavedOrLikedIn(feedIds: List<Long>): Int
+
     // ---- retention ------------------------------------------------------------
 
     /**

@@ -294,7 +294,7 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
         `./gradlew test` green.
       - Rung: screenshot
 
-- [ ] **U09a — Multi-select delete for sources and folders. TDD + screenshot.** Removing
+- [x] **U09a — Multi-select delete for sources and folders. TDD + screenshot.** Removing
       sources one dialog at a time is the chore that makes people stop curating.
       **Long-press** a source in the drawer enters selection mode: every row gains a
       checkbox, the drawer header becomes a contextual bar showing the count with close and

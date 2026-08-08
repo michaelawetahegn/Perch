@@ -505,6 +505,20 @@ class FeedRepositoryTest {
     }
 
     @Test
+    fun `removing a batch of sources takes those sources and leaves the rest alone`() = runTest {
+        server.enqueue(ok(rss(item("a1"), item("a2"))))
+        server.enqueue(ok(rss(item("b1"))))
+        server.enqueue(ok(rss(item("c1"))))
+        val doomed = listOf(subscribe("/a.xml"), subscribe("/b.xml"))
+        val kept = subscribe("/c.xml")
+
+        repo.removeAll(doomed)
+
+        assertThat(feeds.getAll().map { it.id }).containsExactly(kept)
+        assertThat(entries.countAll()).isEqualTo(1)
+    }
+
+    @Test
     fun `renaming a source leaves the title the feed gives itself alone`() = runTest {
         server.enqueue(ok(rss(item("a1"))))
         server.enqueue(ok(rss(item("a1"), item("a2"))))

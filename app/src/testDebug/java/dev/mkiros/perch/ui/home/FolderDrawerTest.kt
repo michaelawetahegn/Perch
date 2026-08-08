@@ -237,7 +237,7 @@ class FolderDrawerTest {
 
         showHome()
         longPressInDrawer("GPUOpen")
-        tap(SourceActionTestTags.MOVE)
+        tap(SelectionTestTags.MOVE)
         compose.onNodeWithTag(FolderActionTestTags.folderChoice(graphics))
             .performSemanticsAction(SemanticsActions.OnClick)
         awaitDb { folderIdOf("GPUOpen") == graphics }
@@ -252,7 +252,7 @@ class FolderDrawerTest {
 
         showHome()
         longPressInDrawer("GPUOpen")
-        tap(SourceActionTestTags.MOVE)
+        tap(SelectionTestTags.MOVE)
         tap(FolderActionTestTags.NEW_FOLDER)
         compose.onNodeWithTag(FolderActionTestTags.NAME_FIELD)
             .performTextReplacement("Graphics")

@@ -196,6 +196,19 @@ class FeedRepository(
     suspend fun remove(feedId: Long) = feedDao.deleteById(feedId)
 
     /**
+     * Unsubscribes a whole batch (U09a). One statement rather than a loop of [remove], so
+     * the drawer and the list settle once instead of flickering through N intermediate
+     * subscription lists — and so a failure cannot leave half the batch deleted.
+     *
+     * There is no undo: the entries go with the sources, saved and liked ones included,
+     * which is why the caller confirms with a dialog that names what is about to go.
+     */
+    suspend fun removeAll(feedIds: Collection<Long>) {
+        if (feedIds.isEmpty()) return
+        feedDao.deleteByIds(feedIds.toList())
+    }
+
+    /**
      * Renames a source for display only. The feed's own [FeedEntity.title] is left alone —
      * it is what the next refresh overwrites, and what a cleared rename falls back to, so
      * a blank [name] restores it rather than leaving the drawer with an empty label.

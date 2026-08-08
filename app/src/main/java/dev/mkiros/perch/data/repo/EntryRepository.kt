@@ -114,6 +114,17 @@ class EntryRepository(
     }
 
     /**
+     * How many entries in [feedIds] the reader saved or liked (U09a).
+     *
+     * Removing a source cascades to its entries, and U04's whole point is that saved and
+     * liked entries are the reader's, not the feed's. This is the number the delete
+     * confirmation names so the loss is stated before it happens rather than discovered
+     * afterwards in an empty To-Read list.
+     */
+    suspend fun countSavedOrLikedIn(feedIds: Collection<Long>): Int =
+        if (feedIds.isEmpty()) 0 else entryDao.countSavedOrLikedIn(feedIds.toList())
+
+    /**
      * Marks everything unread as read, scoped exactly as [observeEntries] is — to one
      * source, to one folder, to one time window, or to none of them.
      *

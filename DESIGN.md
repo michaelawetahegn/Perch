@@ -106,7 +106,7 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
     ─────────────────────────
     ⌄ Folder name         (9) ⋮  ← chevron: expand/collapse · name: scope the list
       ● source name       (3)     ⋮: rename / delete (absent on Uncategorized)
-      ⚠ failing source    (!)   ← long-press a source: rename / move / remove
+      ⚠ failing source    (!)   ← long-press a row: multi-select (U09a)
     ⌄ Uncategorized      (57)   ← always last; sources with no folder chosen
     ─────────────────────────
     + Add source                → bottom sheet (which also picks the folder)
@@ -133,6 +133,19 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
   absence of the drawer and the range, and the absence of folder sections: these lists are
   ordered by the reader's own gesture, and a folder header would cut across the one
   ordering that means anything in them. Each empty state says what its list is *for*.
+- **Multi-select in the drawer (U09a).** A long press on a source or a folder header
+  starts a selection; every row of *that kind* gains a checkbox, the "All unread" row and
+  the drawer's three navigation items are replaced by a contextual bar — close · *N
+  selected* · delete, plus rename (and move, for a source) at exactly one ticked row — and
+  tapping toggles rows until the reader leaves. A selection is **homogeneous**: one
+  started on a source takes only sources, one started on a folder takes only folders, and
+  the rule is drawn as well as enforced — rows of the other kind keep their ordinary icon
+  and carry no tick. Uncategorized draws a disabled box: §0 makes it undeletable.
+  The two deletes differ because their risk does: **folders** move their sources to
+  Uncategorized and get an undo snackbar that says so ("3 folders deleted · 12 sources
+  moved to Uncategorized"), while **sources** cascade to their entries, saved and liked
+  ones included, and so get a dialog that counts what is about to be lost. Back leaves
+  selection before it closes the drawer — it is the first rung of §0's chain.
 - **Row actions (U09)** live behind a long press, in a bottom sheet: *Save for later* ·
   *Like* · *Mark read/unread* · *Share*. Each toggle names the direction it is about to
   go — *Remove from To-Read*, never *Saved ✓* — because a verb that means one of two
