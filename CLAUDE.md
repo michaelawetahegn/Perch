@@ -35,6 +35,13 @@ Do not skip ahead, do not do two tasks, do not refactor code the task doesn't to
 - **Failure rule: max 2 attempts per task.** Then rewrite the box as
   `- [BLOCKED: one-line diagnosis]`, log the details (commands, error, what you tried)
   to NOTES.md, commit, and move on to the next task. Never loop on a failing task.
+- **Never end a session with verification in flight.** Run the Done-condition command in
+  the foreground and wait for it, however long it takes — the session budget is 2 h and
+  almost nothing here needs 10 min. A session that backgrounds a long run and reports
+  "in flight" produces no commit, so the next session re-derives the same analysis from
+  scratch and the stall guard stops the loop after three. If a run genuinely cannot
+  finish, commit the work so far on a `- [BLOCKED: …]` box and say what was left running.
+  This is what stopped the v0.2 loop at U15 on 2026-08-08.
 - **Commit after every task**, message = `T07: Atom parser` + the verification line.
   Commit even for a BLOCKED task (the PLAN/NOTES edit is the commit).
 - **Never weaken a test to make it pass.** Especially `FeedCorpusTest` (T09) — it is
