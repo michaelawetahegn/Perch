@@ -32,9 +32,9 @@ Deleting a folder moves its sources to Uncategorized — it never deletes source
 Folder order is user-controlled (`sortIndex`); Uncategorized sorts last.
 
 **The two grouping dimensions are not the same dimension.** Time is a *filter*, folder is
-a *section*. Home has a chip row — **Today · This Week · This Month · All** (default
-Today) — which filters by `publishedAt`, and the surviving entries are sectioned under
-folder headers in folder order, exactly like the Feedly reference. When the drawer scopes
+a *section*. Home has a chip row — **Today · Past Week · Past Month · Past Year · All
+Time** (default Today) — which filters by `publishedAt`, and the surviving entries are
+sectioned under folder headers in folder order, exactly like the Feedly reference. When the drawer scopes
 to a single source or folder, the section headers collapse away (there is only one).
 "Today" means *since local midnight*, not "the last 24 h". An empty bucket renders the
 empty state with a "Show this week instead" affordance, never a blank screen.
@@ -75,7 +75,11 @@ folder or a source. Rules that hold regardless of visual treatment:
   `saveState`/`restoreState`), and survives process death.
 - The time filter (chips) belongs to **Feed only** — To-Read and Liked ignore it, per the
   read-later rule above.
-- System back from To-Read or Liked returns to Feed; back from Feed exits.
+- **Back never quits from anywhere but the top of the Feed** (the Reddit rule). In order:
+  an open drawer/sheet/dialog closes; the image viewer closes; an article returns to the
+  list it came from; To-Read or Liked returns to Feed; **Feed scrolled down scrolls to
+  top**; and only Feed-already-at-top exits the app. Support predictive back — the
+  scroll-to-top step is not a back *navigation*, so it must not animate as one.
 
 **The UI's visual decisions are the implementing session's to make.** §0 fixes *behaviour
 and information architecture*; icons, labels, badge counts, ordering, empty-state
@@ -203,8 +207,12 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
       a chip row (Today · This Week · This Month · All, default **Today**), entries
       sectioned under folder headers. The bucket boundary is local midnight via
       `java.time` with an injectable `Clock` — a test that can't pin "today" is not a test.
+      Five chips per §0 — Today · Past Week · Past Month · Past Year · All Time.
       The selected chip persists in DataStore across process death. Saved and Liked
       destinations ignore the filter entirely.
+      **Shape the query so U07a can swap it to a Room `PagingSource` without rewriting the
+      sectioning** — sort and filter in SQL, keep section assignment a pure function of the
+      row, and do not compute anything that needs the whole list in hand.
       - Done: tests with a fixed `Clock` prove an entry published at 23:59 yesterday is out
         of Today and in This Week; section order follows folder `sortIndex`; empty-bucket
         state offers the widen affordance; `./gradlew test` green.
@@ -247,12 +255,43 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
       Nav plumbing is the part that silently breaks: use one `NavHost` with
       `saveState`/`restoreState` and `launchSingleTop` so switching tabs does not stack
       duplicates, and confirm the bar does not appear over the article screen.
+      **Implement §0's back policy here**, as one ordered chain rather than scattered
+      `BackHandler`s: overlay closes → article pops → tab returns to Feed → Feed scrolls to
+      top → exit. Only the last step may leave the app.
       - Done: Robolectric tests assert each action flips the right DB column and that the
         target list reflects it through the Flow; a test switches Feed → To-Read → Feed and
         asserts the Feed scroll position and selected time-filter chip survived; a test
-        asserts the bar is absent on `article/{id}`; both empty states covered; one
-        dark-theme screenshot of To-Read with the bar; `./gradlew test` green.
+        asserts the bar is absent on `article/{id}`; **back-policy tests walk every rung of
+        the chain and assert the app is not finished until Feed is at the top**; both empty
+        states covered; one dark-theme screenshot of To-Read with the bar;
+        `./gradlew test` green.
       - Rung: screenshot
+
+- [ ] **U07a — Page the lists; stop loading everything. TDD.** A `Flow<List<EntryEntity>>`
+      materialises every matching row and **re-emits the entire list every time one entry's
+      read flag flips** — so marking an article read re-does the work of the whole screen.
+      `LazyColumn` already composes only what is visible, so the cost is the query and the
+      re-emission, not the rendering. U07's time filter bounds Today and Past Week but does
+      nothing for Past Year and All Time, which is where 42 sources add up.
+      Convert **all three lists** (Feed, To-Read, Liked) to Paging 3: Room emits a
+      `PagingSource<Int, EntryEntity>` straight from the `@Query`, and Compose consumes
+      `collectAsLazyPagingItems()`. That is `androidx.paging:paging-runtime-ktx` +
+      `paging-compose` — **a new dependency, so justify it in one line in NOTES.md** per
+      CLAUDE.md. If it genuinely doesn't fit, the fallback is incremental `LIMIT`/`OFFSET`
+      paging in the ViewModel; say why in NOTES.md.
+      Page size ~30 with a prefetch distance of ~10 rows, tuned so a fast scroll never
+      reaches an unloaded row — **the user should never learn that paging exists.** No
+      full-screen spinner on append: a small footer indicator only. Scroll position must
+      survive an append *and* a read-state change. The end of a list is an explicit,
+      quiet end marker, never an endless spinner.
+      **The hard part is section headers across page boundaries** — a folder header must
+      appear once, at its first row, and must not reappear at the top of every page.
+      - Done: a test seeds **2000** entries and asserts the first collection loads one page,
+        not 2000, and that scrolling appends without resetting position; a test flips one
+        entry's read flag and asserts the list does not re-emit every row; a test asserts a
+        folder header appears exactly once across a page boundary; empty and end-of-list
+        states covered; `./gradlew test` green.
+      - Rung: unit
 
 ## Phase 3 — The reading surface
 
@@ -326,6 +365,28 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
         `./gradlew test` green.
       - Rung: screenshot
 
+- [ ] **U11a — Tables that look like tables. TDD + screenshot.** `ArticleBlock.Table`
+      currently renders as bare text with no rules, so a table reads as run-together
+      columns. The Zero Day Initiative blog (`zerodayinitiative.com`) publishes tabular
+      advisories constantly and is the corpus source for this.
+      Give tables a real treatment and write it into DESIGN.md §8 in this commit: a
+      distinguished header row (weight + `surfaceContainer` tint), hairline rules in
+      `outlineVariant`, comfortable cell padding, left-aligned text with numeric columns
+      right-aligned, and **horizontal scroll for tables wider than the measure** — columns
+      are never crushed to fit, and the header scrolls with them. A table with no header
+      row renders as an all-body table rather than promoting row 1. Long cell text wraps
+      within its column rather than forcing a wider table.
+      Check the lowering too: verify `ArticleLowering` preserves cell counts for `colspan`
+      / `rowspan` tables (`ArticleBlock.Table` has no span concept — a spanned cell must be
+      padded out, not dropped, so columns stay aligned) and that `<th>` anywhere in the
+      first row makes it a header.
+      - Done: harvest 5 ZDI articles containing tables into `fixtures/articles/`; lowering
+        tests assert cell counts survive `colspan`/`rowspan` and that a header-less table
+        stays header-less; renderer tests cover the wide-table scroll and the wrapping
+        cell; light+dark screenshots of a wide ZDI advisory table and a narrow 2-column
+        table; `./gradlew test` green.
+      - Rung: screenshot
+
 - [ ] **U12 — Tap-to-zoom image viewer. TDD + screenshot.** Tapping an image in an article
       opens a full-screen overlay: the image animates to fit the width, the article behind
       it fades to a scrim, and the user can **pinch-zoom, double-tap-to-zoom, and pan**.
@@ -394,6 +455,10 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
          source resolving 0% is attributable rather than hidden inside the average.
       6. **Folders survive the round trip:** the live 42 split across folders, exported to
          OPML, reimported into an empty DB, compared exactly.
+      6b. **Tables:** every table across the live corpus renders with its rules and header,
+         and no table's cell count changed during lowering.
+      6c. **Paging:** the Feed's first collection at **All Time** across all 42 sources
+         loads one page, not the corpus.
       7. **Screenshots** of the redesigned home (dark, ≥2 folder sections, mixed
          thumbnails), the Saved list, a highlighted code block, and the zoomed image
          viewer. Critique against DESIGN.md; max 2 iterations, residuals to NOTES.md.
