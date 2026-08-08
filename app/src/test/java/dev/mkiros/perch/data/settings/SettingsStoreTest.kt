@@ -66,7 +66,7 @@ class SettingsStoreTest {
 
     @Test
     fun `the chosen time window survives a restart`() = runTest {
-        // The chip is the one setting the reader changes several times a session, so it
+        // The range is the one setting the reader changes several times a session, so it
         // has to come back the way they left it — including across process death.
         withStore { it.setTimeFilter(TimeFilter.PastMonth) }
 

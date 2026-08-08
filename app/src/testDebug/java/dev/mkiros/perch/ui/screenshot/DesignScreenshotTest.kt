@@ -8,6 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
@@ -26,6 +27,7 @@ import dev.mkiros.perch.ui.article.ArticleScreen
 import dev.mkiros.perch.ui.article.ArticleUiState
 import dev.mkiros.perch.ui.article.ArticleViewModel
 import dev.mkiros.perch.ui.home.HomeScreen
+import dev.mkiros.perch.ui.home.HomeTestTags
 import dev.mkiros.perch.ui.home.HomeViewModel
 import dev.mkiros.perch.ui.home.TimeFilter
 import dev.mkiros.perch.ui.source.AddSourceViewModel
@@ -115,6 +117,30 @@ class DesignScreenshotTest {
         showHome(ThemeMode.Light)
 
         capture("home-light")
+    }
+
+    /**
+     * U08a's time range, closed and open. The closed shot is the one that matters most:
+     * the whole point of the change is how little of the screen the control spends when
+     * the reader is not using it.
+     */
+    @Test
+    fun `the time range control over the list`() {
+        seed()
+        showHome(ThemeMode.Dark)
+
+        capture("time-range-closed")
+    }
+
+    @Test
+    fun `the time range menu, open`() {
+        seed()
+        showHome(ThemeMode.Dark)
+        compose.onNodeWithTag(HomeTestTags.TIME_RANGE)
+            .performSemanticsAction(SemanticsActions.OnClick)
+        compose.waitForIdle()
+
+        capture("time-range-open")
     }
 
     @Test

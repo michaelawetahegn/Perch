@@ -4,7 +4,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CreateNewFolder
 import androidx.compose.material.icons.filled.DoneAll
@@ -43,7 +43,6 @@ import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -78,6 +77,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -245,8 +245,8 @@ fun HomeScreen(
                         onDismiss = viewModel::dismissBanner,
                     )
                 }
-                TimeFilterChips(
-                    selected = uiState.timeFilter,
+                TimeRangeControl(
+                    active = uiState.timeFilter,
                     onSelect = viewModel::selectTimeFilter,
                 )
                 PullToRefreshBox(
@@ -823,10 +823,16 @@ object HomeTestTags {
     fun folderExpand(folderId: Long) = "home:folder:$folderId:expand"
     fun folderOverflow(folderId: Long) = "home:folder:$folderId:more"
 
-    /** U07's chip row, and one handle per chip. */
-    const val CHIP_ROW = "home:chips"
+    /**
+     * U08a's time-range dropdown: the closed control, the label inside it (the control
+     * itself merges the chevron's description in, so an assertion about what the reader
+     * reads has to address the text), the open menu, and one handle per range.
+     */
+    const val TIME_RANGE = "home:range"
+    const val TIME_RANGE_LABEL = "home:range:label"
+    const val RANGE_MENU = "home:range:menu"
 
-    fun timeChip(filter: TimeFilter) = "home:chip:${filter.name}"
+    fun rangeItem(filter: TimeFilter) = "home:range:${filter.name}"
 
     /**
      * A folder section header *in the list*, as opposed to the folder's row in the
@@ -909,38 +915,84 @@ private fun SectionHeader(folderId: Long, name: String) {
 }
 
 /**
- * PLAN-2 §0's time filter: five windows, narrowest first, one always selected.
+ * PLAN-2 §0's time filter: five windows, narrowest first, exactly one active (U08a).
  *
- * It sits above the list rather than inside it, so it does not scroll away — the reader
- * has to be able to see what window they are in at the point they wonder why an article
- * is missing. Scrollable horizontally because five chips do not fit a narrow phone, and a
- * chip row that wraps to two lines eats the top of the list.
+ * A **dropdown**, not a row of chips. Five always-visible chips spend a horizontal band
+ * restating the four options the reader is not choosing, and on a narrow phone they do it
+ * behind a horizontal scroll, so the band is both expensive and incomplete. This spends a
+ * word: the active range, a chevron, and the other four only when they are being chosen.
+ *
+ * It still sits above the list rather than inside it, so it never scrolls away — the
+ * reader has to be able to see what window they are in at the moment they wonder why an
+ * article is missing. Nothing here is width-constrained, so the longest label simply makes
+ * the control wider at a large font scale instead of being clipped.
  */
 @Composable
-private fun TimeFilterChips(selected: TimeFilter, onSelect: (TimeFilter) -> Unit) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(Dimens.chipGap),
-        modifier = Modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState())
-            .padding(
-                horizontal = Dimens.screenHorizontal,
-                vertical = Dimens.chipRowVertical,
-            )
-            .testTag(HomeTestTags.CHIP_ROW),
+private fun TimeRangeControl(active: TimeFilter, onSelect: (TimeFilter) -> Unit) {
+    var expanded by rememberSaveable { mutableStateOf(false) }
+    Box(
+        modifier = Modifier.padding(
+            start = Dimens.rangeControlInset,
+            top = Dimens.rangeRowVertical,
+            bottom = Dimens.rangeRowVertical,
+        ),
     ) {
-        TimeFilter.entries.forEach { filter ->
-            FilterChip(
-                selected = filter == selected,
-                onClick = { onSelect(filter) },
-                label = { Text(stringResource(filter.labelRes())) },
-                modifier = Modifier.testTag(HomeTestTags.timeChip(filter)),
+        TextButton(
+            onClick = { expanded = true },
+            modifier = Modifier.testTag(HomeTestTags.TIME_RANGE),
+        ) {
+            Text(
+                text = stringResource(active.labelRes()),
+                style = MaterialTheme.typography.labelLarge,
+                maxLines = 1,
+                modifier = Modifier.testTag(HomeTestTags.TIME_RANGE_LABEL),
             )
+            Icon(
+                imageVector = Icons.Default.KeyboardArrowDown,
+                contentDescription = stringResource(R.string.home_filter_range),
+                modifier = Modifier
+                    .padding(start = Dimens.xs)
+                    .size(Dimens.icon),
+            )
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            // The menu's own node, so a test can ask which of *these* items is selected —
+            // the drawer behind the list is composed even while closed and carries
+            // selected rows of its own.
+            Column(modifier = Modifier.testTag(HomeTestTags.RANGE_MENU)) {
+                TimeFilter.entries.forEach { filter ->
+                    val isActive = filter == active
+                    DropdownMenuItem(
+                        text = { Text(stringResource(filter.labelRes())) },
+                        onClick = {
+                            expanded = false
+                            onSelect(filter)
+                        },
+                        // The tick reserves its space on every row, so the labels line up
+                        // in one column rather than the active one stepping out.
+                        leadingIcon = {
+                            if (isActive) {
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(Dimens.icon),
+                                )
+                            } else {
+                                Spacer(modifier = Modifier.size(Dimens.icon))
+                            }
+                        },
+                        modifier = Modifier
+                            .testTag(HomeTestTags.rangeItem(filter))
+                            .semantics { selected = isActive },
+                    )
+                }
+            }
         }
     }
 }
 
-/** The chips' labels, in §0's words. */
+/** The ranges' labels, in §0's words. */
 internal fun TimeFilter.labelRes(): Int = when (this) {
     TimeFilter.Today -> R.string.home_filter_today
     TimeFilter.PastWeek -> R.string.home_filter_week

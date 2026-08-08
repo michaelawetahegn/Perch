@@ -89,7 +89,7 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
 │  ⋮ overflow: Mark all read, Refresh, │
 │    Show read entries, Settings       │
 │ ─────────────────────────────────────│
-│ (Today)(Past Week)(Past Month)…      │  ← U07 time filter; scrolls, never scrolls away
+│ All Time ⌄                           │  ← U08a time range; a dropdown, never scrolls away
 │ ─────────────────────────────────────│
 │ Folder name                          │  ← section header, accent colour
 │ EntryRow ×N  (pull-to-refresh)       │
@@ -110,14 +110,22 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
     + Add source                → bottom sheet (which also picks the folder)
     + New folder                → name dialog
     Settings
-  Time is a *filter* and folder is a *section* (PLAN-2 §0): the chips decide which
+  Time is a *filter* and folder is a *section* (PLAN-2 §0): the range decides which
   entries survive, the headers decide where the survivors sit. Sections collapse away
   when the drawer has scoped the list to one folder or source, and when there is only
-  one folder to begin with. The chips belong to the Feed alone — To-Read and Liked
-  ignore them.
+  one folder to begin with. The range belongs to the Feed alone — To-Read and Liked
+  ignore it.
   FAB is NOT used on home. Adding a source is a drawer/overflow action; a FAB
   over a reading list is a Material cargo-cult.
 ```
+
+- **The time range (U08a)** is one control, not five: a text button carrying the active
+  range and a chevron, set in the accent colour so it reads as a control rather than as a
+  second title, opening a menu of the five with a tick against the active one. It says
+  what the reader chose and nothing about what they did not — a row of five chips spends a
+  band of the screen restating the four options nobody is choosing, and on a narrow phone
+  it hides some of them behind a horizontal scroll while doing it. The empty bucket's
+  "Show Past Week instead" moves this control's own selection; the two never disagree.
 
 - **The entry row (U08),** built to `design/reference/feed-row-reference.jpg`: title
   (`titleMedium` w600, ≤3 lines) over a `Source / 5h` metadata line in

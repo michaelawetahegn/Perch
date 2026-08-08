@@ -350,7 +350,7 @@ class EntryRepositoryTest {
 
         repo.markAllRead(feedId = null, publishedAfter = MIDNIGHT)
 
-        // Marking "everything" read must mean everything the reader can see, or a chip
+        // Marking "everything" read must mean everything the reader can see, or a range
         // set to Today silently reads a year of articles the reader never looked at.
         assertThat(entries.findById(old)?.isRead).isFalse()
     }

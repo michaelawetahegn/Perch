@@ -38,7 +38,7 @@
     <string name="home_filter_month">Past Month</string>
     <string name="home_filter_year">Past Year</string>
     <string name="home_filter_all">All Time</string>
-    <string name="home_filter_row">Time window</string>
+    <string name="home_filter_range">Change time window</string>
     <string name="home_empty_window_title">Nothing in this window</string>
     <string name="home_empty_window_body">Nothing unread was published in the stretch of time you are looking at.</string>
     <string name="home_empty_widen">Show %1$s instead</string>

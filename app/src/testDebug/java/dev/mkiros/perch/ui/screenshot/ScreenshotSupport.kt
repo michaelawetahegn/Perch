@@ -29,7 +29,17 @@ object Screenshots {
         val decor = activity.window.decorView
         val bitmap = Bitmap.createBitmap(decor.width, decor.height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
-        windowsFrontToBack(compose, decor).forEach { it.draw(canvas) }
+        windowsFrontToBack(compose, decor).forEach { window ->
+            // Each window is drawn where it actually sits. A sheet or a dialog fills the
+            // screen and lands at the origin either way, but a dropdown menu is a small
+            // window anchored under its control — painted at the origin it would appear
+            // in the top-left corner and the shot would misrepresent the screen.
+            val at = IntArray(2).also(window::getLocationOnScreen)
+            val save = canvas.save()
+            canvas.translate(at[0].toFloat(), at[1].toFloat())
+            window.draw(canvas)
+            canvas.restoreToCount(save)
+        }
 
         dir.mkdirs()
         val file = File(dir, "$name.png")

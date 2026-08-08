@@ -138,12 +138,15 @@ object Dimens {
     val ruleSpacing = xxl
 
     /**
-     * Home's chip row (U07) and the folder headers below it. The row keeps its own
-     * padding rather than borrowing the list's, because it sits above the scroll and its
-     * chips need air on all four sides where a row only needs it on two.
+     * Home's time-range control (U08a) and the folder headers below it. The control keeps
+     * its own padding rather than borrowing the list's, because it sits above the scroll.
+     *
+     * [rangeControlInset] is not a margin: it is the difference between the list's 16dp
+     * gutter and a text button's own 12dp of content padding, so the range label starts on
+     * the same vertical line as the row titles under it rather than 4dp inside them.
      */
-    val chipRowVertical = sm
-    val chipGap = sm
+    val rangeRowVertical = xs
+    val rangeControlInset = xs
     val sectionHeaderTop = lg
     val sectionHeaderBottom = sm
 

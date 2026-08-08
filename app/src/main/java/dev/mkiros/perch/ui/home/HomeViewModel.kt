@@ -201,8 +201,8 @@ class HomeViewModel(
         settings.settings.map { it.showReadEntries }.distinctUntilChanged()
 
     /**
-     * The chip row's selection (U07), read from DataStore rather than held here so it
-     * survives process death — and so the widen affordance and the chips are the same
+     * The time range's selection (U07, U08a), read from DataStore rather than held here so
+     * it survives process death — and so the widen affordance and the dropdown are the same
      * one piece of state, whichever of them the reader used.
      */
     private val timeFilter: Flow<TimeFilter> =
@@ -218,7 +218,7 @@ class HomeViewModel(
     /**
      * The list, re-queried per scope, per window, and per "show read entries". All three
      * are carried *out* of the `flatMapLatest` alongside the rows they produced, so a
-     * selection or a chip change can never leave the bar and the chip row describing a
+     * selection or a range change can never leave the bar and the dropdown describing a
      * list that is still the previous query's.
      *
      * `since` is resolved here, once per query, rather than inside [TimeFilter]: the
@@ -351,7 +351,7 @@ class HomeViewModel(
 
     /**
      * Narrows or widens home's window (U07). Written straight to DataStore rather than to
-     * a local flow, so the chips, the widen affordance and the next launch all read the
+     * a local flow, so the dropdown, the widen affordance and the next launch all read the
      * one value.
      */
     fun selectTimeFilter(filter: TimeFilter) {
@@ -434,7 +434,7 @@ class HomeViewModel(
      * Marks everything in the current scope read and arms the undo snackbar.
      *
      * "The current scope" includes U07's window: the reader is looking at Today, so Today
-     * is what gets read. Flipping a year of unseen articles because the chip happened to
+     * is what gets read. Flipping a year of unseen articles because the range happened to
      * be narrow is the one mistake here that undo would not obviously invite them to fix.
      *
      * A no-op batch arms nothing: offering to undo zero entries is a snackbar that does

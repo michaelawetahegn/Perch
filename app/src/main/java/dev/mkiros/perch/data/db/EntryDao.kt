@@ -109,7 +109,7 @@ abstract class EntryDao {
      * The scope has to match [observeListItems]' exactly — including U07's time window:
      * mark-all-read is "everything the reader is looking at", so a drawer scoped to a
      * folder that flipped the whole inbox would be marking articles the reader cannot see
-     * as read, and a chip set to Today that flipped a year of them would be worse.
+     * as read, and a range set to Today that flipped a year of them would be worse.
      */
     @Query(
         """

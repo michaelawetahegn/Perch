@@ -12,7 +12,7 @@ import java.time.LocalDate
  * 00:30 even though it is well inside the last twenty-four hours. Readers think in days,
  * and a window that slides through the night puts articles back that they finished with.
  *
- * Declared narrowest first, which is the order the chips are offered in and the order
+ * Declared narrowest first, which is the order the dropdown offers them in and the order
  * [wider] walks — so the empty state's "show more" affordance is one step, never a menu.
  *
  * The window applies to home alone. To-Read and Liked ignore it: a to-read list that

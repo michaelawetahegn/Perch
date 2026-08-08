@@ -216,6 +216,7 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
       Five chips per §0 — Today · Past Week · Past Month · Past Year · All Time.
       The selected chip persists in DataStore across process death. Saved and Liked
       destinations ignore the filter entirely.
+      (U08a replaced the chip row with a dropdown; everything else in this box stands.)
       **Shape the query so U07a can swap it to a Room `PagingSource` without rewriting the
       sectioning** — sort and filter in SQL, keep section assignment a pure function of the
       row, and do not compute anything that needs the whole list in hand.
@@ -247,7 +248,7 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
         `./gradlew test` green.
       - Rung: screenshot
 
-- [ ] **U08a — The time range is a dropdown, not a row of chips. TDD + screenshot.** U07
+- [x] **U08a — The time range is a dropdown, not a row of chips. TDD + screenshot.** U07
       shipped the five ranges as a chip row. It is checked and stays checked — this is the
       follow-on, not a reopening.
       Replace the row with a single control that shows the **active** range and nothing

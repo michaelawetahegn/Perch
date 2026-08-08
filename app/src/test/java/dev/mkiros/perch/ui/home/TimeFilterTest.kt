@@ -74,7 +74,7 @@ class TimeFilterTest {
     }
 
     @Test
-    fun `the chips are offered narrowest first, and today is the default`() {
+    fun `the ranges are offered narrowest first, and today is the default`() {
         assertThat(TimeFilter.entries).containsExactly(
             TimeFilter.Today,
             TimeFilter.PastWeek,

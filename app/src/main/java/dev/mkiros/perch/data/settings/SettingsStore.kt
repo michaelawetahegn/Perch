@@ -40,7 +40,7 @@ data class PerchSettings(
     val showReadEntries: Boolean = false,
     /**
      * How far back home reaches (U07). Persisted rather than remembered in the view model
-     * because the chip is the setting a reader changes most often, and coming back to an
+     * because the range is the setting a reader changes most often, and coming back to an
      * app that has quietly reset it to Today is how a reader loses their place.
      */
     val timeFilter: TimeFilter = TimeFilter.Default,

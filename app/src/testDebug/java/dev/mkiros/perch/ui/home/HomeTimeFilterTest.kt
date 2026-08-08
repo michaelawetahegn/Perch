@@ -96,7 +96,7 @@ class HomeTimeFilterTest {
         seedEntry(feedId, "Late last night", at = "2026-08-06T23:59:00Z")
 
         showHome()
-        chooseChip(TimeFilter.PastWeek)
+        chooseRange(TimeFilter.PastWeek)
 
         compose.onNodeWithText("This morning").assertIsDisplayed()
         compose.onNodeWithText("Late last night").assertIsDisplayed()
@@ -108,10 +108,10 @@ class HomeTimeFilterTest {
         seedEntry(feedId, "Last month", at = "2026-07-20T09:00:00Z")
 
         showHome()
-        chooseChip(TimeFilter.PastWeek)
+        chooseRange(TimeFilter.PastWeek)
         compose.onNodeWithText("Last month").assertDoesNotExist()
 
-        chooseChip(TimeFilter.PastMonth)
+        chooseRange(TimeFilter.PastMonth)
         compose.onNodeWithText("Last month").assertIsDisplayed()
     }
 
@@ -121,21 +121,21 @@ class HomeTimeFilterTest {
         seedEntry(feedId, "Ancient history", at = "2019-01-01T09:00:00Z")
 
         showHome()
-        chooseChip(TimeFilter.AllTime)
+        chooseRange(TimeFilter.AllTime)
 
         compose.onNodeWithText("Ancient history").assertIsDisplayed()
     }
 
     @Test
-    fun `the chosen chip is remembered, not reset on the next launch`() {
+    fun `the chosen range is remembered, not reset on the next launch`() {
         val feedId = seedFeed("Source One")
         seedEntry(feedId, "Last month", at = "2026-07-20T09:00:00Z")
 
         showHome()
-        chooseChip(TimeFilter.PastMonth)
+        chooseRange(TimeFilter.PastMonth)
 
         // A second view model over the same settings — process death, in miniature. The
-        // chip has to come out of DataStore, not out of the last view model's memory.
+        // range has to come out of DataStore, not out of the last view model's memory.
         val relaunched = HomeViewModel(
             entries = container.entries,
             feeds = container.feeds,
@@ -191,7 +191,7 @@ class HomeTimeFilterTest {
         seedEntry(feedId, "Already read", at = "2026-08-07T09:00:00Z", read = true)
 
         showHome()
-        chooseChip(TimeFilter.AllTime)
+        chooseRange(TimeFilter.AllTime)
 
         compose.onNodeWithText("You're all caught up").assertIsDisplayed()
         compose.onNodeWithTag(HomeTestTags.EMPTY_WIDEN).assertDoesNotExist()
@@ -266,8 +266,10 @@ class HomeTimeFilterTest {
 
     // ---- harness -----------------------------------------------------------------
 
-    private fun chooseChip(filter: TimeFilter) {
-        tap(HomeTestTags.timeChip(filter))
+    /** Opens U08a's dropdown and picks a range from it, as the reader does. */
+    private fun chooseRange(filter: TimeFilter) {
+        tap(HomeTestTags.TIME_RANGE)
+        tap(HomeTestTags.rangeItem(filter))
         awaitState { it.timeFilter == filter }
     }
 
