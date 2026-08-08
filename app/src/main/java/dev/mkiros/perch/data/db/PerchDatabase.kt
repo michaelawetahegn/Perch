@@ -9,6 +9,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.db.entity.FolderEntity
+import dev.mkiros.perch.data.db.entity.PendingEntryStateEntity
 
 /**
  * The single local store. Every column in SPEC.md §4 is a SQLite-native type, so there
@@ -20,7 +21,12 @@ import dev.mkiros.perch.data.db.entity.FolderEntity
  * `PerchDatabaseMigrationTest` fails the build before that can ship.
  */
 @Database(
-    entities = [FolderEntity::class, FeedEntity::class, EntryEntity::class],
+    entities = [
+        FolderEntity::class,
+        FeedEntity::class,
+        EntryEntity::class,
+        PendingEntryStateEntity::class,
+    ],
     version = PerchDatabase.VERSION,
     exportSchema = true,
 )
@@ -36,7 +42,7 @@ abstract class PerchDatabase : RoomDatabase() {
         const val NAME = "perch.db"
 
         /** Bumping this requires a [MIGRATIONS] entry from `VERSION - 1`. */
-        const val VERSION = 4
+        const val VERSION = 5
 
         /**
          * Folders (U03). Creates the table, seeds Uncategorized as id 1, and files every
@@ -121,9 +127,31 @@ abstract class PerchDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Profile restore (U14). One new table and not a single statement against an
+         * existing one — an upgrade has nothing to park, so the table arrives empty and
+         * the phone's articles and reader state are never read, let alone written.
+         *
+         * No foreign key to `feeds`. The whole purpose of a row here is to survive the
+         * window in which its source may not exist yet, and a constraint would reject
+         * exactly the rows worth keeping.
+         */
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `pending_entry_state` (" +
+                        "`feedUrl` TEXT NOT NULL, `guid` TEXT NOT NULL, " +
+                        "`isRead` INTEGER NOT NULL, `readAt` INTEGER, " +
+                        "`isSaved` INTEGER NOT NULL, `savedAt` INTEGER, " +
+                        "`isStarred` INTEGER NOT NULL, `starredAt` INTEGER, " +
+                        "PRIMARY KEY(`feedUrl`, `guid`))",
+                )
+            }
+        }
+
         /** Every migration the app has ever shipped, in order. */
         val MIGRATIONS: Array<Migration> =
-            arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+            arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
 
         /**
          * Puts Uncategorized in place on a fresh install, so that "every source belongs to

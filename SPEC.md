@@ -284,6 +284,28 @@ pasted URL already parses as a feed, skip discovery entirely.
 - Round-trip is a standing unit test: export → import → identical source set **and
   identical folder membership**.
 
+### Profile backup (U14)
+
+OPML moves subscriptions between *readers*; a profile moves a reader between *phones*. It
+carries what a subscription list structurally cannot: which articles were read, liked, and
+kept for later.
+
+- **File:** `perch-profile-YYYYMMDD.json`, via SAF, `application/json`. Holds a
+  `schemaVersion`, the folders (name, order), the sources (`feedUrl`, `siteUrl`, `title`,
+  `customTitle`, folder *name*), and per-entry state keyed by `(feedUrl, guid)` — read,
+  liked, saved and their timestamps. **Never entry bodies**: this is state, not an archive,
+  so it stays kilobytes as the library grows.
+- **Restore is a merge, and only ever adds.** Sources dedupe on `feedUrl` and keep the
+  folder they are already in; folders dedupe on name, case-insensitively. Only entries the
+  reader had touched are exported, so a restore can turn a flag on and never off. Running
+  it twice equals running it once.
+- **State outlives its entry.** A restore lands before the articles it describes have been
+  fetched, so state with nowhere to go is parked in `pending_entry_state` (keyed by the
+  same `(feedUrl, guid)`) and applied by `EntryDao.upsertAll` when the articles arrive.
+  Without that, the refresh a reader triggers straight after restoring would undo it.
+- **A `schemaVersion` newer than this build understands is refused whole**, with a message
+  naming both versions. A half-applied restore is the one failure a reader cannot detect.
+
 ## 10. Navigation
 
 Single activity, one `NavHost`, **5 destinations** (amended by PLAN-2 §0 / U09 — v1's

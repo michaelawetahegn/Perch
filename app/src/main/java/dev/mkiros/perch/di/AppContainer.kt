@@ -10,6 +10,7 @@ import dev.mkiros.perch.data.repo.EntryRepository
 import dev.mkiros.perch.data.repo.FeedRepository
 import dev.mkiros.perch.data.repo.FolderRepository
 import dev.mkiros.perch.data.repo.OpmlRepository
+import dev.mkiros.perch.data.repo.ProfileRepository
 import dev.mkiros.perch.data.settings.SettingsStore
 import okhttp3.OkHttpClient
 import java.time.Clock
@@ -68,6 +69,16 @@ class AppContainer(
 
     val opml: OpmlRepository by lazy {
         OpmlRepository(feedDao = database.feedDao(), folders = folders, clock = clock)
+    }
+
+    /** U14: the whole reading identity, out to one file and back. */
+    val profile: ProfileRepository by lazy {
+        ProfileRepository(
+            feedDao = database.feedDao(),
+            entryDao = database.entryDao(),
+            folders = folders,
+            clock = clock,
+        )
     }
 
     companion object {

@@ -212,6 +212,18 @@
     <string name="settings_export_done">Subscriptions exported</string>
     <string name="settings_transfer_failed">That file could not be opened</string>
 
+    <!-- U14: the whole reading identity, not just the addresses. -->
+    <string name="settings_section_profile">Profile</string>
+    <string name="settings_profile_export_title">Export profile</string>
+    <string name="settings_profile_export_body">Save your folders, sources, and what you have read, liked and kept for later.</string>
+    <string name="settings_profile_import_title">Import profile</string>
+    <string name="settings_profile_import_body">Restore a profile file. Nothing you already have is removed.</string>
+    <string name="settings_profile_exported">Profile exported</string>
+    <string name="settings_profile_restored">%1$d sources · %2$d folders · %3$d entries restored</string>
+    <string name="settings_profile_restored_pending">%1$d sources · %2$d folders · %3$d entries restored · %4$d waiting for the next refresh</string>
+    <string name="settings_profile_rejected">That file is not a Perch profile: %1$s</string>
+    <string name="settings_profile_too_new">That profile was saved by a newer version of Perch (format %1$d; this one reads %2$d). Nothing was changed.</string>
+
     <string name="settings_section_about">About</string>
     <string name="settings_about_body">A local-first reader. Your subscriptions never leave this device.</string>
     <string name="settings_version">Version %1$s</string>

@@ -9,6 +9,8 @@ import dev.mkiros.perch.BuildConfig
 import dev.mkiros.perch.data.repo.FeedRepository
 import dev.mkiros.perch.data.repo.OpmlImportResult
 import dev.mkiros.perch.data.repo.OpmlRepository
+import dev.mkiros.perch.data.repo.ProfileImportResult
+import dev.mkiros.perch.data.repo.ProfileRepository
 import dev.mkiros.perch.data.settings.PerchSettings
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.di.AppContainer
@@ -35,6 +37,8 @@ data class SettingsUiState(
     val settings: PerchSettings = PerchSettings(),
     val versionName: String = BuildConfig.VERSION_NAME,
     val exportFileName: String = "",
+    /** U14's profile file name; separate from [exportFileName], which is the OPML one. */
+    val profileFileName: String = "",
 )
 
 /**
@@ -58,6 +62,30 @@ sealed interface SettingsMessage {
     data object TransferFailed : SettingsMessage
 
     data object Exported : SettingsMessage
+
+    data object ProfileExported : SettingsMessage
+
+    /**
+     * A profile came back (U14). [pending] is stated rather than hidden: on a fresh install
+     * every entry's state is waiting for the first refresh, and a reader who is told
+     * "0 entries restored" would reasonably conclude the file was empty.
+     */
+    data class ProfileRestored(
+        val sources: Int,
+        val folders: Int,
+        val applied: Int,
+        val pending: Int,
+    ) : SettingsMessage
+
+    /** The file was not a Perch profile at all. Nothing was written. */
+    data class ProfileRejected(val reason: String) : SettingsMessage
+
+    /**
+     * The file came from a later version of Perch. Its own message rather than a [reason]
+     * inside [ProfileRejected], because it is the one rejection with an obvious remedy —
+     * update the app — and telling the reader that is the whole point of refusing.
+     */
+    data class ProfileTooNew(val found: Int, val supported: Int) : SettingsMessage
 }
 
 /**
@@ -82,16 +110,26 @@ fun interface RefreshScheduler {
 class SettingsViewModel(
     private val settings: SettingsStore,
     private val opml: OpmlRepository,
+    private val profile: ProfileRepository,
     private val feeds: FeedRepository,
     private val scheduler: RefreshScheduler,
 ) : ViewModel() {
 
     val uiState: StateFlow<SettingsUiState> = settings.settings
-        .map { SettingsUiState(settings = it, exportFileName = opml.suggestedFileName()) }
+        .map {
+            SettingsUiState(
+                settings = it,
+                exportFileName = opml.suggestedFileName(),
+                profileFileName = profile.suggestedFileName(),
+            )
+        }
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS),
-            SettingsUiState(exportFileName = opml.suggestedFileName()),
+            SettingsUiState(
+                exportFileName = opml.suggestedFileName(),
+                profileFileName = profile.suggestedFileName(),
+            ),
         )
 
     private val _message = MutableStateFlow<SettingsMessage?>(null)
@@ -171,6 +209,55 @@ class SettingsViewModel(
         }
     }
 
+    /** Writes the whole reading identity through [write], on the I/O dispatcher (U14). */
+    fun exportProfile(write: suspend (String) -> Unit) {
+        viewModelScope.launch {
+            val text = profile.export()
+            _message.value = try {
+                withContext(Dispatchers.IO) { write(text) }
+                SettingsMessage.ProfileExported
+            } catch (e: IOException) {
+                SettingsMessage.TransferFailed
+            }
+        }
+    }
+
+    /**
+     * Restores whatever [read] yields, then refreshes.
+     *
+     * The refresh is not optional garnish here the way it is for OPML: a restored profile's
+     * entry state is parked until the articles it describes arrive, and this is what makes
+     * them arrive. It still cannot fail the restore — the rows are already written and the
+     * next scheduled pass would collect them anyway.
+     */
+    fun importProfile(read: suspend () -> String) {
+        viewModelScope.launch {
+            val text = try {
+                withContext(Dispatchers.IO) { read() }
+            } catch (e: IOException) {
+                _message.value = SettingsMessage.TransferFailed
+                return@launch
+            }
+            when (val result = profile.import(text)) {
+                is ProfileImportResult.Malformed ->
+                    _message.value = SettingsMessage.ProfileRejected(result.message)
+
+                is ProfileImportResult.UnsupportedVersion ->
+                    _message.value = SettingsMessage.ProfileTooNew(result.found, result.supported)
+
+                is ProfileImportResult.Restored -> {
+                    _message.value = SettingsMessage.ProfileRestored(
+                        sources = result.sourcesAdded,
+                        folders = result.foldersCreated,
+                        applied = result.stateApplied,
+                        pending = result.statePending,
+                    )
+                    refreshImported()
+                }
+            }
+        }
+    }
+
     /** The post-import poll. Its failures belong to the drawer's `⚠`, not to a snackbar. */
     private fun refreshImported() {
         viewModelScope.launch {
@@ -191,6 +278,7 @@ class SettingsViewModel(
                 SettingsViewModel(
                     settings = container.settings,
                     opml = container.opml,
+                    profile = container.profile,
                     feeds = container.feeds,
                     scheduler = { interval -> WorkScheduler.setInterval(app, interval) },
                 )

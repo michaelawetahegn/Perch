@@ -508,7 +508,7 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
         `./gradlew test` green.
       - Rung: unit
 
-- [ ] **U14 — Profile backup & restore. TDD.** One file that carries a whole reading
+- [x] **U14 — Profile backup & restore. TDD.** One file that carries a whole reading
       identity so a reinstall or a new phone is a 10-second setup instead of 42 paste
       operations. `perch-profile-YYYYMMDD.json` via SAF, versioned with a `schemaVersion`
       field, containing: folders (name, order), sources (feedUrl, siteUrl, customTitle,

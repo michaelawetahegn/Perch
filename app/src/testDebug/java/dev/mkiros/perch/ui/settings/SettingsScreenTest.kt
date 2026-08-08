@@ -187,6 +187,36 @@ class SettingsScreenTest {
             .containsExactly("*/*")
     }
 
+    // ---- the profile file (U14) ---------------------------------------------------
+
+    @Test
+    fun `exporting a profile asks the system to create a dated json document`() {
+        showSettings()
+
+        compose.onNodeWithTag(SettingsTags.PROFILE_EXPORT_ROW)
+            .performSemanticsAction(SemanticsActions.OnClick)
+
+        val intent = nextSafIntent()
+        assertThat(intent.action).isEqualTo(Intent.ACTION_CREATE_DOCUMENT)
+        assertThat(intent.type).isEqualTo("application/json")
+        val name = intent.getStringExtra(Intent.EXTRA_TITLE)!!
+        assertThat(name).startsWith("perch-profile-")
+        assertThat(name).endsWith(".json")
+    }
+
+    @Test
+    fun `importing a profile asks the system to open a document`() {
+        showSettings()
+
+        compose.onNodeWithTag(SettingsTags.PROFILE_IMPORT_ROW)
+            .performSemanticsAction(SemanticsActions.OnClick)
+
+        val intent = nextSafIntent()
+        assertThat(intent.action).isEqualTo(Intent.ACTION_OPEN_DOCUMENT)
+        assertThat(intent.getStringArrayExtra(Intent.EXTRA_MIME_TYPES)).asList()
+            .containsExactly("*/*")
+    }
+
     // ---- reading ------------------------------------------------------------------
 
     @Test
@@ -205,6 +235,7 @@ class SettingsScreenTest {
         viewModel = SettingsViewModel(
             settings = container.settings,
             opml = container.opml,
+            profile = container.profile,
             feeds = container.feeds,
             scheduler = { interval -> WorkScheduler.setInterval(context, interval) },
         )

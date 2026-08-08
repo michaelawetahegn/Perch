@@ -56,6 +56,8 @@ object SettingsTags {
     const val SHOW_READ_SWITCH = "settings-show-read"
     const val IMPORT_ROW = "settings-import"
     const val EXPORT_ROW = "settings-export"
+    const val PROFILE_IMPORT_ROW = "settings-profile-import"
+    const val PROFILE_EXPORT_ROW = "settings-profile-export"
 }
 
 /**
@@ -68,14 +70,21 @@ object SettingsTags {
 private const val OPML_MIME = "text/xml"
 
 /**
- * What the open-document dialog will list.
+ * What either open-document dialog will list.
  *
  * Deliberately everything. OPML arrives from other readers as `text/xml`,
  * `application/octet-stream`, or whatever a cloud provider decided to label it, and a
  * picker that hides the reader's own export is a worse failure than one that lists too
  * much — the file is validated on read, so a wrong pick is a message, not a corruption.
  */
-private val OPML_PICKABLE = arrayOf("*/*")
+private val ANY_DOCUMENT = arrayOf("*/*")
+
+/**
+ * A profile is Perch's own file and nobody else's, so it can afford the truthful type.
+ * The picker is still opened wide — a cloud provider may hand the same file back as
+ * `application/octet-stream`, and the file is validated on read.
+ */
+private const val PROFILE_MIME = "application/json"
 
 /**
  * Settings (DESIGN.md §5, SPEC.md §9).
@@ -109,6 +118,16 @@ fun SettingsScreen(
         ActivityResultContracts.OpenDocument(),
     ) { uri: Uri? ->
         if (uri != null) viewModel.importOpml { resolver.readText(uri) }
+    }
+    val profileExportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument(PROFILE_MIME),
+    ) { uri: Uri? ->
+        if (uri != null) viewModel.exportProfile { text -> resolver.writeText(uri, text) }
+    }
+    val profileImportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument(),
+    ) { uri: Uri? ->
+        if (uri != null) viewModel.importProfile { resolver.readText(uri) }
     }
 
     val text = message?.let { messageText(it) }
@@ -172,7 +191,7 @@ fun SettingsScreen(
             ChoiceRow(
                 title = stringResource(R.string.settings_import_title),
                 value = stringResource(R.string.settings_import_body),
-                onClick = { importLauncher.launch(OPML_PICKABLE) },
+                onClick = { importLauncher.launch(ANY_DOCUMENT) },
                 modifier = Modifier.testTag(SettingsTags.IMPORT_ROW),
             )
             ChoiceRow(
@@ -180,6 +199,20 @@ fun SettingsScreen(
                 value = stringResource(R.string.settings_export_body),
                 onClick = { exportLauncher.launch(state.exportFileName) },
                 modifier = Modifier.testTag(SettingsTags.EXPORT_ROW),
+            )
+
+            SectionHeader(stringResource(R.string.settings_section_profile))
+            ChoiceRow(
+                title = stringResource(R.string.settings_profile_export_title),
+                value = stringResource(R.string.settings_profile_export_body),
+                onClick = { profileExportLauncher.launch(state.profileFileName) },
+                modifier = Modifier.testTag(SettingsTags.PROFILE_EXPORT_ROW),
+            )
+            ChoiceRow(
+                title = stringResource(R.string.settings_profile_import_title),
+                value = stringResource(R.string.settings_profile_import_body),
+                onClick = { profileImportLauncher.launch(ANY_DOCUMENT) },
+                modifier = Modifier.testTag(SettingsTags.PROFILE_IMPORT_ROW),
             )
 
             SectionHeader(stringResource(R.string.settings_section_about))
@@ -375,6 +408,34 @@ private fun messageText(message: SettingsMessage): String = when (message) {
         stringResource(R.string.settings_import_rejected, message.reason)
 
     SettingsMessage.Exported -> stringResource(R.string.settings_export_done)
+    SettingsMessage.ProfileExported -> stringResource(R.string.settings_profile_exported)
+
+    // The pending count is only mentioned when there is one. On a fresh install it is
+    // every entry in the file and saying so is the difference between "nothing happened"
+    // and "it is on its way"; once the refresh has run it is zero and irrelevant.
+    is SettingsMessage.ProfileRestored -> if (message.pending > 0) {
+        stringResource(
+            R.string.settings_profile_restored_pending,
+            message.sources,
+            message.folders,
+            message.applied,
+            message.pending,
+        )
+    } else {
+        stringResource(
+            R.string.settings_profile_restored,
+            message.sources,
+            message.folders,
+            message.applied,
+        )
+    }
+
+    is SettingsMessage.ProfileRejected ->
+        stringResource(R.string.settings_profile_rejected, message.reason)
+
+    is SettingsMessage.ProfileTooNew ->
+        stringResource(R.string.settings_profile_too_new, message.found, message.supported)
+
     SettingsMessage.TransferFailed -> stringResource(R.string.settings_transfer_failed)
 }
 

@@ -33,8 +33,7 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   passes alone.
 - 2026-08-07 — **U04: `isRead`/`isSaved`/`isStarred` are independent reader-owned flags**, each nulling its timestamp
   when it goes off. **Add a fourth and two places erase it:** `EntryDao.upsertAll` (never Room `@Upsert` — it resolves
-  on the primary key, ours on `(feedId, guid)`) must copy every flag *and* timestamp off the existing row, and
-  `deleteReadOlderThan` must exempt it.
+  on the primary key, ours on `(feedId, guid)`) and `deleteReadOlderThan`.
 - 2026-08-07 — **U07: the window is a *calendar* one** (`TimeFilter.since(clock)` = local midnight) and **defaults to
   Today** — a UI test seeding anything older must pin `TimeFilter.AllTime` via its own `SettingsStore` or it asserts
   against an empty screen. Address section headers by `HomeTestTags.section(id)`, never by text (the drawer composes
@@ -66,34 +65,36 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   `data/extract/`, **no new dependency**. Three traps. (1) **`ArticleLowering` deletes truncation markers as chrome**
   (T25's `CHROME`), so `FullText` looks for "Continue reading" in the *unlowered* text — once there are blocks the
   evidence is gone. (2) Scoring finds the *tightest* subtree, so a decorative single-child wrapper (ciechanow.ski's
-  `bg_content`) wins and the article's last section, its sibling, is lost — hence `unwrapped()`. (3) **`upsertAll` is
-  now the third place a refresh can erase reader-visible state**: it keeps the extracted `contentHtml`+`fullTextAt`
-  unless the feed's body is longer. The guard that makes auto-extract-on-open safe: **an extraction only ever replaces
-  a body it beats.** §0 says fabiensanglard ships "nothing else" — really 68 of 144 ship nothing, 76 a one-line
+  `bg_content`) wins and the article's last section, its sibling, is lost — hence `unwrapped()`. (3) `upsertAll` keeps the extracted
+  `contentHtml`+`fullTextAt` unless the feed's body is longer — **an extraction only ever replaces a body it beats**,
+  which is what makes auto-extract-on-open safe. §0 says fabiensanglard ships "nothing else" — really 68 of 144 ship nothing, 76 a one-line
   `<description>`. Fixtures: `fixtures/articles/` (15 pages + the gpuopen feed, 2 MB).
 - 2026-08-08 — **U11 (code).** Bundled JetBrains Mono 2.304 (OFL 1.1, licence in `assets/`) is DESIGN.md §3's one
-  exception, **ligatures off** so `->` never draws as `→`. **`HtmlSanitizer` keeps `class` on `pre` and nowhere else**,
-  holding a normalised `language-x` hoisted before `Cleaner` runs from the `<code>`, the `<pre>`, or a wrapper `<div>`
-  two levels up (Rouge/Jekyll). **A declared language is final, `plaintext` included.** The lexer is total by
-  construction (never a `catch`). The gutter sits **outside** the `horizontalScroll`, inside a **`DisableSelection`**
-  — the body is one `SelectionContainer`. **Residual:** no rule between gutter and code, so a scrolled wide line
-  slides to within 12dp of the numbers.
-- 2026-08-08 — **U11a (tables).** Merged cells are **padded out** and short rows padded to the widest, so every row
-  is one width; header = **any** `th` in row 1. **Inside a `horizontalScroll` a `fillMaxWidth` divider measures to
-  0** — that, not the lowering, is why tables looked ruleless; rules are drawn at the summed column width.
-  `fixtures/articles/zdi-*.html` are **feed bodies, not pages**: `ArticleExtractor` loses a table on a Squarespace
-  page (each block its own `sqs-block` div, past `assemble`'s sibling sweep) — a real gap for excerpt-only
-  Squarespace, open till U15 6b. **Residual:** no edge affordance says a wide table scrolls.
+  exception, **ligatures off**. **`HtmlSanitizer` keeps `class` on `pre` and nowhere else**, holding a normalised
+  `language-x` hoisted before `Cleaner` runs from the `<code>`, the `<pre>`, or a wrapper `<div>` two levels up
+  (Rouge/Jekyll); **a declared language is final, `plaintext` included**, and the lexer is total by construction.
+  The gutter sits **outside** the `horizontalScroll`, inside a **`DisableSelection`**. **Residual:** no rule between
+  gutter and code, so a scrolled wide line slides to within 12dp of the numbers.
+- 2026-08-08 — **U11a (tables).** Merged cells are **padded out** and short rows padded to the widest; header =
+  **any** `th` in row 1. **Inside a `horizontalScroll` a `fillMaxWidth` divider measures to 0** — that, not the
+  lowering, is why tables looked ruleless; rules are drawn at the summed column width. `fixtures/articles/zdi-*.html`
+  are **feed bodies, not pages**: `ArticleExtractor` loses a table on a Squarespace page (each block its own
+  `sqs-block` div, past `assemble`'s sibling sweep) — open till U15 6b. **Residual:** no edge affordance on a wide table.
 - 2026-08-08 — **U12: the viewer is an overlay, not a destination** — a sibling of the article's `Scaffold` in one
   `Box`, so the reading position it closes back to was never torn down; `ZoomedImage` is hoisted to `PerchNavHost`
   because **`BackStep.CloseImageViewer` sits between `CloseOverlay` and `PopArticle`** and `BackChainTest` guards the
   enum's order. Math is pure (`ZoomGeometry`: rubber-banded 1×–5×, pan fenced to the **fitted content**, dismiss only
-  at fit). `detectTransformGestures` **has no end callback**, hence `awaitEachGesture`. Traps: `performClick` needs
-  `mainClock.advanceTimeBy` (a tap is only a tap once the double-tap window shuts); an open overlay eats
-  `performTouchInput` — scroll under it first. **Residual:** no inset handling, so close sits under the status bar.
-- 2026-08-08 — **U13 (OPML folders).** `OpmlOutline.folder` is a **name, not an id** — ids do not survive the file.
-  Export walks `folders()` (Uncategorized last, its sources written **unfiled at top level**, never as a folder
-  literally named Uncategorized); import files a source under the **outermost** container and flattens deeper nesting.
-  Two rules the counts depend on: a **duplicate is left entirely alone, folder included** (an import adds, it never
-  refiles), and a folder is created **only when a source actually goes into it**, so a re-import reports
-  `0/n/k/0 folders` and leaves no empty drawer rows. Fixture: `fixtures/opml/other-reader.opml`.
+  at fit); `detectTransformGestures` **has no end callback**, hence `awaitEachGesture`. Traps: `performClick` needs
+  `mainClock.advanceTimeBy`; an open overlay eats `performTouchInput` — scroll under it first. **Residual:** no
+  inset handling, so close sits under the status bar.
+- 2026-08-08 — **U13 (OPML folders).** A folder is a **name, not an id** — ids do not survive the file (U14 inherits
+  this). Export writes Uncategorized's sources **unfiled at top level**; import files a source under the **outermost**
+  container and flattens deeper nesting. Two rules the counts depend on: a **duplicate is left entirely alone, folder
+  included**, and a folder is created **only when a source actually goes into it**, so a re-import reports
+  `0/n/k/0 folders`. Fixture: `fixtures/opml/other-reader.opml`.
+- 2026-08-08 — **U14 (profile).** DB is version 5: `pending_entry_state`, keyed `(feedUrl, guid)` like the file
+  itself and with **no FK to `feeds`** — its whole job is outliving a source that does not exist yet.
+  **`EntryDao.upsertAll` is now the fourth place a refresh meets reader state**: it *consumes* parked rows, which is
+  what stops the refresh straight after a restore undoing it. The export carries only entries a reader touched, so a
+  restore can turn a flag **on** and never off, and is idempotent by construction. Codec is `org.json` (no new
+  dependency) — **so its tests need Robolectric**; on a bare JVM every `JSONObject` method is a stub.

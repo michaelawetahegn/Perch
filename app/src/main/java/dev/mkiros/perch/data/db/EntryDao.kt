@@ -4,10 +4,13 @@ import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.MapColumn
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import dev.mkiros.perch.data.db.entity.EntryEntity
+import dev.mkiros.perch.data.db.entity.PendingEntryStateEntity
+import dev.mkiros.perch.data.db.entity.mergedWith
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -271,6 +274,80 @@ abstract class EntryDao {
         fetchedBefore: Long,
     ): Int
 
+    // ---- profile transfer (U14) -----------------------------------------------
+
+    /**
+     * Everything a profile export carries about articles: the entries the reader has
+     * actually done something to, addressed by `(feedUrl, guid)`.
+     *
+     * Only rows with a flag set. A profile is state, not an archive, and an export that
+     * listed every untouched entry would be a hundred times the size while saying nothing —
+     * and, worse, a restore reading it back would have to decide what an all-false row
+     * *means*. It means nothing, so it is not written.
+     */
+    @Query(
+        """
+        SELECT f.feedUrl AS feedUrl, e.guid AS guid, e.isRead AS isRead, e.readAt AS readAt,
+               e.isSaved AS isSaved, e.savedAt AS savedAt, e.isStarred AS isStarred,
+               e.starredAt AS starredAt
+        FROM entries e JOIN feeds f ON f.id = e.feedId
+        WHERE e.isRead = 1 OR e.isSaved = 1 OR e.isStarred = 1
+        ORDER BY f.feedUrl, e.guid
+        """,
+    )
+    abstract suspend fun statesToExport(): List<EntryStateRow>
+
+    /** Parks restored state. `REPLACE` is what makes restoring the same file twice a no-op. */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun upsertPendingState(rows: List<PendingEntryStateEntity>)
+
+    @Query("SELECT * FROM pending_entry_state")
+    abstract suspend fun allPendingState(): List<PendingEntryStateEntity>
+
+    @Query("SELECT COUNT(*) FROM pending_entry_state")
+    abstract suspend fun countPendingState(): Int
+
+    /** The parked state belonging to one source, joined through the URL it was filed under. */
+    @Query(
+        """
+        SELECT p.* FROM pending_entry_state p
+        JOIN feeds f ON f.feedUrl = p.feedUrl
+        WHERE f.id = :feedId
+        """,
+    )
+    abstract suspend fun pendingStateFor(feedId: Long): List<PendingEntryStateEntity>
+
+    @Query("DELETE FROM pending_entry_state WHERE feedUrl = :feedUrl AND guid IN (:guids)")
+    abstract suspend fun clearPendingState(feedUrl: String, guids: List<String>)
+
+    @Query("SELECT id FROM feeds WHERE feedUrl = :feedUrl")
+    abstract suspend fun feedIdForUrl(feedUrl: String): Long?
+
+    /**
+     * Applies every parked row whose entry is now here, and returns how many landed.
+     *
+     * Run at the end of a restore, for the entries that were already on the phone. The
+     * other direction — state parked before its entry exists — is handled inside
+     * [upsertAll], because that is where entries arrive and a restore cannot be expected to
+     * still be running when they do.
+     */
+    @Transaction
+    open suspend fun applyPendingState(): Int {
+        var applied = 0
+        for ((feedUrl, parked) in allPendingState().groupBy { it.feedUrl }) {
+            val feedId = feedIdForUrl(feedUrl) ?: continue
+            val consumed = mutableListOf<String>()
+            for (row in parked) {
+                val entry = findByGuid(feedId, row.guid) ?: continue
+                update(entry.mergedWith(row))
+                consumed += row.guid
+            }
+            consumed.chunked(MAX_IDS_PER_STATEMENT).forEach { clearPendingState(feedUrl, it) }
+            applied += consumed.size
+        }
+        return applied
+    }
+
     @Insert
     abstract suspend fun insert(entry: EntryEntity): Long
 
@@ -296,33 +373,59 @@ abstract class EntryDao {
      * Without this a recovered article would survive exactly until the next refresh, and a
      * reader who opened it twice would see it collapse back to a stub the second time.
      *
+     * It is also where a restored profile finally lands (U14). Entries arriving for the
+     * first time on a fresh install are exactly the entries whose state was parked in
+     * `pending_entry_state` seconds earlier, and this is the only code any of them go
+     * through — so a restore followed by a refresh keeps what the restore brought instead
+     * of being overwritten by a feed that has never heard of the reader.
+     *
      * @return how many entries were genuinely new.
      */
     @Transaction
     open suspend fun upsertAll(entries: List<EntryEntity>): Int {
         var inserted = 0
+        // Read once per source rather than once per entry: a feed's whole batch shares one
+        // set of parked rows, and a refresh of forty sources would otherwise be forty
+        // thousand queries.
+        val parked = HashMap<Long, Map<String, PendingEntryStateEntity>>()
+        val consumed = HashMap<String, MutableList<String>>()
         for (entry in entries) {
+            val byGuid = parked.getOrElse(entry.feedId) {
+                pendingStateFor(entry.feedId).associateBy { it.guid }
+                    .also { parked[entry.feedId] = it }
+            }
+            val restored = byGuid[entry.guid]
             val existing = findByGuid(entry.feedId, entry.guid)
-            if (existing == null) {
-                insert(entry)
-                inserted++
+            val row = if (existing == null) {
+                entry
             } else {
                 val keepExtracted = existing.fullTextAt != null &&
                     (entry.contentHtml?.length ?: 0) <= (existing.contentHtml?.length ?: 0)
-                update(
-                    entry.copy(
-                        id = existing.id,
-                        isRead = existing.isRead,
-                        readAt = existing.readAt,
-                        isSaved = existing.isSaved,
-                        savedAt = existing.savedAt,
-                        isStarred = existing.isStarred,
-                        starredAt = existing.starredAt,
-                        contentHtml = if (keepExtracted) existing.contentHtml else entry.contentHtml,
-                        fullTextAt = if (keepExtracted) existing.fullTextAt else null,
-                    ),
+                entry.copy(
+                    id = existing.id,
+                    isRead = existing.isRead,
+                    readAt = existing.readAt,
+                    isSaved = existing.isSaved,
+                    savedAt = existing.savedAt,
+                    isStarred = existing.isStarred,
+                    starredAt = existing.starredAt,
+                    contentHtml = if (keepExtracted) existing.contentHtml else entry.contentHtml,
+                    fullTextAt = if (keepExtracted) existing.fullTextAt else null,
                 )
             }
+            val merged = if (restored == null) row else row.mergedWith(restored)
+            if (existing == null) {
+                insert(merged)
+                inserted++
+            } else {
+                update(merged)
+            }
+            if (restored != null) {
+                consumed.getOrPut(restored.feedUrl) { mutableListOf() } += restored.guid
+            }
+        }
+        consumed.forEach { (feedUrl, guids) ->
+            guids.chunked(MAX_IDS_PER_STATEMENT).forEach { clearPendingState(feedUrl, it) }
         }
         return inserted
     }
