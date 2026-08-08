@@ -8,6 +8,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.parse.RichSpan
 import dev.mkiros.perch.data.parse.SpanStyle
+import dev.mkiros.perch.ui.theme.ArticleType
 import org.junit.Test
 
 /**
@@ -75,7 +76,10 @@ class RichTextTest {
         val code = annotated.spanStyles.single()
         assertThat(code.start to code.end).isEqualTo(5 to 11)
         assertThat(code.item.background).isEqualTo(chip)
-        assertThat(code.item.fontFamily.toString()).contains("Monospace")
+        // Since U11 the mono face is the bundled JetBrains Mono rather than the platform
+        // family, so this asserts the *same* face a code block uses — inline and block
+        // code drifting apart is the failure this ever guarded against.
+        assertThat(code.item.fontFamily).isEqualTo(ArticleType.code.fontFamily)
     }
 
     @Test

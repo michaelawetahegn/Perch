@@ -3,6 +3,7 @@ package dev.mkiros.perch.ui.theme
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -10,6 +11,7 @@ import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import dev.mkiros.perch.R
 
 /**
  * Two type systems, deliberately split (DESIGN.md §3 and §8).
@@ -18,13 +20,23 @@ import androidx.compose.ui.unit.sp
  * sizes §3 tabulates so a later token change is a diff here and nowhere else.
  * [ArticleType] is the *editorial* surface: serif, print-derived, its own scale.
  *
- * No fonts are bundled. `FontFamily.Default` (Roboto) and `FontFamily.Serif`
+ * Body and furniture bundle nothing. `FontFamily.Default` (Roboto) and `FontFamily.Serif`
  * (Noto Serif) both ship on device — zero APK cost, no licensing. Every size is in `sp`
  * so the system font scale is respected everywhere.
+ *
+ * **[Mono] is the one exception** (U11, amending DESIGN.md §3). The platform monospace is
+ * Droid Sans Mono, whose `0`/`O`, `1`/`l` and `;`/`:` are close enough at 13sp to misread
+ * a line of code — and code is the one place in this app where a misread character is a
+ * different program. JetBrains Mono is the closest OFL-licensed relative of the face the
+ * reader is used to, and it ships one 268 KB regular weight; the licence is verbatim in
+ * `assets/JetBrainsMono-OFL.txt`.
  */
 private val Sans = FontFamily.Default
 private val Serif = FontFamily.Serif
-private val Mono = FontFamily.Monospace
+private val Mono = FontFamily(Font(R.font.jetbrains_mono))
+
+/** Standard ligatures and contextual alternates off — see [ArticleType.code]. */
+private const val NO_LIGATURES = "liga 0, calt 0, dlig 0"
 
 val PerchTypography = Typography(
     // Top app bar title — `LargeTopAppBar` on home. §3.
@@ -146,12 +158,20 @@ object ArticleType {
         fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
     )
 
-    /** `pre`/`code` — the one place sans loses. Never wrapped; the block scrolls. */
+    /**
+     * `pre`/`code` — the one place sans loses. Never wrapped; the block scrolls.
+     *
+     * JetBrains Mono ships programming ligatures on, and they are turned off here: they
+     * draw `->` as `→` and `!=` as `≠`, which is a glyph substitution inside *someone
+     * else's program*. A reader comparing the article against their own editor has to be
+     * able to trust that the characters on screen are the characters in the source.
+     */
     val code = TextStyle(
         fontFamily = Mono,
         fontWeight = FontWeight.Normal,
         fontSize = 13.sp,
         lineHeight = 20.sp,
+        fontFeatureSettings = NO_LIGATURES,
     )
 
     /** Feed tables are rare and usually broken; sans keeps them from posing as content. */
@@ -188,7 +208,8 @@ object ArticleType {
     val emphasis = SpanStyle(fontStyle = FontStyle.Italic)
 
     /** Inline `code` — a chip, not a block; the background is the renderer's to supply. */
-    val inlineCode = SpanStyle(fontFamily = Mono, fontSize = 15.sp)
+    val inlineCode =
+        SpanStyle(fontFamily = Mono, fontSize = 15.sp, fontFeatureSettings = NO_LIGATURES)
 
     val superscript = SpanStyle(baselineShift = BaselineShift.Superscript, fontSize = 13.sp)
 

@@ -8,6 +8,7 @@ import androidx.compose.material3.Shapes
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalContext
 
 /**
@@ -59,10 +60,17 @@ fun PerchTheme(
         else -> PerchLightColors
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = PerchTypography,
-        shapes = PerchShapes,
-        content = content,
-    )
+    // Syntax colour follows the light/dark decision rather than the scheme, because the
+    // dynamic schemes have no roles to carry it and a wallpaper-derived one would give a
+    // reader a different keyword colour every time they changed their home screen.
+    CompositionLocalProvider(
+        LocalCodeColors provides if (dark) PerchCodeColorsDark else PerchCodeColorsLight,
+    ) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = PerchTypography,
+            shapes = PerchShapes,
+            content = content,
+        )
+    }
 }

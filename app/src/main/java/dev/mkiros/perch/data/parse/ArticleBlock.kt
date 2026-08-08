@@ -16,8 +16,15 @@ sealed interface ArticleBlock {
     /** Always 2 or 3: `h1`/`h2` lower to 2, `h3`–`h6` to 3. The article title owns level 1. */
     data class Heading(val level: Int, val text: RichSpan) : ArticleBlock
 
-    /** `pre`/`code`, whitespace intact — the one place the source's formatting is content. */
-    data class Code(val text: String) : ArticleBlock
+    /**
+     * `pre`/`code`, whitespace intact — the one place the source's formatting is content.
+     *
+     * [language] is the author's own `class="language-*"` claim, lowercased and stripped of
+     * its prefix, or null when the markup made none. It is a *hint for presentation only*:
+     * [text] is verbatim either way, and U11's highlighter is free to ignore a language it
+     * does not know.
+     */
+    data class Code(val text: String, val language: String? = null) : ArticleBlock
 
     data class Image(val url: String, val alt: String?, val caption: RichSpan?) : ArticleBlock
 

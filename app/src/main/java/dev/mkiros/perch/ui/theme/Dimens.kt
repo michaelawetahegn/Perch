@@ -140,6 +140,13 @@ object Dimens {
     val codePadding = 14.dp
     val codeCorner = sm
 
+    /**
+     * Air between the pinned line-number gutter and the code it numbers (U11). Wide enough
+     * that a number never reads as part of the first token, narrow enough that the gutter
+     * does not become a column of its own on a phone.
+     */
+    val codeGutterGap = md
+
     /** Inline `code` chips get 2dp of horizontal breathing room. §8. */
     val inlineCodePadding = 2.dp
 

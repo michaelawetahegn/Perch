@@ -88,7 +88,15 @@ object ArticleLowering {
      */
     private fun code(el: Element): List<ArticleBlock> {
         val text = el.wholeText().replace('\u00A0', ' ').trimStart('\n', '\r').trimEnd()
-        return if (text.isBlank()) emptyList() else listOf(ArticleBlock.Code(text))
+        if (text.isBlank()) return emptyList()
+        // `HtmlSanitizer` has already reduced whatever the CMS wrote \u2014 a class on the
+        // `<code>`, on the `<pre>`, or on a wrapper `<div>` two levels up \u2014 to this one
+        // normalised token, so there is nothing left to search for here.
+        val language = el.className()
+            .takeIf { it.startsWith(HtmlSanitizer.LANGUAGE_PREFIX) }
+            ?.removePrefix(HtmlSanitizer.LANGUAGE_PREFIX)
+            ?.takeIf { it.isNotEmpty() }
+        return listOf(ArticleBlock.Code(text, language))
     }
 
     private fun image(el: Element, caption: RichSpan?): List<ArticleBlock> {

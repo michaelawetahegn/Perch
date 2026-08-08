@@ -419,7 +419,7 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
         `./gradlew test` green with no network.
       - Rung: unit
 
-- [ ] **U11 — Code blocks: monospace face + syntax highlighting. TDD + screenshot.**
+- [x] **U11 — Code blocks: monospace face + syntax highlighting. TDD + screenshot.**
       Bundle one mono family under `app/src/main/res/font/` — Consolas cannot be
       redistributed, so use its closest OFL-licensed relative (JetBrains Mono or
       Inconsolata; state the choice and its licence in NOTES.md and drop the licence file

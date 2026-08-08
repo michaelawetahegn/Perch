@@ -18,6 +18,16 @@ object HtmlSanitizer {
     const val SUMMARY_CHARS: Int = 300
 
     /**
+     * The one class the allowlist keeps, and the only form it keeps it in (U11).
+     *
+     * `class` is otherwise exactly the kind of presentational hook DESIGN.md §8 refuses to
+     * let a feed reach us through, so rather than open the attribute up, [sanitize]
+     * rewrites whatever language claim it can find into `class="language-x"` on the `pre`
+     * and drops everything else. Downstream, `ArticleLowering` only ever has to read this.
+     */
+    const val LANGUAGE_PREFIX: String = "language-"
+
+    /**
      * [html] reduced to the allowlist, with every surviving URL absolute against
      * [baseUrl] (the entry link). Null when nothing renderable is left.
      */
@@ -27,6 +37,7 @@ object HtmlSanitizer {
 
         dirty.select(DROP_WHOLESALE).remove()
         dirty.select("img").filter { it.isTrackingPixel() }.forEach { it.remove() }
+        dirty.select("pre").forEach { it.normalizeLanguage() }
 
         val clean = runCatching { Cleaner(SAFELIST).clean(dirty) }.getOrNull() ?: return null
         // A URL the allowlist refused (`javascript:`, `data:`, an unresolvable relative
@@ -60,6 +71,28 @@ object HtmlSanitizer {
     }
 
     /**
+     * Collapses this `pre`'s language claim to `class="language-x"`, or removes the
+     * attribute entirely.
+     *
+     * The claim is somewhere different in every CMS, which is the whole reason this is a
+     * search rather than an attribute read. Prism and highlight.js put it on the `<code>`;
+     * Jekyll's Rouge puts it on a wrapper `<div class="language-c highlighter-rouge">` two
+     * levels above the `<pre>` — which is what nullprogram.com ships, and what U11's
+     * screenshots are of. So look down first, then up, and stop before the search reaches
+     * far enough to inherit an unrelated ancestor's class.
+     */
+    private fun Element.normalizeLanguage() {
+        val found = languageToken()
+            ?: selectFirst("code")?.languageToken()
+            ?: parents().take(ANCESTOR_REACH).firstNotNullOfOrNull { it.languageToken() }
+        if (found == null) removeAttr("class") else attr("class", LANGUAGE_PREFIX + found)
+    }
+
+    private fun Element.languageToken(): String? = classNames()
+        .firstNotNullOfOrNull { LANGUAGE_CLASS.matchEntire(it)?.groupValues?.get(1) }
+        ?.lowercase()
+
+    /**
      * A 1×1 image is a read receipt, not content. Publishers ship them from mail and
      * analytics vendors in otherwise ordinary paragraphs.
      */
@@ -71,6 +104,17 @@ object HtmlSanitizer {
      * keeps its children, which is right for a `<div>` wrapper and very wrong for a
      * `<script>` body.
      */
+    /**
+     * `pre` → `div.highlight` → `div.language-c` is the deepest real nesting in the corpus;
+     * beyond that a match is an unrelated section wrapper rather than a language claim.
+     */
+    private const val ANCESTOR_REACH = 3
+
+    /** `language-c`, `lang-c`, `highlight-source-c`, `brush:c` — all the same claim. */
+    private val LANGUAGE_CLASS = Regex(
+        "(?:language|lang|highlight-source|brush)[-:]([A-Za-z0-9+#._-]+)",
+    )
+
     private const val DROP_WHOLESALE =
         "script, style, noscript, iframe, frame, object, embed, applet, svg, math, " +
             "form, input, button, select, textarea, link, meta, base"
@@ -83,6 +127,8 @@ object HtmlSanitizer {
         )
         .addAttributes("a", "href")
         .addAttributes("img", "src", "alt")
+        // Only on `pre`, and only ever holding what `normalizeLanguage` put there.
+        .addAttributes("pre", "class")
         // Restricting the protocol is also what makes jsoup rewrite the value to its
         // absolute form, so this line is doing the relative-URL resolution too.
         .addProtocols("a", "href", "http", "https")

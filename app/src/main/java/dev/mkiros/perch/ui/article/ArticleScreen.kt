@@ -336,6 +336,8 @@ object ArticleTestTags {
     const val LOAD_FULL_TEXT = "article:load-full-text"
     const val FULL_TEXT_PROGRESS = "article:full-text-progress"
     const val CODE = "article:code"
+    const val CODE_TEXT = "article:code-text"
+    const val CODE_GUTTER = "article:code-gutter"
     const val IMAGE = "article:image"
     const val QUOTE = "article:quote"
     const val TABLE = "article:table"

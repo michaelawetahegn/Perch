@@ -78,14 +78,21 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
 
 - Article body max width **`72.dp * fontScale`-independent measure**: cap the text
   column at 680dp and centre it, so a tablet/landscape read isn't a 100-character line.
-- Monospace (`FontFamily.Monospace`, 13sp) for `<pre>`/`<code>`, in a
+- Monospace (**JetBrains Mono**, 13sp, ligatures off) for `<pre>`/`<code>`, in a
   `surfaceContainer` block with 12dp padding, 8dp corners, and **horizontal scroll —
   code never wraps.**
 - Respect the system font scale everywhere. Nothing may clip at 1.3× — that's a
   polish-pass check.
-- No custom fonts **bundled**. Platform families only: `FontFamily.Default` (Roboto)
-  for app furniture, `FontFamily.Serif` (Noto Serif, on-device) for the article
-  surface. Zero APK cost, no licensing, no download.
+- **One** custom font is bundled, and only one (amended by U11). Everything else is
+  platform families: `FontFamily.Default` (Roboto) for app furniture,
+  `FontFamily.Serif` (Noto Serif, on-device) for the article surface — zero APK cost,
+  no licensing, no download. The exception is the mono face, where the platform's
+  Droid Sans Mono confuses `0`/`O` and `1`/`l` at 13sp, and code is the one place in
+  the app where a misread character is a different program. JetBrains Mono
+  (SIL OFL 1.1, licence verbatim in `app/src/main/assets/JetBrainsMono-OFL.txt`),
+  regular weight only, 268 KB. Its programming ligatures are **disabled**: drawing
+  `->` as `→` inside someone else's source is a substitution the reader did not ask
+  for.
 
 ## 4. Spacing, density, shape
 
@@ -252,7 +259,8 @@ serif, generous, quiet, print-derived. Rendered natively into Compose
 
 ### Type on the article surface
 
-Serif is `FontFamily.Serif` (Noto Serif, on-device — still no bundled fonts).
+Serif is `FontFamily.Serif` (Noto Serif, on-device). The only bundled face is the
+mono one — see §3.
 
 | Element | Spec |
 |---|---|
@@ -271,12 +279,27 @@ Serif is `FontFamily.Serif` (Noto Serif, on-device — still no bundled fonts).
 
 ### The block treatments — identical across every source
 
-- **Code** (`pre`/`code`): the one place sans wins — `FontFamily.Monospace` 13sp/20 on
+- **Code** (`pre`/`code`): the one place sans wins — JetBrains Mono 13sp/20 on
   `surfaceContainer`, 8dp corners, 14dp padding, full text-column width,
   **horizontal scroll, never wrapped, never reflowed**. A hairline `outlineVariant`
   border in light mode. Inline `code` gets a subtle `surfaceContainerHigh` chip with
-  2dp horizontal padding — no border, no colour. **No syntax highlighting**: the feed
-  gives us no reliable language, and half-right highlighting looks worse than none.
+  2dp horizontal padding — no border, no colour.
+- **Syntax highlighting** (U11, reversing §8's original "no highlighting" line — the
+  objection was *half-right* highlighting, and the answer turned out to be a smaller
+  vocabulary rather than no colour). Five token roles, no more: keyword, string,
+  number, comment, meta. Colours are theme values in `ui/theme/CodeTheme.kt`, one set
+  per background, provided through `LocalCodeColors`; they are the only hues in the app
+  that are not tonal stops off `#3F6E5A`, because three of the five must be told apart
+  at 13sp. The language comes from the author's own `class="language-*"` — **a
+  declaration is final, including `plaintext`** — and only an *undeclared* block is
+  sniffed. An unknown language renders in the mono face with no colour, which is
+  exactly what every block looked like before U11.
+- **Line numbers**: a right-aligned gutter in the mono face, `outline` colour, 12dp
+  from the code, omitted on a one-line block. Two things are load-bearing. It is
+  **outside the horizontal scroll**, so scrolling a wide line moves the code and leaves
+  the numbers; and it is **its own composable inside a `DisableSelection`**, so
+  selecting the block yields runnable code with no numbers to strip. One `Text` holds
+  every number, which is what keeps the code's left edge still at 9→10 and 99→100.
 - **Images**: full text-column width, 4dp corners (editorial, not app-y), intrinsic
   aspect ratio reserved *before* load so nothing reflows. `figcaption` → Caption style
   directly beneath, 8dp gap. A failed load collapses to nothing — never a broken glyph,
