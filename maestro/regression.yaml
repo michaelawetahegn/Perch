@@ -1,0 +1,158 @@
+# T30 — Perch's standing device regression.
+#
+# One pass over the whole product loop on a real (emulated) device:
+#   add source → refresh → open entry (read) → back → filter by source
+#   → mark all read → remove source (confirm) → OPML export.
+#
+# How to run it is in NOTES.md; it is not `maestro test` from WSL, because the emulator
+# and its adb server live on the Windows side of this host.
+#
+# Selector conventions, learned the hard way against this app:
+#   * Compose publishes `Modifier.testTag` as `resource-id` only because `PerchNavHost`
+#     sets `testTagsAsResourceId`. That covers home/article/settings. The add-source
+#     sheet and every dialog are their OWN windows, outside that subtree, so they are
+#     addressed by their labels instead.
+#   * Maestro matches a selector's text against the WHOLE of a node's text, and a
+#     Compose node that merges its descendants (`SourceRow` does) surfaces as one node
+#     carrying the label AND the unread count. So any selector that may land on a merged
+#     row is a `.*…*.` regex rather than a bare literal.
+#   * Regexes avoid apostrophes ("You're", "Daniel Lemire's") — the corpus is full of
+#     curly-vs-straight quote variation and it is not worth asserting on.
+appId: dev.mkiros.perch
+name: Perch regression
+---
+# ── 0 · a clean install seeds itself (T28) ──────────────────────────────────────
+- launchApp:
+    clearState: true
+
+# The seeder parses eight bundled snapshots through the real repository, so first paint
+# is a genuine parse, not a fixture insert. It is the slowest step in the flow.
+- extendedWaitUntil:
+    visible:
+      id: "home:entry"
+    timeout: 180000
+- assertVisible:
+    id: "home:title"
+    text: "Unread"
+
+# ── 1 · add a source ────────────────────────────────────────────────────────────
+# lemire.me is deliberately NOT one of the eight seeded sources, so this genuinely
+# exercises fetch → parse → insert over the network rather than re-finding a seed.
+- tapOn: "Open sources"
+- assertVisible: ".*All unread.*"
+- tapOn: ".*Add source.*"
+- assertVisible: "Add a source"
+- tapOn: "Feed or site address"
+- inputText: "https://lemire.me/blog/feed/"
+- hideKeyboard
+- tapOn: "Continue"
+# "Continue" resolves the address; the button only becomes "Follow" once a feed came
+# back, so waiting for it is waiting for the fetch and the parse.
+- extendedWaitUntil:
+    visible: "Follow"
+    timeout: 120000
+- tapOn: "Follow"
+- extendedWaitUntil:
+    notVisible: "Add a source"
+    timeout: 60000
+- tapOn: "Open sources"
+- extendedWaitUntil:
+    visible: ".*Daniel Lemire.*"
+    timeout: 60000
+# Selecting "All unread" both clears the filter and closes the drawer.
+- tapOn: ".*All unread.*"
+
+# ── 2 · refresh ─────────────────────────────────────────────────────────────────
+- tapOn: "More options"
+- tapOn: ".*Refresh.*"
+# The pull indicator spins for as long as the refresh runs, so "no more animation" is
+# "the refresh finished". Then: no banner means no source failed (DESIGN.md §7).
+- waitForAnimationToEnd:
+    timeout: 120000
+- assertNotVisible:
+    id: "home:banner"
+- assertVisible:
+    id: "home:entry"
+
+# ── 3 · open an entry — opening it marks it read ────────────────────────────────
+- tapOn: "Open sources"
+- copyTextFrom:
+    id: "home:all-unread:badge"
+- evalScript: ${output.unreadBefore = Number(maestro.copiedText)}
+- assertTrue: ${output.unreadBefore > 0}
+- tapOn: ".*All unread.*"
+- tapOn:
+    id: "home:entry"
+    index: 0
+- extendedWaitUntil:
+    visible:
+      id: "article:headline"
+    timeout: 60000
+
+# ── 4 · back ────────────────────────────────────────────────────────────────────
+- back
+- extendedWaitUntil:
+    visible:
+      id: "home:entry"
+    timeout: 60000
+- tapOn: "Open sources"
+- copyTextFrom:
+    id: "home:all-unread:badge"
+- evalScript: ${output.unreadAfter = Number(maestro.copiedText)}
+# Exactly one: the entry that was opened, and nothing else.
+- assertTrue: ${output.unreadAfter === output.unreadBefore - 1}
+
+# ── 5 · filter by source ────────────────────────────────────────────────────────
+# The drawer is still open from the count above.
+- tapOn: ".*Daniel Lemire.*"
+- assertVisible:
+    id: "home:title"
+    text: ".*Daniel Lemire.*"
+- assertVisible:
+    id: "home:entry"
+
+# ── 6 · mark all read, in that scope ────────────────────────────────────────────
+- tapOn: "More options"
+- tapOn: ".*Mark all read.*"
+# Scoped to the selected source, so the filtered list empties into the all-read state.
+- extendedWaitUntil:
+    visible: ".*caught up.*"
+    timeout: 60000
+# Let the undo snackbar time out rather than tapping it — undo has its own test (T26).
+- waitForAnimationToEnd:
+    timeout: 30000
+
+# ── 7 · remove the source, with confirmation ────────────────────────────────────
+- tapOn: "Open sources"
+- longPressOn: ".*Daniel Lemire.*"
+- assertVisible: "Rename"
+- tapOn: "Remove"
+# The second dialog is the confirmation; its title names the source, its button does not.
+- assertVisible: ".*Remove Daniel Lemire.*"
+- tapOn: "Remove"
+- extendedWaitUntil:
+    notVisible: ".*Daniel Lemire.*"
+    timeout: 60000
+
+# ── 8 · OPML export ─────────────────────────────────────────────────────────────
+# Whether the drawer survived the dialogs is not worth asserting; reopen it if it did not.
+- runFlow:
+    when:
+      notVisible: ".*All unread.*"
+    commands:
+      - tapOn: "Open sources"
+- tapOn: ".*Settings.*"
+- extendedWaitUntil:
+    visible: ".*Export OPML.*"
+    timeout: 60000
+- tapOn: ".*Export OPML.*"
+# The system create-document dialog, pre-filled with Opml.fileName() — proof the export
+# intent fired with the right document, without pinning today's date.
+- extendedWaitUntil:
+    visible: ".*perch-[0-9]+[.]opml.*"
+    timeout: 60000
+- tapOn: "(?i)save"
+# And proof the bytes were actually written back through the returned URI.
+- extendedWaitUntil:
+    visible: "Subscriptions exported"
+    timeout: 60000

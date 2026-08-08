@@ -55,14 +55,12 @@ in a script or in CLAUDE.md.
   (`Coil.setImageLoader` + a stub `Mapper`). **T29 residual:** Compose cannot colour or offset an
   underline, so §8's 1dp-primary-offset-3dp link rule is a plain one; inline code has no chip padding.
 - 2026-08-07 — T26 done: pull-to-refresh, undo snackbar, `HomeBanner` (offline > selected-source
-  error > all-failing) and `data/net/ConnectivityMonitor` (a `fun interface`; `AlwaysOnline` is the
-  `AppContainer` default, so no test needs a shadow network). **Three Robolectric traps:**
-  `PullToRefreshBox` answers a swipe only when its child actually scrolls, so a pull test must seed
-  cached entries — over an empty state the gesture is silently inert; poll helpers must
-  `waitForIdle()` **after** the predicate passes too, or the tree is one emission behind the view
-  model; and refresh-prepended rows compose *above* the viewport (`LazyColumn` anchors on the old
-  first key), so assert arrivals on list state, never `assertIsDisplayed`. **T29 residual:** the
-  empty state does not scroll, so it cannot be pulled; the overflow's Refresh is the way out of it.
+  error > all-failing), `data/net/ConnectivityMonitor` (`AlwaysOnline` is the `AppContainer`
+  default, so no test needs a shadow network). Robolectric gesture traps, if a later task adds
+  one: `PullToRefreshBox` ignores a swipe unless its child scrolls; poll helpers must
+  `waitForIdle()` *after* the predicate passes; refresh-prepended rows compose above the viewport,
+  so assert on list state, never `assertIsDisplayed`. **T29 residual:** the empty state does not
+  scroll, so it cannot be pulled; the overflow's Refresh is the way out of it.
 - 2026-08-07 — T28 done: `app/src/debug/{assets/seed,java/…/debug}` — 8 snapshots (760 KB) chosen
   for spread (code-heavy, image-heavy, a 144-entry archive, both dialects) plus `index.tsv`
   (`file<TAB>real feed url`). Seeding goes through **`FeedRepository.add`**, so seeded rows are
@@ -85,3 +83,14 @@ in a script or in CLAUDE.md.
   bar and the drawer sheet sit flush at y=0 in every capture — an artifact, not a layout bug; the
   §9 lines for font scale 1.3, rotation/process-death and TalkBack traversal are not checkable from
   pixels and this pass did not verify them; T25's link-underline and inline-code residuals stand.
+- 2026-08-07 — T30 done: `maestro/regression.yaml`, green end to end. **Maestro-on-Windows won; the
+  TCP-adb fallback was never needed.** `~/.maestro/{bin,lib}` was copied to `C:\perch-stage\maestro-cli`
+  and `C:\perch-stage\maestro.bat` sets `JAVA_HOME`/`ANDROID_HOME` around it. To run:
+  `cp maestro/regression.yaml /mnt/c/perch-stage/maestro/`, then from `/mnt/c`
+  `cmd.exe /c "C:\perch-stage\maestro.bat --device emulator-5554 test C:\perch-stage\maestro\regression.yaml"`.
+  **`device.sh stage` does not overwrite a directory that already exists** — copy the flow yourself or
+  you will spend an attempt debugging a stale file. Two facts the flow rests on: `PerchNavHost` now sets
+  `testTagsAsResourceId`, the only handle an out-of-process driver has on a Compose node — it does
+  **not** reach the add-source sheet or any dialog, which are their own windows and are addressed by
+  label; and a Maestro text selector must match a node's text *entirely*, so anything that can land on
+  a merged row (`SourceRow` carries label + unread count) is written as a `.*…*.` regex.

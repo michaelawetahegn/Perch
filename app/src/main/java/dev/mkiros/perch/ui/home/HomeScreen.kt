@@ -542,6 +542,13 @@ object HomeTestTags {
     const val EMPTY_ADD_SOURCE = "home:empty:add-source"
     /** The pull-to-refresh surface, so a test can make the gesture the reader makes. */
     const val LIST = "home:list"
+
+    /**
+     * Every row carries the same tag, so a device test taps `ENTRY` at `index: 0` rather
+     * than at a screen coordinate that the app bar or a banner would shift.
+     */
+    const val ENTRY = "home:entry"
+
     const val MARK_ALL_READ = "home:overflow:mark-all-read"
     const val REFRESH = "home:overflow:refresh"
     const val BANNER = "home:banner"
@@ -572,6 +579,7 @@ private fun EntryList(
                     item = item,
                     now = state.nowMillis,
                     onClick = { onOpenEntry(item.id) },
+                    modifier = Modifier.testTag(HomeTestTags.ENTRY),
                 )
                 if (index < state.entries.lastIndex) {
                     HorizontalDivider(

@@ -287,7 +287,7 @@ production code but no test is a defect — reopen the box.
         §9 line either passes or has a one-line residual note in NOTES.md.
       - Rung: screenshot (JVM-rendered)
 
-- [ ] **T30 — Maestro regression flow.** Requires T03 (this is the one genuinely
+- [x] **T30 — Maestro regression flow.** Requires T03 (this is the one genuinely
       device-bound task). `maestro/regression.yaml`: add source → refresh → open entry
       (read) → back → filter by source → mark all read → remove source (confirm) →
       OPML export.

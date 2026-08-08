@@ -7,8 +7,11 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -49,7 +52,16 @@ private const val SLIDE_DIVISOR = 4
  * screen reaches for a singleton, which is what lets a test compose any route over an
  * in-memory database. Back is the platform's — `NavHost` owns the dispatcher and nothing
  * here intercepts it (DESIGN.md §5).
+ *
+ * [testTagsAsResourceId] is set once here, at the root of the main window: it publishes
+ * every `Modifier.testTag` in the graph as the node's `resource-id` in the accessibility
+ * tree, which is the only handle an out-of-process driver (T30's Maestro flow) has on a
+ * Compose node. Without it a device test can only address visible text, and this app has
+ * rows whose text is a feed's headline — different on every snapshot. It does not reach
+ * dialogs or the add-source sheet: those are their own windows, and their controls are
+ * addressed by their labels.
  */
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun PerchNavHost(
     container: AppContainer,
@@ -59,7 +71,7 @@ fun PerchNavHost(
     NavHost(
         navController = navController,
         startDestination = Routes.HOME,
-        modifier = modifier,
+        modifier = modifier.semantics { testTagsAsResourceId = true },
         enterTransition = {
             slideInHorizontally(animationSpec = slide()) { it / SLIDE_DIVISOR } + fadeIn(fade())
         },
