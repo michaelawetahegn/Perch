@@ -33,6 +33,7 @@ import androidx.navigation.navArgument
 import dev.mkiros.perch.di.AppContainer
 import dev.mkiros.perch.ui.article.ArticleScreen
 import dev.mkiros.perch.ui.article.ArticleViewModel
+import dev.mkiros.perch.ui.article.zoom.ZoomedImage
 import dev.mkiros.perch.ui.collection.Collection
 import dev.mkiros.perch.ui.collection.CollectionScreen
 import dev.mkiros.perch.ui.collection.CollectionViewModel
@@ -109,9 +110,18 @@ fun PerchNavHost(
         mutableStateOf<DrawerSelection>(DrawerSelection.None)
     }
 
+    // U12's viewer is opened from inside an article but hoisted to here, for the reason the
+    // drawer's state is: it is a rung of the back chain, and a rung the chain cannot see is
+    // a rung that is only true by luck of composition order. `rememberSaveable` so process
+    // death restores the reader to the figure they were looking at.
+    val zoomedImage = rememberSaveable(stateSaver = ZoomedImage.Saver) {
+        mutableStateOf<ZoomedImage?>(null)
+    }
+
     val backState = BackState(
         selectionActive = drawerSelection.value.isActive,
         overlayOpen = drawerState.isOpen,
+        imageViewerOpen = zoomedImage.value != null,
         onArticle = route == Routes.ARTICLE,
         tab = tab ?: PerchTab.Feed,
         feedScrolled = feedListState.canScrollBackward,
@@ -128,6 +138,7 @@ fun PerchNavHost(
         when (step) {
             BackStep.LeaveSelection -> drawerSelection.value = DrawerSelection.None
             BackStep.CloseOverlay -> scope.launch { drawerState.close() }
+            BackStep.CloseImageViewer -> zoomedImage.value = null
             BackStep.PopArticle -> navController.popBackStack()
             BackStep.ReturnToFeed -> selectTab(navController, PerchTab.Feed)
             // Not a navigation: nothing is popped and nothing animates as a transition.
@@ -192,6 +203,7 @@ fun PerchNavHost(
                 ArticleScreen(
                     viewModel = viewModel(factory = ArticleViewModel.factory(container, entryId)),
                     onBack = { navController.popBackStack() },
+                    zoomed = zoomedImage,
                 )
             }
 

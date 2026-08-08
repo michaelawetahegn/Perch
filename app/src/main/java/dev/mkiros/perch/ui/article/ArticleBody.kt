@@ -61,6 +61,8 @@ import dev.mkiros.perch.ui.theme.LocalCodeColors
  *
  * @param articleLink where an [ArticleBlock.Unsupported] card sends the reader — the
  *   embed itself has no URL we can trust, but the post it came from does.
+ * @param onOpenImage a figure was tapped and wants the full-screen viewer (U12). Defaults
+ *   to doing nothing so a screenshot or a block test can compose the body without one.
  */
 @Composable
 fun ArticleBody(
@@ -68,9 +70,10 @@ fun ArticleBody(
     articleLink: String?,
     onOpenLink: (String) -> Unit,
     modifier: Modifier = Modifier,
+    onOpenImage: (ArticleBlock.Image) -> Unit = {},
 ) {
     Column(modifier) {
-        blocks.forEach { block -> Block(block, articleLink, onOpenLink) }
+        blocks.forEach { block -> Block(block, articleLink, onOpenLink, onOpenImage) }
     }
 }
 
@@ -83,14 +86,15 @@ private fun Block(
     block: ArticleBlock,
     articleLink: String?,
     onOpenLink: (String) -> Unit,
+    onOpenImage: (ArticleBlock.Image) -> Unit,
     quoted: Boolean = false,
 ) {
     when (block) {
         is ArticleBlock.Paragraph -> ParagraphBlock(block.text, quoted, onOpenLink)
         is ArticleBlock.Heading -> HeadingBlock(block, onOpenLink)
         is ArticleBlock.Code -> CodeBlock(block)
-        is ArticleBlock.Image -> ImageBlock(block, onOpenLink)
-        is ArticleBlock.Quote -> QuoteBlock(block, articleLink, onOpenLink)
+        is ArticleBlock.Image -> ImageBlock(block, onOpenLink, onOpenImage)
+        is ArticleBlock.Quote -> QuoteBlock(block, articleLink, onOpenLink, onOpenImage)
         is ArticleBlock.ListBlock -> ListBlock(block, onOpenLink)
         is ArticleBlock.Table -> TableBlock(block, onOpenLink)
         ArticleBlock.Rule -> RuleBlock()
@@ -228,7 +232,11 @@ private fun highlight(block: ArticleBlock.Code, colors: CodeColors): AnnotatedSt
  * paragraph simply continuing (§8).
  */
 @Composable
-private fun ImageBlock(block: ArticleBlock.Image, onOpenLink: (String) -> Unit) {
+private fun ImageBlock(
+    block: ArticleBlock.Image,
+    onOpenLink: (String) -> Unit,
+    onOpenImage: (ArticleBlock.Image) -> Unit,
+) {
     var state by remember(block.url) {
         mutableStateOf<AsyncImagePainter.State>(AsyncImagePainter.State.Empty)
     }
@@ -256,6 +264,12 @@ private fun ImageBlock(block: ArticleBlock.Image, onOpenLink: (String) -> Unit) 
                     },
                 )
                 .clip(RoundedCornerShape(Dimens.imageCorner))
+                // The figure is the whole point of some articles and is illegible at a
+                // phone's measure; a tap is the only affordance it has (U12).
+                .clickable(
+                    onClickLabel = stringResource(R.string.image_viewer_open),
+                    onClick = { onOpenImage(block) },
+                )
                 .testTag(ArticleTestTags.IMAGE),
         )
         block.caption?.let { caption ->
@@ -277,6 +291,7 @@ private fun QuoteBlock(
     block: ArticleBlock.Quote,
     articleLink: String?,
     onOpenLink: (String) -> Unit,
+    onOpenImage: (ArticleBlock.Image) -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -291,7 +306,9 @@ private fun QuoteBlock(
                 .background(MaterialTheme.colorScheme.primary.copy(alpha = QUOTE_RULE_ALPHA)),
         )
         Column(modifier = Modifier.padding(start = Dimens.quoteInset - Dimens.quoteRule)) {
-            block.blocks.forEach { inner -> Block(inner, articleLink, onOpenLink, quoted = true) }
+            block.blocks.forEach { inner ->
+                Block(inner, articleLink, onOpenLink, onOpenImage, quoted = true)
+            }
         }
     }
 }

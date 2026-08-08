@@ -217,15 +217,37 @@ class ArticleBodyTest {
         compose.onNodeWithText("the spec says otherwise").assertIsDisplayed()
     }
 
+    /**
+     * U12's entry point. The figure in an article is often the whole point of the article —
+     * a schematic, a flame graph, a screenshot of a stack trace — and at a phone's measure
+     * it is illegible. Tapping it is the only affordance there is, so it has to be wired to
+     * the block that was tapped and not merely to "an image was tapped somewhere".
+     */
+    @Test
+    fun `tapping a figure asks for it to be opened full screen`() {
+        val opened = mutableListOf<ArticleBlock.Image>()
+        val figure = ArticleBlock.Image(url = IMAGE_URL, alt = "A flame graph", caption = null)
+
+        show(figure, onOpenImage = { opened += it })
+        compose.onNodeWithTag(ArticleTestTags.IMAGE).performClick()
+
+        assertThat(opened).containsExactly(figure)
+    }
+
     // ---- harness ---------------------------------------------------------------
 
-    private fun show(vararg blocks: ArticleBlock, onOpenLink: (String) -> Unit = {}) {
+    private fun show(
+        vararg blocks: ArticleBlock,
+        onOpenLink: (String) -> Unit = {},
+        onOpenImage: (ArticleBlock.Image) -> Unit = {},
+    ) {
         compose.setContent {
             PerchTheme(dynamicColor = false) {
                 ArticleBody(
                     blocks = blocks.toList(),
                     articleLink = ARTICLE_URL,
                     onOpenLink = onOpenLink,
+                    onOpenImage = onOpenImage,
                 )
             }
         }

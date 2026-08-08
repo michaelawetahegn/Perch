@@ -36,6 +36,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -48,6 +49,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.mkiros.perch.R
+import dev.mkiros.perch.data.parse.ArticleBlock
+import dev.mkiros.perch.ui.article.zoom.ImageViewer
+import dev.mkiros.perch.ui.article.zoom.ZoomedImage
 import dev.mkiros.perch.ui.theme.ArticleType
 import dev.mkiros.perch.ui.theme.Dimens
 
@@ -65,103 +69,119 @@ fun ArticleScreen(
     viewModel: ArticleViewModel,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    zoomed: MutableState<ZoomedImage?> = rememberSaveable(stateSaver = ZoomedImage.Saver) {
+        mutableStateOf(null)
+    },
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
-    Scaffold(
-        modifier = modifier,
-        topBar = {
-            TopAppBar(
-                title = {},
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.action_back),
-                            modifier = Modifier.size(Dimens.icon),
-                        )
-                    }
-                },
-                actions = {
-                    val loaded = state as? ArticleUiState.Loaded
-                    if (loaded != null) {
-                        // Filled when on, outlined when off (U09). The two toggles read as
-                        // one pair, so they share the treatment: the glyph carries the
-                        // state, the tint only emphasises it.
-                        ToggleAction(
-                            on = loaded.isLiked,
-                            onIcon = Icons.Filled.Favorite,
-                            offIcon = Icons.Outlined.FavoriteBorder,
-                            labelRes = if (loaded.isLiked) {
-                                R.string.entry_action_unlike
-                            } else {
-                                R.string.entry_action_like
-                            },
-                            testTag = ArticleTestTags.LIKE,
-                            onClick = viewModel::toggleLiked,
-                        )
-                        ToggleAction(
-                            on = loaded.isSaved,
-                            onIcon = Icons.Filled.Bookmark,
-                            offIcon = Icons.Outlined.BookmarkBorder,
-                            labelRes = if (loaded.isSaved) {
-                                R.string.entry_action_unsave
-                            } else {
-                                R.string.entry_action_save
-                            },
-                            testTag = ArticleTestTags.SAVE,
-                            onClick = viewModel::toggleSaved,
-                        )
-                    }
-                    loaded?.link?.let { link ->
-                        IconButton(
-                            onClick = { openInBrowser(context, link) },
-                            modifier = Modifier.testTag(ArticleTestTags.OPEN_IN_BROWSER),
-                        ) {
+    Box(modifier = modifier.fillMaxSize()) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {},
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Filled.OpenInNew,
-                                contentDescription = stringResource(R.string.action_open_in_browser),
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.action_back),
                                 modifier = Modifier.size(Dimens.icon),
                             )
                         }
-                    }
-                    if (loaded != null) {
-                        Overflow(loaded, onLoadFullArticle = viewModel::loadFullArticle)
-                    }
-                },
-            )
-        },
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-        ) {
-            when (val current = state) {
-                ArticleUiState.Loading -> Unit
-                ArticleUiState.Missing -> Text(
-                    text = stringResource(R.string.article_missing),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(horizontal = Dimens.screenHorizontal),
+                    },
+                    actions = {
+                        val loaded = state as? ArticleUiState.Loaded
+                        if (loaded != null) {
+                            // Filled when on, outlined when off (U09). The two toggles read as
+                            // one pair, so they share the treatment: the glyph carries the
+                            // state, the tint only emphasises it.
+                            ToggleAction(
+                                on = loaded.isLiked,
+                                onIcon = Icons.Filled.Favorite,
+                                offIcon = Icons.Outlined.FavoriteBorder,
+                                labelRes = if (loaded.isLiked) {
+                                    R.string.entry_action_unlike
+                                } else {
+                                    R.string.entry_action_like
+                                },
+                                testTag = ArticleTestTags.LIKE,
+                                onClick = viewModel::toggleLiked,
+                            )
+                            ToggleAction(
+                                on = loaded.isSaved,
+                                onIcon = Icons.Filled.Bookmark,
+                                offIcon = Icons.Outlined.BookmarkBorder,
+                                labelRes = if (loaded.isSaved) {
+                                    R.string.entry_action_unsave
+                                } else {
+                                    R.string.entry_action_save
+                                },
+                                testTag = ArticleTestTags.SAVE,
+                                onClick = viewModel::toggleSaved,
+                            )
+                        }
+                        loaded?.link?.let { link ->
+                            IconButton(
+                                onClick = { openInBrowser(context, link) },
+                                modifier = Modifier.testTag(ArticleTestTags.OPEN_IN_BROWSER),
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.OpenInNew,
+                                    contentDescription = stringResource(R.string.action_open_in_browser),
+                                    modifier = Modifier.size(Dimens.icon),
+                                )
+                            }
+                        }
+                        if (loaded != null) {
+                            Overflow(loaded, onLoadFullArticle = viewModel::loadFullArticle)
+                        }
+                    },
                 )
-                is ArticleUiState.Loaded -> Column(modifier = Modifier.fillMaxSize()) {
-                    // A hairline under the app bar rather than a spinner over the text:
-                    // the body — excerpt or not — stays readable the whole time the
-                    // article is being fetched (U10).
-                    if (current.isFetchingFullText) {
-                        LinearProgressIndicator(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .testTag(ArticleTestTags.FULL_TEXT_PROGRESS),
+            },
+        ) { innerPadding ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+            ) {
+                when (val current = state) {
+                    ArticleUiState.Loading -> Unit
+                    ArticleUiState.Missing -> Text(
+                        text = stringResource(R.string.article_missing),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(horizontal = Dimens.screenHorizontal),
+                    )
+                    is ArticleUiState.Loaded -> Column(modifier = Modifier.fillMaxSize()) {
+                        // A hairline under the app bar rather than a spinner over the text:
+                        // the body — excerpt or not — stays readable the whole time the
+                        // article is being fetched (U10).
+                        if (current.isFetchingFullText) {
+                            LinearProgressIndicator(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .testTag(ArticleTestTags.FULL_TEXT_PROGRESS),
+                            )
+                        }
+                        Article(
+                            state = current,
+                            onOpenLink = { url -> openInBrowser(context, url) },
+                            onOpenImage = { image -> zoomed.value = ZoomedImage(image.url, image.alt) },
                         )
                     }
-                    Article(current) { url -> openInBrowser(context, url) }
                 }
             }
+        }
+
+        // A sibling of the whole screen, app bar included: the viewer is full-bleed, and
+        // it is an overlay rather than a destination so that the article — its scroll
+        // position, its selection, its in-flight full-text fetch — is still there
+        // underneath when it closes.
+        zoomed.value?.let { image ->
+            ImageViewer(image = image, onDismiss = { zoomed.value = null })
         }
     }
 }
@@ -233,7 +253,11 @@ private fun ToggleAction(
 }
 
 @Composable
-private fun Article(state: ArticleUiState.Loaded, onOpenLink: (String) -> Unit) {
+private fun Article(
+    state: ArticleUiState.Loaded,
+    onOpenLink: (String) -> Unit,
+    onOpenImage: (ArticleBlock.Image) -> Unit,
+) {
     SelectionContainer {
         Column(
             modifier = Modifier
@@ -278,6 +302,7 @@ private fun Article(state: ArticleUiState.Loaded, onOpenLink: (String) -> Unit) 
                         blocks = state.blocks,
                         articleLink = state.link,
                         onOpenLink = onOpenLink,
+                        onOpenImage = onOpenImage,
                     )
                 }
 
@@ -339,6 +364,9 @@ object ArticleTestTags {
     const val CODE_TEXT = "article:code-text"
     const val CODE_GUTTER = "article:code-gutter"
     const val IMAGE = "article:image"
+    const val IMAGE_VIEWER = "article:image-viewer"
+    const val IMAGE_VIEWER_IMAGE = "article:image-viewer-image"
+    const val IMAGE_VIEWER_CLOSE = "article:image-viewer-close"
     const val QUOTE = "article:quote"
     const val TABLE = "article:table"
     const val TABLE_HEADER = "article:table-header"

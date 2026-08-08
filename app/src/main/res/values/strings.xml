@@ -173,6 +173,8 @@
     <string name="article_read_on_web">Read on the web</string>
     <string name="article_empty_body">This entry has no text in the feed.</string>
     <!-- Stands in for an iframe, a video, or anything else the block model cannot draw. -->
+    <string name="image_viewer_close">Close image</string>
+    <string name="image_viewer_open">Open image full screen</string>
     <string name="article_embed">Embedded content · open on the web</string>
 
     <!-- Settings -->

@@ -304,6 +304,18 @@ mono one — see §3.
   aspect ratio reserved *before* load so nothing reflows. `figcaption` → Caption style
   directly beneath, 8dp gap. A failed load collapses to nothing — never a broken glyph,
   never a grey box mid-sentence. 24dp above and below.
+  **Tapping a figure opens it full screen** (U12): the article goes to a near-opaque
+  scrim, the image fades up to fit the width, and pinch, double-tap and pan take over.
+  Zoom is clamped 1×–5× with a rubber band past the stops rather than a hard wall, and pan
+  is fenced to the scaled image so it can never be flung into empty space. **Drag-down
+  dismisses only at fit** — while zoomed every drag is a pan, or the viewer closes itself
+  under a reader who is examining a corner of a schematic. The scrim's alpha tracks the
+  drag, so the article reappearing *is* the affordance that says the gesture will dismiss.
+  Back, a tap anywhere, and a close button in the top-left all leave; the viewer is an
+  overlay over the article rather than a destination, so what it closes back to is the
+  article itself, still scrolled where it was. Its furniture is the one thing in the app
+  that does not take a theme colour — the overlay is dark in both themes, so it addresses
+  `ViewerColors` (`ui/theme/Color.kt`) instead of `onSurface`, which would vanish in light.
 - **Pull-quotes**: 24dp vertical margin, 20dp left inset, 2dp `primary` left rule at
   0.4 alpha. Attribution line in Caption style.
 - **Lists**: 20dp marker gutter, hanging indent so wrapped lines align to the text.

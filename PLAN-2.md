@@ -472,7 +472,7 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
         table; `./gradlew test` green.
       - Rung: screenshot
 
-- [ ] **U12 — Tap-to-zoom image viewer. TDD + screenshot.** Tapping an image in an article
+- [x] **U12 — Tap-to-zoom image viewer. TDD + screenshot.** Tapping an image in an article
       opens a full-screen overlay: the image animates to fit the width, the article behind
       it fades to a scrim, and the user can **pinch-zoom, double-tap-to-zoom, and pan**.
       Dismissal must be effortless and must always work: back button, tap outside, and

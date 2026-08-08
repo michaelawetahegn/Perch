@@ -22,6 +22,14 @@ enum class BackStep {
     /** An open drawer, sheet or dialog. It goes next — it is on top of everything else. */
     CloseOverlay,
 
+    /**
+     * The full-screen image viewer (U12) closes, leaving the article behind it untouched.
+     *
+     * Below [CloseOverlay] and above [PopArticle]: the viewer is opened *from* an article
+     * and drawn over it, so back must peel it off before the article itself goes anywhere.
+     */
+    CloseImageViewer,
+
     /** An article returns to the list it was opened from. */
     PopArticle,
 
@@ -52,6 +60,9 @@ enum class BackStep {
  *   each answer back themselves and, being composed deeper, win the dispatcher before the
  *   root handler is reached — this rung is what keeps the policy true anyway if one of
  *   them ever stops doing so.
+ * @param imageViewerOpen a figure is open full screen over the article (U12). Answered by
+ *   the viewer's own handler, which is composed deeper and so is reached first; the rung
+ *   exists here for the same reason [overlayOpen] does.
  * @param onArticle the article route is on top of the stack. `NavHost` pops it, so this
  *   rung exists to keep the root handler *out of the way* of predictive back.
  * @param tab which of §0's three destinations is showing.
@@ -60,6 +71,7 @@ enum class BackStep {
 data class BackState(
     val selectionActive: Boolean = false,
     val overlayOpen: Boolean = false,
+    val imageViewerOpen: Boolean = false,
     val onArticle: Boolean = false,
     val tab: PerchTab = PerchTab.Feed,
     val feedScrolled: Boolean = false,
@@ -74,6 +86,7 @@ data class BackState(
 fun nextBackStep(state: BackState): BackStep = when {
     state.selectionActive -> BackStep.LeaveSelection
     state.overlayOpen -> BackStep.CloseOverlay
+    state.imageViewerOpen -> BackStep.CloseImageViewer
     state.onArticle -> BackStep.PopArticle
     state.tab != PerchTab.Feed -> BackStep.ReturnToFeed
     state.feedScrolled -> BackStep.ScrollFeedToTop

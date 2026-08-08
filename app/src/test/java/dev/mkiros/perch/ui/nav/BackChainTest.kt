@@ -50,6 +50,21 @@ class BackChainTest {
         assertThat(step).isEqualTo(BackStep.CloseOverlay)
     }
 
+    /**
+     * U12's rung. The viewer is drawn over the article rather than pushed onto the stack,
+     * so a back press that popped the article would take the reader out of the piece they
+     * were reading to close a picture — and the picture would still be the last thing they
+     * saw of it.
+     */
+    @Test
+    fun `back closes the image viewer before it leaves the article`() {
+        val step = nextBackStep(
+            BackState(imageViewerOpen = true, onArticle = true, feedScrolled = true),
+        )
+
+        assertThat(step).isEqualTo(BackStep.CloseImageViewer)
+    }
+
     @Test
     fun `an article pops before the tab changes`() {
         val step = nextBackStep(
@@ -111,6 +126,7 @@ class BackChainTest {
         assertThat(BackStep.entries).containsExactly(
             BackStep.LeaveSelection,
             BackStep.CloseOverlay,
+            BackStep.CloseImageViewer,
             BackStep.PopArticle,
             BackStep.ReturnToFeed,
             BackStep.ScrollFeedToTop,

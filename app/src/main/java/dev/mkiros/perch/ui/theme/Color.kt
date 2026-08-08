@@ -160,3 +160,22 @@ internal val PerchDarkColors: ColorScheme = darkColorScheme(
     surfaceContainerLow = Neutral10,
     surfaceContainerLowest = Neutral04,
 )
+
+/**
+ * The full-screen image viewer's two colours (U12).
+ *
+ * The viewer is the one surface in the app that does not follow the theme, and it is not
+ * an exception made lightly: a photograph or a diagram is judged against black in both
+ * light and dark, so the overlay is dark either way. Its furniture therefore cannot
+ * address `onSurface` — in a light theme that is near-black and the close button would
+ * disappear into the scrim — and a tone named here is the alternative to a raw `Color(0x…)`
+ * in a feature package, which DESIGN.md §2 does not allow.
+ */
+object ViewerColors {
+
+    /** The scrim the article fades to. The same black `colorScheme.scrim` uses. */
+    val scrim = Neutral00
+
+    /** Anything drawn *on* the scrim: the close button, and nothing else so far. */
+    val onScrim = Neutral98
+}
