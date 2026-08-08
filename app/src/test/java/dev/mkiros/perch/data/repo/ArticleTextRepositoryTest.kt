@@ -135,6 +135,55 @@ class ArticleTextRepositoryTest {
         assertThat(entries.findById(id)!!.imageUrl).isEqualTo("https://example.com/img/card.png")
     }
 
+    /**
+     * The two questions the fetch answers are independent (U15 gate 4). A feed that ships
+     * the whole article but no picture is the commonest shape there is, and the page it
+     * links to almost always carries a social card — so a body argument the page loses must
+     * not take the thumbnail down with it. The body stays exactly as the feed wrote it.
+     */
+    @Test
+    fun `a page whose article loses to the feed body still hands over its og image`() = runTest {
+        val body = "<p>${"The feed already shipped the whole article. ".repeat(80)}</p>"
+        val page = """
+            <html><head><meta property="og:image" content="/img/card.png"></head>
+            <body><article><p>A stub.</p></article></body></html>
+        """.trimIndent()
+        val id = entries.insert(entry(link = "https://example.com/post/", contentHtml = body))
+
+        val recovered = repositoryServing(page = page, url = "https://example.com/post/")
+            .loadFullText(id)
+
+        assertThat(recovered).isNull()
+        val stored = entries.findById(id)!!
+        assertThat(stored.imageUrl).isEqualTo("https://example.com/img/card.png")
+        assertThat(stored.contentHtml).isEqualTo(body)
+        assertThat(stored.fullTextAt).isNull()
+    }
+
+    /**
+     * §0's chain is `media:*` → `enclosure` → **the first real `<img>` in the body** →
+     * `og:image`, and the body it means is whichever one the reader ends up with. Once an
+     * extraction has replaced the feed's body, the recovered article's own lead picture is
+     * that rung — a diagram the author drew for the piece, rather than the site-wide social
+     * card a `og:image` so often is. Only when the recovered body has no picture at all
+     * does the card get its turn.
+     */
+    @Test
+    fun `a recovered body's own first image outranks the page's social card`() = runTest {
+        val page = """
+            <html><head><meta property="og:image" content="/img/site-card.png"></head>
+            <body><article>
+              <p>${"Real prose with commas, and length. ".repeat(30)}</p>
+              <img src="/img/diagram.png" width="800" height="600">
+            </article></body></html>
+        """.trimIndent()
+        val id = entries.insert(entry(link = "https://example.com/post/", contentHtml = null))
+
+        repositoryServing(page = page, url = "https://example.com/post/").loadFullText(id)
+
+        assertThat(entries.findById(id)!!.imageUrl).isEqualTo("https://example.com/img/diagram.png")
+    }
+
     @Test
     fun `an entry that already has a thumbnail keeps the one the feed gave it`() = runTest {
         val page = """

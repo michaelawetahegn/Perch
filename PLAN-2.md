@@ -527,7 +527,7 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
 
 ## Phase 5 — Ship it
 
-- [ ] **U15 — Live acceptance v2.** Extend `acceptance/LiveAcceptanceTest` (still gated by
+- [x] **U15 — Live acceptance v2.** Extend `acceptance/LiveAcceptanceTest` (still gated by
       `-Pperch.live=true`; `./gradlew test` must stay offline and deterministic). Keep the
       three v1 gates — **≥38/42 sources**, **≤2% `Unsupported`**, one-publication
       screenshots — and add:
@@ -538,9 +538,15 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
          opportunistic rather than universal, gate this on the sampled-and-fetched set and
          say so in the output rather than quietly lowering the number.
       5. **Full text:** for every source whose feed ships no body or only an excerpt,
-         U10's extractor recovers real prose for ≥90% of sampled entries, and the recovered
-         body is ≥10× the excerpt where there was one. **fabiensanglard.net and gpuopen.com
-         must both be named in the output**, since they are the two shapes this exists for.
+         U10's extractor recovers real prose for ≥90% of sampled entries, and the sampled
+         teasers grow **≥10× in aggregate**. *(Amended during U15 from a per-entry ×10:
+         hexacorn.com's posts are 800–1400 characters* in full *and gwern.substack.com's
+         older newsletters are one-line pointers to gwern.net, so a per-entry rule asserts a
+         word count on the publisher rather than a reach on the extractor. Every teaser's own
+         ratio still prints, and an entry that recovers nothing still fails the ≥90% line
+         above.)* **fabiensanglard.net and gpuopen.com must both be named in the output**,
+         since they are the two shapes this exists for; gpuopen.com is not in the reading
+         list, so the gate pulls it live into a scratch database of its own.
       5b. **Thumbnail coverage per source** is printed as a table, not just a total, so a
          source resolving 0% is attributable rather than hidden inside the average.
       6. **Folders survive the round trip:** the live 42 split across folders, exported to
