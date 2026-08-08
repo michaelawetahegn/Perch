@@ -195,13 +195,17 @@ class AddSourceSheetTest {
     // ---- harness ---------------------------------------------------------------
 
     private fun showSheet() {
-        viewModel = AddSourceViewModel(container.feeds)
+        viewModel = AddSourceViewModel(container.feeds, container.folders)
         compose.setContent {
             val state by viewModel.state.collectAsStateWithLifecycle()
+            val folders by viewModel.folders.collectAsStateWithLifecycle()
             PerchTheme(dynamicColor = false) {
                 AddSourceSheetContent(
                     state = state,
+                    folders = folders.map { it.id to it.name },
                     onUrlChange = viewModel::onUrlChange,
+                    onFolderChange = viewModel::onFolderChange,
+                    onNewFolder = {},
                     onSubmit = viewModel::submit,
                 )
             }

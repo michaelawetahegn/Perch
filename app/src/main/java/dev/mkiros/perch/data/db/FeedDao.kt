@@ -27,6 +27,10 @@ interface FeedDao {
     @Query("SELECT * FROM feeds ORDER BY sortIndex ASC")
     suspend fun getAll(): List<FeedEntity>
 
+    /** The sources filed under one folder, for a refresh scoped to it (U06). */
+    @Query("SELECT * FROM feeds WHERE folderId = :folderId ORDER BY sortIndex ASC")
+    suspend fun getByFolder(folderId: Long): List<FeedEntity>
+
     @Query("SELECT * FROM feeds WHERE id = :id")
     suspend fun findById(id: Long): FeedEntity?
 

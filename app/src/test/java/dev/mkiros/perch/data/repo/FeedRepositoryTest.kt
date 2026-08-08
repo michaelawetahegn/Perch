@@ -162,7 +162,7 @@ class FeedRepositoryTest {
             val first = repo.refresh(id) as FeedRefreshOutcome.Updated
             assertThat(first.newEntries).isGreaterThan(0)
             val afterFirst = entries.countAll()
-            val readId = entries.unreadIds(id).first()
+            val readId = entries.unreadIds(id, folderId = null).first()
             entries.setRead(listOf(readId), isRead = true, readAt = now)
 
             val second = repo.refresh(id)
@@ -189,7 +189,7 @@ class FeedRepositoryTest {
         server.enqueue(ok(snapshot))
         val id = addFeed()
         repo.refresh(id)
-        val entryId = entries.unreadIds(id).first()
+        val entryId = entries.unreadIds(id, folderId = null).first()
         val stored = entries.findById(entryId)!!
         entries.update(
             stored.copy(

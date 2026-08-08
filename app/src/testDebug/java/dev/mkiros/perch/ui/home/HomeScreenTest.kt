@@ -525,9 +525,10 @@ class HomeScreenTest {
         viewModel = HomeViewModel(
             entries = container.entries,
             feeds = container.feeds,
+            folders = container.folders,
             clock = clock,
         )
-        val addSourceViewModel = AddSourceViewModel(container.feeds)
+        val addSourceViewModel = AddSourceViewModel(container.feeds, container.folders)
         compose.setContent {
             PerchTheme(dynamicColor = false) {
                 HomeScreen(

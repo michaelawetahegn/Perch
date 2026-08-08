@@ -93,13 +93,16 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
 │    Snippet (≤2 lines)                │
 │    Source · 3h ago          [thumb]  │
 └──────────────────────────────────────┘
-  ModalNavigationDrawer (swipe / hamburger):
+  ModalNavigationDrawer (swipe / hamburger) — scopes the Feed, nothing else:
     All unread            (12)
     ─────────────────────────
-    ● source name         (3)   ← long-press: rename / remove
-    ⚠ failing source      (!)   ← error state, tappable for the message
+    ⌄ Folder name         (9) ⋮  ← chevron: expand/collapse · name: scope the list
+      ● source name       (3)     ⋮: rename / delete (absent on Uncategorized)
+      ⚠ failing source    (!)   ← long-press a source: rename / move / remove
+    ⌄ Uncategorized      (57)   ← always last; sources with no folder chosen
     ─────────────────────────
-    + Add source                → bottom sheet
+    + Add source                → bottom sheet (which also picks the folder)
+    + New folder                → name dialog
     Settings
   FAB is NOT used on home. Adding a source is a drawer/overflow action; a FAB
   over a reading list is a Material cargo-cult.

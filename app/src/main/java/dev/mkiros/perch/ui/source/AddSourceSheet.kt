@@ -1,5 +1,6 @@
 package dev.mkiros.perch.ui.source
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,15 +11,22 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
@@ -28,6 +36,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.mkiros.perch.R
+import dev.mkiros.perch.data.db.entity.FolderEntity
+import dev.mkiros.perch.ui.home.FolderNameDialog
 import dev.mkiros.perch.ui.theme.Dimens
 
 /**
@@ -49,7 +59,9 @@ fun AddSourceSheet(
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val folders by viewModel.folders.collectAsStateWithLifecycle()
     val sheetState = rememberModalBottomSheetState()
+    var creatingFolder by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(state.addedFeedId) {
         if (state.addedFeedId != null) {
@@ -68,8 +80,22 @@ fun AddSourceSheet(
     ) {
         AddSourceSheetContent(
             state = state,
+            folders = folders.map { it.id to it.name },
             onUrlChange = viewModel::onUrlChange,
+            onFolderChange = viewModel::onFolderChange,
+            onNewFolder = { creatingFolder = true },
             onSubmit = viewModel::submit,
+        )
+    }
+
+    if (creatingFolder) {
+        FolderNameDialog(
+            title = stringResource(R.string.folder_new_title),
+            onConfirm = { name ->
+                creatingFolder = false
+                viewModel.createFolder(name)
+            },
+            onDismiss = { creatingFolder = false },
         )
     }
 }
@@ -82,7 +108,10 @@ fun AddSourceSheet(
 @Composable
 fun AddSourceSheetContent(
     state: AddSourceUiState,
+    folders: List<Pair<Long, String>>,
     onUrlChange: (String) -> Unit,
+    onFolderChange: (Long) -> Unit,
+    onNewFolder: () -> Unit,
     onSubmit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -114,6 +143,13 @@ fun AddSourceSheetContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag(AddSourceTestTags.URL_FIELD),
+        )
+
+        FolderPicker(
+            folders = folders,
+            selectedId = state.folderId,
+            onSelect = onFolderChange,
+            onNewFolder = onNewFolder,
         )
 
         state.error?.let { error ->
@@ -175,6 +211,55 @@ fun AddSourceSheetContent(
     }
 }
 
+/**
+ * Where the source about to be followed will land (U06).
+ *
+ * A quiet text button rather than a labelled field: the default — Uncategorized — is right
+ * for most sources and for every reader who does not use folders, so this states the
+ * destination without asking a question. "New folder…" is on the menu because deciding to
+ * file something is exactly when a reader realises the folder does not exist yet.
+ */
+@Composable
+private fun FolderPicker(
+    folders: List<Pair<Long, String>>,
+    selectedId: Long,
+    onSelect: (Long) -> Unit,
+    onNewFolder: () -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val selectedName = folders.firstOrNull { it.first == selectedId }?.second
+        ?: FolderEntity.UNCATEGORIZED_NAME
+
+    Box {
+        TextButton(
+            onClick = { expanded = true },
+            modifier = Modifier.testTag(AddSourceTestTags.FOLDER),
+        ) {
+            Text(stringResource(R.string.add_source_folder, selectedName))
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            folders.forEach { (id, name) ->
+                DropdownMenuItem(
+                    text = { Text(name) },
+                    onClick = {
+                        expanded = false
+                        onSelect(id)
+                    },
+                    modifier = Modifier.testTag(AddSourceTestTags.folderChoice(id)),
+                )
+            }
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.folder_new)) },
+                onClick = {
+                    expanded = false
+                    onNewFolder()
+                },
+                modifier = Modifier.testTag(AddSourceTestTags.NEW_FOLDER),
+            )
+        }
+    }
+}
+
 /** What the sheet says when a paste did not become a source. */
 @Composable
 private fun AddSourceError.message(): String = when (this) {
@@ -191,4 +276,8 @@ object AddSourceTestTags {
     const val SUBMIT = "add-source:submit"
     const val ERROR = "add-source:error"
     const val CONFIRMATION = "add-source:confirmation"
+    const val FOLDER = "add-source:folder"
+    const val NEW_FOLDER = "add-source:folder:new"
+
+    fun folderChoice(folderId: Long) = "add-source:folder:$folderId"
 }

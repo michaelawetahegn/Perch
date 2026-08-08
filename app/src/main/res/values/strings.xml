@@ -41,8 +41,29 @@
     <!-- Content description of the ⚠ beside a source whose last refresh failed. -->
     <string name="drawer_source_error">Not updating</string>
 
-    <!-- Drawer: long-press a source to rename or remove it (DESIGN.md §5) -->
+    <!-- Drawer: folder sections (PLAN-2 §0, U06) -->
+    <string name="drawer_new_folder">New folder</string>
+    <!-- Content description of the chevron that shows or hides a folder's sources. -->
+    <string name="folder_collapse">Collapse %1$s</string>
+    <string name="folder_expand">Expand %1$s</string>
+    <!-- Content description of the ⋮ on a folder header. -->
+    <string name="folder_more">More options for %1$s</string>
+    <string name="folder_action_rename">Rename folder</string>
+    <string name="folder_action_delete">Delete folder</string>
+    <string name="folder_new_title">New folder</string>
+    <string name="folder_rename_title">Rename folder</string>
+    <string name="folder_name_label">Folder name</string>
+    <string name="folder_name_confirm">Save</string>
+    <string name="folder_delete_title">Delete %1$s?</string>
+    <!-- A folder is a grouping, never an owner: deleting one costs no subscriptions. -->
+    <string name="folder_delete_body">Its sources move to Uncategorized. Nothing is unfollowed.</string>
+    <string name="folder_delete_confirm">Delete</string>
+    <string name="folder_move_title">Move %1$s to</string>
+    <string name="folder_new">New folder…</string>
+
+    <!-- Drawer: long-press a source to rename, move or remove it (DESIGN.md §5, U06) -->
     <string name="source_action_rename">Rename</string>
+    <string name="source_action_move">Move to folder</string>
     <string name="source_action_remove">Remove</string>
     <string name="source_rename_title">Rename source</string>
     <string name="source_rename_label">Display name</string>
@@ -56,6 +77,8 @@
 
     <!-- Add source (DESIGN.md §5): paste, resolve, confirm, commit -->
     <string name="drawer_add_source">Add source</string>
+    <!-- Which folder the source about to be followed will land in (U06). -->
+    <string name="add_source_folder">Folder: %1$s</string>
     <string name="add_source_title">Add a source</string>
     <string name="add_source_field_label">Feed or site address</string>
     <!-- First tap: work out what the pasted address is. -->

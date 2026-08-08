@@ -99,6 +99,7 @@ class DesignScreenshotTest {
     @Test
     fun `the source drawer over the list`() {
         seed()
+        sortIntoFolders()
         showHome(ThemeMode.Dark)
         compose.onNodeWithContentDescription("Open sources").performClick()
         compose.waitForIdle()
@@ -156,6 +157,25 @@ class DesignScreenshotTest {
         assertThat(added).isGreaterThan(0)
     }
 
+    /**
+     * Splits the seeded sources across folders so the drawer shot shows what U06 built —
+     * two named sections and the built-in one — rather than a flat list under a single
+     * header, which is what an unsorted seed would produce.
+     */
+    private fun sortIntoFolders() = runBlocking {
+        val byHost = database.feedDao().getAll().associateBy { feed ->
+            feed.feedUrl.substringAfter("://").substringBefore("/")
+        }
+        FOLDER_LAYOUT.forEach { (name, hosts) ->
+            val folderId = container.folders.createFolder(name)
+            hosts.forEach { host ->
+                byHost.entries.firstOrNull { it.key.contains(host) }?.let { (_, feed) ->
+                    container.folders.moveSource(feed.id, folderId)
+                }
+            }
+        }
+    }
+
     /** An entry with a body, from the source whose feed URL contains [host]. */
     private fun firstReadableEntryOf(host: String): Long = runBlocking {
         val feed = database.feedDao().getAll().first { it.feedUrl.contains(host) }
@@ -168,9 +188,10 @@ class DesignScreenshotTest {
         homeViewModel = HomeViewModel(
             entries = container.entries,
             feeds = container.feeds,
+            folders = container.folders,
             clock = clock,
         )
-        val addSourceViewModel = AddSourceViewModel(container.feeds)
+        val addSourceViewModel = AddSourceViewModel(container.feeds, container.folders)
         compose.setContent {
             PerchTheme(mode = mode, dynamicColor = false) {
                 HomeScreen(
@@ -183,6 +204,15 @@ class DesignScreenshotTest {
         }
         compose.awaitInRealTime("the list to load") { !homeViewModel.uiState.value.isLoading }
     }
+
+    /**
+     * How the eight seeded sources split up. Two folders and a remainder, deliberately:
+     * the shot has to show sections *and* the built-in Uncategorized one below them.
+     */
+    private val FOLDER_LAYOUT = listOf(
+        "Systems" to listOf("nullprogram.com", "blog.regehr.org", "fabiensanglard.net"),
+        "Security" to listOf("doar-e.github.io", "krebsonsecurity.com"),
+    )
 
     private fun showArticle(entryId: Long) {
         val viewModel = ArticleViewModel(

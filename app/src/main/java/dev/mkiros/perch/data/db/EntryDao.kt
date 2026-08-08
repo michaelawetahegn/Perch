@@ -37,6 +37,9 @@ abstract class EntryDao {
      * @param feedId the drawer's per-source filter; null is the unified inbox. Filtering
      *   in SQL rather than in the UI keeps the "which rows exist" question in one place,
      *   so a filtered list re-emits on a write the same way the unified one does.
+     * @param folderId the drawer's per-folder scope (U06); null is every folder. It is a
+     *   second predicate rather than a resolved list of feed ids because membership is a
+     *   column on `feeds` that a move can change under us — the join already knows.
      */
     @Query(
         """
@@ -45,10 +48,15 @@ abstract class EntryDao {
                COALESCE(NULLIF(TRIM(f.customTitle), ''), f.title) AS sourceTitle
         FROM entries e JOIN feeds f ON f.id = e.feedId
         WHERE (:includeRead OR e.isRead = 0) AND (:feedId IS NULL OR e.feedId = :feedId)
+          AND (:folderId IS NULL OR f.folderId = :folderId)
         ORDER BY e.publishedAt DESC, e.id DESC
         """,
     )
-    abstract fun observeListItems(feedId: Long?, includeRead: Boolean): Flow<List<EntryListItem>>
+    abstract fun observeListItems(
+        feedId: Long?,
+        folderId: Long?,
+        includeRead: Boolean,
+    ): Flow<List<EntryListItem>>
 
     @Query("SELECT * FROM entries WHERE id = :id")
     abstract suspend fun findById(id: Long): EntryEntity?
@@ -80,15 +88,22 @@ abstract class EntryDao {
     abstract fun observeUnreadCountsByFeed():
         Flow<Map<@MapColumn("feedId") Long, @MapColumn("unreadCount") Int>>
 
-    /** Unread ids, optionally scoped to one source. `null` means every source. */
+    /**
+     * Unread ids, optionally scoped to one source or one folder. `null` means every one.
+     *
+     * The scope has to match [observeListItems]' exactly: mark-all-read is "everything the
+     * reader is looking at", so a drawer scoped to a folder that flipped the whole inbox
+     * would be marking articles the reader cannot see as read.
+     */
     @Query(
         """
-        SELECT id FROM entries
-        WHERE isRead = 0 AND (:feedId IS NULL OR feedId = :feedId)
-        ORDER BY id
+        SELECT e.id FROM entries e JOIN feeds f ON f.id = e.feedId
+        WHERE e.isRead = 0 AND (:feedId IS NULL OR e.feedId = :feedId)
+          AND (:folderId IS NULL OR f.folderId = :folderId)
+        ORDER BY e.id
         """,
     )
-    abstract suspend fun unreadIds(feedId: Long?): List<Long>
+    abstract suspend fun unreadIds(feedId: Long?, folderId: Long?): List<Long>
 
     @Query("UPDATE entries SET isRead = :isRead, readAt = :readAt WHERE id IN (:ids)")
     abstract suspend fun setReadForIds(ids: List<Long>, isRead: Boolean, readAt: Long?)

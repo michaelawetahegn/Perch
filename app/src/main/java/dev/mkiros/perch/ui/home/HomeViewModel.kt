@@ -5,9 +5,12 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.mkiros.perch.data.db.EntryListItem
+import dev.mkiros.perch.data.db.entity.FeedEntity
+import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.net.ConnectivityMonitor
 import dev.mkiros.perch.data.repo.EntryRepository
 import dev.mkiros.perch.data.repo.FeedRepository
+import dev.mkiros.perch.data.repo.FolderRepository
 import dev.mkiros.perch.data.repo.MarkAllReadUndo
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.di.AppContainer
@@ -23,6 +26,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
@@ -37,6 +41,8 @@ import kotlinx.coroutines.launch
  *   showing 0, it does not vanish.
  * @param errorMessage why the source's last refresh failed, already phrased for a reader
  *   by [FeedRepository]. The drawer shows only `⚠`; the banner above the list shows this.
+ * @param folderId the section it is nested under (U06). Never null — a source with no
+ *   folder chosen is in Uncategorized, which is a real folder (PLAN-2 §0).
  */
 data class SourceUiItem(
     val id: Long,
@@ -44,12 +50,51 @@ data class SourceUiItem(
     val customTitle: String?,
     val unreadCount: Int,
     val errorMessage: String?,
+    val folderId: Long = FolderEntity.UNCATEGORIZED_ID,
 ) {
     /** What the drawer and the app bar actually show. */
     val title: String get() = customTitle?.takeIf { it.isNotBlank() } ?: publishedTitle
 
     /** The drawer's `⚠` affordance. */
     val hasError: Boolean get() = errorMessage != null
+}
+
+/**
+ * One folder section of the drawer (PLAN-2 §0, U06).
+ *
+ * @param unreadCount the folder's own `GROUP BY` count, not a sum of [sources]' counts —
+ *   see [dev.mkiros.perch.data.db.FolderDao.observeUnreadCountsByFolder]. Zero is a real
+ *   value: a fully-read folder stays in the drawer showing 0.
+ * @param isBuiltIn Uncategorized, which the reader may neither rename nor delete, so its
+ *   header carries no overflow at all rather than an overflow whose items do nothing.
+ */
+data class FolderUiItem(
+    val id: Long,
+    val name: String,
+    val unreadCount: Int,
+    val sources: List<SourceUiItem>,
+) {
+    val isBuiltIn: Boolean get() = id == FolderEntity.UNCATEGORIZED_ID
+}
+
+/**
+ * What the drawer has narrowed the reading list to (PLAN-2 §0).
+ *
+ * Folder and source are siblings rather than a hierarchy: they are two independent SQL
+ * predicates, so nothing here has to resolve a folder into the feeds it holds — a move
+ * would invalidate that list the moment it happened.
+ */
+sealed interface HomeScope {
+
+    /** The unified inbox. */
+    data object All : HomeScope
+
+    data class Folder(val id: Long) : HomeScope
+
+    data class Source(val id: Long) : HomeScope
+
+    val feedId: Long? get() = (this as? Source)?.id
+    val folderId: Long? get() = (this as? Folder)?.id
 }
 
 /**
@@ -80,7 +125,9 @@ sealed interface HomeBanner {
  *   "add your first source" with zero sources and "you're all caught up" with any.
  * @param nowMillis the instant the row timestamps are relative to, fixed per emission so
  *   the list cannot render two different "now"s.
- * @param selectedFeedId the drawer's filter; null is the unified inbox.
+ * @param folders the drawer's sections, in folder order with Uncategorized last. Every
+ *   source in [sources] appears in exactly one of them.
+ * @param scope the drawer's filter; [HomeScope.All] is the unified inbox.
  * @param selectedTitle the display name to put in the app bar, or null for "Unread".
  *   It is derived from the same emission [entries] came from, so the bar can never name
  *   one source while the list shows another.
@@ -93,10 +140,14 @@ data class HomeUiState(
     val hasSources: Boolean = false,
     val nowMillis: Long = 0L,
     val sources: List<SourceUiItem> = emptyList(),
-    val selectedFeedId: Long? = null,
+    val folders: List<FolderUiItem> = emptyList(),
+    val scope: HomeScope = HomeScope.All,
     val selectedTitle: String? = null,
     val banner: HomeBanner? = null,
-)
+) {
+    val selectedFeedId: Long? get() = scope.feedId
+    val selectedFolderId: Long? get() = scope.folderId
+}
 
 /**
  * Home's state: the reading list, the source drawer, the filter that ties them together,
@@ -105,6 +156,7 @@ data class HomeUiState(
 class HomeViewModel(
     private val entries: EntryRepository,
     private val feeds: FeedRepository,
+    private val folders: FolderRepository,
     clock: Clock,
     connectivity: ConnectivityMonitor = ConnectivityMonitor.AlwaysOnline,
     settings: SettingsStore = SettingsStore.inMemory(),
@@ -114,23 +166,50 @@ class HomeViewModel(
     val totalUnread: StateFlow<Int> = entries.observeTotalUnreadCount()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), 0)
 
-    private val selectedFeedId = MutableStateFlow<Long?>(null)
+    private val scope = MutableStateFlow<HomeScope>(HomeScope.All)
+
+    /**
+     * Which folder sections are shut. Collapsed rather than expanded ids so that a folder
+     * created while the drawer is open comes up open, and so the default — everything
+     * visible — is the empty set.
+     */
+    private val _collapsedFolders = MutableStateFlow<Set<Long>>(emptySet())
+    val collapsedFolders: StateFlow<Set<Long>> = _collapsedFolders.asStateFlow()
 
     /** Settings' "show read entries" (T27). Flipping it re-queries; it never filters here. */
     private val showReadEntries: Flow<Boolean> =
         settings.settings.map { it.showReadEntries }.distinctUntilChanged()
 
     /**
-     * The list, re-queried per selection and per "show read entries". The selected id is
-     * carried *out* of the `flatMapLatest` alongside the rows it produced, so a selection
-     * change can never leave the app bar showing the new source over the old source's
-     * entries.
+     * The list, re-queried per scope and per "show read entries". The scope is carried
+     * *out* of the `flatMapLatest` alongside the rows it produced, so a selection change
+     * can never leave the app bar showing the new scope over the old scope's entries.
      */
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val filteredEntries: Flow<Pair<Long?, List<EntryListItem>>> =
-        combine(selectedFeedId, showReadEntries, ::Pair).flatMapLatest { (feedId, showRead) ->
-            entries.observeEntries(feedId, includeRead = showRead).map { feedId to it }
+    private val filteredEntries: Flow<Pair<HomeScope, List<EntryListItem>>> =
+        combine(scope, showReadEntries, ::Pair).flatMapLatest { (scope, showRead) ->
+            entries.observeEntries(
+                feedId = scope.feedId,
+                folderId = scope.folderId,
+                includeRead = showRead,
+            ).map { scope to it }
         }
+
+    /** Everything the drawer draws, gathered before the top-level `combine` runs out of arity. */
+    private data class DrawerData(
+        val sources: List<FeedEntity>,
+        val sourceCounts: Map<Long, Int>,
+        val folders: List<FolderEntity>,
+        val folderCounts: Map<Long, Int>,
+    )
+
+    private val drawer: Flow<DrawerData> = combine(
+        feeds.observeSources(),
+        entries.observeUnreadCountsByFeed(),
+        folders.observeFolders(),
+        folders.observeUnreadCountsByFolder(),
+        ::DrawerData,
+    )
 
     /** Drives the pull indicator only — a refresh never replaces what is already readable. */
     private val _isRefreshing = MutableStateFlow(false)
@@ -149,32 +228,47 @@ class HomeViewModel(
 
     val uiState: StateFlow<HomeUiState> = combine(
         filteredEntries,
-        feeds.observeSources(),
-        entries.observeUnreadCountsByFeed(),
+        drawer,
         connectivity.observeOnline(),
         globalErrorDismissed,
-    ) { (feedId, unread), sources, counts, online, dismissed ->
+    ) { (scope, unread), drawer, online, dismissed ->
         // A fully-read source is absent from the count map rather than mapped to 0.
-        val items = sources.map { feed ->
+        val items = drawer.sources.map { feed ->
             SourceUiItem(
                 id = feed.id,
                 publishedTitle = feed.title,
                 customTitle = feed.customTitle,
-                unreadCount = counts[feed.id] ?: 0,
+                unreadCount = drawer.sourceCounts[feed.id] ?: 0,
                 errorMessage = feed.lastError,
+                folderId = feed.folderId,
             )
         }
-        // Removing the selected source (T24) drops the filter rather than stranding the
-        // bar on a name nothing can produce entries for any more.
-        val selected = items.firstOrNull { it.id == feedId }
+        val sections = drawer.folders.map { folder ->
+            FolderUiItem(
+                id = folder.id,
+                name = folder.name,
+                unreadCount = drawer.folderCounts[folder.id] ?: 0,
+                sources = items.filter { it.folderId == folder.id },
+            )
+        }
+        // Removing the selected source (T24), or deleting the selected folder, drops the
+        // filter rather than stranding the bar on a name nothing can produce entries for.
+        val selected = items.firstOrNull { it.id == scope.feedId }
+        val selectedFolder = sections.firstOrNull { it.id == scope.folderId }
+        val resolved = when {
+            selected != null -> HomeScope.Source(selected.id)
+            selectedFolder != null -> HomeScope.Folder(selectedFolder.id)
+            else -> HomeScope.All
+        }
         HomeUiState(
             isLoading = false,
             entries = unread,
             hasSources = items.isNotEmpty(),
             nowMillis = clock.millis(),
             sources = items,
-            selectedFeedId = selected?.id,
-            selectedTitle = selected?.title,
+            folders = sections,
+            scope = resolved,
+            selectedTitle = selected?.title ?: selectedFolder?.name,
             banner = bannerFor(items, selected, online, dismissed),
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), HomeUiState())
@@ -203,7 +297,46 @@ class HomeViewModel(
 
     /** Filters the list to one source, or back to the unified inbox with null. */
     fun selectSource(feedId: Long?) {
-        selectedFeedId.value = feedId
+        scope.value = if (feedId == null) HomeScope.All else HomeScope.Source(feedId)
+    }
+
+    /** Filters the list to one folder's sources (U06). */
+    fun selectFolder(folderId: Long) {
+        scope.value = HomeScope.Folder(folderId)
+    }
+
+    /** Shows or hides one folder's sources in the drawer. Presentation only. */
+    fun toggleFolderExpanded(folderId: Long) {
+        _collapsedFolders.update { collapsed ->
+            if (folderId in collapsed) collapsed - folderId else collapsed + folderId
+        }
+    }
+
+    // ---- folders (U06) ----------------------------------------------------------
+
+    /**
+     * Creates a folder, or finds the one already called [name] — [FolderRepository] makes
+     * that decision, case-insensitively, so two spellings of one folder cannot appear in
+     * the drawer. [then] receives the id either way, which is what lets the move dialog's
+     * "New folder" create and file in one gesture.
+     */
+    fun createFolder(name: String, then: (Long) -> Unit = {}) {
+        if (name.isBlank()) return
+        viewModelScope.launch { then(folders.createFolder(name)) }
+    }
+
+    fun renameFolder(folderId: Long, name: String) {
+        if (name.isBlank()) return
+        viewModelScope.launch { folders.renameFolder(folderId, name) }
+    }
+
+    /** Deletes a folder; its sources move to Uncategorized rather than going with it. */
+    fun deleteFolder(folderId: Long) {
+        viewModelScope.launch { folders.deleteFolder(folderId) }
+    }
+
+    fun moveSource(feedId: Long, folderId: Long) {
+        viewModelScope.launch { folders.moveSource(feedId, folderId) }
     }
 
     /**
@@ -222,10 +355,14 @@ class HomeViewModel(
     fun refresh() {
         if (_isRefreshing.value) return
         _isRefreshing.value = true
-        val feedId = selectedFeedId.value
+        val scope = scope.value
         viewModelScope.launch {
             try {
-                if (feedId == null) feeds.refreshAll() else feeds.refresh(feedId)
+                when (scope) {
+                    is HomeScope.All -> feeds.refreshAll()
+                    is HomeScope.Folder -> feeds.refreshFolder(scope.id)
+                    is HomeScope.Source -> feeds.refresh(scope.id)
+                }
             } finally {
                 globalErrorDismissed.value = false
                 _isRefreshing.value = false
@@ -240,9 +377,9 @@ class HomeViewModel(
      * nothing whichever button the reader presses.
      */
     fun markAllRead() {
-        val feedId = selectedFeedId.value
+        val scope = scope.value
         viewModelScope.launch {
-            val undo = entries.markAllRead(feedId)
+            val undo = entries.markAllRead(feedId = scope.feedId, folderId = scope.folderId)
             if (undo.count > 0) _pendingUndo.value = undo
         }
     }
@@ -294,6 +431,7 @@ class HomeViewModel(
                 HomeViewModel(
                     entries = container.entries,
                     feeds = container.feeds,
+                    folders = container.folders,
                     clock = container.clock,
                     connectivity = container.connectivity,
                     settings = container.settings,

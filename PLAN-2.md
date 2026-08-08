@@ -193,7 +193,7 @@ its closest OFL-licensed relative. Body and furniture stay platform families.
 
 ## Phase 2 — The feed, redesigned
 
-- [ ] **U06 — Folders in the drawer. TDD + screenshot.** The drawer scopes the Feed; it does
+- [x] **U06 — Folders in the drawer. TDD + screenshot.** The drawer scopes the Feed; it does
       **not** hold To-Read or Liked (those are bottom-bar destinations — see §0 and U09).
       Drawer becomes: All unread · hairline · folder sections (expandable, unread count on
       the header, sources nested beneath) · Add source · Settings. Long-press a source →

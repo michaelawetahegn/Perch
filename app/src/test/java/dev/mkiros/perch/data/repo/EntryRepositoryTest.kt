@@ -456,7 +456,7 @@ class EntryRepositoryTest {
     private suspend fun titles(includeRead: Boolean): List<String> =
         repo.observeEntries(includeRead = includeRead).first().map { it.title }
 
-    private suspend fun unreadIds(): List<Long> = entries.unreadIds(feedId = null)
+    private suspend fun unreadIds(): List<Long> = entries.unreadIds(feedId = null, folderId = null)
 
     private suspend fun insertEntry(
         feedId: Long,

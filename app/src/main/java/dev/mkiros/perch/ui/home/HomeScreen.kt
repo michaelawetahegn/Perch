@@ -2,12 +2,14 @@ package dev.mkiros.perch.ui.home
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,8 +26,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.CreateNewFolder
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Inbox
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.RssFeed
@@ -106,6 +111,7 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val pendingUndo by viewModel.pendingUndo.collectAsStateWithLifecycle()
+    val collapsedFolders by viewModel.collapsedFolders.collectAsStateWithLifecycle()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -117,11 +123,27 @@ fun HomeScreen(
     var actionsForId by rememberSaveable { mutableStateOf<Long?>(null) }
     var renamingId by rememberSaveable { mutableStateOf<Long?>(null) }
     var removingId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var movingId by rememberSaveable { mutableStateOf<Long?>(null) }
+    // Folder dialogs, held the same way and for the same reason.
+    var folderActionsForId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var renamingFolderId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var deletingFolderId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var creatingFolder by rememberSaveable { mutableStateOf(false) }
+    // Non-null while "New folder…" was reached from a source's move dialog: the folder is
+    // created and the source filed into it in one gesture, never two.
+    var creatingFolderFor by rememberSaveable { mutableStateOf<Long?>(null) }
 
     fun sourceOf(id: Long?) = uiState.sources.firstOrNull { it.id == id }
 
+    fun folderOf(id: Long?) = uiState.folders.firstOrNull { it.id == id }
+
     fun select(feedId: Long?) {
         viewModel.selectSource(feedId)
+        scope.launch { drawerState.close() }
+    }
+
+    fun selectFolder(folderId: Long) {
+        viewModel.selectFolder(folderId)
         scope.launch { drawerState.close() }
     }
 
@@ -160,9 +182,14 @@ fun HomeScreen(
             SourceDrawer(
                 state = uiState,
                 totalUnread = totalUnread,
+                collapsedFolders = collapsedFolders,
                 onSelectSource = ::select,
+                onSelectFolder = ::selectFolder,
+                onToggleFolder = viewModel::toggleFolderExpanded,
+                onFolderActions = { folderActionsForId = it },
                 onSourceActions = { actionsForId = it },
                 onAddSource = ::addSource,
+                onNewFolder = { creatingFolder = true },
                 onOpenSettings = {
                     scope.launch { drawerState.close() }
                     onOpenSettings()
@@ -248,11 +275,32 @@ fun HomeScreen(
                     actionsForId = null
                     renamingId = source.id
                 },
+                onMove = {
+                    actionsForId = null
+                    movingId = source.id
+                },
                 onRemove = {
                     actionsForId = null
                     removingId = source.id
                 },
                 onDismiss = { actionsForId = null },
+            )
+        }
+
+        sourceOf(movingId)?.let { source ->
+            MoveSourceDialog(
+                sourceTitle = source.title,
+                folders = uiState.folders,
+                currentFolderId = source.folderId,
+                onMove = { folderId ->
+                    movingId = null
+                    viewModel.moveSource(source.id, folderId)
+                },
+                onNewFolder = {
+                    movingId = null
+                    creatingFolderFor = source.id
+                },
+                onDismiss = { movingId = null },
             )
         }
 
@@ -276,6 +324,68 @@ fun HomeScreen(
                     viewModel.removeSource(source.id)
                 },
                 onDismiss = { removingId = null },
+            )
+        }
+
+        folderOf(folderActionsForId)?.let { folder ->
+            FolderActionsDialog(
+                folderName = folder.name,
+                onRename = {
+                    folderActionsForId = null
+                    renamingFolderId = folder.id
+                },
+                onDelete = {
+                    folderActionsForId = null
+                    deletingFolderId = folder.id
+                },
+                onDismiss = { folderActionsForId = null },
+            )
+        }
+
+        folderOf(renamingFolderId)?.let { folder ->
+            FolderNameDialog(
+                title = stringResource(R.string.folder_rename_title),
+                initialName = folder.name,
+                onConfirm = { name ->
+                    renamingFolderId = null
+                    viewModel.renameFolder(folder.id, name)
+                },
+                onDismiss = { renamingFolderId = null },
+            )
+        }
+
+        folderOf(deletingFolderId)?.let { folder ->
+            DeleteFolderDialog(
+                folderName = folder.name,
+                onConfirm = {
+                    deletingFolderId = null
+                    viewModel.deleteFolder(folder.id)
+                },
+                onDismiss = { deletingFolderId = null },
+            )
+        }
+
+        if (creatingFolder) {
+            FolderNameDialog(
+                title = stringResource(R.string.folder_new_title),
+                onConfirm = { name ->
+                    creatingFolder = false
+                    viewModel.createFolder(name)
+                },
+                onDismiss = { creatingFolder = false },
+            )
+        }
+
+        creatingFolderFor?.let { feedId ->
+            FolderNameDialog(
+                title = stringResource(R.string.folder_new_title),
+                onConfirm = { name ->
+                    creatingFolderFor = null
+                    viewModel.createFolder(name) { folderId ->
+                        viewModel.moveSource(feedId, folderId)
+                    }
+                },
+                onDismiss = { creatingFolderFor = null },
             )
         }
     }
@@ -398,14 +508,21 @@ private fun BannerStrip(
 }
 
 /**
- * The source drawer (DESIGN.md §5): the unified inbox, then one row per source with its
- * unread count, then settings.
+ * The source drawer (DESIGN.md §5, PLAN-2 §0): the unified inbox, then the folder
+ * sections with their sources nested beneath them, then add-source, new-folder and
+ * settings.
+ *
+ * Folders are *sections*, not destinations of their own — the drawer's whole job is
+ * scoping the Feed, so a header both narrows the list to that folder and, via its
+ * chevron, shows or hides the sources under it. Uncategorized is the one folder with no
+ * overflow: the repository refuses to rename or delete it, so offering the menu would be
+ * offering two dead items.
  *
  * A source that failed its last refresh trades its icon for a `⚠` in `error` — the
  * affordance only; the message and the retry are T26's banner. A source with nothing
  * unread stays listed showing 0 rather than disappearing, because the drawer is the
- * subscription list, not a second inbox. Long-pressing a source offers rename and remove
- * (T24) — see [SourceRow].
+ * subscription list, not a second inbox; the same is true of a folder. Long-pressing a
+ * source offers rename, move and remove — see [SourceRow].
  *
  * The whole sheet scrolls: forty-two sources do not fit on a phone.
  */
@@ -413,11 +530,20 @@ private fun BannerStrip(
 private fun SourceDrawer(
     state: HomeUiState,
     totalUnread: Int,
+    collapsedFolders: Set<Long>,
     onSelectSource: (Long?) -> Unit,
+    onSelectFolder: (Long) -> Unit,
+    onToggleFolder: (Long) -> Unit,
+    onFolderActions: (Long) -> Unit,
     onSourceActions: (Long) -> Unit,
     onAddSource: () -> Unit,
+    onNewFolder: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
+    // An empty Uncategorized is noise on a first launch; an empty folder the reader made
+    // is the folder they are about to fill, so it stays visible.
+    val sections = state.folders.filter { it.sources.isNotEmpty() || !it.isBuiltIn }
+
     ModalDrawerSheet {
         Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
             NavigationDrawerItem(
@@ -429,20 +555,32 @@ private fun SourceDrawer(
                         modifier = Modifier.testTag(HomeTestTags.ALL_UNREAD_BADGE),
                     )
                 },
-                selected = state.selectedFeedId == null,
+                selected = state.scope == HomeScope.All,
                 onClick = { onSelectSource(null) },
                 modifier = Modifier.padding(horizontal = Dimens.md),
             )
-            if (state.sources.isNotEmpty()) {
+            if (sections.isNotEmpty()) {
                 HorizontalDivider(modifier = Modifier.padding(Dimens.md))
             }
-            state.sources.forEach { source ->
-                SourceRow(
-                    source = source,
-                    selected = state.selectedFeedId == source.id,
-                    onSelect = { onSelectSource(source.id) },
-                    onLongPress = { onSourceActions(source.id) },
+            sections.forEach { folder ->
+                FolderHeaderRow(
+                    folder = folder,
+                    selected = state.selectedFolderId == folder.id,
+                    expanded = folder.id !in collapsedFolders,
+                    onSelect = { onSelectFolder(folder.id) },
+                    onToggle = { onToggleFolder(folder.id) },
+                    onActions = { onFolderActions(folder.id) },
                 )
+                if (folder.id !in collapsedFolders) {
+                    folder.sources.forEach { source ->
+                        SourceRow(
+                            source = source,
+                            selected = state.selectedFeedId == source.id,
+                            onSelect = { onSelectSource(source.id) },
+                            onLongPress = { onSourceActions(source.id) },
+                        )
+                    }
+                }
             }
             HorizontalDivider(modifier = Modifier.padding(Dimens.md))
             NavigationDrawerItem(
@@ -450,6 +588,13 @@ private fun SourceDrawer(
                 label = { Text(stringResource(R.string.drawer_add_source)) },
                 selected = false,
                 onClick = onAddSource,
+                modifier = Modifier.padding(horizontal = Dimens.md),
+            )
+            NavigationDrawerItem(
+                icon = { Icon(Icons.Default.CreateNewFolder, contentDescription = null) },
+                label = { Text(stringResource(R.string.drawer_new_folder)) },
+                selected = false,
+                onClick = onNewFolder,
                 modifier = Modifier.padding(horizontal = Dimens.md),
             )
             NavigationDrawerItem(
@@ -464,9 +609,111 @@ private fun SourceDrawer(
 }
 
 /**
- * One source in the drawer.
+ * One folder section header (U06).
  *
- * Hand-built rather than a [NavigationDrawerItem] for one reason: §5 puts rename and
+ * Three targets rather than one, each with its own hit area: the chevron shows or hides
+ * the sources, the name scopes the list to the folder, and the `⋮` renames or deletes it.
+ * They are deliberately *not* merged into a single node — a merged row could offer only
+ * one of the three, and expanding a folder is not the same gesture as reading it.
+ */
+@Composable
+private fun FolderHeaderRow(
+    folder: FolderUiItem,
+    selected: Boolean,
+    expanded: Boolean,
+    onSelect: () -> Unit,
+    onToggle: () -> Unit,
+    onActions: () -> Unit,
+) {
+    val container =
+        if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent
+    val content =
+        if (selected) {
+            MaterialTheme.colorScheme.onSecondaryContainer
+        } else {
+            MaterialTheme.colorScheme.onSurface
+        }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            // Sections need air between them or the drawer reads as one long list of
+            // rows that all happen to be 56dp tall.
+            .padding(top = Dimens.sm)
+            .padding(horizontal = Dimens.md)
+            .fillMaxWidth()
+            .height(Dimens.drawerRowHeight)
+            .clip(CircleShape)
+            .background(container),
+    ) {
+        IconButton(
+            onClick = onToggle,
+            modifier = Modifier.testTag(HomeTestTags.folderExpand(folder.id)),
+        ) {
+            Icon(
+                imageVector = if (expanded) {
+                    Icons.Default.KeyboardArrowDown
+                } else {
+                    Icons.AutoMirrored.Filled.KeyboardArrowRight
+                },
+                contentDescription = stringResource(
+                    if (expanded) R.string.folder_collapse else R.string.folder_expand,
+                    folder.name,
+                ),
+                tint = content,
+                modifier = Modifier.size(Dimens.icon),
+            )
+        }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight()
+                .clickable(onClick = onSelect)
+                .semantics(mergeDescendants = true) {}
+                .padding(horizontal = Dimens.xs)
+                .testTag(HomeTestTags.folderHeader(folder.id)),
+        ) {
+            Text(
+                text = folder.name,
+                style = MaterialTheme.typography.titleSmall,
+                color = content,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+            Spacer(modifier = Modifier.width(Dimens.sm))
+            // Right-aligned, and a step quieter than the name: pushed up against it the
+            // count reads as part of the folder's title rather than as its own column.
+            Text(
+                text = folder.unreadCount.toString(),
+                style = MaterialTheme.typography.labelLarge,
+                color = if (selected) content else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.testTag(HomeTestTags.folderBadge(folder.id)),
+            )
+        }
+        if (!folder.isBuiltIn) {
+            IconButton(
+                onClick = onActions,
+                modifier = Modifier.testTag(HomeTestTags.folderOverflow(folder.id)),
+            ) {
+                Icon(
+                    imageVector = Icons.Default.MoreVert,
+                    contentDescription = stringResource(R.string.folder_more, folder.name),
+                    tint = content,
+                    modifier = Modifier.size(Dimens.icon),
+                )
+            }
+        } else {
+            Spacer(modifier = Modifier.width(Dimens.touchTarget))
+        }
+    }
+}
+
+/**
+ * One source in the drawer, nested under its folder header.
+ *
+ * Hand-built rather than a [NavigationDrawerItem] for one reason: §5 puts rename, move and
  * remove behind a long press, and the Material item answers taps only — wrapping it would
  * not help, because its own `clickable` consumes the gesture before any parent sees it.
  * The metrics are copied from it so the row still lines up with "All unread" above and
@@ -495,7 +742,7 @@ private fun SourceRow(
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
-            .padding(horizontal = Dimens.md)
+            .padding(start = Dimens.drawerNestIndent, end = Dimens.md)
             .fillMaxWidth()
             .height(Dimens.drawerRowHeight)
             .clip(CircleShape)
@@ -556,6 +803,16 @@ object HomeTestTags {
     const val BANNER_DISMISS = "home:banner:dismiss"
 
     fun sourceBadge(feedId: Long) = "home:source:$feedId:badge"
+
+    /**
+     * A folder header carries three separate targets (U06), so each needs its own handle —
+     * and a folder's name is on screen in the drawer, in the app bar when it is the scope,
+     * and again inside the move dialog.
+     */
+    fun folderHeader(folderId: Long) = "home:folder:$folderId"
+    fun folderBadge(folderId: Long) = "home:folder:$folderId:badge"
+    fun folderExpand(folderId: Long) = "home:folder:$folderId:expand"
+    fun folderOverflow(folderId: Long) = "home:folder:$folderId:more"
 }
 
 /**

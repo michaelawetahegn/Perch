@@ -4,6 +4,7 @@ import dev.mkiros.perch.data.db.EntryDao
 import dev.mkiros.perch.data.db.FeedDao
 import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.db.entity.FeedEntity
+import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.net.FeedFetcher
 import dev.mkiros.perch.data.net.FetchResult
 import dev.mkiros.perch.data.parse.FeedDiscovery
@@ -158,12 +159,18 @@ class FeedRepository(
      *
      * Idempotent on `feedUrl`: confirm-then-commit leaves a window in which the same feed
      * could arrive twice (a second sheet, an OPML import), and `feedUrl` is uniquely
-     * indexed, so the second commit joins the existing source rather than aborting.
+     * indexed, so the second commit joins the existing source rather than aborting. A
+     * source that was already subscribed keeps the folder it is already in — [folderId]
+     * says where a *new* source lands, it is not a move.
      */
-    suspend fun add(resolved: SourceResolution.Resolved): Long {
+    suspend fun add(
+        resolved: SourceResolution.Resolved,
+        folderId: Long = FolderEntity.UNCATEGORIZED_ID,
+    ): Long {
         val addedAt = clock.millis()
         val feedId = feedDao.findByUrl(resolved.feedUrl)?.id ?: feedDao.insert(
             FeedEntity(
+                folderId = folderId,
                 feedUrl = resolved.feedUrl,
                 siteUrl = resolved.siteUrl,
                 title = resolved.title,
@@ -246,6 +253,13 @@ class FeedRepository(
         val last = lastFetchedAt ?: return true
         return now - last >= SICK_FLOOR.toMillis()
     }
+
+    /**
+     * Refreshes the sources filed under one folder (U06). A pull-to-refresh refreshes the
+     * scope on screen, and with the drawer scoped to a folder that scope is this.
+     */
+    suspend fun refreshFolder(folderId: Long): RefreshReport =
+        refresh(feedDao.getByFolder(folderId))
 
     /** Refreshes one source. Returns [FeedRefreshOutcome.Failed] if it no longer exists. */
     suspend fun refresh(feedId: Long): FeedRefreshOutcome {

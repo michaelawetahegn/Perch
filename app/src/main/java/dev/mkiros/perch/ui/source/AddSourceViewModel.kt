@@ -4,12 +4,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.repo.FeedRepository
+import dev.mkiros.perch.data.repo.FolderRepository
 import dev.mkiros.perch.data.repo.SourceResolution
 import dev.mkiros.perch.di.AppContainer
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -42,6 +46,8 @@ sealed interface AddSourceError {
  * @param isBusy a fetch or a commit is in flight; the button is a spinner.
  * @param addedFeedId the source that was just committed. The host watches this to close
  *   the sheet, and it is the only state that outlives the sheet.
+ * @param folderId where the source will land (U06). Defaults to Uncategorized so the
+ *   sheet is still one field and one button for a reader who does not use folders.
  */
 data class AddSourceUiState(
     val url: String = "",
@@ -49,6 +55,7 @@ data class AddSourceUiState(
     val resolved: SourceResolution.Resolved? = null,
     val error: AddSourceError? = null,
     val addedFeedId: Long? = null,
+    val folderId: Long = FolderEntity.UNCATEGORIZED_ID,
 ) {
     /** Blank is not an address, and a second tap mid-flight is not a second source. */
     val canSubmit: Boolean get() = url.isNotBlank() && !isBusy
@@ -62,10 +69,36 @@ data class AddSourceUiState(
  * committing spends nothing more, because [SourceResolution.Resolved] carries the entries
  * that resolving already fetched.
  */
-class AddSourceViewModel(private val feeds: FeedRepository) : ViewModel() {
+class AddSourceViewModel(
+    private val feeds: FeedRepository,
+    private val folderRepository: FolderRepository,
+) : ViewModel() {
 
     private val _state = MutableStateFlow(AddSourceUiState())
     val state: StateFlow<AddSourceUiState> = _state.asStateFlow()
+
+    /**
+     * The folders the sheet can file into, kept out of [AddSourceUiState] because they
+     * belong to the drawer's world rather than to this sheet's paste-resolve-commit
+     * progression — [reset] clears the progression and must not clear these.
+     */
+    val folders: StateFlow<List<FolderEntity>> = folderRepository.observeFolders()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), emptyList())
+
+    /** Files the source about to be committed under [folderId]. */
+    fun onFolderChange(folderId: Long) {
+        _state.update { it.copy(folderId = folderId) }
+    }
+
+    /**
+     * Creates a folder from inside the sheet and selects it — following a source into a
+     * folder that does not exist yet is the normal case, not a reason to close the sheet
+     * and start again.
+     */
+    fun createFolder(name: String) {
+        if (name.isBlank()) return
+        viewModelScope.launch { onFolderChange(folderRepository.createFolder(name)) }
+    }
 
     /**
      * Editing withdraws the confirmation as well as the error: committing a resolution
@@ -114,7 +147,8 @@ class AddSourceViewModel(private val feeds: FeedRepository) : ViewModel() {
     private fun commit(resolved: SourceResolution.Resolved) {
         _state.update { it.copy(isBusy = true, error = null) }
         viewModelScope.launch {
-            val added = runCatching { feeds.add(resolved) }
+            val folderId = _state.value.folderId
+            val added = runCatching { feeds.add(resolved, folderId) }
             _state.update { state ->
                 added.fold(
                     onSuccess = { AddSourceUiState(addedFeedId = it) },
@@ -130,8 +164,16 @@ class AddSourceViewModel(private val feeds: FeedRepository) : ViewModel() {
     }
 
     companion object {
+        /** Five seconds outlives a rotation, so the folder query is not rebuilt. */
+        private const val STOP_TIMEOUT_MS = 5_000L
+
         fun factory(container: AppContainer) = viewModelFactory {
-            initializer { AddSourceViewModel(feeds = container.feeds) }
+            initializer {
+                AddSourceViewModel(
+                    feeds = container.feeds,
+                    folderRepository = container.folders,
+                )
+            }
         }
     }
 }

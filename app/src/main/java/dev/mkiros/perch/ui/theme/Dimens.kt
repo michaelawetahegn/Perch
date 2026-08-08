@@ -75,6 +75,15 @@ object Dimens {
     val drawerRowPadding = lg
     val drawerRowGap = md
 
+    /**
+     * A source nested under its folder header (U06). The indent is the chevron's slot, so
+     * a source's icon lines up with its folder's name rather than with its chevron.
+     */
+    val drawerNestIndent = xxl
+
+    /** A dialog whose body is a list stops growing here and scrolls instead. */
+    val dialogListMaxHeight = 320.dp
+
     /** The spinner a primary button becomes while it is working. §5. */
     val buttonSpinner = 18.dp
 

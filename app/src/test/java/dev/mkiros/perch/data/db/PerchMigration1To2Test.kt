@@ -72,7 +72,7 @@ class PerchMigration1To2Test {
         assertThat(entries.findByGuid(feedId = 1, guid = "guid-a")?.isRead).isTrue()
         assertThat(entries.findByGuid(feedId = 1, guid = "guid-a")?.readAt).isEqualTo(600)
         assertThat(entries.findByGuid(feedId = 1, guid = "guid-b")?.isStarred).isTrue()
-        assertThat(entries.unreadIds(feedId = null)).hasSize(2)
+        assertThat(entries.unreadIds(feedId = null, folderId = null)).hasSize(2)
     }
 
     /** Builds the shipped v1 schema, fills it with rows a real install would have, closes it. */

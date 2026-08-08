@@ -62,7 +62,7 @@ class PerchMigration2To3Test {
         assertThat(readOne?.readAt).isEqualTo(600)
         assertThat(readOne?.isSaved).isFalse()
         assertThat(readOne?.savedAt).isNull()
-        assertThat(entries.unreadIds(feedId = null)).hasSize(2)
+        assertThat(entries.unreadIds(feedId = null, folderId = null)).hasSize(2)
     }
 
     /**

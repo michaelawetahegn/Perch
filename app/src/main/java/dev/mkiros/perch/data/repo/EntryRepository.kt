@@ -27,10 +27,17 @@ class EntryRepository(
      * in hundreds — a paging library here would buy latency, not headroom.
      *
      * @param feedId the drawer's per-source filter; null is every source.
+     * @param folderId the drawer's per-folder scope (U06); null is every folder. The two
+     *   filters are independent predicates rather than a hierarchy, so a caller that has
+     *   picked a source does not also have to work out which folder it is in.
      * @param includeRead Settings' "show read entries"; false is the unread inbox.
      */
-    fun observeEntries(feedId: Long? = null, includeRead: Boolean = false): Flow<List<EntryListItem>> =
-        entryDao.observeListItems(feedId, includeRead).distinctUntilChanged()
+    fun observeEntries(
+        feedId: Long? = null,
+        folderId: Long? = null,
+        includeRead: Boolean = false,
+    ): Flow<List<EntryListItem>> =
+        entryDao.observeListItems(feedId, folderId, includeRead).distinctUntilChanged()
 
     /** The unread inbox — [observeEntries] as home reads it by default. */
     fun observeUnreadEntries(feedId: Long? = null): Flow<List<EntryListItem>> =
@@ -102,14 +109,15 @@ class EntryRepository(
     }
 
     /**
-     * Marks everything unread as read, scoped to [feedId] (`null` = every source).
+     * Marks everything unread as read, scoped exactly as [observeEntries] is — to one
+     * source, to one folder, or to neither.
      *
      * Returns the token [undoMarkAllRead] needs. The token names the exact entries this
      * call flipped, so undo cannot resurrect an entry the user had already read before
      * the batch, nor one they read after it.
      */
-    suspend fun markAllRead(feedId: Long?): MarkAllReadUndo {
-        val flipped = entryDao.unreadIds(feedId)
+    suspend fun markAllRead(feedId: Long?, folderId: Long? = null): MarkAllReadUndo {
+        val flipped = entryDao.unreadIds(feedId, folderId)
         entryDao.setRead(flipped, isRead = true, readAt = clock.millis())
         return MarkAllReadUndo(flipped)
     }

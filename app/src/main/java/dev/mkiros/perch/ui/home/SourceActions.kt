@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.DriveFileRenameOutline
 import androidx.compose.material3.AlertDialog
@@ -30,10 +31,11 @@ import dev.mkiros.perch.R
 import dev.mkiros.perch.ui.theme.Dimens
 
 /**
- * What a long press on a drawer source offers (DESIGN.md §5): rename, or remove.
+ * What a long press on a drawer source offers (DESIGN.md §5, U06): rename, move to another
+ * folder, or remove.
  *
- * Two steps rather than one, because the two actions are not equally reversible. Rename
- * is a dialog the reader can just cancel out of; remove takes the source's entries with
+ * Three steps rather than one, because they are not equally reversible. Rename and move
+ * are dialogs the reader can just cancel out of; remove takes the source's entries with
  * it via `ON DELETE CASCADE` and there is no undo for that, so it asks again by name.
  * (Mark-all-read *does* get an undo — that is T26 — because it is cheap to restore.)
  */
@@ -41,6 +43,7 @@ import dev.mkiros.perch.ui.theme.Dimens
 fun SourceActionsDialog(
     sourceTitle: String,
     onRename: () -> Unit,
+    onMove: () -> Unit,
     onRemove: () -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -56,6 +59,12 @@ fun SourceActionsDialog(
                     label = stringResource(R.string.source_action_rename),
                     testTag = SourceActionTestTags.RENAME,
                     onClick = onRename,
+                )
+                ActionRow(
+                    icon = Icons.AutoMirrored.Filled.DriveFileMove,
+                    label = stringResource(R.string.source_action_move),
+                    testTag = SourceActionTestTags.MOVE,
+                    onClick = onMove,
                 )
                 ActionRow(
                     icon = Icons.Default.DeleteOutline,
@@ -184,6 +193,7 @@ private fun ActionRow(
  */
 object SourceActionTestTags {
     const val RENAME = "source:action:rename"
+    const val MOVE = "source:action:move"
     const val REMOVE = "source:action:remove"
     const val RENAME_FIELD = "source:rename:field"
     const val RENAME_CONFIRM = "source:rename:confirm"
