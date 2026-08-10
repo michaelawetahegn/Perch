@@ -130,7 +130,7 @@ do when installing. The template lives in the repo so no release re-invents it.
         green; issue #6 closed.
       - Rung: unit
 
-- [ ] **V04 — One window-inset contract, applied once. TDD + screenshot. Issue #3.**
+- [x] **V04 — One window-inset contract, applied once. TDD + screenshot. Issue #3.**
       `gh issue view 3`. Nothing in the app handles insets — `grep -rn "WindowInsets\|
       safeDrawing\|statusBars\|systemBars" app/src/main` is empty — and the confirmed
       symptom is the image viewer's close affordance sitting under the status bar, because

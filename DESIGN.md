@@ -109,6 +109,13 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
 - Edge-to-edge: `enableEdgeToEdge()`, content insets respected, no hardcoded status-bar
   padding. The list scrolls under a colour-shifting top app bar
   (`TopAppBarDefaults.enterAlwaysScrollBehavior`).
+  **The contract is written once, in `ui/nav/PerchNavHost.kt`'s doc comment (V04):**
+  Material's own chrome keeps its own inset defaults; content draws under the bars and only
+  furniture moves; where two sibling surfaces would spend the same inset the shell consumes
+  it (the bottom bar and the `NavHost`); and an overlay that bypasses a `Scaffold` by design
+  — the image viewer — pads its furniture with `safeDrawing` itself. Do not add a
+  `.statusBarsPadding()` to a screen: if a surface is under a bar, the contract is what is
+  wrong, not that screen.
 
 ## 5. Navigation & structure
 

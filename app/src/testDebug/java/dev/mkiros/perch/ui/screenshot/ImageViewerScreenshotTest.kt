@@ -30,6 +30,8 @@ import coil.request.Options
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.parse.ArticleBlock
 import dev.mkiros.perch.data.parse.RichSpan
+import dev.mkiros.perch.ui.CUTOUT_PX
+import dev.mkiros.perch.ui.applyWindowInsets
 import dev.mkiros.perch.ui.article.ArticleBody
 import dev.mkiros.perch.ui.article.ArticleTestTags
 import dev.mkiros.perch.ui.article.zoom.ImageViewer
@@ -95,6 +97,22 @@ class ImageViewerScreenshotTest {
         compose.onNodeWithTag(ArticleTestTags.IMAGE_VIEWER).performTouchInput { doubleClick() }
         compose.waitForIdle()
         capture("image-viewer-zoomed-dark")
+    }
+
+    /**
+     * V04's evidence. Robolectric has no cutout profile, so the insets are dispatched by
+     * hand — the shot shows the close affordance sitting below a 66dp punch-hole instead
+     * of underneath it, which is the symptom issue #3 reported. The number behind the
+     * picture is asserted in `WindowInsetsTest`; this is what it looks like.
+     */
+    @Test
+    fun `the close affordance clears a cutout`() {
+        show(ThemeMode.Dark)
+
+        compose.onNodeWithTag(ArticleTestTags.IMAGE).performClick()
+        compose.applyWindowInsets(cutoutPx = CUTOUT_PX)
+
+        capture("image-viewer-cutout-dark")
     }
 
     @Test

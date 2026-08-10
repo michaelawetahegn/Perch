@@ -11,9 +11,12 @@ import androidx.compose.foundation.gestures.calculatePan
 import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
@@ -159,21 +162,33 @@ fun ImageViewer(
                 .testTag(ArticleTestTags.IMAGE_VIEWER_IMAGE),
         )
 
-        // Tap-anywhere already closes the viewer, but only a reader who tries it knows
-        // that; the button is the affordance that says so.
-        IconButton(
-            onClick = onDismiss,
-            colors = IconButtonDefaults.iconButtonColors(contentColor = ViewerColors.onScrim),
+        // The viewer's furniture, and only the furniture, lives inside `safeDrawing`
+        // (V04). The figure above deliberately fills the screen — an image inset from the
+        // status bar is a smaller image, not a safer one — but the app is edge-to-edge and
+        // this overlay is a sibling of the article's `Scaffold` (U12), so nothing else is
+        // going to keep a control out from under a notch. One box, so every control added
+        // here lands in the safe area by default rather than by remembering to.
+        Box(
             modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(Dimens.sm)
-                .testTag(ArticleTestTags.IMAGE_VIEWER_CLOSE),
+                .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.safeDrawing),
         ) {
-            Icon(
-                imageVector = Icons.Filled.Close,
-                contentDescription = stringResource(R.string.image_viewer_close),
-                modifier = Modifier.size(Dimens.icon),
-            )
+            // Tap-anywhere already closes the viewer, but only a reader who tries it knows
+            // that; the button is the affordance that says so.
+            IconButton(
+                onClick = onDismiss,
+                colors = IconButtonDefaults.iconButtonColors(contentColor = ViewerColors.onScrim),
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(Dimens.sm)
+                    .testTag(ArticleTestTags.IMAGE_VIEWER_CLOSE),
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = stringResource(R.string.image_viewer_close),
+                    modifier = Modifier.size(Dimens.icon),
+                )
+            }
         }
     }
 }

@@ -8,7 +8,12 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.rememberDrawerState
@@ -77,6 +82,30 @@ private const val SLIDE_DIVISOR = 4
  * bar composed inside a screen could not be. Tab switches carry `saveState`/`restoreState`
  * and `launchSingleTop`, so Feed → To-Read → Feed returns to the Feed that was already
  * there rather than stacking a second copy of it.
+ *
+ * ## The window-inset contract (V04, issue #3)
+ *
+ * `MainActivity` calls `enableEdgeToEdge()`, so **nothing is safe by default**: the window
+ * extends under the status bar, the gesture handle and any cutout, and every surface either
+ * pads itself or is partly untappable. The contract is four clauses, stated here so it is
+ * decided in one place rather than re-decided as a `.statusBarsPadding()` per screen:
+ *
+ * 1. **Chrome Material owns keeps Material's defaults.** `TopAppBar`, `NavigationBar` and
+ *    `ModalDrawerSheet` already pad for the bars they sit against, and a `Scaffold` passes
+ *    whatever inset it has no bar for down to its body. Do not re-pad any of them.
+ * 2. **Content draws under the bars; only furniture moves.** A list scrolls its rows behind
+ *    a translucent bar — that is the point of edge-to-edge — so the inset belongs on the
+ *    controls, never on the surface behind them.
+ * 3. **Where two surfaces would spend the same inset, the shell consumes it.** That happens
+ *    exactly once, below: the bottom bar and the `NavHost` are siblings (U09), so the
+ *    screen's `Scaffold` cannot see that the bar is already covering the gesture handle.
+ * 4. **An overlay that bypasses a `Scaffold` opts in explicitly.** The image viewer (U12)
+ *    is a sibling of the article's `Scaffold` by design; it wraps its own furniture in
+ *    `safeDrawing` and leaves the figure full-bleed. Any future overlay does the same.
+ *
+ * `WindowInsetsTest` is one test per clause. Robolectric's device profiles have no bars and
+ * no cutout, so it dispatches insets by hand — a test that does not will pass on a tree
+ * that handles nothing.
  *
  * [testTagsAsResourceId] is set once here, at the root of the main window: it publishes
  * every `Modifier.testTag` in the graph as the node's `resource-id` in the accessibility
@@ -151,7 +180,16 @@ fun PerchNavHost(
         NavHost(
             navController = navController,
             startDestination = Routes.FEED,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                // The one place the contract needs a hand (V04). The bar and the graph are
+                // siblings, so a screen's `Scaffold` cannot see that the strip of screen
+                // its content would otherwise keep clear of the gesture handle is already
+                // covered by the bar — and both spend it, leaving a bar-height band of
+                // dead space above the bar. Consumed here, exactly when the bar is there
+                // to consume it; on the article and settings routes the screen keeps the
+                // inset because nothing else is standing on it.
+                .then(if (tab != null) Modifier.consumeWindowInsets(bottomBarInsets()) else Modifier),
             enterTransition = {
                 slideInHorizontally(animationSpec = slide()) { it / SLIDE_DIVISOR } + fadeIn(fade())
             },
@@ -248,6 +286,16 @@ private fun selectTab(navController: NavHostController, tab: PerchTab) {
         restoreState = true
     }
 }
+
+/**
+ * Exactly what [PerchBottomBar] pads itself by — `NavigationBar` applies
+ * `NavigationBarDefaults.windowInsets`, the bottom edge of the system bars. Consuming any
+ * more would push content up over a gap nothing is standing in; consuming any less would
+ * leave the band this exists to remove.
+ */
+@Composable
+private fun bottomBarInsets(): WindowInsets =
+    WindowInsets.systemBars.only(WindowInsetsSides.Bottom)
 
 private fun <T> slide() = tween<T>(durationMillis = TRANSITION_MS, easing = FastOutSlowInEasing)
 

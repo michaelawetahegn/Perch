@@ -95,8 +95,14 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   UTC-the-bug from UTC-the-agent.
 - 2026-08-08 — **U16: v0.2.0 shipped** (versionCode 3, `app/build/outputs/apk/release/app-release.apk`). **Never
   `clean` before `test assembleRelease`** — it deletes `build/perch-screenshots/`, the evidence.
-- 2026-08-09 — **Never wait on a WSL→Windows `cmd.exe /c start` — background it** (encoded in `device.sh`/`loop.sh`).
-  The wrapper never returns even though the emulator boots fine, so no timeout fires: it once ate 78 min and a whole
-  loop. Only `booted()` polling adb knows whether a boot worked.
+- 2026-08-09 — **Never wait on a WSL→Windows `cmd.exe /c start` — background it** (encoded in `device.sh`/`loop.sh`);
+  the wrapper never returns though the emulator boots fine. Only `booted()` polling adb knows a boot worked.
+- 2026-08-09 — **V04/#3: the inset contract is one doc comment in `ui/nav/PerchNavHost.kt`** — four clauses, one
+  test each in `WindowInsetsTest`. Never add `.statusBarsPadding()` to a screen. Two traps. (1) **Robolectric has no
+  bars and no cutout on any profile**, so an inset test that does not dispatch its own passes on a tree that handles
+  nothing — `ui/WindowInsetsSupport.kt`'s `applyWindowInsets` dispatches to **every Compose root** (`WindowInsetsHolder`
+  listens on the `AndroidComposeView`, not the decor view). (2) **The bottom bar and the `NavHost` are siblings, so
+  both spent the bottom inset** — 24dp of dead space above the bar; the shell now `consumeWindowInsets`, but only
+  while a tab is showing.
 - 2026-08-09 — **v0.3 is `PLAN-3.md` (V01–V16), one task per issue.** A task ends: commit → `git push` →
   `gh issue close N` with the verification line. **No fix without a failing test that reproduced the bug first.**
