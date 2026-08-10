@@ -337,7 +337,7 @@ do when installing. The template lives in the repo so no release re-invents it.
         `gate 7: home showed 1 folder sections of 3 named folders`, which predates this box
         (NOTES.md, V09) and is **V15's**, clause (7). Nothing in gate 1 is red.
 
-- [ ] **V13 — The v0.1.0 → v0.2.0 bridge, executed and written down. Issue #2.**
+- [x] **V13 — The v0.1.0 → v0.2.0 bridge, executed and written down. Issue #2.**
       `gh issue view 2` — it has the full path and the acceptance criteria. v0.1.0 shipped
       debug-signed, so the release key cannot update it in place and an uninstall wipes the
       reader's Room database, which is exactly what PLAN-2 U02 exists to prevent. This is a
@@ -359,6 +359,13 @@ do when installing. The template lives in the repo so no release re-invents it.
         commands that produced it; README and release notes updated; the bridge APK attached
         (`gh release view v0.2.0 --json assets`); issue #2 closed.
       - Rung: maestro
+      - **Outcome (2026-08-10):** run end to end on the `perch` AVD. The release APK over a
+        v0.1.0 install really does fail (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`); the debug
+        build of tag `v0.2.0` installs over it and migrates the database 1→5 in place with
+        all 258 entries and every read flag intact. The export carried all three flags, and
+        after uninstall + release-signed install + import, Liked and To-Read each showed the
+        entry again and the read ones stayed out of the Feed at All Time.
+        `perch-0.2.0-debug.apk` is attached to the v0.2.0 release, labelled as the bridge.
 
 - [ ] **V14 — Release notes are a template, not a memory. Issue #14.**
       `gh issue view 14`. The reader wants each release page to read like an announcement:

@@ -68,25 +68,25 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
 - 2026-08-09 — **V07/#13: a missing thumbnail is `surfaceVariant` + the mark as line art in `outline`**
   (`Placeholder(marked = true)`), **only `loading` keeps the bare frame**; `ColorFilter.tint` would flatten the mark
   to a silhouette, so `perchMarkMonochrome(ink, paper)`. `Screenshots.rasterize` reads pixels, writes no file.
-- 2026-08-10 — **V10/#5: a refused row is `refusesFolder` = "a tick would change nothing"**, so the affordance cannot
-  drift from `toggleFolder`. **`combinedClickable(enabled = false)` keeps its `OnClick` semantics action** — only
-  `Disabled` is added, so `performSemanticsAction` still fires it: assert `assertIsNotEnabled`, never a missing action.
-  The header dims (name + badge, `UNAVAILABLE_ALPHA`) while its chevron keeps full contrast — it is still live.
-- 2026-08-08 — **U16: v0.2.0 shipped** (versionCode 3, `app/build/outputs/apk/release/app-release.apk`).
+- **V10/#5: a refused row is `refusesFolder` = "a tick would change nothing"**, so the affordance cannot drift
+  from `toggleFolder`; the header dims while its chevron keeps full contrast. **`combinedClickable(enabled =
+  false)` keeps its `OnClick` semantics action** — assert `assertIsNotEnabled`, never a missing action.
+- **U16: v0.2.0 shipped** (versionCode 3, `app/build/outputs/apk/release/`); **V13/#2 (2026-08-10): the v0.1.0
+  bridge is executed and attached** — `perch-0.2.0-debug.apk` (tag `v0.2.0`) on the release. Device traps:
+  **`run-as` dies on a release build** (verify through the UI, not sqlite3), `keyevent 4` at the list root
+  **quits to the launcher**, and a file the app wrote to Downloads vanishes from the SAF picker once the app
+  is uninstalled until MediaStore is rescanned.
 - 2026-08-09 — **V04/#3: the inset contract is one doc comment in `ui/nav/PerchNavHost.kt`** — four clauses, one
   test each in `WindowInsetsTest`. Never add `.statusBarsPadding()` to a screen. **Robolectric has no bars or cutout
   on any profile**, so a test dispatches its own — `ui/WindowInsetsSupport.kt`'s `applyWindowInsets` reaches every
   Compose root.
-- 2026-08-09 — **V05/#12: "Unread" is gone from every reader-facing string**; identifiers keep it. **Pin
+- **V05/#12: "Unread" is gone from every reader-facing string** (identifiers keep it); **pin
   `HomeTestTags.TITLE`, never `onNodeWithText("Feed")`** — the bottom-bar tab has read "Feed" since U09.
 - 2026-08-09 — **V08/#10: the scoped list is state, not a route.** `HomeScope` is **hoisted into `PerchNavHost`** —
-  third such state — because `BackStep.LeaveScope` is a rung, *above* `ScrollFeedToTop`, and the drawer is no longer
-  its only writer; `HomeScreen` pushes it down through one `LaunchedEffect` and nothing else writes `scope`.
-  **`selectTab` is a silent no-op from the article route**: `popUpTo(start){saveState}` saves the article and
-  `restoreState` puts it straight back — pop first, switch tabs only if needed. The byline is segments
-  (`ArticleTestTags.SOURCE` / `BYLINE`), the source carrying §8's underline, never a colour. Scoping **does not
-  touch the time window** — a navigation must not rewrite a persisted setting. Residual: a scoped list still
-  repeats the source's name on every row — polish, T29.
+  third such state — `BackStep.LeaveScope` is a rung above `ScrollFeedToTop` and the drawer is no longer its
+  only writer. **`selectTab` is a silent no-op from the article route**: `popUpTo(start){saveState}` saves the
+  article and `restoreState` puts it back — pop first, switch tabs only if needed. Scoping **does not touch the
+  time window**. Residual: a scoped list still repeats the source's name on every row — polish, T29.
 - 2026-08-10 — **V09/#4: a table joins the article on its *shape*, not its text density** — `carriesContentTable`
   (≥3 rows, ≥2 columns, no nested table, not linky); `carriesSubstantialProse` counts a `<p>` **wrapped** in a block
   div (every Squarespace block is its own `sqs-block`). A page fixture is not a feed body: `zdi-page-*.html`.

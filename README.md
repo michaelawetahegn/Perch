@@ -19,9 +19,25 @@
 Grab the APK from [Releases](https://github.com/michaelawetahegn/Perch/releases) and
 `adb install -r perch-*.apk`, or open it on the phone. minSdk is 26 (Android 8.0).
 
-> v0.1.0 is **debug-signed**. Updating from it to v0.2.0 needs an uninstall first;
-> v0.2.0 onward is signed with a stable release key and updates in place, keeping your
-> read state, likes and to-read queue.
+> v0.1.0 is **debug-signed**. Android will not accept a release-signed APK as an update
+> to it, and an uninstall erases what you have read. **v0.2.0 onward is signed with a
+> stable release key and installs over itself**, keeping your read state, likes and
+> to-read queue — this is a one-time break, and only from v0.1.0.
+>
+> **Coming from v0.1.0, carry your state across in four steps** (executed and verified on
+> an emulator, 2026-08-10, [#2](https://github.com/michaelawetahegn/Perch/issues/2)):
+>
+> 1. Install `perch-0.2.0-debug.apk` from the [v0.2.0
+>    release](https://github.com/michaelawetahegn/Perch/releases/tag/v0.2.0) over your
+>    v0.1.0. It carries the same debug signature, so it updates in place and runs the
+>    database migrations — nothing is lost yet.
+> 2. **Settings → Export profile**, and save the JSON somewhere off the app: Downloads,
+>    Drive, anywhere that survives an uninstall.
+> 3. Uninstall Perch, then install the release-signed `perch-0.2.0.apk`.
+> 4. **Settings → Import profile** and pick that file. Sources and folders come back at
+>    once; read, liked and to-read land as the first refresh fetches each entry.
+>
+> The bridge APK is only for this crossing. Every release after it updates normally.
 
 ## What it does
 
