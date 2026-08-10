@@ -11,10 +11,10 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   `debugImplementation`). An injected tap/long-press **never reaches a node inside a drawer sheet, bottom sheet or
   dropdown** — use `performSemanticsAction(OnClick/OnLongClick)`. `compose.waitUntil` advances only the *virtual*
   clock; wait in wall-clock time. `PullToRefreshBox` ignores a swipe unless its child scrolls — since V03 **every
-  empty state is a `LazyColumn` with one `fillParentMaxSize` item** so the pull lands; keep it that way. Screenshots: **never
-  `captureToImage()`** (CLAUDE.md is wrong) — `PixelCopy` waits on a frame callback Robolectric never delivers, while
-  `@GraphicsMode(NATIVE)`'s `View.draw(Canvas)` is synchronous; a sheet/dialog/dropdown is its **own window**, so draw
-  its `rootView` over the decor view **translated by `getLocationOnScreen`**.
+  empty state is a `LazyColumn` with one `fillParentMaxSize` item**; keep it that way. Screenshots: **never
+  `captureToImage()`** (CLAUDE.md is wrong) — `PixelCopy` waits on a frame callback Robolectric never delivers,
+  `@GraphicsMode(NATIVE)`'s `View.draw(Canvas)` is synchronous; a sheet/dialog/dropdown is its **own window**, so
+  draw its `rootView` over the decor view **translated by `getLocationOnScreen`**.
 - 2026-08-07 — **Live acceptance** (`acceptance/LiveAcceptanceTest`, `testDebug`): `./gradlew :app:testDebugUnitTest
   -Pperch.live=true --tests '*LiveAcceptance*'`. **Gate 1 sits on the 38/42 floor** — `danluu.com`/`projectzero.google`
   bust SPEC §6's 8 MiB cap, `research.nccgroup.com` has no feed, `rachelbythebay.com` times out (issue #8/V12).
@@ -36,54 +36,47 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
 - 2026-08-07 — **U08: the row's 96dp thumbnail square is always reserved** (absent/loading/failed draw one
   placeholder). Coil offline: a `Mapper` succeeds, an `Interceptor` returning `ErrorResult` fails, one that
   `awaitCancellation()`s stays loading; a list screenshot needs `stubThumbnails()`.
-- 2026-08-08 — **U08a.** A `TextButton` **merges its descendants** (`useUnmergedTree = true`); **`hasVisualOverflow`
-  is not a clipping assertion** — assert `lineCount` + `size.width >= maxIntrinsicWidth` under `@GraphicsMode(NATIVE)`
-  (Robolectric's default text measurement gives every char ~1px).
+- 2026-08-08 — **U08a. `hasVisualOverflow` is not a clipping assertion** — assert `lineCount` +
+  `size.width >= maxIntrinsicWidth` under `@GraphicsMode(NATIVE)` (Robolectric measures every char at ~1px).
 - 2026-08-08 — **U09: the bottom bar and the `NavHost` are siblings**, not nested; **Feed's `DrawerState`/
   `LazyListState` are hoisted into `PerchNavHost`** (state remembered inside Feed dies on a tab switch). §0's back
   policy is the pure `nextBackStep(BackState)` in `BackChain.kt`, the enum's declaration order *being* the priority.
   **`EntryRow` owns its own `combinedClickable`**: an inner `clickable` eats the pointer stream.
 - 2026-08-08 — **U09a: the selection `BackHandler` must live inside `ModalDrawerSheet`** — the root one registers
   first and loses. A batch delete's dialog is **a coroutine behind its tap**, so wait in wall-clock time.
-- 2026-08-08 — **U07a: all three lists are Paging 3.** New deps `androidx.paging:paging-runtime-ktx`/`-compose`
-  (+`room-paging`, `paging-testing`). `PerchPaging.config` is shared — **placeholders off**, so `startsSection` is
-  answerable at a page edge; `initialLoadSize` is one page. The three list queries live once in **`EntryQueries`**
-  (`const val`, resolved by Room/KSP) because each exists twice — `Flow<List>` *and* `PagingSource`.
-  **`uiState.entries` is gone**: ask the screen (`compose.rowTitles()`); `performScrollToIndex` past loaded rows throws.
-- 2026-08-08 — **U10: DB is version 4** (`entries.bodyIsExcerpt`, `fullTextAt`); Readability-over-jsoup in
-  `data/extract/`, **no new dependency**. Three traps. (1) **`ArticleLowering` deletes truncation markers as chrome**
-  (T25's `CHROME`), so `FullText` looks for "Continue reading" in the *unlowered* text. (2) Scoring finds the
-  *tightest* subtree, so a decorative single-child wrapper (ciechanow.ski's `bg_content`) wins and the article's last
-  section, its sibling, is lost — hence `unwrapped()`. (3) `upsertAll` keeps the extracted body unless the feed's is
-  longer — **an extraction only ever replaces a body it beats**, making auto-extract-on-open safe. Fixtures:
-  `fixtures/articles/` (2 MB).
+- 2026-08-08 — **U07a: all three lists are Paging 3.** `PerchPaging.config` is shared — **placeholders off**, so
+  `startsSection` is answerable at a page edge. The three list queries live once in **`EntryQueries`** (`const val`,
+  resolved by Room/KSP) because each exists twice — `Flow<List>` *and* `PagingSource`. **`uiState.entries` is gone**:
+  ask the screen (`compose.rowTitles()`); `performScrollToIndex` past loaded rows throws.
+- 2026-08-08 — **U10:** Readability-over-jsoup in `data/extract/`, **no new dependency**. Three traps.
+  (1) **`ArticleLowering` deletes truncation markers as chrome** (T25's `CHROME`), so `FullText` looks for
+  "Continue reading" in the *unlowered* text. (2) Scoring finds the *tightest* subtree, so a decorative
+  single-child wrapper wins and the article's last section, its sibling, is lost — hence `unwrapped()`.
+  (3) **An extraction only ever replaces a body it beats** (`upsertAll`), making auto-extract-on-open safe.
+  Fixtures: `fixtures/articles/` (2 MB).
 - 2026-08-08 — **U11 (code).** Bundled JetBrains Mono 2.304 (OFL 1.1, licence in `assets/`) is DESIGN.md §3's one
   exception, **ligatures off**. **`HtmlSanitizer` keeps `class` on `pre` only**, holding a `language-x` normalised
-  before `Cleaner` runs from the `<code>`, the `<pre>`, or a wrapper `<div>` two levels up (Rouge/Jekyll). The gutter sits **outside** the `horizontalScroll`, inside a **`DisableSelection`**.
+  before `Cleaner` runs. The gutter sits **outside** the `horizontalScroll`, inside a **`DisableSelection`**.
 - 2026-08-08 — **U11a (tables). Inside a `horizontalScroll` a `fillMaxWidth` divider measures to 0** — rules are
   drawn at the summed column width. `fixtures/articles/zdi-*.html` are **feed bodies, not pages**.
 - 2026-08-08 — **U12: the viewer is an overlay, not a destination** — a sibling of the article's `Scaffold` in one
   `Box`, so the reading position survives; `ZoomedImage` is hoisted to `PerchNavHost` because
-  **`BackStep.CloseImageViewer` sits between `CloseOverlay` and `PopArticle`** and `BackChainTest` guards that order.
-  Math is pure (`ZoomGeometry`: rubber-banded 1×–5×, pan fenced to the **fitted content**, dismiss only at fit);
-  `detectTransformGestures` **has no end callback**, hence `awaitEachGesture`. An open overlay eats
-  `performTouchInput` — scroll under it first; `performClick` needs `mainClock.advanceTimeBy`.
+  **`BackStep.CloseImageViewer` sits between `CloseOverlay` and `PopArticle`**, an order `BackChainTest` guards.
+  Math is pure (`ZoomGeometry`). An open overlay eats `performTouchInput` — scroll under it first; `performClick`
+  needs `mainClock.advanceTimeBy`.
 - 2026-08-08 — **U13 (OPML folders).** A folder is a **name, not an id** — ids do not survive the file (U14 inherits
   this). Export writes Uncategorized's sources **unfiled at top level**; import files a source under the **outermost**
   container and flattens deeper nesting. Two rules the counts depend on: a **duplicate is left entirely alone, folder
-  included**, and a folder is created **only when a source actually goes into it**, so a re-import reports
-  `0/n/k/0 folders`. Fixture: `fixtures/opml/other-reader.opml`.
-- 2026-08-08 — **U14 (profile).** DB is version 5: `pending_entry_state`, keyed `(feedUrl, guid)` and with **no FK to
-  `feeds`** — its job is outliving a source that does not exist yet. **`EntryDao.upsertAll` is the fourth place a
-  refresh meets reader state**: it *consumes* parked rows, which is what stops the refresh straight after a restore
-  undoing it. The export carries only entries a reader touched, so a restore turns a flag **on** and never off, and is
-  idempotent by construction. Codec is `org.json` — **so its tests need Robolectric**; on a bare JVM `JSONObject` stubs.
-- 2026-08-09 — **V01/#1: Robolectric builds `PerchApp` for every test**, and its `onCreate` launched into a scope
-  nothing owned, so startup work outlived the test. `startupScope` now has a `CoroutineExceptionHandler` and dies in
-  **`onTerminate()`** — which **Robolectric's `tearDownApplication()` calls after every test**, and that is what makes
-  the boundary real. `SettingsStore`/`AppContainer` are `Closeable`; a store cancels only a scope it *owns*
-  (`create`), never a caller's. `ProcessLifecycleTest` guards it. **`UncaughtExceptionsBeforeTest` never reproduced**
-  — the leak is proven, the link to that signature is inference, so `LoudUncaughtHandler` stays to catch a recurrence.
+  included**, and a folder is created **only when a source goes into it** (re-import: `0/n/k/0 folders`).
+  Fixture: `fixtures/opml/other-reader.opml`.
+- 2026-08-08 — **U14 (profile).** DB is **version 5**: `pending_entry_state`, keyed `(feedUrl, guid)`, **no FK to
+  `feeds`** — its job is outliving a source that does not exist yet. **`EntryDao.upsertAll` consumes parked rows**,
+  which is what stops the refresh straight after a restore undoing it. A restore turns a flag **on** and never off,
+  so it is idempotent. Codec is `org.json` — **its tests need Robolectric**; on a bare JVM `JSONObject` stubs.
+- 2026-08-09 — **V01/#1: Robolectric builds `PerchApp` for every test**, so `onCreate` work outlived the test.
+  `startupScope` dies in **`onTerminate()`** (Robolectric's `tearDownApplication()` calls it); `SettingsStore`/
+  `AppContainer` are `Closeable` and a store cancels only a scope it *owns* (`create`). `ProcessLifecycleTest` guards
+  it. The flake never reproduced, so `LoudUncaughtHandler` stays to catch a recurrence.
 - 2026-08-09 — **Every full-suite flake so far: waiting on Room is not waiting on the screen.** `ArticleFullTextTest`
   awaited the body reaching the DB then asserted rendered text at once, losing the emit→recompose hop under load
   (giveaway: *"could not find any node … however, the unmerged tree contains 1 node"*). `waitForIdle` cannot cover it.
@@ -101,20 +94,13 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   not a bug to "fix" without an ICU collation.
 - 2026-08-08 — **U16: v0.2.0 shipped** (versionCode 3, `app/build/outputs/apk/release/app-release.apk`). **Never
   `clean` before `test assembleRelease`** — it deletes `build/perch-screenshots/`, the evidence.
-- 2026-08-09 — **Never wait on a WSL→Windows `cmd.exe /c start` — background it** (encoded in `device.sh`/`loop.sh`);
-  the wrapper never returns though the emulator boots fine. Only `booted()` polling adb knows a boot worked.
 - 2026-08-09 — **V04/#3: the inset contract is one doc comment in `ui/nav/PerchNavHost.kt`** — four clauses, one
-  test each in `WindowInsetsTest`. Never add `.statusBarsPadding()` to a screen. Two traps. (1) **Robolectric has no
-  bars and no cutout on any profile**, so an inset test that does not dispatch its own passes on a tree that handles
-  nothing — `ui/WindowInsetsSupport.kt`'s `applyWindowInsets` dispatches to **every Compose root** (`WindowInsetsHolder`
-  listens on the `AndroidComposeView`, not the decor view). (2) **The bottom bar and the `NavHost` are siblings, so
-  both spent the bottom inset** — 24dp of dead space above the bar; the shell now `consumeWindowInsets`, but only
-  while a tab is showing.
-- 2026-08-09 — **v0.3 is `PLAN-3.md` (V01–V16), one task per issue.** A task ends: commit → `git push` →
-  `gh issue close N` with the verification line. **No fix without a failing test that reproduced the bug first.**
-- 2026-08-09 — **V05/#12: "Unread" is gone from every string a reader sees.** `home_title_unread`→
-  `home_title_feed` ("Feed"), `drawer_all_unread`→`drawer_all_sources` ("All sources" — the row scopes the
-  Feed to *everything*, it never promised unread-only); `home_empty_window_body` dropped its "unread" too.
-  Identifiers keep the word on purpose (`HomeTestTags.ALL_UNREAD_BADGE`, `observeUnread*`, "Mark unread") —
-  the flag is real. **`PerchNavHostTest` must pin `HomeTestTags.TITLE`, not `onNodeWithText("Feed")`** — the
-  bottom-bar tab has read "Feed" since U09, so a text assertion passes without the top bar existing.
+  test each in `WindowInsetsTest`. Never add `.statusBarsPadding()` to a screen. **Robolectric has no bars or cutout
+  on any profile**, so a test must dispatch its own — `ui/WindowInsetsSupport.kt`'s `applyWindowInsets` reaches
+  **every Compose root** (`WindowInsetsHolder` listens on the `AndroidComposeView`, not the decor view). The bottom
+  bar and the `NavHost` are siblings and both spent the bottom inset; the shell now `consumeWindowInsets` while a
+  tab is showing.
+- 2026-08-09 — **V05/#12: "Unread" is gone from every string a reader sees** (`home_title_feed` = "Feed",
+  `drawer_all_sources` = "All sources"). Identifiers keep the word on purpose — the flag is real.
+  **`PerchNavHostTest` must pin `HomeTestTags.TITLE`, not `onNodeWithText("Feed")`**: the bottom-bar tab has
+  read "Feed" since U09, so a text assertion passes without the top bar existing.
