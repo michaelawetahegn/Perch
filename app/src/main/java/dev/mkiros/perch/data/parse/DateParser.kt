@@ -17,6 +17,10 @@ import java.time.format.DateTimeFormatter
  * caller's cue to fall back to the feed-level date and then to `fetchedAt`.
  *
  * @param clock supplies "now" for the future clamp; injected so tests are deterministic.
+ *   **Deliberately UTC** (audited for issue #9, which fixed the container's clock to the
+ *   device's zone): parsing a feed date computes no calendar boundary — the zone here is
+ *   only ever used to compare two instants, and an offsetless string is read as UTC
+ *   because that is what the format means, not because of where the reader is standing.
  */
 class DateParser(private val clock: Clock = Clock.systemUTC()) {
 

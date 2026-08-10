@@ -93,6 +93,22 @@ class TimeFilterTest {
             .isEqualTo(instantAt("2026-08-07T00:00:00", ZoneOffset.UTC))
     }
 
+    @Test
+    fun `a Chicago evening's today still reaches back over that Chicago morning`() {
+        // Issue #9's arithmetic, stated once. 20:30 CDT is 01:30 the *next* day in UTC,
+        // so a UTC-zoned clock opens Today after everything the reader's day published
+        // and the Feed empties — "usually around 7 or 8 p.m. Central", exactly as
+        // reported. The same instant read in the reader's zone still includes it.
+        val chicago = ZoneId.of("America/Chicago")
+        val evening = Instant.parse("2026-08-09T01:30:00Z")
+        val thatMorning = Instant.parse("2026-08-08T14:00:00Z").toEpochMilli()
+
+        assertThat(TimeFilter.Today.since(Clock.fixed(evening, chicago)))
+            .isAtMost(thatMorning)
+        assertThat(TimeFilter.Today.since(Clock.fixed(evening, ZoneOffset.UTC)))
+            .isGreaterThan(thatMorning)
+    }
+
     private fun clockAt(local: String, zone: ZoneId): Clock =
         Clock.fixed(Instant.ofEpochMilli(instantAt(local, zone)), zone)
 

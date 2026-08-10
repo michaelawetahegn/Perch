@@ -30,7 +30,18 @@ import java.time.Clock
 class AppContainer(
     val database: PerchDatabase,
     val httpClient: OkHttpClient,
-    val clock: Clock = Clock.systemUTC(),
+    /**
+     * The **device's zoned** clock, not `systemUTC()` (issue #9 / PLAN-3 §0).
+     *
+     * A `Clock` carries a zone as well as an instant, and everything downstream that
+     * computes a *calendar* boundary — `TimeFilter.since`, which opens Today at midnight
+     * in `clock.zone` — reads it. With `systemUTC()` that midnight was Greenwich's, so
+     * west of Greenwich the Feed emptied every evening once local time passed UTC
+     * midnight (19:00 CDT / 18:00 CST): "Today" opened *after* everything the reader's
+     * day had published. The zone is resolved once, when the process builds its
+     * container; a reader who crosses a zone sees the new one from the next launch.
+     */
+    val clock: Clock = Clock.systemDefaultZone(),
     /**
      * Defaults to "online" so every test that is not *about* the offline banner can build
      * a container without a shadow network. [create] supplies the real one.

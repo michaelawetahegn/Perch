@@ -25,6 +25,7 @@ import dev.mkiros.perch.ui.source.AddSourceViewModel
 import dev.mkiros.perch.ui.theme.PerchTheme
 import java.time.Clock
 import java.time.Instant
+import java.time.ZoneId
 import java.time.ZoneOffset
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
@@ -88,6 +89,21 @@ class HomeTimeFilterTest {
         assertThat(viewModel.uiState.value.timeFilter).isEqualTo(TimeFilter.Today)
         compose.onNodeWithText("This morning").assertIsDisplayed()
         compose.onNodeWithText("Late last night").assertDoesNotExist()
+    }
+
+    @Test
+    fun `an evening west of Greenwich still lists what that day published`() {
+        // Issue #9 / V02. 20:30 in Chicago is already 01:30 the next day in UTC, so a
+        // list whose clock has no zone opens Today after the reader's whole day. The
+        // fix is the container's clock (`AppContainerClockTest`); this pins the screen
+        // to the zoned one, since the list is where a reader meets the bug.
+        val evening = Clock.fixed(Instant.parse("2026-08-09T01:30:00Z"), CHICAGO)
+        val feedId = seedFeed("A Daily Blogger")
+        seedEntry(feedId, "Posted this morning", at = "2026-08-08T14:00:00Z")
+
+        showHome(clock = evening)
+
+        compose.onNodeWithText("Posted this morning").assertIsDisplayed()
     }
 
     @Test
@@ -319,7 +335,7 @@ class HomeTimeFilterTest {
     private fun topOfSection(folderId: Long): Float = compose
         .onNodeWithTag(HomeTestTags.section(folderId)).fetchSemanticsNode().positionInRoot.y
 
-    private fun showHome() {
+    private fun showHome(clock: Clock = this.clock) {
         viewModel = HomeViewModel(
             entries = container.entries,
             feeds = container.feeds,
@@ -397,6 +413,7 @@ class HomeTimeFilterTest {
     }
 
     private companion object {
+        val CHICAGO: ZoneId = ZoneId.of("America/Chicago")
         const val TIMEOUT_MS = 5_000L
         const val POLL_MS = 20L
     }

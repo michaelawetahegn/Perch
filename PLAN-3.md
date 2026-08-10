@@ -97,7 +97,7 @@ do when installing. The template lives in the repo so no release re-invents it.
 
 ## Phase 1 — The three bugs you can feel
 
-- [ ] **V02 — "No articles" after ~18:00 Central: the clock has no zone. TDD. Issue #9.**
+- [x] **V02 — "No articles" after ~18:00 Central: the clock has no zone. TDD. Issue #9.**
       `gh issue view 9`. `TimeFilter.since(clock)` opens *Today* at midnight **in
       `clock.zone`** — correct — but `di/AppContainer.kt` injects `Clock.systemUTC()`, whose
       zone is UTC. West of Greenwich, once local time passes UTC midnight (19:00 CDT /

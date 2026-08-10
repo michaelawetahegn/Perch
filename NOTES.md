@@ -59,10 +59,8 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
 - 2026-08-08 — **U11 (code).** Bundled JetBrains Mono 2.304 (OFL 1.1, licence in `assets/`) is DESIGN.md §3's one
   exception, **ligatures off**. **`HtmlSanitizer` keeps `class` on `pre` only**, holding a `language-x` normalised
   before `Cleaner` runs from the `<code>`, the `<pre>`, or a wrapper `<div>` two levels up (Rouge/Jekyll). The gutter sits **outside** the `horizontalScroll`, inside a **`DisableSelection`**.
-- 2026-08-08 — **U11a (tables). Inside a `horizontalScroll` a `fillMaxWidth` divider measures to 0** — that, not the
-  lowering, is why tables looked ruleless; rules are drawn at the summed column width. `fixtures/articles/zdi-*.html`
-  are **feed bodies, not pages**: `ArticleExtractor` loses a table on a Squarespace page (each block its own
-  `sqs-block` div, past `assemble`'s sibling sweep).
+- 2026-08-08 — **U11a (tables). Inside a `horizontalScroll` a `fillMaxWidth` divider measures to 0** — rules are
+  drawn at the summed column width. `fixtures/articles/zdi-*.html` are **feed bodies, not pages**.
 - 2026-08-08 — **U12: the viewer is an overlay, not a destination** — a sibling of the article's `Scaffold` in one
   `Box`, so the reading position survives; `ZoomedImage` is hoisted to `PerchNavHost` because
   **`BackStep.CloseImageViewer` sits between `CloseOverlay` and `PopArticle`** and `BackChainTest` guards that order.
@@ -89,6 +87,11 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   awaited the body reaching the DB then asserted rendered text at once, losing the emit→recompose hop under load
   (giveaway: *"could not find any node … however, the unmerged tree contains 1 node"*). `waitForIdle` cannot cover it.
   **Assert rendered text with a wall-clock poll** (`awaitText`/`awaitDisplayed`), never straight after a DB wait.
+- 2026-08-09 — **V02/#9: a `Clock` carries a zone, and the container's was Greenwich's.** `TimeFilter.since` was
+  always right; `AppContainer(clock = systemUTC())` was the bug — past 19:00 CDT, Today opened *after* the reader's
+  whole day. Now `systemDefaultZone()`, which also dates the OPML/profile export filenames right. **`DateParser`
+  stays UTC deliberately.** A zone test must pin `TimeZone.setDefault`: inheriting the JVM's cannot tell
+  UTC-the-bug from UTC-the-agent.
 - 2026-08-08 — **U16: v0.2.0 shipped** (versionCode 3, `app/build/outputs/apk/release/app-release.apk`). **Never
   `clean` before `test assembleRelease`** — it deletes `build/perch-screenshots/`, the evidence. **Open defects are
   GitHub issues, not NOTES entries** (`gh issue list`); PLAN-3.md names one per task.
