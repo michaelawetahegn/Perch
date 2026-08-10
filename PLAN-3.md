@@ -420,7 +420,7 @@ do when installing. The template lives in the repo so no release re-invents it.
         together — NOTES.md carries the wait, and that a `curl` probe spends the allowance
         the rerun needs. No new visual residual; V08's repeated byline stays T29's.
 
-- [ ] **V16 — Release v0.3.0.** Bump `versionCode` 4 / `versionName` `0.3.0` (both live atop
+- [x] **V16 — Release v0.3.0.** Bump `versionCode` 4 / `versionName` `0.3.0` (both live atop
       `app/build.gradle.kts` and nowhere else). Build the **release-signed** APK with U02's
       key — `assembleRelease` runs `lintVitalRelease` where `assembleDebug` does not, so
       expect lint to have opinions. Update README.md with the fresh screenshots. Tag
@@ -436,3 +436,13 @@ do when installing. The template lives in the repo so no release re-invents it.
         (`61367c04…fce489`); `git status` clean and pushed; `grep -c '^- \[ \]' PLAN-3.md`
         returns 0.
       - Rung: build
+      - **Outcome (2026-08-10):** shipped. `aapt2 dump badging` on the released file reads
+        `versionCode='4' versionName='0.3.0'`, and `apksigner verify --print-certs` prints
+        U02's `61367c0499de5c49c824f4d7ba7b4e692d33960cc57c0622772227a8b7fce489`.
+        `lintVitalRelease` had no opinions. The previous session bumped the version and wrote
+        the docs but **never built** — the APK on disk was still versionCode 3, and NOTES.md
+        already claimed v0.3.0 had shipped. A doc that describes a release is not the release;
+        check `output-metadata.json`, not the note. Release notes were written through V14's
+        template from `release-notes.sh v0.2.0`'s 14-issue draft, and its guessed buckets
+        needed the pass: #5 and #7 draft as New and *are* New, but #2 drafts under
+        Installing/upgrading as a v0.3 change when it is the standing v0.1.0 caveat.

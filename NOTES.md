@@ -70,20 +70,19 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
 - **V10/#5: a refused row is `refusesFolder` = "a tick would change nothing"**, so the affordance cannot drift
   from `toggleFolder`; the header dims while its chevron keeps full contrast. **`combinedClickable(enabled =
   false)` keeps its `OnClick` semantics action** — assert `assertIsNotEnabled`, never a missing action.
-- **U16: v0.2.0 shipped** (versionCode 3, `app/build/outputs/apk/release/`); **V13/#2: the v0.1.0 bridge is
-  executed and attached** (`perch-0.2.0-debug.apk`). On device, **`run-as` dies on a release build** — verify
-  through the UI, not sqlite3.
-- 2026-08-09 — **V04/#3: the inset contract is one doc comment in `ui/nav/PerchNavHost.kt`** — four clauses, one
-  test each in `WindowInsetsTest`. Never add `.statusBarsPadding()` to a screen. **Robolectric has no bars or cutout
-  on any profile**, so a test dispatches its own — `ui/WindowInsetsSupport.kt`'s `applyWindowInsets` reaches every
-  Compose root.
+- **V16: v0.3.0 shipped** — versionCode 4, `app/build/outputs/apk/release/perch-0.3.0.apk`, U02-signed; the
+  v0.1.0 bridge (`perch-0.2.0-debug.apk`) stays attached to the **v0.2.0** release. On device **`run-as` dies on
+  a release build** — verify through the UI, not sqlite3.
+- **V04/#3: the inset contract is one doc comment in `ui/nav/PerchNavHost.kt`** — four clauses, one test each in
+  `WindowInsetsTest`; never add `.statusBarsPadding()` to a screen. **Robolectric has no bars or cutout on any
+  profile**, so `ui/WindowInsetsSupport.kt`'s `applyWindowInsets` dispatches its own to every Compose root.
 - **V05/#12: "Unread" is gone from every reader-facing string** (identifiers keep it); **pin `HomeTestTags.TITLE`,
   never `onNodeWithText("Feed")`** — the bottom-bar tab has read "Feed" since U09.
-- 2026-08-09 — **V08/#10: the scoped list is state, not a route.** `HomeScope` is **hoisted into `PerchNavHost`** —
-  third such state — `BackStep.LeaveScope` is a rung above `ScrollFeedToTop` and the drawer is no longer its
-  only writer. **`selectTab` is a silent no-op from the article route**: `popUpTo(start){saveState}` saves the
-  article and `restoreState` puts it back — pop first, switch tabs only if needed. Scoping **does not touch the
-  time window**. Residual: a scoped list still repeats the source's name on every row — polish, T29.
+- **V08/#10: the scoped list is state, not a route.** `HomeScope` is **hoisted into `PerchNavHost`** — third such
+  state — `BackStep.LeaveScope` is a rung above `ScrollFeedToTop`. **`selectTab` is a silent no-op from the
+  article route**: `popUpTo(start){saveState}` saves the article and `restoreState` puts it back — pop first,
+  switch tabs only if needed. Scoping **does not touch the time window**. Residual (T29, named in v0.3.0's
+  known issues): a scoped list repeats the source's name on every row.
 - 2026-08-10 — **V09/#4: a table joins the article on its *shape*, not its text density** — `carriesContentTable`
   (≥3 rows, ≥2 columns, no nested table, not linky). A page fixture is not a feed body: `zdi-page-*.html`.
 - **V11/#7.** Anything spanning a scrolling child — the gutter's rule, a table's edge fade — measures 0 against

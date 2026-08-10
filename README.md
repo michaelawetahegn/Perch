@@ -7,11 +7,12 @@
 </p>
 
 <p align="center">
-  <img src="screenshots/home-dark.png" width="18.5%" alt="Unread list sectioned by folder, dark theme">
-  <img src="screenshots/article.png" width="18.5%" alt="Article reader view">
-  <img src="screenshots/code-dark.png" width="18.5%" alt="Syntax-highlighted code block with a pinned line-number gutter">
-  <img src="screenshots/table-dark.png" width="18.5%" alt="A tabular security advisory rendered with rules and a header row">
-  <img src="screenshots/to-read-dark.png" width="18.5%" alt="The To-Read queue">
+  <img src="screenshots/home-dark.png" width="15.5%" alt="The Feed, sectioned by folder, dark theme">
+  <img src="screenshots/article.png" width="15.5%" alt="Article reader view, the source name in the byline a link into that source">
+  <img src="screenshots/scoped-source-dark.png" width="15.5%" alt="The Feed scoped to a single source, reached by tapping its name">
+  <img src="screenshots/code-dark.png" width="15.5%" alt="Syntax-highlighted code block with a pinned line-number gutter">
+  <img src="screenshots/table-dark.png" width="15.5%" alt="A tabular security advisory rendered with rules and a header row">
+  <img src="screenshots/to-read-dark.png" width="15.5%" alt="The To-Read queue">
 </p>
 
 ## Install
@@ -19,6 +20,9 @@
 Grab the APK from [Releases](https://github.com/michaelawetahegn/Perch/releases) and
 `adb install -r perch-*.apk`, or open it on the phone. minSdk is 26 (Android 8.0).
 
+> **v0.2.0 → v0.3.0 installs in place** and keeps your read state, likes and to-read
+> queue. Nothing is required of you.
+>
 > v0.1.0 is **debug-signed**. Android will not accept a release-signed APK as an update
 > to it, and an uninstall erases what you have read. **v0.2.0 onward is signed with a
 > stable release key and installs over itself**, keeping your read state, likes and
@@ -48,8 +52,10 @@ RSS 2.0/0.9x, Atom 1.0 and RSS 1.0 (RDF), dispatched on the document root rather
 on a file extension. Sources live in folders; long-press the drawer to select and
 delete several at once. OPML in and out through the system file picker.
 
-**Reading.** One unread list across every source, sectioned by folder and filtered to
-a time range you pick — Today through All Time. Entries render as native Compose, not
+**Reading.** One Feed across every source, sectioned by folder — alphabetically, with
+Uncategorized last — and filtered to a time range you pick, Today through All Time;
+"Today" means your today, on your phone's clock. Tap the source name above an
+article's title to narrow the Feed to just that blog. Entries render as native Compose, not
 a WebView: paragraphs, headings, lists, block quotes, images, tables with real rules
 and a header row, and code blocks that scroll horizontally instead of wrapping. Code
 is syntax-highlighted in a dozen languages with a pinned line-number gutter that stays
@@ -121,10 +127,13 @@ page gets written (`scripts/release-notes.sh <last-tag>` drafts one).
 
 ## Status
 
-v0.2.0 is the current release and is in daily use against 42 live sources. It adds
+v0.3.0 is the current release and is in daily use against 41 live sources. v0.2.0 added
 folders, the To-Read and Liked queues with a bottom bar, thumbnails, full-text
 extraction, syntax-highlighted code, real tables, a tap-to-zoom image viewer, paged
-lists, OPML with folders, and profile backup/restore.
+lists, OPML with folders, and profile backup/restore. v0.3.0 is the pass that fixed
+what a year of using it turned up: an evening Feed that emptied itself, a
+pull-to-refresh that ignored an empty list, a close button under the status bar, and
+tables dropped out of recovered articles.
 
 Every version, with its notes and its APK, is on the
 [Releases page](https://github.com/michaelawetahegn/Perch/releases).
