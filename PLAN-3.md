@@ -66,7 +66,7 @@ do when installing. The template lives in the repo so no release re-invents it.
 
 ## Phase 0 — A suite you can trust
 
-- [ ] **V01 — The full suite is green on every ordering, not a lucky one. Issue #1.**
+- [x] **V01 — The full suite is green on every ordering, not a lucky one. Issue #1.**
       `gh issue view 1` first: the diagnosis (a `runTest` billing an earlier test's leaked
       coroutine to whoever runs next), the leading suspect (`SettingsStore.create` builds a
       `CoroutineScope` nothing ever cancels, `data/settings/SettingsStore.kt:101`), and the

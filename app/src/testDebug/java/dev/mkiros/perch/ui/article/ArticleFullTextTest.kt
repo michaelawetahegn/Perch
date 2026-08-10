@@ -7,6 +7,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performSemanticsAction
@@ -94,7 +95,7 @@ class ArticleFullTextTest {
         await { stored(id).fullTextAt != null }
 
         assertThat(stored(id).contentHtml).isNotNull()
-        compose.onNodeWithText(fixture.last, substring = true).assertExists()
+        awaitText(fixture.last)
     }
 
     /** §0's second shape: a 194-character teaser standing in for the body. */
@@ -110,7 +111,7 @@ class ArticleFullTextTest {
         showArticle(id, serving(fixture.slug))
         await { stored(id).fullTextAt != null }
 
-        compose.onNodeWithText(fixture.mid, substring = true).assertExists()
+        awaitText(fixture.mid)
         assertThat(fetches.get()).isEqualTo(1)
     }
 
@@ -146,7 +147,7 @@ class ArticleFullTextTest {
         tap(ArticleTestTags.LOAD_FULL_TEXT)
         await { stored(id).fullTextAt != null }
 
-        compose.onNodeWithText(fixture.mid, substring = true).assertExists()
+        awaitText(fixture.mid)
     }
 
     /** Once the body *did* come from an extraction there is nothing left to load. */
@@ -221,6 +222,28 @@ class ArticleFullTextTest {
             Thread.sleep(POLL_MS)
         }
         throw AssertionError("timed out waiting for the database")
+    }
+
+    /**
+     * The row landing in Room and the screen showing it are two different events, and
+     * [await] only sees the first: the extraction writes the body, and only *then* does the
+     * repository's flow emit and Compose recompose. Asserting straight after the database
+     * wait therefore races the recomposition — which is why this test failed only in a full
+     * suite run, where the machine is busy enough for that last hop to lose (issue #1).
+     * `waitForIdle` cannot cover it; the emission arrives on a real dispatcher, so the wait
+     * has to be in wall-clock time.
+     */
+    private fun awaitText(text: String) {
+        val deadline = System.currentTimeMillis() + TIMEOUT_MS
+        while (System.currentTimeMillis() < deadline) {
+            compose.waitForIdle()
+            val found = compose.onAllNodesWithText(text, substring = true)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+            if (found) return
+            Thread.sleep(POLL_MS)
+        }
+        compose.onNodeWithText(text, substring = true).assertExists()
     }
 
     private fun stored(entryId: Long): EntryEntity =

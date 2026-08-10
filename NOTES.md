@@ -3,31 +3,28 @@
 ## Environment facts (measured at bootstrap, 2026-08-07)
 
 Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical device, WHPX **enabled**. **The
-`.wslconfig` 7 GB cap only applies after a `wsl --shutdown`** — `/proc/meminfo` MemTotal ~6.9 GB means it is live,
-~9.9 GB means a freeze is coming.
+`.wslconfig` 7 GB cap only applies after `wsl --shutdown`** — MemTotal ~6.9 GB means live, ~9.9 GB means a freeze.
 
 ## Log
 - **Standing grep gate:** no `Color(0x` / `N.dp` / `N.sp` outside `ui/theme/` — screens address roles, never tones.
-- 2026-08-07 — **Standing UI-test traps (T20/T22/T26/T29).** Compose UI tests live in **`app/src/testDebug/`**
-  (`ui-test-manifest` is `debugImplementation`). An injected tap/long-press **never reaches a node inside a drawer
-  sheet, bottom sheet or dropdown** — use `performSemanticsAction(OnClick/OnLongClick)`. `compose.waitUntil` advances
-  only the *virtual* clock; wait on Room in wall-clock time (`awaitInRealTime`). `PullToRefreshBox` ignores a swipe
-  unless its child scrolls. Screenshots: **never `captureToImage()`** (CLAUDE.md is wrong) — `PixelCopy` waits on a
-  frame callback Robolectric never delivers, while under `@GraphicsMode(NATIVE)` `View.draw(Canvas)` is synchronous;
-  a sheet/dialog/dropdown is its **own window**, so draw its `rootView` over the decor view **translated by
-  `getLocationOnScreen`**.
+- 2026-08-07 — **Standing UI-test traps.** Compose UI tests live in **`app/src/testDebug/`** (`ui-test-manifest` is
+  `debugImplementation`). An injected tap/long-press **never reaches a node inside a drawer sheet, bottom sheet or
+  dropdown** — use `performSemanticsAction(OnClick/OnLongClick)`. `compose.waitUntil` advances only the *virtual*
+  clock; wait in wall-clock time. `PullToRefreshBox` ignores a swipe unless its child scrolls. Screenshots: **never
+  `captureToImage()`** (CLAUDE.md is wrong) — `PixelCopy` waits on a frame callback Robolectric never delivers, while
+  `@GraphicsMode(NATIVE)`'s `View.draw(Canvas)` is synchronous; a sheet/dialog/dropdown is its **own window**, so draw
+  its `rootView` over the decor view **translated by `getLocationOnScreen`**.
 - 2026-08-07 — **Live acceptance** (`acceptance/LiveAcceptanceTest`, `testDebug`): `./gradlew :app:testDebugUnitTest
   -Pperch.live=true --tests '*LiveAcceptance*'`. **Gate 1 sits on the 38/42 floor** — `danluu.com`/`projectzero.google`
-  bust SPEC §6's 8 MiB cap, `research.nccgroup.com` has no feed, `rachelbythebay.com` times out; one more death is red.
+  bust SPEC §6's 8 MiB cap, `research.nccgroup.com` has no feed, `rachelbythebay.com` times out (issue #8/V12).
   **Not ours:** the LLVM feed omits the spaces around inline `<code>`/`<a>` — do not "repair" it.
 - 2026-08-07 — **U01: the repo is public** (MIT) — never un-redact the `apiKey` in `fixtures/homepages/research-nccgroup-com.html`.
 - 2026-08-07 — **U02: losing `~/.perch/perch-release.jks` or `signing.properties` makes every future install a data
   wipe** — you cannot rotate to a key you no longer have. Both `chmod 600`, outside the repo, **not backed up yet**.
-  Cert SHA-256 `61367c04…fce489` *is* the update identity; absent the key, release falls back to debug signing with a
-  warning. Version lives only in `perchVersionCode`/`perchVersionName` atop `app/build.gradle.kts`; **`assembleRelease`
-  runs `lintVitalRelease` where `assembleDebug` does not.**
+  Cert SHA-256 `61367c04…fce489` *is* the update identity; absent the key, release silently falls back to debug
+  signing. Version lives only atop `app/build.gradle.kts`; **`assembleRelease` runs `lintVitalRelease`.**
 - 2026-08-07 — **U03: build test databases with `PerchDatabase.inMemory(context)`**, never
-  `Room.inMemoryDatabaseBuilder` — only the former seeds Uncategorized, without which `feeds.folderId`'s FK rejects the first feed.
+  `Room.inMemoryDatabaseBuilder` — only the former seeds Uncategorized, whose FK the first feed needs.
 - 2026-08-07 — **U04: `isRead`/`isSaved`/`isStarred` are independent reader-owned flags**, each nulling its timestamp
   when it goes off. **Add a fourth and two places erase it:** `EntryDao.upsertAll` (never Room `@Upsert` — it resolves
   on the primary key, ours on `(feedId, guid)`) and `deleteReadOlderThan`.
@@ -40,7 +37,7 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   `awaitCancellation()`s stays loading; a list screenshot needs `stubThumbnails()`.
 - 2026-08-08 — **U08a.** A `TextButton` **merges its descendants** (`useUnmergedTree = true`); **`hasVisualOverflow`
   is not a clipping assertion** — assert `lineCount` + `size.width >= maxIntrinsicWidth` under `@GraphicsMode(NATIVE)`
-  (Robolectric's default text measurement gives every char ~1px, so everything "fits").
+  (Robolectric's default text measurement gives every char ~1px).
 - 2026-08-08 — **U09: the bottom bar and the `NavHost` are siblings**, not nested; **Feed's `DrawerState`/
   `LazyListState` are hoisted into `PerchNavHost`** (state remembered inside Feed dies on a tab switch). §0's back
   policy is the pure `nextBackStep(BackState)` in `BackChain.kt`, the enum's declaration order *being* the priority.
@@ -51,19 +48,17 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   (+`room-paging`, `paging-testing`). `PerchPaging.config` is shared — **placeholders off**, so `startsSection` is
   answerable at a page edge; `initialLoadSize` is one page. The three list queries live once in **`EntryQueries`**
   (`const val`, resolved by Room/KSP) because each exists twice — `Flow<List>` *and* `PagingSource`.
-  **`uiState.entries` is gone**: ask the screen (`compose.rowTitles()`) what the list holds, `observeEntries` the
-  *query*. `performScrollToIndex` past loaded rows throws.
+  **`uiState.entries` is gone**: ask the screen (`compose.rowTitles()`); `performScrollToIndex` past loaded rows throws.
 - 2026-08-08 — **U10: DB is version 4** (`entries.bodyIsExcerpt`, `fullTextAt`); Readability-over-jsoup in
   `data/extract/`, **no new dependency**. Three traps. (1) **`ArticleLowering` deletes truncation markers as chrome**
   (T25's `CHROME`), so `FullText` looks for "Continue reading" in the *unlowered* text. (2) Scoring finds the
   *tightest* subtree, so a decorative single-child wrapper (ciechanow.ski's `bg_content`) wins and the article's last
   section, its sibling, is lost — hence `unwrapped()`. (3) `upsertAll` keeps the extracted body unless the feed's is
-  longer — **an extraction only ever replaces a body it beats**, which is what makes auto-extract-on-open safe.
-  fabiensanglard: 68 of 144 ship nothing, 76 a one-line `<description>`. Fixtures: `fixtures/articles/` (2 MB).
+  longer — **an extraction only ever replaces a body it beats**, making auto-extract-on-open safe. Fixtures:
+  `fixtures/articles/` (2 MB).
 - 2026-08-08 — **U11 (code).** Bundled JetBrains Mono 2.304 (OFL 1.1, licence in `assets/`) is DESIGN.md §3's one
-  exception, **ligatures off**. **`HtmlSanitizer` keeps `class` on `pre` and nowhere else**, holding a normalised
-  `language-x` hoisted before `Cleaner` runs from the `<code>`, the `<pre>`, or a wrapper `<div>` two levels up
-  (Rouge/Jekyll). The gutter sits **outside** the `horizontalScroll`, inside a **`DisableSelection`**.
+  exception, **ligatures off**. **`HtmlSanitizer` keeps `class` on `pre` only**, holding a `language-x` normalised
+  before `Cleaner` runs from the `<code>`, the `<pre>`, or a wrapper `<div>` two levels up (Rouge/Jekyll). The gutter sits **outside** the `horizontalScroll`, inside a **`DisableSelection`**.
 - 2026-08-08 — **U11a (tables). Inside a `horizontalScroll` a `fillMaxWidth` divider measures to 0** — that, not the
   lowering, is why tables looked ruleless; rules are drawn at the summed column width. `fixtures/articles/zdi-*.html`
   are **feed bodies, not pages**: `ArticleExtractor` loses a table on a Squarespace page (each block its own
@@ -72,34 +67,33 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   `Box`, so the reading position survives; `ZoomedImage` is hoisted to `PerchNavHost` because
   **`BackStep.CloseImageViewer` sits between `CloseOverlay` and `PopArticle`** and `BackChainTest` guards that order.
   Math is pure (`ZoomGeometry`: rubber-banded 1×–5×, pan fenced to the **fitted content**, dismiss only at fit);
-  `detectTransformGestures` **has no end callback**, hence `awaitEachGesture`. `performClick` needs
-  `mainClock.advanceTimeBy`; an open overlay eats `performTouchInput` — scroll under it first.
+  `detectTransformGestures` **has no end callback**, hence `awaitEachGesture`. An open overlay eats
+  `performTouchInput` — scroll under it first; `performClick` needs `mainClock.advanceTimeBy`.
 - 2026-08-08 — **U13 (OPML folders).** A folder is a **name, not an id** — ids do not survive the file (U14 inherits
   this). Export writes Uncategorized's sources **unfiled at top level**; import files a source under the **outermost**
   container and flattens deeper nesting. Two rules the counts depend on: a **duplicate is left entirely alone, folder
   included**, and a folder is created **only when a source actually goes into it**, so a re-import reports
   `0/n/k/0 folders`. Fixture: `fixtures/opml/other-reader.opml`.
-- 2026-08-08 — **U14 (profile).** DB is version 5: `pending_entry_state`, keyed `(feedUrl, guid)` like the file
-  itself and with **no FK to `feeds`** — its whole job is outliving a source that does not exist yet.
-  **`EntryDao.upsertAll` is now the fourth place a refresh meets reader state**: it *consumes* parked rows, which is
-  what stops the refresh straight after a restore undoing it. The export carries only entries a reader touched, so a
-  restore can turn a flag **on** and never off, and is idempotent by construction. Codec is `org.json` (no new
-  dependency) — **so its tests need Robolectric**; on a bare JVM every `JSONObject` method is a stub.
-- 2026-08-08 — **Full-suite-only flakes: `./gradlew test` is green only on a lucky ordering** (`WorkSchedulerTest`,
-  `ArticleTextRepositoryTest`). `runTest` bills an earlier test's leaked coroutine to whoever runs next, so the named
-  test is never the culprit — **do not "fix" the victim**. Diagnosis and repro plan: **issue #1**.
-- 2026-08-08 — **U15/U16 — v0.2.0 shipped.** Nine live gates green (counts in commit `bd2eb89`); **`clean` is
-  deliberately omitted** from `clean test assembleRelease` — it deletes `build/perch-screenshots/`, the evidence the
-  Done-condition asks for. APK: versionCode 3, release-signed `61367c04…fce489`,
-  `app/build/outputs/apk/release/app-release.apk`. **v0.1.0 was debug-signed — that one hop needs a bridge (issue #2).**
-- 2026-08-08 — **Open defects are GitHub issues now, not NOTES entries.** #1 suite flakes · #2 v0.1→v0.2 needs a
-  signing bridge · #3 no window insets · #4 extractor drops Squarespace tables · #5 inert folder header
-  mid-selection · #6 empty state cannot be pulled · #7 visual polish · #8 live gate 1 has no headroom.
-- 2026-08-09 — **Never wait on a WSL→Windows `cmd.exe /c start` — background it.** `device.sh boot` hung **78 min**
-  on the interop wrapper while the emulator behind it booted normally in ~2; because the wrapper never returned,
-  `cmd_boot` never reached its `while ! booted` poll, so `BOOT_TIMEOUT` never fired and the whole Ralph loop sat at
-  "booting AVD" having run zero sessions. The spawn is now `timeout 120 … &` + `disown`: boot success is decided by
-  `booted()` polling adb, which is the only thing that knows. `loop.sh` wraps the call in `timeout` as well.
-- 2026-08-09 — **v0.3 is `PLAN-3.md` (V01–V16), one task per issue** (#1–#14, the reader filed #9–#14 himself).
-  A task ends: commit → `git push` → `gh issue close N` with the verification line. **No fix without a failing
-  test that reproduced the bug first** — un-reproducible goes `[BLOCKED: cannot reproduce — …]`, never a guess.
+- 2026-08-08 — **U14 (profile).** DB is version 5: `pending_entry_state`, keyed `(feedUrl, guid)` and with **no FK to
+  `feeds`** — its job is outliving a source that does not exist yet. **`EntryDao.upsertAll` is the fourth place a
+  refresh meets reader state**: it *consumes* parked rows, which is what stops the refresh straight after a restore
+  undoing it. The export carries only entries a reader touched, so a restore turns a flag **on** and never off, and is
+  idempotent by construction. Codec is `org.json` — **so its tests need Robolectric**; on a bare JVM `JSONObject` stubs.
+- 2026-08-09 — **V01/#1: Robolectric builds `PerchApp` for every test**, and its `onCreate` launched into a scope
+  nothing owned, so startup work outlived the test. `startupScope` now has a `CoroutineExceptionHandler` and dies in
+  **`onTerminate()`** — which **Robolectric's `tearDownApplication()` calls after every test**, and that is what makes
+  the boundary real. `SettingsStore`/`AppContainer` are `Closeable`; a store cancels only a scope it *owns*
+  (`create`), never a caller's. `ProcessLifecycleTest` guards it. **`UncaughtExceptionsBeforeTest` never reproduced**
+  — the leak is proven, the link to that signature is inference, so `LoudUncaughtHandler` stays to catch a recurrence.
+- 2026-08-09 — **Every full-suite flake so far: waiting on Room is not waiting on the screen.** `ArticleFullTextTest`
+  awaited the body reaching the DB then asserted rendered text at once, losing the emit→recompose hop under load
+  (giveaway: *"could not find any node … however, the unmerged tree contains 1 node"*). `waitForIdle` cannot cover it.
+  **Assert rendered text with a wall-clock poll** (`awaitText`/`awaitDisplayed`), never straight after a DB wait.
+- 2026-08-08 — **U16: v0.2.0 shipped** (versionCode 3, `app/build/outputs/apk/release/app-release.apk`). **Never
+  `clean` before `test assembleRelease`** — it deletes `build/perch-screenshots/`, the evidence. **Open defects are
+  GitHub issues, not NOTES entries** (`gh issue list`); PLAN-3.md names one per task.
+- 2026-08-09 — **Never wait on a WSL→Windows `cmd.exe /c start` — background it** (encoded in `device.sh`/`loop.sh`).
+  The wrapper never returns even though the emulator boots fine, so no timeout fires: it once ate 78 min and a whole
+  loop. Only `booted()` polling adb knows whether a boot worked.
+- 2026-08-09 — **v0.3 is `PLAN-3.md` (V01–V16), one task per issue.** A task ends: commit → `git push` →
+  `gh issue close N` with the verification line. **No fix without a failing test that reproduced the bug first.**

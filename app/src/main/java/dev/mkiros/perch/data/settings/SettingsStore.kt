@@ -12,11 +12,14 @@ import androidx.datastore.preferences.preferencesDataStoreFile
 import dev.mkiros.perch.ui.home.TimeFilter
 import dev.mkiros.perch.ui.theme.ThemeMode
 import dev.mkiros.perch.work.RefreshInterval
+import java.io.Closeable
 import java.io.File
 import java.io.IOException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
@@ -54,7 +57,29 @@ data class PerchSettings(
  * next launch. A corrupt or unreadable file does the same — settings are not worth a
  * crash loop, and [settings] is the flow the whole UI hangs off.
  */
-class SettingsStore(private val store: DataStore<Preferences>) {
+class SettingsStore(
+    private val store: DataStore<Preferences>,
+    /**
+     * The scope this store *owns*, if it built one. Null when the caller supplied the scope
+     * ([at]) or when there is no scope at all ([inMemory]) — [close] must never cancel work
+     * whose lifetime belongs to somebody else.
+     */
+    private val owned: CoroutineScope? = null,
+) : Closeable {
+
+    /**
+     * True while this store's own scope can still run work. Issue #1: [create] used to
+     * build `CoroutineScope(Dispatchers.IO + SupervisorJob())` inline, so nothing could
+     * ever cancel it, and a DataStore write still in flight when Robolectric tore the data
+     * directory down threw into a scope with no parent and no handler — an uncaught
+     * exception the *next* test's `runTest` then reported as its own.
+     */
+    internal val isRunning: Boolean get() = owned?.isActive == true
+
+    /** Ends the work this store started. A store that owns no scope has nothing to end. */
+    override fun close() {
+        owned?.cancel()
+    }
 
     val settings: Flow<PerchSettings> = store.data
         .catch { cause ->
@@ -97,13 +122,22 @@ class SettingsStore(private val store: DataStore<Preferences>) {
         private val SHOW_READ_ENTRIES = booleanPreferencesKey("show_read_entries")
         private val TIME_FILTER = stringPreferencesKey("time_filter")
 
-        /** The real one, backed by a file in the app's data directory. */
-        fun create(context: Context): SettingsStore = SettingsStore(
-            PreferenceDataStoreFactory.create(
-                scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
-                produceFile = { context.applicationContext.preferencesDataStoreFile(FILE_NAME) },
-            ),
-        )
+        /**
+         * The real one, backed by a file in the app's data directory. The scope it writes
+         * on is *owned* by the store it belongs to, so [close] can end it — see [isRunning].
+         */
+        fun create(context: Context): SettingsStore {
+            val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+            return SettingsStore(
+                store = PreferenceDataStoreFactory.create(
+                    scope = scope,
+                    produceFile = {
+                        context.applicationContext.preferencesDataStoreFile(FILE_NAME)
+                    },
+                ),
+                owned = scope,
+            )
+        }
 
         /** A store over [file], so a test can prove a write survives a new instance. */
         fun at(file: File, scope: CoroutineScope): SettingsStore =

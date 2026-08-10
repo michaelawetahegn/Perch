@@ -13,6 +13,7 @@ import dev.mkiros.perch.data.repo.OpmlRepository
 import dev.mkiros.perch.data.repo.ProfileRepository
 import dev.mkiros.perch.data.settings.SettingsStore
 import okhttp3.OkHttpClient
+import java.io.Closeable
 import java.time.Clock
 
 /**
@@ -40,7 +41,18 @@ class AppContainer(
      * to "online": a test about the reading list should not have to own a settings file.
      */
     val settings: SettingsStore = SettingsStore.inMemory(),
-) {
+) : Closeable {
+
+    /**
+     * Ends everything the container owns. Issue #1: the settings store's writer scope had
+     * no owner, so a write still in flight when a test's data directory went away threw
+     * into nothing and was billed to whichever test ran next. `PerchApp.onTerminate` calls
+     * this, and Robolectric calls that at the end of every test.
+     */
+    override fun close() {
+        settings.close()
+        database.close()
+    }
 
     /** One fetcher for feeds, discovery and article pages — one client, one set of limits. */
     private val fetcher: FeedFetcher by lazy { FeedFetcher(httpClient) }
