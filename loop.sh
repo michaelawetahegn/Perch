@@ -115,7 +115,11 @@ boot_emulator() {
   fi
   emulator_online && { say "emulator already up"; return 0; }
   say "booting the Windows-side emulator…"
-  if BOOT_TIMEOUT="$BOOT_TIMEOUT" "$DEV" boot 2>&1 | tee -a "$LOG" | tail -1; then
+  # Belt and braces: device.sh owns the boot timeout, but a *hung* boot (rather than a
+  # slow one) is what actually stops this loop — see the 2026-08-09 entry in NOTES.md.
+  # Nothing before V13 needs the device, so an unbootable emulator must cost minutes,
+  # never the run.
+  if BOOT_TIMEOUT="$BOOT_TIMEOUT" timeout $((BOOT_TIMEOUT + 180)) "$DEV" boot 2>&1 | tee -a "$LOG" | tail -1; then
     date +%s > "$REBOOT_STAMP"
   else
     say "!! emulator boot failed — continuing anyway (only T30 needs it)"

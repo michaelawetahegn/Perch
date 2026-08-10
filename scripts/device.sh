@@ -86,9 +86,17 @@ cmd_boot() {
   echo "device.sh: booting AVD '$AVD' on the Windows side…"
   # `start` fully detaches the emulator into its own Windows process, so it outlives
   # this WSL command and survives between loop sessions.
-  cmd.exe /c start "" /B "$WIN_SDK_WIN\\emulator\\emulator.exe" \
+  #
+  # **Never wait on this call.** On 2026-08-09 it hung for 78 minutes: the emulator
+  # booted normally within a couple of minutes, but the WSL interop wrapper around
+  # `cmd.exe /c start /B` never returned, so this function never reached the polling
+  # loop below and BOOT_TIMEOUT never got a chance to fire. Backgrounding it means the
+  # boot's success is decided by `booted()` polling adb — the only thing that actually
+  # knows — and `timeout` reaps the wrapper if it hangs again.
+  timeout 120 cmd.exe /c start "" /B "$WIN_SDK_WIN\\emulator\\emulator.exe" \
       -avd "$AVD" -no-window -no-audio -no-boot-anim \
-      -gpu swiftshader_indirect -no-snapshot-save >/dev/null 2>&1
+      -gpu swiftshader_indirect -no-snapshot-save </dev/null >/dev/null 2>&1 &
+  disown 2>/dev/null || true
 
   local t0 now; t0=$(date +%s)
   while ! booted; do
