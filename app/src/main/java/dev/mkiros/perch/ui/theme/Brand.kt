@@ -139,15 +139,38 @@ object PerchBrand {
  * Built once: it has no theme input, so recomposing it per call would allocate a fresh
  * path tree on every drawer open for identical pixels.
  */
-val PerchMarkVector: ImageVector by lazy(LazyThreadSafetyMode.NONE) { buildPerchMark() }
+val PerchMarkVector: ImageVector by lazy(LazyThreadSafetyMode.NONE) {
+    buildPerchMark(
+        name = "PerchMark",
+        paper = PerchBrand.paper,
+        ink = PerchBrand.ink,
+        accent = PerchBrand.accent,
+    )
+}
 
-private fun buildPerchMark(): ImageVector {
-    val paper = SolidColor(PerchBrand.paper)
-    val ink = SolidColor(PerchBrand.ink)
-    val accent = SolidColor(PerchBrand.accent)
+/**
+ * The same drawing in one colour on one ground (V07).
+ *
+ * A `ColorFilter.tint` over [PerchMarkVector] would flatten the mark into its silhouette
+ * — two overlapping rounded rectangles — losing the P, the rules and the block, which are
+ * the whole reason it reads as a page. Rebuilding it with [paper] as every fill and [ink]
+ * as every stroke keeps that structure and gives up only the amber, which is exactly what
+ * "monochrome" is asking for. Pass the surface it sits on as [paper] and the sheets
+ * disappear into it, leaving line art.
+ *
+ * Not cached: [ink] and [paper] are theme colours, so a caller `remember`s it against the
+ * two it passed.
+ */
+fun perchMarkMonochrome(ink: Color, paper: Color): ImageVector =
+    buildPerchMark(name = "PerchMarkMono", paper = paper, ink = ink, accent = ink)
+
+private fun buildPerchMark(name: String, paper: Color, ink: Color, accent: Color): ImageVector {
+    val paperFill = SolidColor(paper)
+    val inkStroke = SolidColor(ink)
+    val accentFill = SolidColor(accent)
 
     return ImageVector.Builder(
-        name = "PerchMark",
+        name = name,
         defaultWidth = PerchMarkPaths.INK_WIDTH.dp,
         defaultHeight = PerchMarkPaths.INK_HEIGHT.dp,
         viewportWidth = PerchMarkPaths.INK_WIDTH,
@@ -156,19 +179,19 @@ private fun buildPerchMark(): ImageVector {
         // The paths are authored in launcher coordinates; this shifts that canvas so the
         // mark's bounding box starts at the vector's origin.
         .group(-PerchMarkPaths.INK_LEFT, -PerchMarkPaths.INK_TOP) {
-            sheet(PerchMarkPaths.BACK_SHEET, paper, ink)
-            sheet(PerchMarkPaths.FRONT_PAGE, paper, ink)
-            addPath(addPathNodes(PerchMarkPaths.P_GLYPH), fill = ink)
-            rules(PerchMarkPaths.TOP_RULES, ink, PerchMarkPaths.RULE_STROKE)
-            rules(PerchMarkPaths.FULL_RULE, ink, PerchMarkPaths.FULL_RULE_STROKE)
+            sheet(PerchMarkPaths.BACK_SHEET, paperFill, inkStroke)
+            sheet(PerchMarkPaths.FRONT_PAGE, paperFill, inkStroke)
+            addPath(addPathNodes(PerchMarkPaths.P_GLYPH), fill = inkStroke)
+            rules(PerchMarkPaths.TOP_RULES, inkStroke, PerchMarkPaths.RULE_STROKE)
+            rules(PerchMarkPaths.FULL_RULE, inkStroke, PerchMarkPaths.FULL_RULE_STROKE)
             addPath(
                 addPathNodes(PerchMarkPaths.ACCENT_BLOCK),
-                fill = accent,
-                stroke = ink,
+                fill = accentFill,
+                stroke = inkStroke,
                 strokeLineWidth = PerchMarkPaths.BLOCK_STROKE,
                 strokeLineJoin = StrokeJoin.Miter,
             )
-            rules(PerchMarkPaths.BODY_RULES, ink, PerchMarkPaths.RULE_STROKE)
+            rules(PerchMarkPaths.BODY_RULES, inkStroke, PerchMarkPaths.RULE_STROKE)
         }
         .build()
 }

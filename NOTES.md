@@ -10,9 +10,8 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   **U01: the repo is public** (MIT) — never un-redact the `apiKey` in `fixtures/homepages/research-nccgroup-com.html`.
 - 2026-08-07 — **Standing UI-test traps.** Compose UI tests live in **`app/src/testDebug/`** (`ui-test-manifest` is
   `debugImplementation`). An injected tap/long-press **never reaches a node inside a drawer sheet, bottom sheet or
-  dropdown** — use `performSemanticsAction(OnClick/OnLongClick)`. `compose.waitUntil` advances only the *virtual*
-  clock; wait in wall-clock time. `PullToRefreshBox` ignores a swipe unless its child scrolls — since V03 **every
-  empty state is a `LazyColumn` with one `fillParentMaxSize` item**; keep it that way. Screenshots: **never
+  dropdown** — use `performSemanticsAction(OnClick/OnLongClick)`. `PullToRefreshBox` ignores a swipe unless its child
+  scrolls — since V03 **every empty state is a `LazyColumn` with one `fillParentMaxSize` item**. Screenshots: **never
   `captureToImage()`** (CLAUDE.md is wrong) — `PixelCopy` waits on a frame callback Robolectric never delivers,
   `@GraphicsMode(NATIVE)`'s `View.draw(Canvas)` is synchronous; a sheet/dialog/dropdown is its **own window**, so draw
   its `rootView` over the decor view **translated by `getLocationOnScreen`**.
@@ -71,29 +70,30 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   `feeds`** — its job is outliving a source that does not exist yet. **`EntryDao.upsertAll` consumes parked rows**,
   which is what stops the refresh straight after a restore undoing it. A restore turns a flag **on** and never off,
   so it is idempotent. Codec is `org.json` — **its tests need Robolectric**; on a bare JVM `JSONObject` stubs.
-- 2026-08-09 — **V01/#1: Robolectric builds `PerchApp` for every test**, so `onCreate` work outlived the test.
-  `startupScope` dies in **`onTerminate()`** (Robolectric's `tearDownApplication()` calls it); `SettingsStore`/
-  `AppContainer` are `Closeable`, and a store cancels only a scope it *owns* (`create`). `ProcessLifecycleTest`
-  guards it; the flake never reproduced, so `LoudUncaughtHandler` stays to catch a recurrence.
+- 2026-08-09 — **V01/#1: Robolectric builds `PerchApp` for every test**, so `onCreate` work outlived it. `startupScope`
+  dies in **`onTerminate()`**; `SettingsStore`/`AppContainer` are `Closeable` and a store cancels only a scope it
+  *owns* (`create`). `ProcessLifecycleTest` guards it; `LoudUncaughtHandler` stays — the flake never reproduced.
 - 2026-08-09 — **Every full-suite flake so far: waiting on Room is not waiting on the screen.** `ArticleFullTextTest`
-  awaited the body reaching the DB then asserted rendered text at once, losing the emit→recompose hop under load
-  (giveaway: *"could not find any node … however, the unmerged tree contains 1 node"*). `waitForIdle` cannot cover it.
-  **Assert rendered text with a wall-clock poll** (`awaitText`/`awaitDisplayed`), never straight after a DB wait.
+  awaited the body reaching the DB then asserted rendered text at once, losing the emit→recompose hop (giveaway:
+  *"could not find any node … the unmerged tree contains 1"*). **Poll in wall-clock time** (`awaitText`), not `waitForIdle`.
 - 2026-08-09 — **V02/#9: a `Clock` carries a zone, and the container's was Greenwich's.** `AppContainer` now injects
   `systemDefaultZone()`; **`DateParser` stays UTC deliberately.** A zone test must pin `TimeZone.setDefault` —
   inheriting the JVM's cannot tell UTC-the-bug from UTC-the-agent.
 - 2026-08-09 — **V06/#11: folder order is alphabetical (`COLLATE NOCASE`), Uncategorized pinned by `(id = 1) ASC`.**
   The clause is stated **three** times and they must agree — `FolderDao.observeAll`, `FolderDao.getAll`,
   `EntryQueries.LIST_ITEMS` (the drawer and the section headers read *different* ones). `sortIndex` stays a column
-  (OPML/profile round-trips) but decides nothing. **`COLLATE NOCASE` folds ASCII only**: `Émacs` sorts after every
-  plain name, by UTF-8 byte — pinned by a test, accepted, not a bug to "fix" without an ICU collation.
+  (OPML/profile round-trips) but decides nothing. **`COLLATE NOCASE` folds ASCII only**: `Émacs` sorts last, by UTF-8
+  byte — pinned by a test and accepted, not a bug to "fix" without an ICU collation.
+- 2026-08-09 — **V07/#13: a missing thumbnail is `surfaceVariant` + the mark as line art in `outline`**
+  (`Placeholder(marked = true)`); **only `loading` keeps the bare frame**. `ColorFilter.tint` flattens the mark to its
+  silhouette, so `perchMarkMonochrome(ink, paper)` rebuilds it with `paper` = the fill; `outlineVariant` ink would be
+  invisible (same tone as the fill in dark). `Screenshots.rasterize` reads pixels without writing a file.
 - 2026-08-08 — **U16: v0.2.0 shipped** (versionCode 3, `app/build/outputs/apk/release/app-release.apk`). **Never `clean` before `test assembleRelease`** — it deletes `build/perch-screenshots/`, the evidence.
 - 2026-08-09 — **V04/#3: the inset contract is one doc comment in `ui/nav/PerchNavHost.kt`** — four clauses, one
   test each in `WindowInsetsTest`. Never add `.statusBarsPadding()` to a screen. **Robolectric has no bars or cutout
-  on any profile**, so a test must dispatch its own — `ui/WindowInsetsSupport.kt`'s `applyWindowInsets` reaches
-  **every Compose root** (`WindowInsetsHolder` listens on the `AndroidComposeView`, not the decor view). The bottom
-  bar and the `NavHost` are siblings and both spent the bottom inset; the shell now `consumeWindowInsets` while a
-  tab is showing.
+  on any profile**, so a test dispatches its own — `ui/WindowInsetsSupport.kt`'s `applyWindowInsets` reaches **every
+  Compose root** (`WindowInsetsHolder` listens on the `AndroidComposeView`). The bottom bar and the `NavHost` are
+  siblings and both spent the bottom inset; the shell now `consumeWindowInsets` while a tab is showing.
 - 2026-08-09 — **V05/#12: "Unread" is gone from every string a reader sees** (`home_title_feed` = "Feed",
   `drawer_all_sources` = "All sources"). Identifiers keep the word on purpose — the flag is real.
   **`PerchNavHostTest` must pin `HomeTestTags.TITLE`, not `onNodeWithText("Feed")`**: the bottom-bar tab has

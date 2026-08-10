@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -28,6 +29,7 @@ import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
 import dev.mkiros.perch.R
 import dev.mkiros.perch.data.db.EntryListItem
+import dev.mkiros.perch.ui.brand.PerchMarkMonochrome
 import dev.mkiros.perch.ui.theme.Dimens
 
 /**
@@ -44,6 +46,9 @@ object EntryRowTestTags {
     const val THUMBNAIL = "entry:thumb"
     const val THUMBNAIL_IMAGE = "entry:thumb:image"
     const val THUMBNAIL_PLACEHOLDER = "entry:thumb:placeholder"
+
+    /** The mark on the placeholder — drawn once an image is known not to be coming. */
+    const val THUMBNAIL_MARK = "entry:thumb:mark"
 }
 
 /**
@@ -136,9 +141,10 @@ fun EntryRow(
  * have one, an image in flight resolves in its own time, and an image URL harvested from
  * a feed months ago may well 404. If any of those collapsed the square or shrank it, the
  * list would reflow under the reader's thumb as images arrived — so `loading` and `error`
- * both land on the same placeholder as `null`, and none of them shows a broken-image
- * glyph. (`ArticleFigure` collapses on a load error, which is right *there* — a gap
- * mid-article is better than an empty frame — and wrong here.)
+ * land on the same [Placeholder] as `null` and none of them shows a broken-image glyph.
+ * They do not all *look* alike: `error` and `null` are settled and carry the mark, and
+ * only `loading` is still a bare frame. (`ArticleFigure` collapses on a load error, which
+ * is right *there* — a gap mid-article is better than an empty frame — and wrong here.)
  */
 @Composable
 private fun Thumbnail(url: String?) {
@@ -150,7 +156,7 @@ private fun Thumbnail(url: String?) {
             .testTag(EntryRowTestTags.THUMBNAIL),
     ) {
         if (url == null) {
-            Placeholder(shape)
+            Placeholder(shape, marked = true)
             return@Box
         }
         SubcomposeAsyncImage(
@@ -158,8 +164,8 @@ private fun Thumbnail(url: String?) {
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize(),
-            loading = { Placeholder(shape) },
-            error = { Placeholder(shape) },
+            loading = { Placeholder(shape, marked = false) },
+            error = { Placeholder(shape, marked = true) },
             success = {
                 SubcomposeAsyncImageContent(
                     modifier = Modifier
@@ -171,15 +177,40 @@ private fun Thumbnail(url: String?) {
     }
 }
 
-/** An empty frame: a hairline `outlineVariant` outline on the surface, nothing inside. */
+/**
+ * The square with no image in it (V07, issue #13).
+ *
+ * A hairline around nothing is what a browser draws while an image is still coming, so
+ * that is exactly what it looked like — on rows whose image was never coming at all, which
+ * on a reading list of text blogs is most of them. So when the answer is final — no URL,
+ * or a URL that failed — the square is *finished*: a low-contrast `surfaceVariant` fill
+ * carrying the app's own mark as line art, in `outline`. Monochrome and quiet by
+ * construction: the sheets take the fill's own colour, so only the rules, the P and the
+ * block show, at the contrast the scheme reserves for a decorative boundary.
+ *
+ * [marked] is false for exactly one state — an image still in flight — which keeps the
+ * plain frame, because a load in progress is the one case where "still coming" is true.
+ */
 @Composable
-private fun Placeholder(shape: RoundedCornerShape) {
+private fun Placeholder(shape: RoundedCornerShape, marked: Boolean) {
+    val scheme = MaterialTheme.colorScheme
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .border(Dimens.hairline, MaterialTheme.colorScheme.outlineVariant, shape)
+            .then(if (marked) Modifier.background(scheme.surfaceVariant, shape) else Modifier)
+            .border(Dimens.hairline, scheme.outlineVariant, shape)
             .testTag(EntryRowTestTags.THUMBNAIL_PLACEHOLDER),
-    )
+        contentAlignment = Alignment.Center,
+    ) {
+        if (marked) {
+            PerchMarkMonochrome(
+                ink = scheme.outline,
+                paper = scheme.surfaceVariant,
+                size = Dimens.thumbnailMark,
+                modifier = Modifier.testTag(EntryRowTestTags.THUMBNAIL_MARK),
+            )
+        }
+    }
 }
 
 private const val TITLE_MAX_LINES = 3

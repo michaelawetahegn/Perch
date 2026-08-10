@@ -15,6 +15,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import coil.Coil
@@ -27,6 +28,7 @@ import coil.request.ImageResult
 import coil.request.Options
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.EntryListItem
+import dev.mkiros.perch.ui.screenshot.Screenshots
 import dev.mkiros.perch.ui.theme.Dimens
 import dev.mkiros.perch.ui.theme.PerchTheme
 import java.io.IOException
@@ -39,6 +41,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 
 /**
  * The redesigned row (U08), against `design/reference/feed-row-reference.jpg`.
@@ -140,6 +143,57 @@ class EntryRowTest {
         assertPlaceholder()
     }
 
+    /**
+     * V07: absent and failed are *finished* states, so they carry the mark. Loading is
+     * not — an image in flight keeps the plain frame, because a placeholder that looks
+     * identical whether the image is coming or never coming is the complaint issue #13
+     * was filed about, in reverse.
+     */
+    @Test
+    fun `an entry with no image rests under the brand mark`() {
+        show(item(imageUrl = null))
+
+        thumbnail(EntryRowTestTags.THUMBNAIL_MARK).assertIsDisplayed()
+    }
+
+    @Test
+    fun `an image whose load failed rests under the same mark`() {
+        install(AlwaysFails)
+        show(item(imageUrl = IMAGE_URL))
+
+        thumbnail(EntryRowTestTags.THUMBNAIL_MARK).assertIsDisplayed()
+    }
+
+    @Test
+    fun `an image still in flight keeps the bare frame and does not wear the mark`() {
+        install(PendingForever)
+        show(item(imageUrl = IMAGE_URL))
+
+        thumbnail(EntryRowTestTags.THUMBNAIL_MARK).assertDoesNotExist()
+    }
+
+    /**
+     * The tag says the mark is composed; only pixels say the square stopped looking
+     * empty. Drawn for real under `NATIVE` graphics, then read back: the square must not
+     * be the row showing through, and it must carry ink of its own.
+     */
+    @Test
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    fun `the placeholder is a filled square with the mark on it, not an empty frame`() {
+        show(item(imageUrl = null))
+
+        val square = thumbnail(EntryRowTestTags.THUMBNAIL_PLACEHOLDER)
+            .fetchSemanticsNode().boundsInRoot
+        val screen = Screenshots.rasterize(compose, compose.activity)
+        val justOutside = with(compose.density) { Dimens.xs.roundToPx() }
+        val row = screen.getPixel((square.left - justOutside).toInt(), square.center.y.toInt())
+
+        // Inset past the hairline border and the corner radius: this is the fill itself.
+        val inside = coloursIn(screen, square, inset = square.width / CORNER_INSET)
+        assertThat(inside).doesNotContain(row)
+        assertThat(inside.size).isAtLeast(2)
+    }
+
     @Test
     fun `an image that loads replaces the placeholder in the same footprint`() {
         install(StubImages(IMAGE_URL, context))
@@ -180,6 +234,21 @@ class EntryRowTest {
         thumbnail(EntryRowTestTags.THUMBNAIL)
             .assertWidthIsEqualTo(Dimens.thumbnail)
             .assertHeightIsEqualTo(Dimens.thumbnail)
+    }
+
+    /** Every distinct colour inside [bounds], sampled coarsely, [inset] px in on each side. */
+    private fun coloursIn(screen: Bitmap, bounds: Rect, inset: Float): Set<Int> {
+        val seen = mutableSetOf<Int>()
+        var y = bounds.top + inset
+        while (y < bounds.bottom - inset) {
+            var x = bounds.left + inset
+            while (x < bounds.right - inset) {
+                seen += screen.getPixel(x.toInt(), y.toInt())
+                x += SAMPLE_STRIDE
+            }
+            y += SAMPLE_STRIDE
+        }
+        return seen
     }
 
     /** The thumbnail's parts are inside the row's merged node, so ask the unmerged tree. */
@@ -290,5 +359,9 @@ class EntryRowTest {
         const val IMAGE_URL = "https://example.com/lead.png"
         const val MISSING_URL = "https://example.invalid/gone.png"
         val THREE_LINES = 76.dp
+
+        /** An eighth of the square clears both the hairline and the rounded corners. */
+        const val CORNER_INSET = 8f
+        const val SAMPLE_STRIDE = 4f
     }
 }

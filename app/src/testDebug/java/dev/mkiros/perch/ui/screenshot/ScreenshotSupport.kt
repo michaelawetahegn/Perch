@@ -23,8 +23,12 @@ object Screenshots {
     /** A capture, and the one number that says whether it is worth looking at. */
     data class Shot(val file: File, val distinctColours: Int)
 
-    /** Writes the whole screen — every window on it — to `<dir>/<name>.png`. */
-    fun capture(compose: ComposeTestRule, activity: Activity, dir: File, name: String): Shot {
+    /**
+     * The whole screen as pixels, in `boundsInRoot` coordinates — a test that only wants
+     * to *look* at what was drawn calls this and never touches the filesystem, so the
+     * tracked screenshot directory stays the deliberate captures only (V01).
+     */
+    fun rasterize(compose: ComposeTestRule, activity: Activity): Bitmap {
         compose.waitForIdle()
         val decor = activity.window.decorView
         val bitmap = Bitmap.createBitmap(decor.width, decor.height, Bitmap.Config.ARGB_8888)
@@ -40,6 +44,12 @@ object Screenshots {
             window.draw(canvas)
             canvas.restoreToCount(save)
         }
+        return bitmap
+    }
+
+    /** Writes the whole screen — every window on it — to `<dir>/<name>.png`. */
+    fun capture(compose: ComposeTestRule, activity: Activity, dir: File, name: String): Shot {
+        val bitmap = rasterize(compose, activity)
 
         dir.mkdirs()
         val file = File(dir, "$name.png")

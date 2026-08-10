@@ -197,7 +197,7 @@ do when installing. The template lives in the repo so no release re-invents it.
         green; issue #11 closed.
       - Rung: unit
 
-- [ ] **V07 — One quiet placeholder for a missing thumbnail. TDD + screenshot. Issue #13.**
+- [x] **V07 — One quiet placeholder for a missing thumbnail. TDD + screenshot. Issue #13.**
       `gh issue view 13` — the reader's words: the empty square "looks like it's still
       trying to load the thumbnail", and what is wanted is a normalised, low-contrast filled
       square carrying the app's own mark, monochrome, that "goes to the back of your mind".

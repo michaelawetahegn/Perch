@@ -66,6 +66,13 @@ object Dimens {
     /** Air between the title column and the thumbnail. */
     val thumbnailGap = md
 
+    /**
+     * The mark inside a missing-thumbnail placeholder (V07) — 40dp in the 96dp square,
+     * a little over the two-fifths at which a centred mark reads as a fixture of the
+     * square rather than as a small icon dropped into a big empty one.
+     */
+    val thumbnailMark = xxl + sm
+
     // --- the brand (U09b) ---
     /**
      * The mark in the drawer header. Small enough to sit beside the logotype without

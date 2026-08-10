@@ -8,8 +8,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -19,6 +21,7 @@ import dev.mkiros.perch.R
 import dev.mkiros.perch.ui.theme.Dimens
 import dev.mkiros.perch.ui.theme.PerchBrand
 import dev.mkiros.perch.ui.theme.PerchMarkVector
+import dev.mkiros.perch.ui.theme.perchMarkMonochrome
 
 /**
  * The Perch mark, in the app (U09b).
@@ -38,6 +41,30 @@ fun PerchMark(
         modifier = modifier
             .testTag(BrandTestTags.MARK)
             .size(size),
+    )
+}
+
+/**
+ * The mark as line art, in one [ink] on one [paper] (V07).
+ *
+ * This is the mark standing in for something rather than announcing the app — the square
+ * where a thumbnail would have been. It follows the theme where [PerchMark] deliberately
+ * does not, because here it is not artwork on a plate: it is a quiet fixture of the row
+ * it sits in, and a fixed amber block in the corner of every imageless row would be the
+ * loudest thing on the list.
+ */
+@Composable
+fun PerchMarkMonochrome(
+    ink: Color,
+    paper: Color,
+    modifier: Modifier = Modifier,
+    size: Dp = Dimens.brandMark,
+) {
+    val artwork = remember(ink, paper) { perchMarkMonochrome(ink = ink, paper = paper) }
+    Image(
+        imageVector = artwork,
+        contentDescription = null,
+        modifier = modifier.size(size),
     )
 }
 
