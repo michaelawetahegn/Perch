@@ -389,7 +389,7 @@ do when installing. The template lives in the repo so no release re-invents it.
         Buckets are guessed from labels; `tests` is held back below the fold rather than
         offered as a bullet, since a reader cannot see the test suite.
 
-- [ ] **V15 — Live acceptance v3.** Re-run PLAN-2 U15's gates plus this plan's additions
+- [x] **V15 — Live acceptance v3.** Re-run PLAN-2 U15's gates plus this plan's additions
       against the live corpus, with the same `-Pperch.live=true` switch. Gates: (1) the
       reworked source gate from V12, with its exclusion list; (2) V02's day boundary asserted
       against a **non-UTC** zone across the live corpus — an entry published today in
@@ -407,6 +407,18 @@ do when installing. The template lives in the repo so no release re-invents it.
       - Done: the live run green with every gate's count pasted into the commit message;
         the screenshots exist; the default no-network `./gradlew test` still green.
       - Rung: screenshot
+      - **Outcome (2026-08-10):** the seven clauses landed as **twelve gates**, because the
+        additions are questions the old gates could not be widened to ask. Green:
+        1 38/38 sources · 2 1037 entries → 25872 blocks, 0 Unsupported · 4 50/69 sampled
+        thumbnails (72.5%) · 5 48/53 recovered ≥500 chars (90.6%), teasers ×36.7 ·
+        5b 72.5% against U15's 75.4%, floor 65.4% · 6 38 sources / 3 folders round-tripped,
+        0 duplicates · 6b 123 tables, 2290 cells, all rectangular · 6c 30 rows of 1037 ·
+        8 1037/1037 in their own Central day, **636 of which a UTC clock would have dropped** ·
+        9 Graphics · Security · Systems · Uncategorized · 3 and 7 wrote 19 screenshots.
+        `research.checkpoint.com` failed gate 1 on the first attempt and passed on the
+        second: Cloudflare answers 202 with an empty body when live runs come too close
+        together — NOTES.md carries the wait, and that a `curl` probe spends the allowance
+        the rerun needs. No new visual residual; V08's repeated byline stays T29's.
 
 - [ ] **V16 — Release v0.3.0.** Bump `versionCode` 4 / `versionName` `0.3.0` (both live atop
       `app/build.gradle.kts` and nowhere else). Build the **release-signed** APK with U02's

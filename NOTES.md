@@ -36,18 +36,15 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   `Interceptor` returning `ErrorResult` fails, one that `awaitCancellation()`s stays loading; `stubThumbnails()` for list shots.
 - 2026-08-08 — **U09: the bottom bar and the `NavHost` are siblings**; **Feed's `DrawerState`/`LazyListState` are
   hoisted into `PerchNavHost`** (state remembered inside Feed dies on a tab switch). §0's back policy is the pure
-  `nextBackStep(BackState)` in `BackChain.kt`, the enum's order *being* the priority; **`EntryRow` owns its
-  `combinedClickable`** — an inner `clickable` eats the pointer stream.
+  `nextBackStep(BackState)` in `BackChain.kt`, the enum's order *being* the priority.
 - 2026-08-08 — **U09a: the selection `BackHandler` must live inside `ModalDrawerSheet`** — the root one wins
   otherwise; a batch delete's dialog is **a coroutine behind its tap**, so wait in wall-clock time.
 - 2026-08-08 — **U07a: all three lists are Paging 3**, **placeholders off** so `startsSection` is answerable at a
   page edge. The three list queries live once in **`EntryQueries`** because each exists twice — `Flow<List>` *and*
   `PagingSource`. **`uiState.entries` is gone**: ask the screen; `performScrollToIndex` past loaded rows throws.
 - 2026-08-08 — **U10:** Readability-over-jsoup in `data/extract/`, **no new dependency**; fixtures in
-  `fixtures/articles/`. Three traps. (1) **`ArticleLowering` deletes truncation markers as chrome**, so `FullText`
-  looks for "Continue reading" in the *unlowered* text. (2) Scoring finds the *tightest* subtree, so a decorative
-  wrapper wins and the article's last section, its sibling, is lost — hence `unwrapped()`. (3) **An extraction only
-  ever replaces a body it beats.**
+  `fixtures/articles/`. **`ArticleLowering` deletes truncation markers as chrome**, so `FullText` looks for
+  "Continue reading" in the *unlowered* text; **an extraction only ever replaces a body it beats.**
 - 2026-08-08 — **U12: the viewer is an overlay, not a destination** — a sibling of the article's `Scaffold` in one
   `Box`, so the reading position survives; `ZoomedImage` is hoisted to `PerchNavHost` because
   **`BackStep.CloseImageViewer` sits between `CloseOverlay` and `PopArticle`**, an order `BackChainTest` guards.
@@ -88,12 +85,15 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   article and `restoreState` puts it back — pop first, switch tabs only if needed. Scoping **does not touch the
   time window**. Residual: a scoped list still repeats the source's name on every row — polish, T29.
 - 2026-08-10 — **V09/#4: a table joins the article on its *shape*, not its text density** — `carriesContentTable`
-  (≥3 rows, ≥2 columns, no nested table, not linky); `carriesSubstantialProse` counts a `<p>` **wrapped** in a block
-  div (every Squarespace block is its own `sqs-block`). A page fixture is not a feed body: `zdi-page-*.html`.
-  **Live gate 7 is the run's only red** (still, after V12): home shows 1 folder section of 3 (V06 moved them) —
-  V15's clause (7), not a regression.
+  (≥3 rows, ≥2 columns, no nested table, not linky). A page fixture is not a feed body: `zdi-page-*.html`.
 - **V11/#7.** Anything spanning a scrolling child — the gutter's rule, a table's edge fade — measures 0 against
   the article's unbounded height: the rule needs the Row at **`height(IntrinsicSize.Min)`**, the fade is a
   draw-only `matchParentSize` **sibling** of the scroll (inside it it lands off-screen at the content's far end).
-  **The back sheet is only its visible sliver** now; the P's counter is a 5.9 × 7.8 hole `LauncherIconTest`
-  measures on both icon layers, in all **three** statements of the path.
+- 2026-08-10 — **V15: the live gate is twelve gates.** V02's day boundary is **gate 8** (`America/Chicago`, 23:30
+  on the entry's own day — 636 of 1037 live entries would have been dropped by a UTC clock), V06's order is **gate
+  9**, and gate 6b fetches V09's ZDI *page* by name because its feed ships full bodies. **Stage a screenshot in
+  the reader's order, never `sortIndex`** — that alone was gate 7's "1 folder section of 3". Gate 5b's floor is
+  U15's 75.4% less 10 points: the sampled set is ~70 entries, so one entry is 1.4 of them.
+  **`research.checkpoint.com` answers 202 with an empty body once live runs come too close together** (Cloudflare;
+  plain `curl` sees it too, and **a `curl` probe spends the allowance the next run needs**) — wait ~10 quiet
+  minutes and rerun without probing first. It is a healthy source, not an exclusion.
