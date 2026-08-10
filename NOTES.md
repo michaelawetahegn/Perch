@@ -20,8 +20,7 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   -Pperch.live=true --tests '*LiveAcceptance*'`. **V12/#8: gate 1 has no quota** — every source in `feeds.txt` bar
   `EXCLUDED_SOURCES` must pull (38/38 today), so a break arrives as a URL, and an exclusion carries the measurement
   that settled it. **SPEC §6's 8 MiB cap stays 8 MiB**: `danluu` (11.1 MB) and `projectzero` (13.2 MB) are out of
-  scope, not evidence against the cap. `research.nccgroup.com` left the reading list — it publishes no feed at all.
-  **Not ours:** the LLVM feed omits spaces around inline `<code>`/`<a>` — do not "repair" it.
+  scope, not evidence against it. **Not ours:** the LLVM feed omits spaces around inline `<code>`/`<a>`.
 - 2026-08-07 — **U02: losing `~/.perch/perch-release.jks` or `signing.properties` makes every future install a data
   wipe** — the cert (SHA-256 `61367c04…fce489`) *is* the update identity and cannot be rotated. Both `chmod 600`,
   outside the repo, **not backed up yet**; absent the key, release falls back to debug signing silently. Version
@@ -64,10 +63,10 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   moment the DB has it loses the emit→recompose hop. **Poll in wall-clock time**, not `waitForIdle`.
 - **V02/#9: a `Clock` carries a zone**; `AppContainer` injects `systemDefaultZone()`, **`DateParser` stays UTC
   deliberately**. A zone test pins `TimeZone.setDefault` — the JVM's cannot tell bug from agent.
-- 2026-08-09 — **V06/#11: folder order is alphabetical (`COLLATE NOCASE`), Uncategorized pinned by `(id = 1) ASC`.**
-  Stated **three** times and they must agree — `FolderDao.observeAll`, `.getAll`, `EntryQueries.LIST_ITEMS` (drawer
-  and section headers read *different* ones). `sortIndex` stays a column (round-trips) but decides nothing.
-  **`COLLATE NOCASE` folds ASCII only**: `Émacs` sorts last by UTF-8 byte — pinned by a test, not a bug to "fix".
+- **V06/#11: folder order is alphabetical (`COLLATE NOCASE`), Uncategorized pinned by `(id = 1) ASC`.** Stated
+  **three** times and they must agree — `FolderDao.observeAll`, `.getAll`, `EntryQueries.LIST_ITEMS` (drawer and
+  section headers read *different* ones). `sortIndex` stays a column but decides nothing. **`COLLATE NOCASE` folds
+  ASCII only**: `Émacs` sorts last by UTF-8 byte — pinned by a test, not a bug to "fix".
 - **V07/#13: a missing thumbnail is `surfaceVariant` + the mark as line art in `outline`** (`Placeholder(marked =
   true)`), **only `loading` keeps the bare frame**; `ColorFilter.tint` would flatten the mark to a silhouette, so
   `perchMarkMonochrome(ink, paper)`. `Screenshots.rasterize` reads pixels, writes no file.
