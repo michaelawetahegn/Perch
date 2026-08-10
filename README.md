@@ -116,7 +116,8 @@ maestro/         end-to-end regression flow
 ```
 
 `SPEC.md` pins the toolchain and the behavioural rules, `DESIGN.md` is the visual spec,
-and `PLAN-2.md` is what is being built next.
+`PLAN-3.md` is what is being built next, and `docs/RELEASE-NOTES.md` is how a release
+page gets written (`scripts/release-notes.sh <last-tag>` drafts one).
 
 ## Status
 
@@ -124,6 +125,9 @@ v0.2.0 is the current release and is in daily use against 42 live sources. It ad
 folders, the To-Read and Liked queues with a bottom bar, thumbnails, full-text
 extraction, syntax-highlighted code, real tables, a tap-to-zoom image viewer, paged
 lists, OPML with folders, and profile backup/restore.
+
+Every version, with its notes and its APK, is on the
+[Releases page](https://github.com/michaelawetahegn/Perch/releases).
 
 ## Licence
 

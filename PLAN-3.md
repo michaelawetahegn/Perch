@@ -367,7 +367,7 @@ do when installing. The template lives in the repo so no release re-invents it.
         entry again and the read ones stayed out of the Feed at All Time.
         `perch-0.2.0-debug.apk` is attached to the v0.2.0 release, labelled as the bridge.
 
-- [ ] **V14 — Release notes are a template, not a memory. Issue #14.**
+- [x] **V14 — Release notes are a template, not a memory. Issue #14.**
       `gh issue view 14`. The reader wants each release page to read like an announcement:
       what is new, what was fixed, what they must do — user-facing, easy to consume. v0.2.0's
       notes are close to right; the gap is that nothing in the repo makes the next one look
@@ -383,6 +383,11 @@ do when installing. The template lives in the repo so no release re-invents it.
         usable draft (paste its first lines into the commit message); README links the
         releases page; issue #14 closed.
       - Rung: build
+      - **Outcome (2026-08-10):** the script takes the **last** tag and drafts what has
+        closed *since* it (`release-notes.sh v0.2.0` → the 13 v0.3 issues), because the
+        tag for the release being written does not exist yet when the notes are written.
+        Buckets are guessed from labels; `tests` is held back below the fold rather than
+        offered as a bullet, since a reader cannot see the test suite.
 
 - [ ] **V15 — Live acceptance v3.** Re-run PLAN-2 U15's gates plus this plan's additions
       against the live corpus, with the same `-Pperch.live=true` switch. Gates: (1) the
