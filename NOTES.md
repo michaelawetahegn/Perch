@@ -95,3 +95,6 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
 - 2026-08-08 — **Open defects are GitHub issues now, not NOTES entries.** #1 suite flakes · #2 v0.1→v0.2 needs a
   signing bridge · #3 no window insets · #4 extractor drops Squarespace tables · #5 inert folder header
   mid-selection · #6 empty state cannot be pulled · #7 visual polish · #8 live gate 1 has no headroom.
+- 2026-08-09 — **v0.3 is `PLAN-3.md` (V01–V16), one task per issue** (#1–#14, the reader filed #9–#14 himself).
+  A task ends: commit → `git push` → `gh issue close N` with the verification line. **No fix without a failing
+  test that reproduced the bug first** — un-reproducible goes `[BLOCKED: cannot reproduce — …]`, never a guess.

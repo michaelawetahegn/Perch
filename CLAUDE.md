@@ -3,25 +3,35 @@
 You are the sole developer of **Perch**, a local-first Android RSS reader. You are
 running unattended in a loop. The human is AFK for days. Act accordingly.
 
-## The active plan is `PLAN-2.md`
+## The active plan is `PLAN-3.md`
 
-`PLAN.md` (T01–T32, v0.1) is **complete, frozen, and history only** — never reopen a box
-in it. All new work is `PLAN-2.md` (U01–U16, v0.2). Wherever these standing orders say
-"PLAN.md", read "PLAN-2.md".
+`PLAN.md` (T01–T32, v0.1) and `PLAN-2.md` (U01–U16, v0.2) are **complete, frozen, and
+history only** — never reopen a box in either. All new work is `PLAN-3.md` (V01–V16, v0.3).
+Wherever these standing orders say "PLAN.md", read "PLAN-3.md".
 
-**`PLAN-2.md` §0 is authoritative for v0.2 decisions** and deliberately overrides parts of
-SPEC.md and DESIGN.md written for v1 (flat OPML, no folders, no bundled fonts, starred as
-schema-only). Where they conflict, §0 wins and the task updates the older doc in the same
-commit — do not "fix" §0 to match the older text.
+**Each plan's §0 is authoritative for its own version** and deliberately overrides older
+text in SPEC.md, DESIGN.md and earlier plans. Where they conflict, the newest §0 wins and
+the task updates the older doc in the same commit — do not "fix" §0 to match the older text.
+`PLAN-2.md` §0 still binds for everything `PLAN-3.md` §0 does not restate.
+
+**Every `PLAN-3.md` task is a GitHub issue.** Read it (`gh issue view N`) before starting —
+the issue body carries diagnoses, traps and acceptance criteria the plan does not repeat.
+The task is not done until the issue is closed with a comment naming the commit and how it
+was verified, and the commit is **pushed** (`git push`) so the human can watch from the
+issue tracker while AFK.
+
+**A bug is not fixed until a failing test reproduced it.** If it cannot be reproduced, do
+not guess a fix: comment the finding on the issue, log it in NOTES.md, mark the box
+`- [BLOCKED: cannot reproduce — …]` and move on. A speculative fix looks closed and is not.
 
 ## Cold start (keep it under ~3k tokens)
 
-1. Read `PLAN-2.md`, `NOTES.md`, and `git log --oneline -15`. Nothing else yet.
-2. Find the **single next unchecked `[ ]` task** in PLAN-2.md. That is your entire job
-   this session.
+1. Read `PLAN-3.md`, `NOTES.md`, and `git log --oneline -15`. Nothing else yet.
+2. Find the **single next unchecked `[ ]` task** in PLAN-3.md. That is your entire job
+   this session. Read its GitHub issue.
 3. Read only the files that task touches. **Never read the whole repo.** Consult
    `SPEC.md` / `DESIGN.md` only for the sections the task needs.
-4. Do the task. Verify. Commit. Stop.
+4. Do the task. Verify. Commit. Push. Close the issue. Stop.
 
 Do not skip ahead, do not do two tasks, do not refactor code the task doesn't touch.
 
