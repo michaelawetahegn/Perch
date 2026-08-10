@@ -29,7 +29,10 @@ https://googleprojectzero.blogspot.com/feeds/posts/default
 https://blog.trailofbits.com/feed/
 https://research.checkpoint.com/feed/
 https://security.googleblog.com/feeds/posts/default
-https://research.nccgroup.com
+# research.nccgroup.com stood here until V12 (2026-08-10). It publishes no feed at all:
+# every guessed path answers 200 with the same HTML page. Its homepage stays in
+# fixtures/homepages/ as FeedDiscovery's negative case — it is only the *reading list*
+# it is out of, because a source that can never pull cannot be part of a pull gate.
 https://www.hexacorn.com/blog/feed/
 https://krebsonsecurity.com/feed/
 https://secret.club/feed.xml

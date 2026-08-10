@@ -76,7 +76,7 @@ import org.robolectric.annotation.GraphicsMode
 /**
  * T32, extended by U15 — the daily-driver gate. Everything before this proves Perch works
  * against *fixtures*; this proves it works against **the real internet**, and that
- * forty-two sources come out looking like one publication.
+ * forty-one sources come out looking like one publication.
  *
  * It is network-gated and excluded from the default build, because `./gradlew test` must
  * stay offline and deterministic. Run it deliberately:
@@ -164,10 +164,12 @@ class LiveAcceptanceTest {
 
         val pull = pullEveryFeed()
         report("GATE 1 (pull)", pull.summary())
-        if (pull.withEntries < MIN_LIVE_SOURCES) {
-            failures += "gate 1: only ${pull.withEntries}/${pull.attempted} sources " +
-                "resolved to a feed with ≥1 entry (need $MIN_LIVE_SOURCES). " +
-                "Refused: ${pull.refusals}"
+        failures += staleExclusions()
+        if (pull.refusals.isNotEmpty()) {
+            failures += "gate 1: ${pull.refusals.size} of ${pull.attempted} sources that " +
+                "should pull did not — ${pull.refusals.sorted()}. Either the source broke " +
+                "(fix it, or retire it from fixtures/feeds.txt) or Perch did. If it is " +
+                "permanently out, name it in EXCLUDED_SOURCES with a reason."
         }
 
         val standard = lowerEveryEntry()
@@ -219,19 +221,26 @@ class LiveAcceptanceTest {
     private class PullReport(val attempted: Int) {
         var withEntries = 0
         val refusals = mutableListOf<String>()
-        fun summary() = "$withEntries/$attempted sources resolved with ≥1 entry" +
-            refusals.sorted().joinToString("") { "\n  refused  $it" }
+        fun summary() = "$withEntries/$attempted sources that should pull resolved with ≥1 entry" +
+            refusals.sorted().joinToString("") { "\n  refused   $it" } +
+            EXCLUDED_SOURCES.entries.sortedBy { it.key }
+                .joinToString("") { "\n  excluded  ${it.key} — ${it.value}" }
     }
 
     /**
-     * Every URL in `fixtures/feeds.txt` through the stack the add-source sheet uses —
-     * [dev.mkiros.perch.data.net.FeedFetcher] (SPEC.md §6 limits and all) → discovery →
-     * `FeedParser` → the database. Not a reimplementation of the app's pull: the app's
-     * pull, pointed at the real internet.
+     * Every URL in `fixtures/feeds.txt` bar [EXCLUDED_SOURCES], through the stack the
+     * add-source sheet uses — [dev.mkiros.perch.data.net.FeedFetcher] (SPEC.md §6 limits
+     * and all) → discovery → `FeedParser` → the database. Not a reimplementation of the
+     * app's pull: the app's pull, pointed at the real internet.
+     *
+     * Every one of them must come back with a feed and at least one entry. There is no
+     * quota to hide behind, and there does not need to be: a source that stops working
+     * arrives as its own URL and its own error, which is either something to fix, a source
+     * to retire, or an exclusion to write down.
      *
      * Four in flight, matching the repository's own refresh concurrency, and each source
      * is committed the moment it resolves so the parsed feed can be collected rather than
-     * forty-two of them held at once.
+     * forty-one of them held at once.
      */
     private fun pullEveryFeed(): PullReport = runBlocking {
         val urls = feedUrls()
@@ -590,7 +599,7 @@ class LiveAcceptanceTest {
      * entry, and opens the sample through the same `loadFullText` the article screen calls.
      *
      * A probe that cannot reach the source reports and does not fail: this is one source
-     * outside the contracted forty-two, and gate 1 is where the reading list's reachability
+     * outside the contracted forty-one, and gate 1 is where the reading list's reachability
      * is judged. A probe that *does* pull entries and recovers nothing from any of them is a
      * different thing entirely, and fails.
      */
@@ -1117,10 +1126,26 @@ class LiveAcceptanceTest {
 
     // ---- harness ----------------------------------------------------------------
 
-    private fun feedUrls(): List<String> =
+    private fun readingList(): List<String> =
         File(Screenshots.repoRoot(), "fixtures/feeds.txt").readLines()
             .map { it.trim() }
             .filter { it.startsWith("http") }
+
+    /** The reading list minus [EXCLUDED_SOURCES] — the sources gate 1 holds to account. */
+    private fun feedUrls(): List<String> = readingList().filterNot { it in EXCLUDED_SOURCES }
+
+    /**
+     * An exclusion naming a URL the reading list no longer carries is worse than no
+     * exclusion at all: it reads as "we know about that one" while excusing nothing, and
+     * the next source to break under the same name would be excused silently.
+     */
+    private fun staleExclusions(): List<String> {
+        val list = readingList().toSet()
+        return EXCLUDED_SOURCES.keys.filterNot { it in list }.map {
+            "gate 1: EXCLUDED_SOURCES names $it, which is not in fixtures/feeds.txt — " +
+                "drop the exclusion, it is excusing nothing"
+        }
+    }
 
     /** Straight to stdout: these counts are what the commit message has to quote. */
     private fun report(gate: String, body: String) = println("\n$gate\n$body")
@@ -1144,8 +1169,29 @@ class LiveAcceptanceTest {
     private companion object {
         const val LIVE_PROPERTY = "perch.live"
 
-        /** PLAN.md T32 gate 1: ≥38 of the 42 sources must come back with a feed. */
-        const val MIN_LIVE_SOURCES = 38
+        /**
+         * PLAN-3 V12: sources in `fixtures/feeds.txt` that are known not to pull, and why.
+         * Gate 1 does not fetch them — it prints them — so the budget goes to the sources
+         * whose reachability is still a question, and every other source is held to a hard
+         * gate. `37/42` used to mean "something, somewhere"; a name means something.
+         *
+         * An entry here is a decision, not a snooze: it says the source is out of scope for
+         * Perch as specified, with the measurement that settled it. Two of them are over
+         * SPEC.md §6's 8 MiB body cap — deliberately, see §6: the cap is what keeps four
+         * concurrent refreshes inside a phone's heap, and these two are full-archive feeds
+         * whose *whole point* is being enormous.
+         */
+        val EXCLUDED_SOURCES = mapOf(
+            "https://danluu.com/atom.xml" to
+                "the full archive in one document; measured 11.1 MB (2.3 MB gzipped) on " +
+                "2026-08-10, over SPEC §6's 8 MiB body cap",
+            "https://googleprojectzero.blogspot.com/feeds/posts/default" to
+                "full post bodies, no paging; measured 13.2 MB (9.6 MB gzipped) on " +
+                "2026-08-10, over SPEC §6's 8 MiB body cap",
+            "https://rachelbythebay.com/w/atom.xml" to
+                "port 443 never answers from this network — connect times out at 15s " +
+                "(2026-08-10). The feed itself is well-formed: fixtures/snapshots holds it",
+        )
 
         /** PLAN.md T32 gate 2. */
         const val UNSUPPORTED_PERCENT = 2
@@ -1174,7 +1220,7 @@ class LiveAcceptanceTest {
         const val TEASER_CHARS = 400
         const val TENFOLD = 10.0
 
-        /** §0's teaser exemplar, probed live because it is not one of the forty-two. */
+        /** §0's teaser exemplar, probed live because it is not one of the forty-one. */
         const val GPUOPEN_FEED = "https://gpuopen.com/feed/"
         const val NOT_PULLED = "not pulled"
 

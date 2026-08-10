@@ -312,7 +312,7 @@ do when installing. The template lives in the repo so no release re-invents it.
 
 ## Phase 5 — Ship it
 
-- [ ] **V12 — Live gate 1 means something specific again. Issue #8.**
+- [x] **V12 — Live gate 1 means something specific again. Issue #8.**
       `gh issue view 8`. The gate demands 38 of 42 sources pull and exactly 38 do, so a
       transient outage anywhere reads as a regression, and four sources are permanently out:
       `danluu.com` and `projectzero.google` bust SPEC §6's 8 MiB cap, `research.nccgroup.com`
@@ -330,6 +330,12 @@ do when installing. The template lives in the repo so no release re-invents it.
         pasted into the commit message; the default no-network `./gradlew test` still green;
         issue #8 closed.
       - Rung: unit
+      - **Outcome (2026-08-10):** gate 1 reads `38/38 sources that should pull resolved with
+        ≥1 entry` over three named exclusions; the cap stayed 8 MiB and SPEC §6 now carries
+        the measurement; `research.nccgroup.com` is out of the reading list. `./gradlew test`
+        green (871 tests). The live run is **not** green: its one remaining failure is
+        `gate 7: home showed 1 folder sections of 3 named folders`, which predates this box
+        (NOTES.md, V09) and is **V15's**, clause (7). Nothing in gate 1 is red.
 
 - [ ] **V13 — The v0.1.0 → v0.2.0 bridge, executed and written down. Issue #2.**
       `gh issue view 2` — it has the full path and the acceptance criteria. v0.1.0 shipped

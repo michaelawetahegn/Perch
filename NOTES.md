@@ -14,8 +14,10 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   scrolls — since V03 **every empty state is a `LazyColumn` with one `fillParentMaxSize` item**. Screenshots: go
   through `Screenshots` (its KDoc says why **never `captureToImage()`** — CLAUDE.md is wrong).
 - 2026-08-07 — **Live acceptance** (`acceptance/LiveAcceptanceTest`, `testDebug`): `./gradlew :app:testDebugUnitTest
-  -Pperch.live=true --tests '*LiveAcceptance*'`. **Gate 1 sits on the 38/42 floor** — `danluu.com`/`projectzero.google`
-  bust SPEC §6's 8 MiB cap, `research.nccgroup.com` has no feed, `rachelbythebay.com` times out (issue #8/V12).
+  -Pperch.live=true --tests '*LiveAcceptance*'`. **V12/#8: gate 1 has no quota** — every source in `feeds.txt` bar
+  `EXCLUDED_SOURCES` must pull (38/38 today), so a break arrives as a URL, and an exclusion carries the measurement
+  that settled it. **SPEC §6's 8 MiB cap stays 8 MiB**: `danluu` (11.1 MB) and `projectzero` (13.2 MB) are out of
+  scope, not evidence against the cap. `research.nccgroup.com` left the reading list — it publishes no feed at all.
   **Not ours:** the LLVM feed omits spaces around inline `<code>`/`<a>` — do not "repair" it.
 - 2026-08-07 — **U02: losing `~/.perch/perch-release.jks` or `signing.properties` makes every future install a data
   wipe** — the cert (SHA-256 `61367c04…fce489`) *is* the update identity and cannot be rotated. Both `chmod 600`,
@@ -28,9 +30,8 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
 - 2026-08-07 — **U07: the window is a *calendar* one** (local midnight), **defaults to Today** — a UI test seeding
   anything older pins `TimeFilter.AllTime` via its own `SettingsStore`, and addresses section headers by
   `HomeTestTags.section(id)`, never by text (the drawer composes while closed).
-- 2026-08-07 — **U08: the row's 96dp thumbnail square is always reserved** (absent/loading/failed draw one
-  placeholder). Coil offline: a `Mapper` succeeds, an `Interceptor` returning `ErrorResult` fails, one that
-  `awaitCancellation()`s stays loading; a list screenshot needs `stubThumbnails()`.
+- 2026-08-07 — **U08: the row's 96dp thumbnail square is always reserved.** Coil offline: a `Mapper` succeeds, an
+  `Interceptor` returning `ErrorResult` fails, one that `awaitCancellation()`s stays loading; `stubThumbnails()` for list shots.
 - 2026-08-08 — **U09: the bottom bar and the `NavHost` are siblings**; **Feed's `DrawerState`/`LazyListState` are
   hoisted into `PerchNavHost`** (state remembered inside Feed dies on a tab switch). §0's back policy is the pure
   `nextBackStep(BackState)` in `BackChain.kt`, the enum's order *being* the priority; **`EntryRow` owns its
@@ -45,7 +46,6 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   looks for "Continue reading" in the *unlowered* text. (2) Scoring finds the *tightest* subtree, so a decorative
   wrapper wins and the article's last section, its sibling, is lost — hence `unwrapped()`. (3) **An extraction only
   ever replaces a body it beats.**
-- 2026-08-08 — **U11: `HtmlSanitizer` keeps `class` on `pre` only** — a `language-x`, normalised before `Cleaner`.
 - 2026-08-08 — **U12: the viewer is an overlay, not a destination** — a sibling of the article's `Scaffold` in one
   `Box`, so the reading position survives; `ZoomedImage` is hoisted to `PerchNavHost` because
   **`BackStep.CloseImageViewer` sits between `CloseOverlay` and `PopArticle`**, an order `BackChainTest` guards.
@@ -77,8 +77,8 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   test each in `WindowInsetsTest`. Never add `.statusBarsPadding()` to a screen. **Robolectric has no bars or cutout
   on any profile**, so a test dispatches its own — `ui/WindowInsetsSupport.kt`'s `applyWindowInsets` reaches every
   Compose root.
-- 2026-08-09 — **V05/#12: "Unread" is gone from every string a reader sees**; identifiers keep the word on purpose.
-  **Pin `HomeTestTags.TITLE`, never `onNodeWithText("Feed")`** — the bottom-bar tab has read "Feed" since U09.
+- 2026-08-09 — **V05/#12: "Unread" is gone from every reader-facing string**; identifiers keep it. **Pin
+  `HomeTestTags.TITLE`, never `onNodeWithText("Feed")`** — the bottom-bar tab has read "Feed" since U09.
 - 2026-08-09 — **V08/#10: the scoped list is state, not a route.** `HomeScope` is **hoisted into `PerchNavHost`** —
   third such state — because `BackStep.LeaveScope` is a rung, *above* `ScrollFeedToTop`, and the drawer is no longer
   its only writer; `HomeScreen` pushes it down through one `LaunchedEffect` and nothing else writes `scope`.
@@ -90,7 +90,8 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
 - 2026-08-10 — **V09/#4: a table joins the article on its *shape*, not its text density** — `carriesContentTable`
   (≥3 rows, ≥2 columns, no nested table, not linky); `carriesSubstantialProse` counts a `<p>` **wrapped** in a block
   div (every Squarespace block is its own `sqs-block`). A page fixture is not a feed body: `zdi-page-*.html`.
-  **Live gate 7 now fails alone**: home shows 1 folder section of 3 (V06 moved them) — V15's; gate 6b green, 122 tables.
+  **Live gate 7 is the run's only red** (still, after V12): home shows 1 folder section of 3 (V06 moved them) —
+  V15's clause (7), not a regression.
 - 2026-08-10 — **V11/#7.** Anything that must span a scrolling child — the code gutter's rule, a table's edge fade
   — measures 0 against the article's unbounded height: the rule needs the Row at **`height(IntrinsicSize.Min)`**,
   the fade is a draw-only `matchParentSize` **sibling** of the scroll (inside it, it lands off-screen at the

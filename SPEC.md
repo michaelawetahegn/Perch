@@ -242,7 +242,12 @@ pasted URL already parses as a feed, skip discovery entirely.
   `If-Modified-Since` from stored `lastModified`; a `304` is a success that touches
   `lastFetchedAt` only and does zero parsing/DB writes.
 - Refresh concurrency: 4 feeds in flight max, per-feed failures isolated.
-- Body cap 8 MiB; exceeding it is a per-source error, not a crash.
+- Body cap 8 MiB; exceeding it is a per-source error, not a crash. **The number stays 8
+  MiB** (V12, 2026-08-10): with four refreshes in flight it is the peak the parse has to
+  fit in, and a full-archive feed is exactly the shape the cap exists for. Measured then:
+  `danluu.com/atom.xml` 11.1 MB and `googleprojectzero.blogspot.com` 13.2 MB, both
+  decompressed — those two are out of scope for Perch, and say so by name in the live
+  acceptance test's exclusion list rather than by failing forever.
 
 ## 7. Refresh policy
 
