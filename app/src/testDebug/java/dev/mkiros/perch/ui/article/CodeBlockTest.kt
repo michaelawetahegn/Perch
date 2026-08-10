@@ -4,12 +4,14 @@ import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.text.AnnotatedString
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.parse.ArticleBlock
@@ -81,6 +83,45 @@ class CodeBlockTest {
 
         compose.onNodeWithTag(ArticleTestTags.CODE_TEXT).assertIsDisplayed()
         compose.onNodeWithTag(ArticleTestTags.CODE_GUTTER).assertDoesNotExist()
+        compose.onNodeWithTag(ArticleTestTags.CODE_GUTTER_RULE).assertDoesNotExist()
+    }
+
+    @Test
+    fun `a rule stands between the numbers and the code, with air on both sides`() {
+        show(ArticleBlock.Code("int a = 1;\nint b = 2;", "c"))
+
+        val gutter = compose.onNodeWithTag(ArticleTestTags.CODE_GUTTER).fetchSemanticsNode()
+        val rule = compose.onNodeWithTag(ArticleTestTags.CODE_GUTTER_RULE).fetchSemanticsNode()
+        val code = compose.onNodeWithTag(ArticleTestTags.CODE).fetchSemanticsNode()
+
+        // V11/1: scrolled left, a wide line used to slide to within a few dp of the
+        // numbers and the two columns read as one. The rule is what separates them — so
+        // it has to be *between* them and touching neither.
+        assertThat(rule.positionInRoot.x)
+            .isGreaterThan(gutter.positionInRoot.x + gutter.size.width)
+        assertThat(rule.positionInRoot.x + rule.size.width)
+            .isLessThan(code.positionInRoot.x)
+        // And it is a rule, not a tick: it runs the height of the block.
+        assertThat(rule.size.height).isAtLeast(code.size.height)
+    }
+
+    @Test
+    fun `the rule stays with the numbers when the code scrolls under it`() {
+        show(ArticleBlock.Code(WIDE_SOURCE, "c"))
+
+        val before = compose.onNodeWithTag(ArticleTestTags.CODE_GUTTER_RULE)
+            .fetchSemanticsNode().positionInRoot.x
+        val codeBefore = compose.onNodeWithTag(ArticleTestTags.CODE_TEXT)
+            .fetchSemanticsNode().positionInRoot.x
+        compose.onNodeWithTag(ArticleTestTags.CODE)
+            .performSemanticsAction(SemanticsActions.ScrollBy) { it(SCROLL_BY, 0f) }
+        compose.waitForIdle()
+
+        // The code moved — otherwise this asserts nothing — and the rule did not.
+        assertThat(compose.onNodeWithTag(ArticleTestTags.CODE_TEXT)
+            .fetchSemanticsNode().positionInRoot.x).isLessThan(codeBefore)
+        assertThat(compose.onNodeWithTag(ArticleTestTags.CODE_GUTTER_RULE)
+            .fetchSemanticsNode().positionInRoot.x).isEqualTo(before)
     }
 
     @Test
@@ -143,4 +184,14 @@ class CodeBlockTest {
     private fun spanColoursOf(tag: String) =
         annotatedOf(tag).spanStyles.mapNotNull { it.item.color.takeIf { c -> c.alpha > 0f } }
             .toSet()
+
+    private companion object {
+        const val SCROLL_BY = 240f
+
+        /** Long enough that the block really does scroll on any test device. */
+        val WIDE_SOURCE = """
+            static int compare_entries(const struct entry *a, const struct entry *b, int flags);
+            int main(void) { return 0; }
+        """.trimIndent()
+    }
 }

@@ -31,10 +31,18 @@ import androidx.compose.ui.unit.sp
  */
 object PerchMarkPaths {
 
-    /** The sheet behind, showing only as a sliver down the right edge. */
-    const val BACK_SHEET =
-        "M42,39 H73 A3,3 0 0 1 76,42 V69 A3,3 0 0 1 73,72 H42 A3,3 0 0 1 39,69 " +
-            "V42 A3,3 0 0 1 42,39 Z"
+    /**
+     * The sheet behind — and only the sliver of it that is not behind the front page.
+     *
+     * It was a whole rounded rectangle until V11, three quarters of which the front page
+     * covers. On the colour layer that was merely wasted path; on the **themed** layer,
+     * where the sheets are hollow so the icon is an outline rather than a slab, the
+     * covered edges showed straight through the page — a spurious rectangle across the
+     * mark, one edge of which ran through the P's counter and closed it up. Left open at
+     * both ends on purpose: the ends butt into the front page's own right-hand stroke,
+     * and an open path still fills as if closed, so the sliver keeps its paper.
+     */
+    const val BACK_SHEET = "M70,39 H73 A3,3 0 0 1 76,42 V69 A3,3 0 0 1 73,72 H70"
 
     /** The sheet in front, which carries everything else. */
     const val FRONT_PAGE =
@@ -45,12 +53,21 @@ object PerchMarkPaths {
      * The serif **P**, as one non-zero-wound path: the outer silhouette clockwise, the
      * bowl's counter wound the other way so it punches a hole the way a real glyph does,
      * then the foot serif and the top flag unioned on.
+     *
+     * **The counter is the size it is on purpose (V11).** At the first drawing the bowl
+     * was 9.4 units across with a 3.5 × 4.6 counter inside it; a 48dp icon is 2/3 of this
+     * canvas at one pixel per 1.5 units, so that counter came out barely two pixels
+     * across and antialiasing closed it — the P read as a filled blob at the size most
+     * people meet the icon. The letter is now drawn to the room the page actually has
+     * (the top rules start at x=52, the full rule at y=56.5): a 5.9 × 7.8 counter inside
+     * a 2.6-unit bowl wall. `LauncherIconTest` measures the hole on both layers rather
+     * than trusting this comment — see [BACK_SHEET] for what used to cross it.
      */
     const val P_GLYPH =
-        "M38.5,37 H42.9 A4.7,4.7 0 0 1 42.9,46.4 H41.7 V52 H38.5 Z " +
-            "M41.7,44 H42.9 A2.3,2.3 0 0 0 42.9,39.4 H41.7 Z " +
-            "M37,50.6 H43.2 V52 H37 Z " +
-            "M37.5,37 H41.7 V38.4 H37.5 Z"
+        "M36,36 H42.5 A6.5,6.5 0 0 1 42.5,49 H40.5 V53.5 H36 Z " +
+            "M40.5,46.4 H42.5 A3.9,3.9 0 0 0 42.5,38.6 H40.5 Z " +
+            "M34.5,51.9 H42 V53.5 H34.5 Z " +
+            "M34.9,36 H40.5 V37.6 H34.9 Z"
 
     /** Three rules beside the P — the headline block. */
     const val TOP_RULES = "M52,40 H65 M52,45 H65 M52,50 H65"

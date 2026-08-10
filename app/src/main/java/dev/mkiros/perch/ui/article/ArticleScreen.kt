@@ -428,6 +428,7 @@ object ArticleTestTags {
     const val CODE = "article:code"
     const val CODE_TEXT = "article:code-text"
     const val CODE_GUTTER = "article:code-gutter"
+    const val CODE_GUTTER_RULE = "article:code-gutter-rule"
     const val IMAGE = "article:image"
     const val IMAGE_VIEWER = "article:image-viewer"
     const val IMAGE_VIEWER_IMAGE = "article:image-viewer-image"
@@ -436,6 +437,8 @@ object ArticleTestTags {
     const val TABLE = "article:table"
     const val TABLE_HEADER = "article:table-header"
     const val TABLE_RULE = "article:table-rule"
+    const val TABLE_EDGE_START = "article:table-edge-start"
+    const val TABLE_EDGE_END = "article:table-edge-end"
     const val RULE = "article:rule"
     const val EMBED = "article:embed"
 }

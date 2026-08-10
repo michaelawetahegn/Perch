@@ -292,7 +292,7 @@ do when installing. The template lives in the repo so no release re-invents it.
         of the drawer mid-source-selection; `./gradlew test` green; issue #5 closed.
       - Rung: screenshot
 
-- [ ] **V11 — Three cosmetic residuals. Screenshot. Issue #7.**
+- [x] **V11 — Three cosmetic residuals. Screenshot. Issue #7.**
       `gh issue view 7` — all three verifiable from Robolectric screenshots, all "render it
       correctly", grouped because one session can reasonably take all three.
       1. **A rule between the code gutter and the code.** The gutter is pinned outside the

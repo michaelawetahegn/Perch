@@ -214,4 +214,11 @@ object Dimens {
 
     /** Air above and below a table, as a figure gets: it is a block, not a paragraph. §8. */
     val tableSpacing = xl
+
+    /**
+     * How far a table wider than the page fades into it at the edge it can still scroll
+     * towards (V11). A column's own width, near enough: narrower and it reads as a shadow
+     * on the last column, wider and it starts hiding a column that is legibly there.
+     */
+    val tableEdgeFade = xl
 }

@@ -21,34 +21,31 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   wipe** — the cert (SHA-256 `61367c04…fce489`) *is* the update identity and cannot be rotated. Both `chmod 600`,
   outside the repo, **not backed up yet**; absent the key, release falls back to debug signing silently. Version
   lives only atop `app/build.gradle.kts`; **`assembleRelease` runs `lintVitalRelease`.**
-- 2026-08-07 — **U03: build test databases with `PerchDatabase.inMemory(context)`** — only it seeds Uncategorized,
-  whose FK the first feed needs.
+- 2026-08-07 — **U03: build test databases with `PerchDatabase.inMemory(context)`** — only it seeds Uncategorized.
 - 2026-08-07 — **U04: adding a fourth reader-owned flag beside `isRead`/`isSaved`/`isStarred` needs two edits** —
   `EntryDao.upsertAll` (never Room `@Upsert`: it resolves on the primary key, ours on `(feedId, guid)`) and
   `deleteReadOlderThan`, both of which otherwise erase it.
-- 2026-08-07 — **U07: the window is a *calendar* one** (local midnight) and **defaults to Today** — a UI test seeding
-  anything older must pin `TimeFilter.AllTime` via its own `SettingsStore` or it asserts against an empty screen.
-  Address section headers by `HomeTestTags.section(id)`, never by text (the drawer composes while closed).
+- 2026-08-07 — **U07: the window is a *calendar* one** (local midnight), **defaults to Today** — a UI test seeding
+  anything older pins `TimeFilter.AllTime` via its own `SettingsStore`, and addresses section headers by
+  `HomeTestTags.section(id)`, never by text (the drawer composes while closed).
 - 2026-08-07 — **U08: the row's 96dp thumbnail square is always reserved** (absent/loading/failed draw one
   placeholder). Coil offline: a `Mapper` succeeds, an `Interceptor` returning `ErrorResult` fails, one that
   `awaitCancellation()`s stays loading; a list screenshot needs `stubThumbnails()`.
 - 2026-08-08 — **U09: the bottom bar and the `NavHost` are siblings**; **Feed's `DrawerState`/`LazyListState` are
   hoisted into `PerchNavHost`** (state remembered inside Feed dies on a tab switch). §0's back policy is the pure
-  `nextBackStep(BackState)` in `BackChain.kt`, the enum's order *being* the priority; **`EntryRow` owns its own
+  `nextBackStep(BackState)` in `BackChain.kt`, the enum's order *being* the priority; **`EntryRow` owns its
   `combinedClickable`** — an inner `clickable` eats the pointer stream.
-- 2026-08-08 — **U09a: the selection `BackHandler` must live inside `ModalDrawerSheet`** — the root one registers
-  first and loses. A batch delete's dialog is **a coroutine behind its tap**, so wait in wall-clock time.
+- 2026-08-08 — **U09a: the selection `BackHandler` must live inside `ModalDrawerSheet`** — the root one wins
+  otherwise; a batch delete's dialog is **a coroutine behind its tap**, so wait in wall-clock time.
 - 2026-08-08 — **U07a: all three lists are Paging 3**, **placeholders off** so `startsSection` is answerable at a
   page edge. The three list queries live once in **`EntryQueries`** because each exists twice — `Flow<List>` *and*
   `PagingSource`. **`uiState.entries` is gone**: ask the screen; `performScrollToIndex` past loaded rows throws.
-- 2026-08-08 — **U10:** Readability-over-jsoup in `data/extract/`, **no new dependency**. Three traps.
-  (1) **`ArticleLowering` deletes truncation markers as chrome**, so `FullText` looks for "Continue reading" in the
-  *unlowered* text. (2) Scoring finds the *tightest* subtree, so a decorative single-child wrapper wins and the
-  article's last section, its sibling, is lost — hence `unwrapped()`. (3) **An extraction only ever replaces a body
-  it beats.** Fixtures: `fixtures/articles/`.
-- 2026-08-08 — **U11 (code).** Bundled JetBrains Mono 2.304 (OFL 1.1, licence in `assets/`) is DESIGN.md §3's one
-  exception, **ligatures off**. **`HtmlSanitizer` keeps `class` on `pre` only**, holding a `language-x` normalised
-  before `Cleaner` runs. The gutter sits **outside** the `horizontalScroll`, inside a **`DisableSelection`**.
+- 2026-08-08 — **U10:** Readability-over-jsoup in `data/extract/`, **no new dependency**; fixtures in
+  `fixtures/articles/`. Three traps. (1) **`ArticleLowering` deletes truncation markers as chrome**, so `FullText`
+  looks for "Continue reading" in the *unlowered* text. (2) Scoring finds the *tightest* subtree, so a decorative
+  wrapper wins and the article's last section, its sibling, is lost — hence `unwrapped()`. (3) **An extraction only
+  ever replaces a body it beats.**
+- 2026-08-08 — **U11: `HtmlSanitizer` keeps `class` on `pre` only** — a `language-x`, normalised before `Cleaner`.
 - 2026-08-08 — **U12: the viewer is an overlay, not a destination** — a sibling of the article's `Scaffold` in one
   `Box`, so the reading position survives; `ZoomedImage` is hoisted to `PerchNavHost` because
   **`BackStep.CloseImageViewer` sits between `CloseOverlay` and `PopArticle`**, an order `BackChainTest` guards.
@@ -57,22 +54,20 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   this). Import files a source under the **outermost** container and leaves a duplicate alone.
 - 2026-08-08 — **U14 (profile).** DB is **version 5**: `pending_entry_state`, keyed `(feedUrl, guid)`, **no FK to
   `feeds`** — its job is outliving a source that does not exist yet. **`EntryDao.upsertAll` consumes parked rows**,
-  which is what stops the refresh straight after a restore undoing it. A restore turns a flag **on** and never off,
-  so it is idempotent. Codec is `org.json` — **its tests need Robolectric**; on a bare JVM `JSONObject` stubs.
+  so the refresh after a restore cannot undo it; a restore turns a flag **on** and never off, so it is idempotent.
+  Codec is `org.json` — **its tests need Robolectric**; on a bare JVM `JSONObject` stubs.
 - 2026-08-09 — **V01/#1: Robolectric builds `PerchApp` for every test** — a store cancels only a scope it *owns*.
-- 2026-08-09 — **Every full-suite flake so far: waiting on Room is not waiting on the screen** — asserting rendered
-  text the moment the DB has it loses the emit→recompose hop. **Poll in wall-clock time**, not `waitForIdle`.
-- 2026-08-09 — **V02/#9: a `Clock` carries a zone, and the container's was Greenwich's.** `AppContainer` now injects
-  `systemDefaultZone()`; **`DateParser` stays UTC deliberately.** A zone test must pin `TimeZone.setDefault` —
-  inheriting the JVM's cannot tell UTC-the-bug from UTC-the-agent.
+  **Every full-suite flake so far: waiting on Room is not waiting on the screen** — asserting rendered text the
+  moment the DB has it loses the emit→recompose hop. **Poll in wall-clock time**, not `waitForIdle`.
+- 2026-08-09 — **V02/#9: a `Clock` carries a zone**; `AppContainer` injects `systemDefaultZone()`, **`DateParser`
+  stays UTC deliberately**. A zone test must pin `TimeZone.setDefault` — the JVM's cannot tell bug from agent.
 - 2026-08-09 — **V06/#11: folder order is alphabetical (`COLLATE NOCASE`), Uncategorized pinned by `(id = 1) ASC`.**
-  The clause is stated **three** times and they must agree — `FolderDao.observeAll`, `FolderDao.getAll`,
-  `EntryQueries.LIST_ITEMS` (the drawer and the section headers read *different* ones). `sortIndex` stays a column
-  (OPML/profile round-trips) but decides nothing. **`COLLATE NOCASE` folds ASCII only**: `Émacs` sorts last by UTF-8
-  byte — pinned by a test and accepted, not a bug to "fix" without an ICU collation.
+  Stated **three** times and they must agree — `FolderDao.observeAll`, `.getAll`, `EntryQueries.LIST_ITEMS` (drawer
+  and section headers read *different* ones). `sortIndex` stays a column (round-trips) but decides nothing.
+  **`COLLATE NOCASE` folds ASCII only**: `Émacs` sorts last by UTF-8 byte — pinned by a test, not a bug to "fix".
 - 2026-08-09 — **V07/#13: a missing thumbnail is `surfaceVariant` + the mark as line art in `outline`**
-  (`Placeholder(marked = true)`); **only `loading` keeps the bare frame**. `ColorFilter.tint` flattens the mark to a
-  silhouette — `perchMarkMonochrome(ink, paper)` rebuilds it. `Screenshots.rasterize` reads pixels, writes no file.
+  (`Placeholder(marked = true)`), **only `loading` keeps the bare frame**; `ColorFilter.tint` would flatten the mark
+  to a silhouette, so `perchMarkMonochrome(ink, paper)`. `Screenshots.rasterize` reads pixels, writes no file.
 - 2026-08-10 — **V10/#5: a refused row is `refusesFolder` = "a tick would change nothing"**, so the affordance cannot
   drift from `toggleFolder`. **`combinedClickable(enabled = false)` keeps its `OnClick` semantics action** — only
   `Disabled` is added, so `performSemanticsAction` still fires it: assert `assertIsNotEnabled`, never a missing action.
@@ -80,21 +75,25 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
 - 2026-08-08 — **U16: v0.2.0 shipped** (versionCode 3, `app/build/outputs/apk/release/app-release.apk`).
 - 2026-08-09 — **V04/#3: the inset contract is one doc comment in `ui/nav/PerchNavHost.kt`** — four clauses, one
   test each in `WindowInsetsTest`. Never add `.statusBarsPadding()` to a screen. **Robolectric has no bars or cutout
-  on any profile**, so a test dispatches its own — `ui/WindowInsetsSupport.kt`'s `applyWindowInsets` reaches **every
-  Compose root** (`WindowInsetsHolder` listens on the `AndroidComposeView`). The bottom bar and the `NavHost` are
-  siblings and both spent the bottom inset; the shell now `consumeWindowInsets` while a tab is showing.
+  on any profile**, so a test dispatches its own — `ui/WindowInsetsSupport.kt`'s `applyWindowInsets` reaches every
+  Compose root.
 - 2026-08-09 — **V05/#12: "Unread" is gone from every string a reader sees**; identifiers keep the word on purpose.
   **Pin `HomeTestTags.TITLE`, never `onNodeWithText("Feed")`** — the bottom-bar tab has read "Feed" since U09.
 - 2026-08-09 — **V08/#10: the scoped list is state, not a route.** `HomeScope` is **hoisted into `PerchNavHost`** —
   third such state — because `BackStep.LeaveScope` is a rung, *above* `ScrollFeedToTop`, and the drawer is no longer
   its only writer; `HomeScreen` pushes it down through one `LaunchedEffect` and nothing else writes `scope`.
   **`selectTab` is a silent no-op from the article route**: `popUpTo(start){saveState}` saves the article and
-  `restoreState` puts it straight back — pop first, switch tabs only if needed. The byline is segments now
-  (`ArticleTestTags.SOURCE` / `BYLINE`), the source carrying §8's editorial underline, never a colour. Scoping
-  **does not touch the time window** — a navigation must not rewrite a persisted setting, and U07's empty-window
-  state already names it. Residual: a scoped list still repeats the source's name on every row — polish, T29.
+  `restoreState` puts it straight back — pop first, switch tabs only if needed. The byline is segments
+  (`ArticleTestTags.SOURCE` / `BYLINE`), the source carrying §8's underline, never a colour. Scoping **does not
+  touch the time window** — a navigation must not rewrite a persisted setting. Residual: a scoped list still
+  repeats the source's name on every row — polish, T29.
 - 2026-08-10 — **V09/#4: a table joins the article on its *shape*, not its text density** — `carriesContentTable`
-  (≥3 rows, ≥2 columns, no nested table, not linky), and `carriesSubstantialProse` now counts a `<p>` **wrapped** in
-  a block div: Squarespace gives every block its own `sqs-block`, so the table and the closing paragraph were both
-  dropped siblings. A page fixture is not a feed body — the page is `zdi-page-*.html`. **Live gate 7 now fails alone**:
-  home shows 1 folder section of 3 (V06 changed which sections page 1 holds) — V15's, gate 6b green at 122 tables.
+  (≥3 rows, ≥2 columns, no nested table, not linky); `carriesSubstantialProse` counts a `<p>` **wrapped** in a block
+  div (every Squarespace block is its own `sqs-block`). A page fixture is not a feed body: `zdi-page-*.html`.
+  **Live gate 7 now fails alone**: home shows 1 folder section of 3 (V06 moved them) — V15's; gate 6b green, 122 tables.
+- 2026-08-10 — **V11/#7.** Anything that must span a scrolling child — the code gutter's rule, a table's edge fade
+  — measures 0 against the article's unbounded height: the rule needs the Row at **`height(IntrinsicSize.Min)`**,
+  the fade is a draw-only `matchParentSize` **sibling** of the scroll (inside it, it lands off-screen at the
+  content's far end). **The back sheet is now only its visible sliver**: the three quarters behind the front page
+  are hidden on the colour layer and *not* on the hollow themed one, where one edge ran through the P's counter —
+  which is redrawn to the room the page has, a 5.9 × 7.8 hole `LauncherIconTest` measures on both layers.

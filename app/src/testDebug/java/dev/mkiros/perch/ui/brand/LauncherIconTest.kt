@@ -90,6 +90,48 @@ class LauncherIconTest {
     }
 
     @Test
+    fun `the P's bowl is drawn round a counter, not filled`() {
+        val counter = counter(colour(), ::light)
+
+        // V11/3: the counter was 3.5 × 4.6 units in a 108-unit canvas — barely two pixels
+        // across once a 48dp icon and its mask have taken their share of it, which is
+        // less than antialiasing leaves open, so the P read as a blob. These floors are
+        // what a counter has to measure here to be a counter anywhere.
+        assertThat(counter.width).isAtLeast(5f)
+        assertThat(counter.height).isAtLeast(7f)
+    }
+
+    @Test
+    fun `the themed layer keeps the whole of that counter`() {
+        val counter = counter(mono(), ::opaque)
+
+        // The themed layer is the one the counter was reported against, and it is the one
+        // that can lose it: the sheets are hollow there, so anything drawn behind the
+        // front page shows through the hole in the P. It has to measure the same as the
+        // colour layer's — if it does not, something is being drawn across the page that
+        // the page is supposed to be in front of.
+        assertThat(counter.width).isAtLeast(5f)
+        assertThat(counter.height).isAtLeast(7f)
+    }
+
+    @Test
+    fun `the counter is still open where the icon is smallest`() {
+        val small = themed(SMALL_ICON_PX)
+        val file = File(Screenshots.dir("build/perch-screenshots"), "launcher-monochrome-48dp.png")
+        file.outputStream().use { small.bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+
+        // The same claim where a reader meets it. 48px is an adaptive icon at 48dp on an
+        // mdpi screen — the smallest it is ever drawn. The counter's middle is measured
+        // from the full-size render rather than written down here, so it follows the
+        // glyph if the glyph is ever redrawn.
+        val counter = counter(mono(), ::opaque)
+        val alpha = Color.alpha(
+            small.bitmap.getPixel(small.px(counter.centreX), small.px(counter.centreY)),
+        )
+        assertThat(alpha).isLessThan(OPAQUE_ENOUGH)
+    }
+
+    @Test
     fun `the launcher drawables draw the same paths as the mark`() {
         val expected = setOf(
             PerchMarkPaths.BACK_SHEET,
@@ -174,17 +216,128 @@ class LauncherIconTest {
         val canvas = Canvas(bitmap)
         canvas.drawPath(circle(side.toFloat()), Paint().apply { color = PLATE })
         canvas.clipPath(circle(side.toFloat()))
-        val inset = AdaptiveIconDrawable.getExtraInsetFraction()
-        val layerSide = (side * (1f + 2f * inset)).toInt()
-        val offset = -((layerSide - side) / 2)
-        monochrome().apply {
-            setBounds(offset, offset, offset + layerSide, offset + layerSide)
-            draw(canvas)
-        }
+        canvas.drawBitmap(themed(side).bitmap, 0f, 0f, null)
         return bitmap
     }
 
+    /**
+     * A rendered layer and the map from viewport units back into its pixels, so a
+     * measurement taken at one size can be checked at another.
+     */
+    private data class Frame(val bitmap: Bitmap, val scale: Float, val origin: Float) {
+        fun px(unit: Float): Int = (unit * scale + origin).toInt()
+    }
+
+    /** The themed layer alone, at its raw 108-unit scale. */
+    private fun mono(): Frame = Frame(render(monochrome()), scale.toFloat(), 0f)
+
+    /** The colour foreground, where the front page's fill hides the sheet behind it. */
+    private fun colour(): Frame = Frame(render(launcherIcon().foreground), scale.toFloat(), 0f)
+
+    /**
+     * The themed layer as a launcher of side [side] composites it — the layer drawn at
+     * `side * 1.5` and centred, which is where the extra inset goes.
+     */
+    private fun themed(side: Int): Frame {
+        val bitmap = Bitmap.createBitmap(side, side, Bitmap.Config.ARGB_8888)
+        val inset = AdaptiveIconDrawable.getExtraInsetFraction()
+        val layerSide = side * (1f + 2f * inset)
+        val offset = -(layerSide - side) / 2f
+        monochrome().apply {
+            setBounds(
+                offset.toInt(),
+                offset.toInt(),
+                (offset + layerSide).toInt(),
+                (offset + layerSide).toInt(),
+            )
+            draw(Canvas(bitmap))
+        }
+        return Frame(bitmap, layerSide / PerchMarkPaths.VIEWPORT, offset)
+    }
+
     // --- measuring -------------------------------------------------------------------
+
+    /** The bowl's hole, in viewport units. */
+    private data class Counter(
+        val width: Float,
+        val height: Float,
+        val centreX: Float,
+        val centreY: Float,
+    )
+
+    /** Ink on the themed layer, which is one colour on transparency. */
+    private fun opaque(pixel: Int): Boolean = Color.alpha(pixel) >= OPAQUE_ENOUGH
+
+    /**
+     * Ink on the colour layer, where the counter is not a hole in the bitmap but the
+     * front page's paper showing through one — so what encloses it is darkness, not
+     * transparency.
+     */
+    private fun light(pixel: Int): Boolean =
+        Color.alpha(pixel) >= OPAQUE_ENOUGH &&
+            (Color.red(pixel) + Color.green(pixel) + Color.blue(pixel)) / 3 < MID_TONE
+
+    /**
+     * The counter, found rather than assumed: every region the [ink] encloses is
+     * collected, and the one that lies inside the P's quarter of the canvas is it. A
+     * filled-in bowl has no such region and the search fails loudly, which is the point.
+     *
+     * The sheets enclose regions too — hollow on the themed layer, paper-filled on the
+     * colour one — and they are excluded by being far larger than the box the P lives in,
+     * not by any assumption about where the counter sits inside it.
+     */
+    private fun counter(frame: Frame, ink: (Int) -> Boolean): Counter {
+        val bitmap = frame.bitmap
+        val open = Array(bitmap.width) { x ->
+            BooleanArray(bitmap.height) { y -> !ink(bitmap.getPixel(x, y)) }
+        }
+
+        // Whatever transparency the outside can reach is not a hole in anything.
+        val queue = ArrayDeque<Pair<Int, Int>>()
+        fun reach(x: Int, y: Int) {
+            if (x !in 0 until bitmap.width || y !in 0 until bitmap.height) return
+            if (!open[x][y]) return
+            open[x][y] = false
+            queue += x to y
+        }
+        for (x in 0 until bitmap.width) { reach(x, 0); reach(x, bitmap.height - 1) }
+        for (y in 0 until bitmap.height) { reach(0, y); reach(bitmap.width - 1, y) }
+        while (queue.isNotEmpty()) {
+            val (x, y) = queue.removeFirst()
+            reach(x - 1, y); reach(x + 1, y); reach(x, y - 1); reach(x, y + 1)
+        }
+
+        val left = frame.px(P_LEFT)
+        val top = frame.px(P_TOP)
+        val right = frame.px(P_RIGHT)
+        val bottom = frame.px(P_BOTTOM)
+        for (y in top..bottom) {
+            for (x in left..right) {
+                if (!open[x][y]) continue
+                val region = mutableListOf<Pair<Int, Int>>()
+                queue += x to y
+                open[x][y] = false
+                while (queue.isNotEmpty()) {
+                    val at = queue.removeFirst()
+                    region += at
+                    reach(at.first - 1, at.second); reach(at.first + 1, at.second)
+                    reach(at.first, at.second - 1); reach(at.first, at.second + 1)
+                }
+                val inside = region.all { (rx, ry) -> rx in left..right && ry in top..bottom }
+                if (!inside) continue
+                val xs = region.map { it.first }
+                val ys = region.map { it.second }
+                return Counter(
+                    width = (xs.max() - xs.min() + 1) / frame.scale,
+                    height = (ys.max() - ys.min() + 1) / frame.scale,
+                    centreX = ((xs.max() + xs.min() + 1) / 2f - frame.origin) / frame.scale,
+                    centreY = ((ys.max() + ys.min() + 1) / 2f - frame.origin) / frame.scale,
+                )
+            }
+        }
+        error("the P has no counter: its bowl is filled in")
+    }
+
 
     /** Where a layer's ink actually is, in viewport units. */
     private data class Ink(
@@ -268,6 +421,21 @@ class LauncherIconTest {
 
         /** Alpha below this is antialiasing spill, not ink. */
         const val OPAQUE_ENOUGH = 128
+
+        /** Ink and paper are at the two ends of the scale; nothing sits near this. */
+        const val MID_TONE = 128
+
+        /** An adaptive icon at 48dp on an mdpi screen: the smallest it is ever drawn. */
+        const val SMALL_ICON_PX = 48
+
+        /**
+         * The quarter of the canvas the P occupies, generously — it bounds the search for
+         * the counter and nothing else, so it may be looser than the glyph.
+         */
+        const val P_LEFT = 33f
+        const val P_TOP = 34f
+        const val P_RIGHT = 51f
+        const val P_BOTTOM = 56f
 
         /** `PerchBrand.accent`. */
         val ACCENT = Color.rgb(0xC7, 0x8E, 0x35)

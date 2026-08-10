@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -28,6 +29,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.ContentScale
@@ -135,6 +140,12 @@ private fun HeadingBlock(block: ArticleBlock.Heading, onOpenLink: (String) -> Un
  * first swipe and is worse than no gutter at all. And the numbers are **their own
  * composable in a `DisableSelection`** rather than characters prepended to each line, so
  * the article's `SelectionContainer` yields runnable code with nothing to strip out.
+ *
+ * V11 adds the rule between the two. Pinning the numbers is what makes it necessary: a
+ * wide line scrolled left arrives within a few dp of them and the two columns read as
+ * one. The rule is the Row's full height, which is why the Row is measured at
+ * [IntrinsicSize.Min] — inside the article's vertical scroll the incoming height is
+ * unbounded, and `fillMaxHeight` against an unbounded constraint is zero.
  */
 @Composable
 private fun CodeBlock(block: ArticleBlock.Code) {
@@ -158,7 +169,8 @@ private fun CodeBlock(block: ArticleBlock.Code) {
                 width = Dimens.hairline,
                 color = if (light) MaterialTheme.colorScheme.outlineVariant else Color.Transparent,
                 shape = shape,
-            ),
+            )
+            .height(IntrinsicSize.Min),
     ) {
         // A one-liner is a command or a signature, not a listing; numbering it says
         // "line 1 of 1", which is noise.
@@ -185,10 +197,22 @@ private fun CodeBlock(block: ArticleBlock.Code) {
                         .testTag(ArticleTestTags.CODE_GUTTER),
                 )
             }
+            // Furniture, at the same weight as the block's own border: the numbers are a
+            // column, and this is where it ends.
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .width(Dimens.hairline)
+                    .background(MaterialTheme.colorScheme.outlineVariant)
+                    .testTag(ArticleTestTags.CODE_GUTTER_RULE),
+            )
         }
         Box(
             modifier = Modifier
                 .weight(1f)
+                // Outside the scroll, so the gap is the rule's air rather than the first
+                // line's indent — scrolled left, the code stops at the rule.
+                .padding(start = if (lines > 1) Dimens.codeGutterGap else Dimens.none)
                 .horizontalScroll(rememberScrollState())
                 .testTag(ArticleTestTags.CODE),
         ) {
@@ -353,39 +377,83 @@ private fun ListBlock(block: ArticleBlock.ListBlock, onOpenLink: (String) -> Uni
  *
  * The header scrolls with the body. A frozen header sounds like the better idea until the
  * body slides underneath it and every value sits under the wrong column name.
+ *
+ * V11 adds the fourth: a table that runs past the edge of the page **says so**, by fading
+ * out into the page on whichever side it still has more of. Nothing else on the reading
+ * surface scrolls sideways, so a reader has no reason to try unless the table admits it.
  */
 @Composable
 private fun TableBlock(block: ArticleBlock.Table, onOpenLink: (String) -> Unit) {
     val layout = rememberTableLayout(block)
     val rule = MaterialTheme.colorScheme.outlineVariant
+    val scroll = rememberScrollState()
 
-    Column(
-        modifier = Modifier
-            .padding(vertical = Dimens.tableSpacing)
-            .horizontalScroll(rememberScrollState())
-            .testTag(ArticleTestTags.TABLE),
-    ) {
-        if (block.header.isNotEmpty()) {
-            TableRow(
-                cells = block.header,
-                layout = layout,
-                style = ArticleType.tableHeader,
-                onOpenLink = onOpenLink,
-                modifier = Modifier
-                    .background(MaterialTheme.colorScheme.surfaceContainer)
-                    .testTag(ArticleTestTags.TABLE_HEADER),
-            )
-        }
-        block.rows.forEachIndexed { index, row ->
-            if (index > 0 || block.header.isNotEmpty()) {
-                TableRule(layout.width, rule)
+    Box(modifier = Modifier.padding(vertical = Dimens.tableSpacing)) {
+        Column(
+            modifier = Modifier
+                .horizontalScroll(scroll)
+                .testTag(ArticleTestTags.TABLE),
+        ) {
+            if (block.header.isNotEmpty()) {
+                TableRow(
+                    cells = block.header,
+                    layout = layout,
+                    style = ArticleType.tableHeader,
+                    onOpenLink = onOpenLink,
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.surfaceContainer)
+                        .testTag(ArticleTestTags.TABLE_HEADER),
+                )
             }
-            TableRow(row, layout, ArticleType.table, onOpenLink)
+            block.rows.forEachIndexed { index, row ->
+                if (index > 0 || block.header.isNotEmpty()) {
+                    TableRule(layout.width, rule)
+                }
+                TableRow(row, layout, ArticleType.table, onOpenLink)
+            }
+            // The foot rule is what closes the table: without it the last row runs on into
+            // the page and the block stops looking like one thing.
+            if (block.rows.isNotEmpty()) TableRule(layout.width, rule)
         }
-        // The foot rule is what closes the table: without it the last row runs on into the
-        // page and the block stops looking like one thing.
-        if (block.rows.isNotEmpty()) TableRule(layout.width, rule)
+        // Only where there is something to reach: an edge on a table that fits would be
+        // an affordance for a gesture that does nothing.
+        if (scroll.canScrollBackward) TableEdge(atEnd = false, ArticleTestTags.TABLE_EDGE_START)
+        if (scroll.canScrollForward) TableEdge(atEnd = true, ArticleTestTags.TABLE_EDGE_END)
     }
+}
+
+/**
+ * The table dissolving into the page at one edge (V11).
+ *
+ * It is drawn over the *viewport* rather than added to the table, which is the same trap
+ * [TableBlock]'s rules had from the other side: inside the scroll it would sit at the far
+ * end of the content, off-screen, where no reader would ever see it. So the fade is a
+ * sibling of the scrolling column, sized to it with [BoxScope.matchParentSize], and it
+ * draws only — a node with no pointer input lets the swipe through to the table.
+ */
+@Composable
+private fun BoxScope.TableEdge(atEnd: Boolean, tag: String) {
+    val page = MaterialTheme.colorScheme.surface
+    val width = with(LocalDensity.current) { Dimens.tableEdgeFade.toPx() }
+
+    Box(
+        modifier = Modifier
+            .matchParentSize()
+            .testTag(tag)
+            .drawBehind {
+                val inner = if (atEnd) size.width - width else width
+                val outer = if (atEnd) size.width else 0f
+                drawRect(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(page.copy(alpha = 0f), page),
+                        startX = inner,
+                        endX = outer,
+                    ),
+                    topLeft = Offset(if (atEnd) inner else 0f, 0f),
+                    size = Size(width, size.height),
+                )
+            },
+    )
 }
 
 @Composable

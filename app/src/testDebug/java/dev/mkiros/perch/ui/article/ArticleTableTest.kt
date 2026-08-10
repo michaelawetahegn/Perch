@@ -116,6 +116,36 @@ class ArticleTableTest {
     }
 
     @Test
+    fun `a table wider than the page shows the edge it can still scroll towards`() {
+        show(wideTable())
+
+        // V11/2: nothing said there was more table to the right. The cue belongs on the
+        // side there is more of, so at rest it is the end edge and only the end edge.
+        compose.onNodeWithTag(ArticleTestTags.TABLE_EDGE_END).assertExists()
+        compose.onNodeWithTag(ArticleTestTags.TABLE_EDGE_START).assertDoesNotExist()
+
+        compose.onNodeWithTag(ArticleTestTags.TABLE)
+            .performSemanticsAction(SemanticsActions.ScrollBy) { it(SCROLL_TO_END, 0f) }
+        compose.waitForIdle()
+
+        compose.onNodeWithTag(ArticleTestTags.TABLE_EDGE_START).assertExists()
+        compose.onNodeWithTag(ArticleTestTags.TABLE_EDGE_END).assertDoesNotExist()
+    }
+
+    @Test
+    fun `a table that fits the page has no edge cue at all`() {
+        show(
+            ArticleBlock.Table(
+                header = listOf(RichSpan("Flag"), RichSpan("Effect")),
+                rows = listOf(listOf(RichSpan("-O2"), RichSpan("optimize"))),
+            ),
+        )
+
+        compose.onNodeWithTag(ArticleTestTags.TABLE_EDGE_END).assertDoesNotExist()
+        compose.onNodeWithTag(ArticleTestTags.TABLE_EDGE_START).assertDoesNotExist()
+    }
+
+    @Test
     fun `the header row is set apart from the body`() {
         show(wideTable())
 
@@ -211,6 +241,9 @@ class ArticleTableTest {
 
     private companion object {
         const val SCROLL_BY = 120f
+
+        /** Further than any test table is wide; the scroll clamps at its own end. */
+        const val SCROLL_TO_END = 4000f
         const val LONG_CELL =
             "An app may be able to cause unexpected system termination or corrupt kernel memory"
     }

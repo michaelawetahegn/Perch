@@ -22,7 +22,7 @@
         android:strokeColor="@color/perch_mark_ink"
         android:strokeWidth="3.2"
         android:strokeLineJoin="round"
-        android:pathData="M42,39 H73 A3,3 0 0 1 76,42 V69 A3,3 0 0 1 73,72 H42 A3,3 0 0 1 39,69 V42 A3,3 0 0 1 42,39 Z" />
+        android:pathData="M70,39 H73 A3,3 0 0 1 76,42 V69 A3,3 0 0 1 73,72 H70" />
 
     <!-- The sheet in front, which carries everything else. -->
     <path
@@ -35,7 +35,7 @@
     <!-- The serif P: outer silhouette, counter wound the other way, foot serif, top flag. -->
     <path
         android:fillColor="@color/perch_mark_ink"
-        android:pathData="M38.5,37 H42.9 A4.7,4.7 0 0 1 42.9,46.4 H41.7 V52 H38.5 Z M41.7,44 H42.9 A2.3,2.3 0 0 0 42.9,39.4 H41.7 Z M37,50.6 H43.2 V52 H37 Z M37.5,37 H41.7 V38.4 H37.5 Z" />
+        android:pathData="M36,36 H42.5 A6.5,6.5 0 0 1 42.5,49 H40.5 V53.5 H36 Z M40.5,46.4 H42.5 A3.9,3.9 0 0 0 42.5,38.6 H40.5 Z M34.5,51.9 H42 V53.5 H34.5 Z M34.9,36 H40.5 V37.6 H34.9 Z" />
 
     <!-- Headline rules. -->
     <path
