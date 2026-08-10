@@ -9,8 +9,8 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
 - **Standing grep gate:** no `Color(0x` / `N.dp` / `N.sp` outside `ui/theme/` — screens address roles, never tones.
   **U01: the repo is public** (MIT) — never un-redact the `apiKey` in `fixtures/homepages/`.
 - **This `gh` is old:** bare `gh issue view N` dies on a Projects-classic GraphQL field (use `--json`), there is
-  no `gh label list`, and `gh issue close` has no `-r`. **V14: `scripts/release-notes.sh <last-tag>`** drafts a
-  release page from the issues closed since that tag; `docs/RELEASE-NOTES.md` is the template V16 writes through.
+  no `gh label list`, `gh issue close` has no `-r`. **V14: `scripts/release-notes.sh <last-tag>`** drafts a release
+  page from the issues closed since it; `docs/RELEASE-NOTES.md` is the template V16 writes v0.3.0's through.
 - 2026-08-07 — **Standing UI-test traps.** Compose UI tests live in **`app/src/testDebug/`** (`ui-test-manifest` is
   `debugImplementation`). An injected tap/long-press **never reaches a node inside a drawer sheet, bottom sheet or
   dropdown** — use `performSemanticsAction(OnClick/OnLongClick)`. `PullToRefreshBox` ignores a swipe unless its child
@@ -94,9 +94,8 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   div (every Squarespace block is its own `sqs-block`). A page fixture is not a feed body: `zdi-page-*.html`.
   **Live gate 7 is the run's only red** (still, after V12): home shows 1 folder section of 3 (V06 moved them) —
   V15's clause (7), not a regression.
-- 2026-08-10 — **V11/#7.** Anything that must span a scrolling child — the code gutter's rule, a table's edge fade
-  — measures 0 against the article's unbounded height: the rule needs the Row at **`height(IntrinsicSize.Min)`**,
-  the fade is a draw-only `matchParentSize` **sibling** of the scroll (inside it, it lands off-screen at the
-  content's far end). **The back sheet is now only its visible sliver**: the three quarters behind the front page
-  are hidden on the colour layer and *not* on the hollow themed one, where one edge ran through the P's counter —
-  which is redrawn to the room the page has, a 5.9 × 7.8 hole `LauncherIconTest` measures on both layers.
+- **V11/#7.** Anything spanning a scrolling child — the gutter's rule, a table's edge fade — measures 0 against
+  the article's unbounded height: the rule needs the Row at **`height(IntrinsicSize.Min)`**, the fade is a
+  draw-only `matchParentSize` **sibling** of the scroll (inside it it lands off-screen at the content's far end).
+  **The back sheet is now only its visible sliver** — it ran through the P's counter on the hollow themed layer;
+  the counter is a 5.9 × 7.8 hole `LauncherIconTest` measures on both layers, in all three statements of the path.
