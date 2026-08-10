@@ -8,6 +8,9 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
 ## Log
 - **Standing grep gate:** no `Color(0x` / `N.dp` / `N.sp` outside `ui/theme/` — screens address roles, never tones.
   **U01: the repo is public** (MIT) — never un-redact the `apiKey` in `fixtures/homepages/`.
+- **This `gh` is old:** bare `gh issue view N` dies on a Projects-classic GraphQL field (use `--json`), there is
+  no `gh label list`, and `gh issue close` has no `-r`. **V14: `scripts/release-notes.sh <last-tag>`** drafts a
+  release page from the issues closed since that tag; `docs/RELEASE-NOTES.md` is the template V16 writes through.
 - 2026-08-07 — **Standing UI-test traps.** Compose UI tests live in **`app/src/testDebug/`** (`ui-test-manifest` is
   `debugImplementation`). An injected tap/long-press **never reaches a node inside a drawer sheet, bottom sheet or
   dropdown** — use `performSemanticsAction(OnClick/OnLongClick)`. `PullToRefreshBox` ignores a swipe unless its child
@@ -59,8 +62,8 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
 - 2026-08-09 — **V01/#1: Robolectric builds `PerchApp` for every test** — a store cancels only a scope it *owns*.
   **Every full-suite flake so far: waiting on Room is not waiting on the screen** — asserting rendered text the
   moment the DB has it loses the emit→recompose hop. **Poll in wall-clock time**, not `waitForIdle`.
-- 2026-08-09 — **V02/#9: a `Clock` carries a zone**; `AppContainer` injects `systemDefaultZone()`, **`DateParser`
-  stays UTC deliberately**. A zone test must pin `TimeZone.setDefault` — the JVM's cannot tell bug from agent.
+- **V02/#9: a `Clock` carries a zone**; `AppContainer` injects `systemDefaultZone()`, **`DateParser` stays UTC
+  deliberately**. A zone test pins `TimeZone.setDefault` — the JVM's cannot tell bug from agent.
 - 2026-08-09 — **V06/#11: folder order is alphabetical (`COLLATE NOCASE`), Uncategorized pinned by `(id = 1) ASC`.**
   Stated **three** times and they must agree — `FolderDao.observeAll`, `.getAll`, `EntryQueries.LIST_ITEMS` (drawer
   and section headers read *different* ones). `sortIndex` stays a column (round-trips) but decides nothing.
@@ -71,11 +74,10 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
 - **V10/#5: a refused row is `refusesFolder` = "a tick would change nothing"**, so the affordance cannot drift
   from `toggleFolder`; the header dims while its chevron keeps full contrast. **`combinedClickable(enabled =
   false)` keeps its `OnClick` semantics action** — assert `assertIsNotEnabled`, never a missing action.
-- **U16: v0.2.0 shipped** (versionCode 3, `app/build/outputs/apk/release/`); **V13/#2 (2026-08-10): the v0.1.0
-  bridge is executed and attached** — `perch-0.2.0-debug.apk` (tag `v0.2.0`) on the release. Device traps:
-  **`run-as` dies on a release build** (verify through the UI, not sqlite3), `keyevent 4` at the list root
-  **quits to the launcher**, and a file the app wrote to Downloads vanishes from the SAF picker once the app
-  is uninstalled until MediaStore is rescanned.
+- **U16: v0.2.0 shipped** (versionCode 3, `app/build/outputs/apk/release/`); **V13/#2: the v0.1.0 bridge is
+  executed and attached** (`perch-0.2.0-debug.apk`). Device traps: **`run-as` dies on a release build** (verify
+  through the UI, not sqlite3), `keyevent 4` at the list root **quits to the launcher**, a file written to
+  Downloads leaves the SAF picker on uninstall until MediaStore rescans.
 - 2026-08-09 — **V04/#3: the inset contract is one doc comment in `ui/nav/PerchNavHost.kt`** — four clauses, one
   test each in `WindowInsetsTest`. Never add `.statusBarsPadding()` to a screen. **Robolectric has no bars or cutout
   on any profile**, so a test dispatches its own — `ui/WindowInsetsSupport.kt`'s `applyWindowInsets` reaches every
