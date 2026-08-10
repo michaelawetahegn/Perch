@@ -1,8 +1,9 @@
 # PLAN-3.md — Perch v0.3, the issue-tracker pass
 
-**This is the active plan.** `PLAN.md` (T01–T32, v0.1) and `PLAN-2.md` (U01–U16, v0.2) are
-complete, frozen, and history only — do not reopen a box in either. Same rules as before,
-restated because they still bind:
+**This is the active plan.** v0.1 (T01–T32) and v0.2 (U01–U16) are complete, frozen, and
+history only, archived in `docs/plans/` — do not reopen a box in either. The process this
+plan is executed by is written down in `docs/RALPH.md`. Same rules as before, restated
+because they still bind:
 
 Ordered. **Do the single next unchecked `[ ]` task, then stop.** Never check a box unless
 its Done-condition literally passed in this session. Failure → 2 attempts max, then rewrite

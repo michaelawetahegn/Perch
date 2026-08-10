@@ -125,6 +125,17 @@ maestro/         end-to-end regression flow
 `PLAN-3.md` is what is being built next, and `docs/RELEASE-NOTES.md` is how a release
 page gets written (`scripts/release-notes.sh <last-tag>` drafts one).
 
+## How it is built
+
+Perch is written by an unattended loop of Claude Code sessions. A plan file is a list of
+checkbox tasks; `loop.sh` runs one session per task, each of which starts with no memory
+of the last, does a single task, verifies it, commits, and exits. The checkbox file on
+disk is the memory — which is what lets the work survive a session ending.
+
+[`docs/RALPH.md`](docs/RALPH.md) is the whole process: why it works, how to write a task
+a cold session can execute, and what each failure mode means. Finished plans are archived
+in [`docs/plans/`](docs/plans/).
+
 ## Status
 
 v0.3.0 is the current release and is in daily use against 41 live sources. v0.2.0 added

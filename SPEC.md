@@ -1,6 +1,6 @@
 # SPEC.md — Perch, a local-first Android RSS reader
 
-> **v0.2 note:** parts of this document describe v1 only. `PLAN-2.md` §0 is authoritative
+> **v0.2 note:** parts of this document describe v1 only. `docs/plans/PLAN-2-v0.2.md` §0 is authoritative
 > where the two disagree (folders, OPML nesting, saved/liked entries, bundled mono font,
 > full-text extraction). The task that touches a stale section amends it in the same commit.
 
@@ -338,7 +338,7 @@ the app. Returning from an article restores the list's scroll position.
 1. `./gradlew test assembleDebug` green from a clean checkout.
 2. Every snapshot in `fixtures/snapshots/` parses to correct title/date/link/content
    (standing corpus test).
-3. All 10 product requirements in PROMPT.md §3 work end-to-end against the real feed
+3. All 10 product requirements in the bootstrap prompt (`docs/plans/bootstrap-prompt.md`) §3 work end-to-end against the real feed
    list, verified by tests and by screenshot review against DESIGN.md.
 4. The Maestro regression flow passes: add source → refresh → read → filter → remove
    → OPML export.

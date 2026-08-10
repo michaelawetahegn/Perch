@@ -12,8 +12,8 @@ set -uo pipefail
 cd "$(dirname "$0")"
 
 # ── knobs ────────────────────────────────────────────────────────────────────
-# The active plan. PLAN.md (v0.1, T01–T32) and PLAN-2.md (v0.2, U01–U16) are complete
-# and frozen; PLAN-3.md (v0.3, V01–V16 — one task per GitHub issue) is what CLAUDE.md
+# The active plan. v0.1 (T01–T32) and v0.2 (U01–U16) are complete and archived in
+# docs/plans/; PLAN-3.md (v0.3, V01–V16 — one task per GitHub issue) is what CLAUDE.md
 # now points sessions at. Change this one line to start a PLAN-4.
 PLAN=${PLAN:-PLAN-3.md}
 PROMPT="Read CLAUDE.md and continue"

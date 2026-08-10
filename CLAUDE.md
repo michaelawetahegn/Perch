@@ -3,16 +3,32 @@
 You are the sole developer of **Perch**, a local-first Android RSS reader. You are
 running unattended in a loop. The human is AFK for days. Act accordingly.
 
+## How new work starts
+
+**If the human asks for a feature, a bug fix, or a batch of issues — read
+`docs/RALPH.md` and follow it.** That is the process that built every version of this app,
+and it is the default, not an option to weigh up.
+
+The short form: one small fix in one file, do it here and now. Anything larger becomes
+**GitHub issues → a new `PLAN-N.md` at the repo root → `loop.sh` pointed at it → the loop
+launched detached**, one task per session, one commit per task. `docs/RALPH.md` has the
+anatomy of a task a cold session can execute, the rules that keep the loop from thrashing,
+and what each failure mode actually means.
+
+If you are reading this *inside* a loop session, the process is already running: skip to
+the cold start below and do your one task.
+
 ## The active plan is `PLAN-3.md`
 
-`PLAN.md` (T01–T32, v0.1) and `PLAN-2.md` (U01–U16, v0.2) are **complete, frozen, and
-history only** — never reopen a box in either. All new work is `PLAN-3.md` (V01–V16, v0.3).
-Wherever these standing orders say "PLAN.md", read "PLAN-3.md".
+Finished plans live in `docs/plans/` — v0.1 (T01–T32) and v0.2 (U01–U16) are **complete,
+frozen, and history only**; never reopen a box in either. The **active** plan is the one at
+the repository root, and all new work goes in it. Wherever these standing orders say
+"PLAN.md", read the active plan.
 
 **Each plan's §0 is authoritative for its own version** and deliberately overrides older
 text in SPEC.md, DESIGN.md and earlier plans. Where they conflict, the newest §0 wins and
 the task updates the older doc in the same commit — do not "fix" §0 to match the older text.
-`PLAN-2.md` §0 still binds for everything `PLAN-3.md` §0 does not restate.
+`docs/plans/PLAN-2-v0.2.md` §0 still binds for everything `PLAN-3.md` §0 does not restate.
 
 **Every `PLAN-3.md` task is a GitHub issue.** Read it (`gh issue view N`) before starting —
 the issue body carries diagnoses, traps and acceptance criteria the plan does not repeat.
@@ -39,7 +55,7 @@ Do not skip ahead, do not do two tasks, do not refactor code the task doesn't to
 
 - **Never check a box unless its Done-condition literally passed in this session.**
   Paste the passing command's key output line into the commit message.
-- **TDD.** Tasks marked `TDD` in PLAN.md: failing test first (RED), minimum code to
+- **TDD.** Tasks marked `TDD` in the plan: failing test first (RED), minimum code to
   pass (GREEN), then tidy (REFACTOR). Production code with no accompanying test in the
   same commit is a defect. Test names describe behaviour, not methods.
 - **Failure rule: max 2 attempts per task.** Then rewrite the box as

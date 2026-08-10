@@ -89,13 +89,20 @@ object Screenshots {
         return seen.size
     }
 
+    /**
+     * The repository root, found by walking up for `settings.gradle.kts`.
+     *
+     * The marker used to be `PLAN.md`, which broke the moment the finished plans were
+     * archived into `docs/plans/`. A marker has to be a file the build itself cannot live
+     * without — a plan is a document, and documents move.
+     */
     fun repoRoot(): File {
         var dir: File? = File("").absoluteFile
         while (dir != null) {
-            if (File(dir, "PLAN.md").isFile) return dir
+            if (File(dir, "settings.gradle.kts").isFile) return dir
             dir = dir.parentFile
         }
-        error("PLAN.md not found above ${File("").absolutePath}")
+        error("settings.gradle.kts not found above ${File("").absolutePath}")
     }
 
     /** Every Nth pixel in both axes — enough to tell a rendered screen from a slab. */

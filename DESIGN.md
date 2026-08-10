@@ -1,6 +1,6 @@
 # DESIGN.md — Perch
 
-> **v0.2 note:** parts of this document describe v1 only. `PLAN-2.md` §0 is authoritative
+> **v0.2 note:** parts of this document describe v1 only. `docs/plans/PLAN-2-v0.2.md` §0 is authoritative
 > where the two disagree (folders, OPML nesting, saved/liked entries, bundled mono font,
 > full-text extraction). The task that touches a stale section amends it in the same commit.
 
