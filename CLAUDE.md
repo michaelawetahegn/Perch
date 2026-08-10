@@ -52,6 +52,10 @@ Do not skip ahead, do not do two tasks, do not refactor code the task doesn't to
   scratch and the stall guard stops the loop after three. If a run genuinely cannot
   finish, commit the work so far on a `- [BLOCKED: …]` box and say what was left running.
   This is what stopped the v0.2 loop at U15 on 2026-08-08.
+  **A "repeat until it fails" hunt is never a Done-condition.** Bound it — a fixed number
+  of foreground runs — and if it does not reproduce inside that bound, fix the invariant
+  the bug implies and say the repro did not land, or mark the box BLOCKED. An unbounded
+  hunt is how a session ends with nothing committed; it did exactly that on 2026-08-09.
 - **Commit after every task**, message = `T07: Atom parser` + the verification line.
   Commit even for a BLOCKED task (the PLAN/NOTES edit is the commit).
 - **Never weaken a test to make it pass.** Especially `FeedCorpusTest` (T09) — it is

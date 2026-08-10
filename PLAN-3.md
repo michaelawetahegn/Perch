@@ -72,14 +72,26 @@ do when installing. The template lives in the repo so no release re-invents it.
       `CoroutineScope` nothing ever cancels, `data/settings/SettingsStore.kt:101`), and the
       note that **the named victim — `ArticleTextRepositoryTest`, `WorkSchedulerTest` — is
       never the culprit**, so do not "fix" it.
-      Reproduce first: run `./gradlew :app:testDebugUnitTest` in a loop until it fails and
-      capture the *underlying* thrower out of `app/build/test-results/testDebugUnitTest/*.xml`
-      (both runs so far overwrote each other's XML — copy the XML aside on failure). Only
-      then give the leaked scope an owner.
-      - Done: the real thrower's stack trace is pasted into NOTES.md or the issue; the fix
-        is a scope with a lifecycle (a `close()` `AppContainer` calls, or a caller-owned
-        scope) plus a test that fails without it; **three consecutive `./gradlew test` runs
-        are green**, and both named flakes are among the passes. Paste the three
+      **Bounded, in the foreground, no background runs.** Session #1 of this plan ended
+      with "standing by for the flake hunt to complete" and produced no commit — a hunt with
+      no bound does not fit in a session. So:
+      1. **At most three** full `./gradlew test` runs to try to reproduce, each in the
+         foreground, each copying `app/build/test-results/testDebugUnitTest/*.xml` aside
+         first (the runs so far overwrote each other's, which is why the real thrower has
+         never been seen). Session #1 left a probe in place that does the seeing:
+         `app/src/test/java/dev/mkiros/perch/LoudUncaughtHandler.kt`, registered through
+         `app/src/test/resources/META-INF/services/`, which prints every uncaught coroutine
+         exception with its stack. Keep it for the hunt; delete it in the same commit once
+         the fix lands, or keep it deliberately and say why.
+      2. **Then fix the invariant whether or not it reproduced.** The leak does not need the
+         flake to prove it: `SettingsStore.create` builds a scope with no owner and nothing
+         cancels it, and *that* is directly testable — a test asserting the container's
+         scope is cancelled on `close()` fails today because there is no `close()`. Reaching
+         for the invariant is the cheap rung here; the repro is a bonus, not the gate.
+      - Done: the fix is a scope with a lifecycle (a `close()` `AppContainer` calls, or a
+        caller-owned scope) plus a test that fails without it; **three consecutive
+        `./gradlew test` runs are green** and both named flakes are among the passes; if the
+        flake reproduced, the real thrower's stack is pasted into the issue. Paste the three
         `BUILD SUCCESSFUL` lines with their test counts into the commit message.
       - Rung: unit
 

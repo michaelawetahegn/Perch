@@ -239,18 +239,25 @@ class DesignScreenshotTest {
     // ---- harness ---------------------------------------------------------------
 
     /**
-     * Writes the whole screen to `screenshots/<name>.png` and asserts it is worth looking
-     * at. The size floor is T29's Done-condition; the distinct-colour check is what
-     * actually catches the failure that matters, a capture of a blank slab where the
-     * screen never composed. The drawing itself is [Screenshots.capture], which T32
+     * Writes the whole screen to `build/perch-screenshots/<name>.png` and asserts it is
+     * worth looking at. The size floor is T29's Done-condition; the distinct-colour check
+     * is what actually catches the failure that matters, a capture of a blank slab where
+     * the screen never composed. The drawing itself is [Screenshots.capture], which T32
      * shares.
+     *
+     * **It writes under `build/`, never into the tracked `screenshots/` gallery.** It used
+     * to write straight into `screenshots/`, so a plain `./gradlew test` silently modified
+     * two checked-in PNGs and the next `git add -A` swept that binary churn into whatever
+     * commit happened to be next. The README gallery is refreshed deliberately at release
+     * time by copying from here — never as a side effect of running the suite.
      */
     /** A drawer row by its label. The same name is in the app bar and in the list too. */
     private fun drawerRow(label: String) =
         compose.onAllNodesWithText(label).filterToOne(hasClickAction())
 
     private fun capture(name: String) {
-        val shot = Screenshots.capture(compose, compose.activity, Screenshots.dir("screenshots"), name)
+        val shot =
+            Screenshots.capture(compose, compose.activity, Screenshots.dir("build/perch-screenshots"), name)
 
         assertThat(shot.file.length()).isGreaterThan(10_000L)
         assertThat(shot.distinctColours).isGreaterThan(8)
