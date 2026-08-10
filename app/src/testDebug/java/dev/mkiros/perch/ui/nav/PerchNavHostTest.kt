@@ -88,7 +88,9 @@ class PerchNavHostTest {
         showNavHost()
 
         assertThat(currentRoute()).isEqualTo(Routes.FEED)
-        compose.onNodeWithText("Unread").assertExists()
+        // The tab is called "Feed" too, so pin the *title* — otherwise the bottom bar
+        // answers for the screen and the assertion never sees the top bar at all.
+        compose.onNodeWithTag(HomeTestTags.TITLE).assertTextEquals("Feed")
     }
 
     @Test

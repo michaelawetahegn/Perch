@@ -315,7 +315,7 @@ fun HomeScreen(
                     title = {
                         Text(
                             text = uiState.selectedTitle
-                                ?: stringResource(R.string.home_title_unread),
+                                ?: stringResource(R.string.home_title_feed),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.testTag(HomeTestTags.TITLE),
@@ -717,7 +717,7 @@ private fun SourceDrawer(
                 )
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Default.Inbox, contentDescription = null) },
-                    label = { Text(stringResource(R.string.drawer_all_unread)) },
+                    label = { Text(stringResource(R.string.drawer_all_sources)) },
                     badge = {
                         Text(
                             text = totalUnread.toString(),
@@ -921,7 +921,7 @@ private fun FolderHeaderRow(
  * Hand-built rather than a [NavigationDrawerItem] for one reason: §5 puts rename, move and
  * remove behind a long press, and the Material item answers taps only — wrapping it would
  * not help, because its own `clickable` consumes the gesture before any parent sees it.
- * The metrics are copied from it so the row still lines up with "All unread" above and
+ * The metrics are copied from it so the row still lines up with "All sources" above and
  * "Add source" below.
  *
  * The semantics are merged so the row, not its label, is the node that carries both

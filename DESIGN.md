@@ -121,7 +121,7 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
 
 ```
 ┌ FEED ────────────────────────────────┐
-│ LargeTopAppBar: "Unread" | source nm │  ← title reflects the active filter
+│ LargeTopAppBar: "Feed"   | source nm │  ← title reflects the active filter
 │  ⋮ overflow: Mark all read, Refresh, │
 │    Show read entries, Settings       │
 │ ─────────────────────────────────────│
@@ -140,7 +140,7 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
   ModalNavigationDrawer (swipe / hamburger) — scopes the Feed, nothing else:
     ▤ Perch                     ← U09b lockup; stands down in selection mode
       RSS READER
-    All unread            (12)
+    All sources           (12)
     ─────────────────────────
     ⌄ Folder name         (9) ⋮  ← chevron: expand/collapse · name: scope the list
       ● source name       (3)     ⋮: rename / delete (absent on Uncategorized)
@@ -172,7 +172,7 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
   ordered by the reader's own gesture, and a folder header would cut across the one
   ordering that means anything in them. Each empty state says what its list is *for*.
 - **Multi-select in the drawer (U09a).** A long press on a source or a folder header
-  starts a selection; every row of *that kind* gains a checkbox, the "All unread" row and
+  starts a selection; every row of *that kind* gains a checkbox, the "All sources" row and
   the drawer's three navigation items are replaced by a contextual bar — close · *N
   selected* · delete, plus rename (and move, for a source) at exactly one ticked row — and
   tapping toggles rows until the reader leaves. A selection is **homogeneous**: one

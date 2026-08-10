@@ -6,7 +6,7 @@
     <string name="brand_tagline">RSS READER</string>
 
     <!-- Home -->
-    <string name="home_title_unread">Unread</string>
+    <string name="home_title_feed">Feed</string>
     <string name="home_empty_no_entries">Nothing here yet</string>
     <string name="action_open_sources">Open sources</string>
 
@@ -43,14 +43,14 @@
     <string name="home_filter_all">All Time</string>
     <string name="home_filter_range">Change time window</string>
     <string name="home_empty_window_title">Nothing in this window</string>
-    <string name="home_empty_window_body">Nothing unread was published in the stretch of time you are looking at.</string>
+    <string name="home_empty_window_body">Nothing was published in the stretch of time you are looking at.</string>
     <string name="home_empty_widen">Show %1$s instead</string>
 
     <string name="home_banner_offline">Offline — showing saved entries</string>
     <string name="home_banner_all_failing">No source could be refreshed</string>
 
     <!-- Drawer -->
-    <string name="drawer_all_unread">All unread</string>
+    <string name="drawer_all_sources">All sources</string>
     <string name="drawer_settings">Settings</string>
     <!-- Content description of the ⚠ beside a source whose last refresh failed. -->
     <string name="drawer_source_error">Not updating</string>

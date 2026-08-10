@@ -107,7 +107,7 @@ class DrawerMultiSelectTest {
         compose.onNodeWithTag(SelectionTestTags.COUNT).assertTextEquals("1 selected")
         checkbox(SelectionTestTags.sourceCheckbox(gpuopen)).assertIsOn()
         // Selection mode replaces the drawer's navigation, so a stray tap cannot leave it.
-        compose.onNodeWithText("All unread").assertDoesNotExist()
+        compose.onNodeWithText("All sources").assertDoesNotExist()
     }
 
     @Test
@@ -136,7 +136,7 @@ class DrawerMultiSelectTest {
         tapRow("GPUOpen")
 
         compose.onNodeWithTag(SelectionTestTags.BAR).assertDoesNotExist()
-        compose.onNodeWithText("All unread").assertIsDisplayed()
+        compose.onNodeWithText("All sources").assertIsDisplayed()
     }
 
     @Test
@@ -328,7 +328,7 @@ class DrawerMultiSelectTest {
         // The rung under test: the drawer, which back would otherwise have taken, is
         // untouched. Closing it is the *next* press, and U09 already owns that rung.
         assertThat(drawerState.isOpen).isTrue()
-        compose.onNodeWithText("All unread").assertIsDisplayed()
+        compose.onNodeWithText("All sources").assertIsDisplayed()
     }
 
     // ---- harness ---------------------------------------------------------------------

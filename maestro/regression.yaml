@@ -33,13 +33,13 @@ name: Perch regression
     timeout: 180000
 - assertVisible:
     id: "home:title"
-    text: "Unread"
+    text: "Feed"
 
 # ── 1 · add a source ────────────────────────────────────────────────────────────
 # lemire.me is deliberately NOT one of the eight seeded sources, so this genuinely
 # exercises fetch → parse → insert over the network rather than re-finding a seed.
 - tapOn: "Open sources"
-- assertVisible: ".*All unread.*"
+- assertVisible: ".*All sources.*"
 - tapOn: ".*Add source.*"
 - assertVisible: "Add a source"
 - tapOn: "Feed or site address"
@@ -59,8 +59,8 @@ name: Perch regression
 - extendedWaitUntil:
     visible: ".*Daniel Lemire.*"
     timeout: 60000
-# Selecting "All unread" both clears the filter and closes the drawer.
-- tapOn: ".*All unread.*"
+# Selecting "All sources" both clears the filter and closes the drawer.
+- tapOn: ".*All sources.*"
 
 # ── 2 · refresh ─────────────────────────────────────────────────────────────────
 - tapOn: "More options"
@@ -80,7 +80,7 @@ name: Perch regression
     id: "home:all-unread:badge"
 - evalScript: ${output.unreadBefore = Number(maestro.copiedText)}
 - assertTrue: ${output.unreadBefore > 0}
-- tapOn: ".*All unread.*"
+- tapOn: ".*All sources.*"
 - tapOn:
     id: "home:entry"
     index: 0
@@ -138,7 +138,7 @@ name: Perch regression
 # Whether the drawer survived the dialogs is not worth asserting; reopen it if it did not.
 - runFlow:
     when:
-      notVisible: ".*All unread.*"
+      notVisible: ".*All sources.*"
     commands:
       - tapOn: "Open sources"
 - tapOn: ".*Settings.*"

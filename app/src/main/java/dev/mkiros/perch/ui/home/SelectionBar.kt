@@ -32,7 +32,7 @@ import dev.mkiros.perch.ui.theme.Dimens
 /**
  * The drawer's header while a selection is live (PLAN-2 U09a).
  *
- * It replaces "All unread" rather than sitting above it, which is what makes selection
+ * It replaces "All sources" rather than sitting above it, which is what makes selection
  * mode legible as a *mode*: the drawer stops being a place to navigate to and becomes a
  * place to act on, and the only two ways out of it are the close action and back.
  *

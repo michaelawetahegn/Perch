@@ -199,7 +199,7 @@ class HomeViewModel(
     private val settings: SettingsStore = SettingsStore.inMemory(),
 ) : ViewModel() {
 
-    /** Total unread, for the drawer's "All unread" row and the bar's subtitle. */
+    /** Total unread, for the drawer's "All sources" row and the bar's subtitle. */
     val totalUnread: StateFlow<Int> = entries.observeTotalUnreadCount()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), 0)
 

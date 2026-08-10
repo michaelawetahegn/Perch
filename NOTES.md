@@ -106,3 +106,9 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   while a tab is showing.
 - 2026-08-09 — **v0.3 is `PLAN-3.md` (V01–V16), one task per issue.** A task ends: commit → `git push` →
   `gh issue close N` with the verification line. **No fix without a failing test that reproduced the bug first.**
+- 2026-08-09 — **V05/#12: "Unread" is gone from every string a reader sees.** `home_title_unread`→
+  `home_title_feed` ("Feed"), `drawer_all_unread`→`drawer_all_sources` ("All sources" — the row scopes the
+  Feed to *everything*, it never promised unread-only); `home_empty_window_body` dropped its "unread" too.
+  Identifiers keep the word on purpose (`HomeTestTags.ALL_UNREAD_BADGE`, `observeUnread*`, "Mark unread") —
+  the flag is real. **`PerchNavHostTest` must pin `HomeTestTags.TITLE`, not `onNodeWithText("Feed")`** — the
+  bottom-bar tab has read "Feed" since U09, so a text assertion passes without the top bar existing.

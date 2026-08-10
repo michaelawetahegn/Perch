@@ -151,7 +151,7 @@ do when installing. The template lives in the repo so no release re-invents it.
 
 ## Phase 2 — The list, as it should read
 
-- [ ] **V05 — "Unread" becomes "Feed" everywhere a human reads it. TDD. Issue #12.**
+- [x] **V05 — "Unread" becomes "Feed" everywhere a human reads it. TDD. Issue #12.**
       `gh issue view 12`. The reader's reason is exact: Settings can keep read entries in
       the list, at which point "Unread" names something the list is not. "Feed" is true
       under both settings.

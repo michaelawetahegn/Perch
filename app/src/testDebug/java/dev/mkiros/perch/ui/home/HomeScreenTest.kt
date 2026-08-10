@@ -236,7 +236,7 @@ class HomeScreenTest {
     }
 
     @Test
-    fun `going back to all unread clears the filter`() {
+    fun `going back to all sources clears the filter`() {
         val one = seedFeed(title = "Source One")
         val two = seedFeed(title = "Source Two")
         seedEntry(feedId = one, title = "Only in one")
@@ -244,11 +244,11 @@ class HomeScreenTest {
 
         showHome()
         selectInDrawer("Source Two")
-        selectInDrawer("All unread", expectedTitle = null)
+        selectInDrawer("All sources", expectedTitle = null)
 
         compose.onNodeWithText("Only in one").assertIsDisplayed()
         compose.onNodeWithText("Only in two").assertIsDisplayed()
-        compose.onNodeWithTag(HomeTestTags.TITLE).assertTextEquals("Unread")
+        compose.onNodeWithTag(HomeTestTags.TITLE).assertTextEquals("Feed")
     }
 
     @Test
@@ -375,9 +375,9 @@ class HomeScreenTest {
         tap(SelectionTestTags.DELETE_CONFIRM)
         awaitState { it.selectedTitle == null }
 
-        compose.onNodeWithTag(HomeTestTags.TITLE).assertTextEquals("Unread")
+        compose.onNodeWithTag(HomeTestTags.TITLE).assertTextEquals("Feed")
         // Close the drawer the long press left open, then look at the list itself.
-        selectInDrawer("All unread", expectedTitle = null)
+        selectInDrawer("All sources", expectedTitle = null)
         awaitDisplayed("Only in two")
         compose.onNodeWithText("Only in one").assertDoesNotExist()
     }
@@ -532,7 +532,7 @@ class HomeScreenTest {
      *
      * Distinct from [awaitState]: the state can already say what a test is waiting for
      * while the drawer that was covering the list is still animating shut, and a node
-     * behind the scrim exists without being displayed. Selecting "All unread" after a
+     * behind the scrim exists without being displayed. Selecting "All sources" after a
      * dialog is exactly that case — the filter was already null, so there is no state
      * change left to wait on.
      */
