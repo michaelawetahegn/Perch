@@ -10,7 +10,8 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
 - 2026-08-07 — **Standing UI-test traps.** Compose UI tests live in **`app/src/testDebug/`** (`ui-test-manifest` is
   `debugImplementation`). An injected tap/long-press **never reaches a node inside a drawer sheet, bottom sheet or
   dropdown** — use `performSemanticsAction(OnClick/OnLongClick)`. `compose.waitUntil` advances only the *virtual*
-  clock; wait in wall-clock time. `PullToRefreshBox` ignores a swipe unless its child scrolls. Screenshots: **never
+  clock; wait in wall-clock time. `PullToRefreshBox` ignores a swipe unless its child scrolls — since V03 **every
+  empty state is a `LazyColumn` with one `fillParentMaxSize` item** so the pull lands; keep it that way. Screenshots: **never
   `captureToImage()`** (CLAUDE.md is wrong) — `PixelCopy` waits on a frame callback Robolectric never delivers, while
   `@GraphicsMode(NATIVE)`'s `View.draw(Canvas)` is synchronous; a sheet/dialog/dropdown is its **own window**, so draw
   its `rootView` over the decor view **translated by `getLocationOnScreen`**.
@@ -93,8 +94,7 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   stays UTC deliberately.** A zone test must pin `TimeZone.setDefault`: inheriting the JVM's cannot tell
   UTC-the-bug from UTC-the-agent.
 - 2026-08-08 — **U16: v0.2.0 shipped** (versionCode 3, `app/build/outputs/apk/release/app-release.apk`). **Never
-  `clean` before `test assembleRelease`** — it deletes `build/perch-screenshots/`, the evidence. **Open defects are
-  GitHub issues, not NOTES entries** (`gh issue list`); PLAN-3.md names one per task.
+  `clean` before `test assembleRelease`** — it deletes `build/perch-screenshots/`, the evidence.
 - 2026-08-09 — **Never wait on a WSL→Windows `cmd.exe /c start` — background it** (encoded in `device.sh`/`loop.sh`).
   The wrapper never returns even though the emulator boots fine, so no timeout fires: it once ate 78 min and a whole
   loop. Only `booted()` polling adb knows whether a boot worked.

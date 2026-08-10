@@ -24,6 +24,7 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -70,6 +71,7 @@ fun CollectionScreen(
 ) {
     val entries = viewModel.entries.collectAsLazyPagingItems()
     val pendingUndo by viewModel.pendingUndo.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val context = LocalContext.current
@@ -113,19 +115,27 @@ fun CollectionScreen(
                 .fillMaxSize()
                 .padding(innerPadding),
         ) {
-            // Nothing is drawn while the first page is in flight — these lists load in a
-            // frame and a skeleton would be a flash rather than a reassurance. The empty
-            // state waits for that page for home's reason: an empty state between two full
-            // lists reads as a bug.
-            when {
-                entries.itemCount > 0 -> EntryList(
-                    entries = entries,
-                    nowMillis = viewModel.nowMillis,
-                    onOpenEntry = onOpenEntry,
-                    onLongPress = { actionsForId = it },
-                )
-                entries.loadState.refresh is LoadState.Loading -> Unit
-                else -> EmptyState(viewModel.collection)
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = viewModel::refresh,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .testTag(CollectionTestTags.LIST),
+            ) {
+                // Nothing is drawn while the first page is in flight — these lists load in
+                // a frame and a skeleton would be a flash rather than a reassurance. The
+                // empty state waits for that page for home's reason: an empty state between
+                // two full lists reads as a bug.
+                when {
+                    entries.itemCount > 0 -> EntryList(
+                        entries = entries,
+                        nowMillis = viewModel.nowMillis,
+                        onOpenEntry = onOpenEntry,
+                        onLongPress = { actionsForId = it },
+                    )
+                    entries.loadState.refresh is LoadState.Loading -> Unit
+                    else -> EmptyState(viewModel.collection)
+                }
             }
         }
     }
@@ -172,7 +182,7 @@ private fun EntryList(
     onLongPress: (Long) -> Unit,
 ) {
     val listState = rememberLazyListState()
-    LazyColumn(state = listState, modifier = Modifier.fillMaxSize().testTag(CollectionTestTags.LIST)) {
+    LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
         items(count = entries.itemCount, key = entries.itemKey { it.id }) { index ->
             val item = entries[index] ?: return@items
             // `animateItem` is what makes un-saving read as the row leaving rather than as
@@ -222,35 +232,45 @@ private fun EmptyState(collection: Collection) {
         Collection.Liked -> R.string.collection_empty_liked_body
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = Dimens.screenHorizontal)
-            .testTag(CollectionTestTags.EMPTY),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(Dimens.emptyIcon),
-        )
-        Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = stringResource(title),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = Dimens.lg, bottom = Dimens.sm),
-            )
-            Text(
-                text = stringResource(body),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.width(Dimens.emptyContentWidth),
-            )
+    // Scrollable for the Feed's reason (V03/#6): `PullToRefreshBox` only sees a drag its
+    // child dispatches, so an empty state built out of plain `Column`s swallows the pull.
+    // One item at the parent's full size keeps the content centred.
+    LazyColumn(modifier = Modifier.fillMaxSize()) {
+        item {
+            Column(
+                modifier = Modifier
+                    .fillParentMaxSize()
+                    .padding(horizontal = Dimens.screenHorizontal)
+                    .testTag(CollectionTestTags.EMPTY),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(Dimens.emptyIcon),
+                )
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        text = stringResource(title),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(top = Dimens.lg, bottom = Dimens.sm),
+                    )
+                    Text(
+                        text = stringResource(body),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.width(Dimens.emptyContentWidth),
+                    )
+                }
+            }
         }
     }
 }

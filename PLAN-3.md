@@ -117,7 +117,7 @@ do when installing. The template lives in the repo so no release re-invents it.
         issue #9 closed with the diagnosis.
       - Rung: unit
 
-- [ ] **V03 — Pull-to-refresh works on an empty list. TDD. Issue #6.**
+- [x] **V03 — Pull-to-refresh works on an empty list. TDD. Issue #6.**
       `gh issue view 6`. `PullToRefreshBox` drops a swipe its child does not scroll, and the
       empty state is not scrollable — so the one gesture a reader reaches for on a fresh
       install is inert, on Feed, To-Read and Liked alike. Give each empty state a scrollable

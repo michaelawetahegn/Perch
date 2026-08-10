@@ -232,7 +232,7 @@ class CollectionScreenTest {
     }
 
     private fun show(collection: Collection) {
-        viewModel = CollectionViewModel(container.entries, clock, collection)
+        viewModel = CollectionViewModel(container.entries, container.feeds, clock, collection)
         compose.setContent {
             PerchTheme(dynamicColor = false) {
                 CollectionScreen(viewModel = viewModel, onOpenEntry = {})

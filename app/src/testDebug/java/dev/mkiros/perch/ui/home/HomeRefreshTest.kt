@@ -148,6 +148,24 @@ class HomeRefreshTest {
         assertThat(requestedPaths()).containsExactly("/two.xml")
     }
 
+    /**
+     * V03/#6: the gesture a reader reaches for on a fresh install.
+     *
+     * `PullToRefreshBox` only sees a drag its child dispatches, so an empty state that is
+     * not scrollable swallows the one gesture that would fill it. Asserted at the wire for
+     * the same reason the full-list case is: what matters is that the pull reached a fetch.
+     */
+    @Test
+    fun `pulling an empty list still refreshes every source`() {
+        seedRemoteFeed(path = "/one.xml", title = "Source One", entryTitle = "Fresh from one")
+
+        showHome()
+        awaitCondition { compose.onAllNodesWithText(ALL_CAUGHT_UP).fetchSemanticsNodes().isNotEmpty() }
+        pullToRefresh()
+
+        assertThat(requestedPaths()).containsExactly("/one.xml")
+    }
+
     @Test
     fun `the indicator comes back down when the refresh is done`() {
         val one = seedRemoteFeed(path = "/one.xml", title = "Source One", entryTitle = "Fresh from one")
@@ -481,6 +499,7 @@ class HomeRefreshTest {
 
     private companion object {
         val FRESH = listOf("Fresh from one", "Fresh from two")
+        const val ALL_CAUGHT_UP = "You're all caught up"
         const val DAY = 24 * 3_600L
         const val TIMEOUT_MS = 10_000L
         const val POLL_MS = 10L

@@ -8,6 +8,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import dev.mkiros.perch.data.db.EntryListItem
 import dev.mkiros.perch.data.repo.EntryRepository
+import dev.mkiros.perch.data.repo.FeedRepository
 import dev.mkiros.perch.di.AppContainer
 import java.time.Clock
 import kotlinx.coroutines.flow.Flow
@@ -53,6 +54,7 @@ data class CollectionUndo(val entryId: Long, val title: String)
  */
 class CollectionViewModel(
     private val repository: EntryRepository,
+    private val feeds: FeedRepository,
     private val clock: Clock,
     val collection: Collection,
 ) : ViewModel() {
@@ -78,6 +80,32 @@ class CollectionViewModel(
      * about the list now lives on the list.
      */
     val nowMillis: Long get() = clock.millis()
+
+    /** Drives the pull indicator only, exactly as home's does. */
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+
+    /**
+     * The pull gesture, which these two lists never had (V03/#6).
+     *
+     * Always `refreshAll`: there is no scope to narrow to here — a saved article can come
+     * from any source — so the reader's "now" means all of them, the same thing it means
+     * on an unfiltered Feed. What it changes on *these* lists is the rows themselves: a
+     * refresh rewrites the bodies and titles of entries the reader has queued, and it is
+     * where a restored profile's parked flags are consumed (U14). Re-entrant pulls are
+     * dropped rather than queued, for home's reason.
+     */
+    fun refresh() {
+        if (_isRefreshing.value) return
+        _isRefreshing.value = true
+        viewModelScope.launch {
+            try {
+                feeds.refreshAll()
+            } finally {
+                _isRefreshing.value = false
+            }
+        }
+    }
 
     private val _pendingUndo = MutableStateFlow<CollectionUndo?>(null)
     val pendingUndo: StateFlow<CollectionUndo?> = _pendingUndo.asStateFlow()
@@ -140,7 +168,9 @@ class CollectionViewModel(
 
     companion object {
         fun factory(container: AppContainer, collection: Collection) = viewModelFactory {
-            initializer { CollectionViewModel(container.entries, container.clock, collection) }
+            initializer {
+                CollectionViewModel(container.entries, container.feeds, container.clock, collection)
+            }
         }
     }
 }

@@ -1321,55 +1321,69 @@ private fun EmptyState(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = Dimens.screenHorizontal),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        if (icon == null) {
-            PerchMark(size = Dimens.brandMark)
-        } else {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(Dimens.emptyIcon),
-            )
-        }
-        Spacer(modifier = Modifier.size(Dimens.lg))
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-            textAlign = TextAlign.Center,
-        )
-        Spacer(modifier = Modifier.size(Dimens.sm))
-        Text(
-            text = body,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.width(Dimens.emptyContentWidth),
-        )
-        // `emptyWindow` is only true when `widerFilter` is non-null, so the smart cast
-        // inside carries; re-testing it here is what the compiler warns about.
-        if (emptyWindow) {
-            Spacer(modifier = Modifier.size(Dimens.xl))
-            Button(
-                onClick = onWiden,
-                modifier = Modifier.testTag(HomeTestTags.EMPTY_WIDEN),
+    // Scrollable on purpose (V03/#6). `PullToRefreshBox` only ever sees a drag its child
+    // dispatches down the nested-scroll chain, and a plain `Column` dispatches nothing —
+    // so pull-to-refresh, the one gesture a reader reaches for when the screen is empty,
+    // was inert exactly where they need it. One item at the parent's full size keeps the
+    // content centred and reserves the whole surface for the gesture.
+    LazyColumn(modifier = Modifier.fillMaxSize()) {
+        item {
+            Column(
+                modifier = Modifier
+                    .fillParentMaxSize()
+                    .padding(horizontal = Dimens.screenHorizontal),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
             ) {
-                Text(stringResource(R.string.home_empty_widen, stringResource(widerFilter.labelRes())))
-            }
-        } else if (!hasSources) {
-            Spacer(modifier = Modifier.size(Dimens.xl))
-            Button(
-                onClick = onAddSource,
-                modifier = Modifier.testTag(HomeTestTags.EMPTY_ADD_SOURCE),
-            ) {
-                Text(stringResource(R.string.drawer_add_source))
+                if (icon == null) {
+                    PerchMark(size = Dimens.brandMark)
+                } else {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(Dimens.emptyIcon),
+                    )
+                }
+                Spacer(modifier = Modifier.size(Dimens.lg))
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(modifier = Modifier.size(Dimens.sm))
+                Text(
+                    text = body,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.width(Dimens.emptyContentWidth),
+                )
+                // `emptyWindow` is only true when `widerFilter` is non-null, so the smart
+                // cast inside carries; re-testing it here is what the compiler warns about.
+                if (emptyWindow) {
+                    Spacer(modifier = Modifier.size(Dimens.xl))
+                    Button(
+                        onClick = onWiden,
+                        modifier = Modifier.testTag(HomeTestTags.EMPTY_WIDEN),
+                    ) {
+                        Text(
+                            stringResource(
+                                R.string.home_empty_widen,
+                                stringResource(widerFilter.labelRes()),
+                            ),
+                        )
+                    }
+                } else if (!hasSources) {
+                    Spacer(modifier = Modifier.size(Dimens.xl))
+                    Button(
+                        onClick = onAddSource,
+                        modifier = Modifier.testTag(HomeTestTags.EMPTY_ADD_SOURCE),
+                    ) {
+                        Text(stringResource(R.string.drawer_add_source))
+                    }
+                }
             }
         }
     }
