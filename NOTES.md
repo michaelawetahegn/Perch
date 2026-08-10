@@ -45,7 +45,7 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   (1) **`ArticleLowering` deletes truncation markers as chrome**, so `FullText` looks for "Continue reading" in the
   *unlowered* text. (2) Scoring finds the *tightest* subtree, so a decorative single-child wrapper wins and the
   article's last section, its sibling, is lost — hence `unwrapped()`. (3) **An extraction only ever replaces a body
-  it beats**, making auto-extract-on-open safe. Fixtures: `fixtures/articles/`.
+  it beats.** Fixtures: `fixtures/articles/`.
 - 2026-08-08 — **U11 (code).** Bundled JetBrains Mono 2.304 (OFL 1.1, licence in `assets/`) is DESIGN.md §3's one
   exception, **ligatures off**. **`HtmlSanitizer` keeps `class` on `pre` only**, holding a `language-x` normalised
   before `Cleaner` runs. The gutter sits **outside** the `horizontalScroll`, inside a **`DisableSelection`**.
@@ -54,42 +54,36 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   **`BackStep.CloseImageViewer` sits between `CloseOverlay` and `PopArticle`**, an order `BackChainTest` guards.
   An open overlay eats `performTouchInput` — scroll under it first; `performClick` needs `mainClock.advanceTimeBy`.
 - 2026-08-08 — **U13 (OPML folders).** A folder is a **name, not an id** — ids do not survive the file (U14 inherits
-  this). Export leaves Uncategorized's sources unfiled at top level; import files a source under the **outermost**
-  container, flattens deeper nesting, leaves a **duplicate entirely alone** and creates a folder only when a source
-  goes into it (re-import: `0/n/k/0 folders`).
+  this). Export leaves Uncategorized unfiled at top level; import files a source under the **outermost** container,
+  flattens deeper nesting, leaves a **duplicate alone**, creates a folder only when a source goes into it.
 - 2026-08-08 — **U14 (profile).** DB is **version 5**: `pending_entry_state`, keyed `(feedUrl, guid)`, **no FK to
   `feeds`** — its job is outliving a source that does not exist yet. **`EntryDao.upsertAll` consumes parked rows**,
   which is what stops the refresh straight after a restore undoing it. A restore turns a flag **on** and never off,
   so it is idempotent. Codec is `org.json` — **its tests need Robolectric**; on a bare JVM `JSONObject` stubs.
 - 2026-08-09 — **V01/#1: Robolectric builds `PerchApp` for every test**, so `onCreate` work outlived it. `startupScope`
-  dies in **`onTerminate()`**; `SettingsStore`/`AppContainer` are `Closeable` and a store cancels only a scope it
-  *owns* (`create`). `ProcessLifecycleTest` guards it; `LoudUncaughtHandler` stays — the flake never reproduced.
-- 2026-08-09 — **Every full-suite flake so far: waiting on Room is not waiting on the screen.** `ArticleFullTextTest`
-  awaited the body reaching the DB then asserted rendered text at once, losing the emit→recompose hop (giveaway:
-  *"could not find any node … the unmerged tree contains 1"*). **Poll in wall-clock time**, not `waitForIdle`.
+  dies in `onTerminate()`; a store cancels only a scope it *owns*. `LoudUncaughtHandler` stays — the flake never repro'd.
+- 2026-08-09 — **Every full-suite flake so far: waiting on Room is not waiting on the screen** — asserting rendered
+  text the moment the DB has it loses the emit→recompose hop. **Poll in wall-clock time**, not `waitForIdle`.
 - 2026-08-09 — **V02/#9: a `Clock` carries a zone, and the container's was Greenwich's.** `AppContainer` now injects
   `systemDefaultZone()`; **`DateParser` stays UTC deliberately.** A zone test must pin `TimeZone.setDefault` —
   inheriting the JVM's cannot tell UTC-the-bug from UTC-the-agent.
 - 2026-08-09 — **V06/#11: folder order is alphabetical (`COLLATE NOCASE`), Uncategorized pinned by `(id = 1) ASC`.**
   The clause is stated **three** times and they must agree — `FolderDao.observeAll`, `FolderDao.getAll`,
   `EntryQueries.LIST_ITEMS` (the drawer and the section headers read *different* ones). `sortIndex` stays a column
-  (OPML/profile round-trips) but decides nothing. **`COLLATE NOCASE` folds ASCII only**: `Émacs` sorts last, by UTF-8
+  (OPML/profile round-trips) but decides nothing. **`COLLATE NOCASE` folds ASCII only**: `Émacs` sorts last by UTF-8
   byte — pinned by a test and accepted, not a bug to "fix" without an ICU collation.
 - 2026-08-09 — **V07/#13: a missing thumbnail is `surfaceVariant` + the mark as line art in `outline`**
-  (`Placeholder(marked = true)`); **only `loading` keeps the bare frame**. `ColorFilter.tint` flattens the mark to its
-  silhouette, so `perchMarkMonochrome(ink, paper)` rebuilds it with `paper` = the fill; `outlineVariant` ink would be
-  invisible (same tone as the fill in dark). `Screenshots.rasterize` reads pixels without writing a file.
-- 2026-08-08 — **U16: v0.2.0 shipped** (versionCode 3, `app/build/outputs/apk/release/app-release.apk`). **Never
-  `clean` before `test assembleRelease`** — it deletes `build/perch-screenshots/`, the evidence.
+  (`Placeholder(marked = true)`); **only `loading` keeps the bare frame**. `ColorFilter.tint` flattens the mark to a
+  silhouette — `perchMarkMonochrome(ink, paper)` rebuilds it. `Screenshots.rasterize` reads pixels, writes no file.
+- 2026-08-08 — **U16: v0.2.0 shipped** (versionCode 3, `app/build/outputs/apk/release/app-release.apk`).
 - 2026-08-09 — **V04/#3: the inset contract is one doc comment in `ui/nav/PerchNavHost.kt`** — four clauses, one
   test each in `WindowInsetsTest`. Never add `.statusBarsPadding()` to a screen. **Robolectric has no bars or cutout
   on any profile**, so a test dispatches its own — `ui/WindowInsetsSupport.kt`'s `applyWindowInsets` reaches **every
   Compose root** (`WindowInsetsHolder` listens on the `AndroidComposeView`). The bottom bar and the `NavHost` are
   siblings and both spent the bottom inset; the shell now `consumeWindowInsets` while a tab is showing.
-- 2026-08-09 — **V05/#12: "Unread" is gone from every string a reader sees** (`home_title_feed` = "Feed",
-  `drawer_all_sources` = "All sources"). Identifiers keep the word on purpose — the flag is real.
-  **`PerchNavHostTest` must pin `HomeTestTags.TITLE`, not `onNodeWithText("Feed")`**: the bottom-bar tab has
-  read "Feed" since U09, so a text assertion passes without the top bar existing.
+- 2026-08-09 — **V05/#12: "Unread" is gone from every string a reader sees** (`home_title_feed`, `drawer_all_sources`);
+  identifiers keep the word on purpose. **Pin `HomeTestTags.TITLE`, never `onNodeWithText("Feed")`** — the bottom-bar
+  tab has read "Feed" since U09, so a text assertion passes without the top bar existing.
 - 2026-08-09 — **V08/#10: the scoped list is state, not a route.** `HomeScope` is **hoisted into `PerchNavHost`** —
   third such state — because `BackStep.LeaveScope` is a rung, *above* `ScrollFeedToTop`, and the drawer is no longer
   its only writer; `HomeScreen` pushes it down through one `LaunchedEffect` and nothing else writes `scope`.
@@ -98,3 +92,8 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   (`ArticleTestTags.SOURCE` / `BYLINE`), the source carrying §8's editorial underline, never a colour. Scoping
   **does not touch the time window** — a navigation must not rewrite a persisted setting, and U07's empty-window
   state already names it. Residual: a scoped list still repeats the source's name on every row — polish, T29.
+- 2026-08-10 — **V09/#4: a table joins the article on its *shape*, not its text density** — `carriesContentTable`
+  (≥3 rows, ≥2 columns, no nested table, not linky), and `carriesSubstantialProse` now counts a `<p>` **wrapped** in
+  a block div: Squarespace gives every block its own `sqs-block`, so the table and the closing paragraph were both
+  dropped siblings. A page fixture is not a feed body — the page is `zdi-page-*.html`. **Live gate 7 now fails alone**:
+  home shows 1 folder section of 3 (V06 changed which sections page 1 holds) — V15's, gate 6b green at 122 tables.

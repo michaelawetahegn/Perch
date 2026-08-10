@@ -1,0 +1,1084 @@
+<!doctype html>
+<html xmlns:og="http://opengraphprotocol.org/schema/" xmlns:fb="http://www.facebook.com/2008/fbml" lang="en-US"  lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;400;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="https://www.zerodayinitiative.com/css/tailwindcss.css">
+
+    <!-- External Libraries -->
+    <script src="https://www.zerodayinitiative.com/js/jquery-3.7.1.min.js"></script>
+    <script src="https://www.zerodayinitiative.com/js/gsap-3.12.2.min.js"></script>
+    <script src="https://www.zerodayinitiative.com/js/ScrollTrigger-3.12.2.min.js"></script>
+    <script src="https://www.zerodayinitiative.com/js/lucide-1.7.0.min.js"></script>
+    <script src="https://www.zerodayinitiative.com/js/lenis-1.0.29.min.js"></script>
+
+    <link rel="preload stylesheet" href="https://www.zerodayinitiative.com/css/style.css" as="style">
+    <link rel="preload stylesheet" href="https://www.zerodayinitiative.com/css/page-style.css" as="style">
+
+    <!-- This is Squarespace. --><!-- brian-gorenc -->
+<base href="">
+<meta charset="utf-8" />
+<title>Zero Day Initiative &mdash; The June 2026 Apple Security Update Review</title>
+<meta http-equiv="Accept-CH" content="Sec-CH-UA-Platform-Version, Sec-CH-UA-Model" /><link rel="icon" type="image/x-icon" href="https://images.squarespace-cdn.com/content/v1/5894c269e4fcb5e65a1ed623/1487670157237-HOXHMI54TA0SZP21OY7C/favicon.ico"/>
+<link rel="canonical" href="https://www.thezdi.com/blog/2026/6/30/the-june-2026-apple-security-update-review"/>
+<meta property="og:site_name" content="Zero Day Initiative"/>
+<meta property="og:title" content="Zero Day Initiative &mdash; The June 2026 Apple Security Update Review"/>
+<meta property="og:url" content="https://www.thezdi.com/blog/2026/6/30/the-june-2026-apple-security-update-review"/>
+<meta property="og:type" content="article"/>
+<meta property="og:description" content="We’re back with our look at the Apple macOS and iOS security updates. As this is a new feature for us, please let us know your feedback on the blog.   For June 2026, Apple released 37 unique CVEs across iOS 26.5.2 / iPadOS 26.5.2, macOS Tahoe 26.5.2, Safari 26.5.2. Since Apple doesn’t provide CVSS s"/>
+<meta property="og:image" content="http://static1.squarespace.com/static/5894c269e4fcb5e65a1ed623/58a5b38cb3db2bd67b608658/6a4436173553052dfb4b6904/1785363490599/Apple+Patch+Blog+Title+Card.png?format=1500w"/>
+<meta property="og:image:width" content="750"/>
+<meta property="og:image:height" content="500"/>
+<meta itemprop="name" content="Zero Day Initiative — The June 2026 Apple Security Update Review"/>
+<meta itemprop="url" content="https://www.thezdi.com/blog/2026/6/30/the-june-2026-apple-security-update-review"/>
+<meta itemprop="description" content="We’re back with our look at the Apple macOS and iOS security updates. As this is a new feature for us, please let us know your feedback on the blog.   For June 2026, Apple released 37 unique CVEs across iOS 26.5.2 / iPadOS 26.5.2, macOS Tahoe 26.5.2, Safari 26.5.2. Since Apple doesn’t provide CVSS s"/>
+<meta itemprop="thumbnailUrl" content="http://static1.squarespace.com/static/5894c269e4fcb5e65a1ed623/58a5b38cb3db2bd67b608658/6a4436173553052dfb4b6904/1785363490599/Apple+Patch+Blog+Title+Card.png?format=1500w"/>
+<link rel="image_src" href="http://static1.squarespace.com/static/5894c269e4fcb5e65a1ed623/58a5b38cb3db2bd67b608658/6a4436173553052dfb4b6904/1785363490599/Apple+Patch+Blog+Title+Card.png?format=1500w" />
+<meta itemprop="image" content="http://static1.squarespace.com/static/5894c269e4fcb5e65a1ed623/58a5b38cb3db2bd67b608658/6a4436173553052dfb4b6904/1785363490599/Apple+Patch+Blog+Title+Card.png?format=1500w"/>
+<meta itemprop="author" content="Dustin Childs"/>
+<meta itemprop="datePublished" content="2026-07-01T10:03:53-0500"/>
+<meta itemprop="dateModified" content="2026-07-29T17:18:10-0500"/>
+<meta itemprop="headline" content="The June 2026 Apple Security Update Review"/>
+<meta itemprop="publisher" content="Zero Day Initiative"/>
+<meta name="twitter:title" content="Zero Day Initiative — The June 2026 Apple Security Update Review"/>
+<meta name="twitter:image" content="http://static1.squarespace.com/static/5894c269e4fcb5e65a1ed623/58a5b38cb3db2bd67b608658/6a4436173553052dfb4b6904/1785363490599/Apple+Patch+Blog+Title+Card.png?format=1500w"/>
+<meta name="twitter:url" content="https://www.thezdi.com/blog/2026/6/30/the-june-2026-apple-security-update-review"/>
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:description" content="We’re back with our look at the Apple macOS and iOS security updates. As this is a new feature for us, please let us know your feedback on the blog.   For June 2026, Apple released 37 unique CVEs across iOS 26.5.2 / iPadOS 26.5.2, macOS Tahoe 26.5.2, Safari 26.5.2. Since Apple doesn’t provide CVSS s"/>
+<meta name="description" content="" />
+<link rel="preconnect" href="https://images.squarespace-cdn.com">
+<link rel="preconnect" href="https://file.squarespace-cdn.com" crossorigin>
+<style data-sqsp-font-ids="6a3136d96307d35684222716">
+/* latin-ext */
+@font-face {
+  font-family: 'Lato';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://file.squarespace-cdn.com/content/v2/namespaces/fonts/libraries/sqsp/assets/6f0688dc-c8b3-4706-8053-c2ded200834b/latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Lato';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://file.squarespace-cdn.com/content/v2/namespaces/fonts/libraries/sqsp/assets/f9176adf-65db-48e4-bf01-000028015a2b/latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin */
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 100;
+  font-display: swap;
+  src: url('https://file.squarespace-cdn.com/content/v2/namespaces/fonts/libraries/sqsp/assets/3759e41a-374d-4470-8aa4-46ab7dd8b401/latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 100;
+  font-display: swap;
+  src: url('https://file.squarespace-cdn.com/content/v2/namespaces/fonts/libraries/sqsp/assets/adc8bc8e-b644-415d-a963-152e68337d55/latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('https://file.squarespace-cdn.com/content/v2/namespaces/fonts/libraries/sqsp/assets/a1c42310-82f5-4da0-9c52-e65581b20a89/latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('https://file.squarespace-cdn.com/content/v2/namespaces/fonts/libraries/sqsp/assets/d0edb582-1412-4829-b8cd-a2fab51875fe/latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin */
+@font-face {
+  font-family: 'Lato';
+  font-style: italic;
+  font-weight: 100;
+  font-display: swap;
+  src: url('https://file.squarespace-cdn.com/content/v2/namespaces/fonts/libraries/sqsp/assets/c4cce83a-0737-471f-9347-d6535dd78b3b/latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Lato';
+  font-style: italic;
+  font-weight: 100;
+  font-display: swap;
+  src: url('https://file.squarespace-cdn.com/content/v2/namespaces/fonts/libraries/sqsp/assets/605e1a8f-058d-4a33-a671-2c5becdce94d/latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Lato';
+  font-style: italic;
+  font-weight: 300;
+  font-display: swap;
+  src: url('https://file.squarespace-cdn.com/content/v2/namespaces/fonts/libraries/sqsp/assets/66904b17-8f0e-4cb1-8da9-1b07cabfe548/latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Lato';
+  font-style: italic;
+  font-weight: 300;
+  font-display: swap;
+  src: url('https://file.squarespace-cdn.com/content/v2/namespaces/fonts/libraries/sqsp/assets/42a85cfa-69cc-4504-a84b-68bfcda6f536/latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://file.squarespace-cdn.com/content/v2/namespaces/fonts/libraries/sqsp/assets/29f7503d-8b8e-4c7c-ba6e-a0d235c1adb0/latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://file.squarespace-cdn.com/content/v2/namespaces/fonts/libraries/sqsp/assets/f039b551-84d3-4644-ac5a-b541e8898cf9/latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://file.squarespace-cdn.com/content/v2/namespaces/fonts/libraries/sqsp/assets/0e48baa8-3b27-43a8-b31d-07bd5927372a/latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://file.squarespace-cdn.com/content/v2/namespaces/fonts/libraries/sqsp/assets/9b7fd711-2de3-4280-9313-db3740d27a01/latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+</style><script type="text/javascript" crossorigin="anonymous" nomodule="nomodule" src="//assets.squarespace.com/@sqs/polyfiller/1.6/legacy.js"></script>
+<script type="text/javascript" crossorigin="anonymous" src="//assets.squarespace.com/@sqs/polyfiller/1.6/modern.js"></script>
+<script data-name="static-context">Static = window.Static || {}; Static.SQUARESPACE_CONTEXT = {"betaFeatureFlags":["campaigns_new_image_layout_picker","campaigns_discount_section_in_automations","enable_form_submission_trigger","campaigns_merch_state","output_template_css_assets","campaigns_thumbnail_layout","product_list_filters_v2_separate_categories","campaigns_discount_section_in_blasts","modernized-pdp-m2-enabled","commerce_product_payment_plan_editing","campaigns_import_discounts","contacts_and_campaigns_redesign","order_status_page_checkout_landing_enabled","enable_modernized_pdp_m3_layout_ux","enable_modernized_standalone_pages","marketing_automations","i18n_beta_website_locales","public_api_discounts_enabled","marketing_landing_page","enable_modernized_standalone_pages_kill_switch","campaigns_table_v2","enable_modernized_pdp_m3_fluid"],"facebookAppId":"314192535267336","facebookApiVersion":"v6.0","rollups":{"squarespace-announcement-bar":{"js":"//assets.squarespace.com/universal/scripts-compressed/announcement-bar-84ac4ebc6c2eb13d-min.en-US.js"},"squarespace-audio-player":{"css":"//assets.squarespace.com/universal/styles-compressed/audio-player-b05f5197a871c566-min.en-US.css","js":"//assets.squarespace.com/universal/scripts-compressed/audio-player-88f12b1274cb1715-min.en-US.js"},"squarespace-blog-collection-list":{"css":"//assets.squarespace.com/universal/styles-compressed/blog-collection-list-b4046463b72f34e2-min.en-US.css","js":"//assets.squarespace.com/universal/scripts-compressed/blog-collection-list-804d48b04f8cd8a1-min.en-US.js"},"squarespace-calendar-block-renderer":{"css":"//assets.squarespace.com/universal/styles-compressed/calendar-block-renderer-c3fef2a497c8e56b-min.en-US.css","js":"//assets.squarespace.com/universal/scripts-compressed/calendar-block-renderer-5bcb531bc604e86b-min.en-US.js"},"squarespace-chartjs-helpers":{"css":"//assets.squarespace.com/universal/styles-compressed/chartjs-helpers-96b256171ee039c1-min.en-US.css","js":"//assets.squarespace.com/universal/scripts-compressed/chartjs-helpers-09376c2f45ec20f7-min.en-US.js"},"squarespace-comments":{"css":"//assets.squarespace.com/universal/styles-compressed/comments-bd6c75e172166fdc-min.en-US.css","js":"//assets.squarespace.com/universal/scripts-compressed/comments-42049f58670fcd5d-min.en-US.js"},"squarespace-custom-css-popup":{"css":"//assets.squarespace.com/universal/styles-compressed/custom-css-popup-ce62092cd89db3df-min.en-US.css","js":"//assets.squarespace.com/universal/scripts-compressed/custom-css-popup-e785f223dcfc8786-min.en-US.js"},"squarespace-dialog":{"css":"//assets.squarespace.com/universal/styles-compressed/dialog-86aacd645d83874c-min.en-US.css","js":"//assets.squarespace.com/universal/scripts-compressed/dialog-7735654fd1551dd5-min.en-US.js"},"squarespace-events-collection":{"css":"//assets.squarespace.com/universal/styles-compressed/events-collection-c3fef2a497c8e56b-min.en-US.css","js":"//assets.squarespace.com/universal/scripts-compressed/events-collection-42f72cda3044d345-min.en-US.js"},"squarespace-form-rendering-utils":{"js":"//assets.squarespace.com/universal/scripts-compressed/form-rendering-utils-1c9bf49d95349e29-min.en-US.js"},"squarespace-forms":{"css":"//assets.squarespace.com/universal/styles-compressed/forms-0afd3c6ac30bbab1-min.en-US.css","js":"//assets.squarespace.com/universal/scripts-compressed/forms-bf2be08965a0fa19-min.en-US.js"},"squarespace-gallery-collection-list":{"css":"//assets.squarespace.com/universal/styles-compressed/gallery-collection-list-b4046463b72f34e2-min.en-US.css","js":"//assets.squarespace.com/universal/scripts-compressed/gallery-collection-list-7b9e3df420b8fb7f-min.en-US.js"},"squarespace-image-zoom":{"css":"//assets.squarespace.com/universal/styles-compressed/image-zoom-b4046463b72f34e2-min.en-US.css","js":"//assets.squarespace.com/universal/scripts-compressed/image-zoom-8fb2d4ed417f5ff2-min.en-US.js"},"squarespace-pinterest":{"css":"//assets.squarespace.com/universal/styles-compressed/pinterest-b4046463b72f34e2-min.en-US.css","js":"//assets.squarespace.com/universal/scripts-compressed/pinterest-03f111daaffa1a53-min.en-US.js"},"squarespace-popup-overlay":{"css":"//assets.squarespace.com/universal/styles-compressed/popup-overlay-b742b752f5880972-min.en-US.css","js":"//assets.squarespace.com/universal/scripts-compressed/popup-overlay-9135c3716a7435b1-min.en-US.js"},"squarespace-product-quick-view":{"css":"//assets.squarespace.com/universal/styles-compressed/product-quick-view-0afd3c6ac30bbab1-min.en-US.css","js":"//assets.squarespace.com/universal/scripts-compressed/product-quick-view-a1b7644de55dc7c2-min.en-US.js"},"squarespace-products-collection-item-v2":{"css":"//assets.squarespace.com/universal/styles-compressed/products-collection-item-v2-b4046463b72f34e2-min.en-US.css","js":"//assets.squarespace.com/universal/scripts-compressed/products-collection-item-v2-99be948a1d39ff28-min.en-US.js"},"squarespace-products-collection-list-v2":{"css":"//assets.squarespace.com/universal/styles-compressed/products-collection-list-v2-b4046463b72f34e2-min.en-US.css","js":"//assets.squarespace.com/universal/scripts-compressed/products-collection-list-v2-776747e4add9de69-min.en-US.js"},"squarespace-search-page":{"css":"//assets.squarespace.com/universal/styles-compressed/search-page-90a67fc09b9b32c6-min.en-US.css","js":"//assets.squarespace.com/universal/scripts-compressed/search-page-305401ddcbfa5f68-min.en-US.js"},"squarespace-search-preview":{"js":"//assets.squarespace.com/universal/scripts-compressed/search-preview-d64b2fb30d3da89f-min.en-US.js"},"squarespace-simple-liking":{"css":"//assets.squarespace.com/universal/styles-compressed/simple-liking-701bf8bbc05ec6aa-min.en-US.css","js":"//assets.squarespace.com/universal/scripts-compressed/simple-liking-69bfa10d1d97bade-min.en-US.js"},"squarespace-social-buttons":{"css":"//assets.squarespace.com/universal/styles-compressed/social-buttons-95032e5fa98e47a5-min.en-US.css","js":"//assets.squarespace.com/universal/scripts-compressed/social-buttons-477c45eeedaa78b2-min.en-US.js"},"squarespace-tourdates":{"css":"//assets.squarespace.com/universal/styles-compressed/tourdates-b4046463b72f34e2-min.en-US.css","js":"//assets.squarespace.com/universal/scripts-compressed/tourdates-2591addc7c341d92-min.en-US.js"},"squarespace-website-overlays-manager":{"css":"//assets.squarespace.com/universal/styles-compressed/website-overlays-manager-07ea5a4e004e6710-min.en-US.css","js":"//assets.squarespace.com/universal/scripts-compressed/website-overlays-manager-a09a45eede4cfe05-min.en-US.js"}},"pageType":50,"website":{"id":"5894c269e4fcb5e65a1ed623","captchaSettings":{"enabledForDonations":false},"cloneable":false,"contentModifiedOn":1782316184084,"developerMode":true,"formattingLocale":"en-US","fullSiteTitle":"Zero Day Initiative \u2014 The June 2026 Apple Security Update Review","identifier":"brian-gorenc","imageMetadataProcessingEnabled":false,"isHstsEnabled":true,"language":"en-US","location":{},"primaryDomain":"www.thezdi.com","screenshotId":"a0a901f81f08cc6c7c9e5108d43c513fa4847e74de2b39c335909e3f8dd88d34","shareButtonOptions":{"1":true,"2":true,"6":true,"3":true,"4":true},"showOwnerLogin":false,"siteDescription":"","siteStatus":{},"siteTitle":"Zero Day Initiative","sslSetting":3,"timeZone":"America/Chicago","translationLocale":"en-US","typekitId":"","websiteType":1,"hasBeenCloneable":false,"statsMigrated":false,"authenticUrl":"https://www.thezdi.com","baseUrl":"https://www.thezdi.com","internalUrl":"https://brian-gorenc.squarespace.com","machineTimeZoneOffset":-18000000,"socialAccounts":[{"serviceId":11,"userId":"UChbH7B5YhXANmlMYJRHpw0g","screenname":"TippingPoint Zero Day Initiative","addedOn":1492722141068,"profileUrl":"https://www.youtube.com/channel/UChbH7B5YhXANmlMYJRHpw0g","iconUrl":"https://yt3.ggpht.com/-5tyoeQlg_Jk/AAAAAAAAAAI/AAAAAAAAAAA/lrjg7w8bQgA/s88-c-k-no-mo-rj-c0xffffff/photo.jpg","iconEnabled":true,"serviceName":"youtube"}],"timeZoneAbbr":"CDT","timeZoneOffset":-18000000},"websiteSettings":{"id":"5894c269e4fcb5e65a1ed625","websiteId":"5894c269e4fcb5e65a1ed623","subjects":[],"country":"US","state":"TX","simpleLikingEnabled":true,"mobileInfoBarSettings":{"isContactEmailEnabled":false,"isContactPhoneNumberEnabled":false,"isLocationEnabled":false,"isBusinessHoursEnabled":false},"announcementBarSettings":{},"commentLikesAllowed":true,"commentAnonAllowed":true,"commentThreaded":true,"commentApprovalRequired":false,"commentAvatarsOn":true,"commentSortType":2,"commentFlagThreshold":0,"commentFlagsAllowed":true,"commentEnableByDefault":false,"commentDisableAfterDaysDefault":0,"disqusShortname":"","commentsEnabled":true,"contactPhoneNumber":"","storeSettings":{"returnPolicy":null,"termsOfService":null,"privacyPolicy":null,"expressCheckout":false,"continueShoppingLinkUrl":"/","useLightCart":false,"showNoteField":false,"shippingCountryDefaultValue":"US","billToShippingDefaultValue":false,"showShippingPhoneNumber":true,"isShippingPhoneRequired":false,"showBillingPhoneNumber":true,"isBillingPhoneRequired":false,"currenciesSupported":["CHF","HKD","MXN","EUR","DKK","USD","CAD","MYR","NOK","THB","AUD","SGD","ILS","PLN","GBP","CZK","SEK","NZD","PHP","RUB"],"defaultCurrency":"USD","selectedCurrency":"USD","measurementStandard":1,"showCustomCheckoutForm":false,"checkoutPageMarketingOptInEnabled":false,"enableMailingListOptInByDefault":false,"sameAsRetailLocation":false,"merchandisingSettings":{"scarcityEnabledOnProductItems":false,"scarcityEnabledOnProductBlocks":false,"scarcityMessageType":"DEFAULT_SCARCITY_MESSAGE","scarcityThreshold":10,"multipleQuantityAllowedForServices":true,"restockNotificationsEnabled":false,"restockNotificationsSuccessText":"","restockNotificationsMailingListSignUpEnabled":false,"relatedProductsEnabled":false,"relatedProductsOrdering":"random","soldOutVariantsDropdownDisabled":false,"productComposerOptedIn":false,"productComposerABTestOptedOut":false,"productReviewsEnabled":false,"displayImportedProductReviewsEnabled":false,"hasOptedToCollectNativeReviews":false},"minimumOrderSubtotalEnabled":false,"minimumOrderSubtotal":{"currency":"USD","value":"0.00"},"addToCartConfirmationType":2,"isLive":false,"multipleQuantityAllowedForServices":true},"useEscapeKeyToLogin":true,"ssBadgeType":1,"ssBadgePosition":4,"ssBadgeVisibility":1,"ssBadgeDevices":1,"pinterestOverlayOptions":{"mode":"disabled"},"userAccountsSettings":{"loginAllowed":false,"signupAllowed":false}},"cookieSettings":{"isCookieBannerEnabled":false,"isRestrictiveCookiePolicyEnabled":false,"cookieBannerText":"","cookieBannerTheme":"","cookieBannerVariant":"","cookieBannerPosition":"","cookieBannerCtaVariant":"","cookieBannerCtaText":"","cookieBannerAcceptType":"OPT_IN","cookieBannerOptOutCtaText":"","cookieBannerHasOptOut":false,"cookieBannerHasManageCookies":true,"cookieBannerManageCookiesLabel":"","cookieBannerSavedPreferencesText":"","cookieBannerSavedPreferencesLayout":"PILL"},"websiteCloneable":false,"collection":{"title":"Blog","id":"58a5b38cb3db2bd67b608658","fullUrl":"/blog","type":1,"permissionType":1},"item":{"title":"The June 2026 Apple Security Update Review","id":"6a4436173553052dfb4b6904","fullUrl":"/blog/2026/6/30/the-june-2026-apple-security-update-review","publicCommentCount":0,"commentState":1,"recordType":1},"subscribed":false,"appDomain":"squarespace.com","templateTweakable":true,"tweakJSON":{"aspect-ratio":"Auto","bg-image":"{background-image:url(\"https://static1.squarespace.com/static/56cb6c0001dbae33a8227531/t/56ccdc64cf80a1db151ed7dd/1456266340825/cocktail-bw.jpg\");background-position:center center;background-size:cover;background-attachment:scroll;background-repeat:no-repeat}","gallery-arrow-style":"No Background","gallery-aspect-ratio":"3:2 Standard","gallery-auto-crop":"true","gallery-autoplay":"false","gallery-design":"Slideshow","gallery-info-overlay":"Show on Hover","gallery-loop":"false","gallery-navigation":"Bullets","gallery-show-arrows":"true","gallery-transitions":"Fade","galleryArrowBackground":"rgba(34,34,34,1)","galleryArrowColor":"rgba(255,255,255,1)","galleryAutoplaySpeed":"3","galleryCircleColor":"rgba(255,255,255,1)","galleryInfoBackground":"rgba(0, 0, 0, .7)","galleryThumbnailSize":"100px","gridSize":"350px","gridSpacing":"20px","product-gallery-auto-crop":"true","product-image-auto-crop":"true","tweak-v1-related-products-title-spacing":"50px"},"templateId":"67aa61355065f439ea56543f","templateVersion":"7","pageFeatures":[1,2,4],"gmRenderKey":"QUl6YVN5Q0JUUk9xNkx1dkZfSUUxcjQ2LVQ0QWVUU1YtMGQ3bXk4","templateScriptsRootUrl":"https://static1.squarespace.com/static/ta/5894c269e4fcb5e65a1ed623/53/scripts/","impersonatedSession":false,"tzData":{"zones":[[-360,"US","C%sT",null]],"rules":{"US":[[1967,2006,null,"Oct","lastSun","2:00","0","S"],[1987,2006,null,"Apr","Sun>=1","2:00","1:00","D"],[2007,"max",null,"Mar","Sun>=8","2:00","1:00","D"],[2007,"max",null,"Nov","Sun>=1","2:00","0","S"]]}},"showAnnouncementBar":false,"recaptchaEnterpriseContext":{"recaptchaEnterpriseSiteKey":"6LdDFQwjAAAAAPigEvvPgEVbb7QBm-TkVJdDTlAv"},"i18nContext":{"timeZoneData":{"id":"America/Chicago","name":"Central Time"}},"env":"PRODUCTION","visitorFormContext":{"formFieldFormats":{"countries":[{"name":"Afghanistan","code":"AF","phoneCode":"+93"},{"name":"\u00C5land Islands","code":"AX","phoneCode":"+358"},{"name":"Albania","code":"AL","phoneCode":"+355"},{"name":"Algeria","code":"DZ","phoneCode":"+213"},{"name":"American Samoa","code":"AS","phoneCode":"+1"},{"name":"Andorra","code":"AD","phoneCode":"+376"},{"name":"Angola","code":"AO","phoneCode":"+244"},{"name":"Anguilla","code":"AI","phoneCode":"+1"},{"name":"Antigua & Barbuda","code":"AG","phoneCode":"+1"},{"name":"Argentina","code":"AR","phoneCode":"+54"},{"name":"Armenia","code":"AM","phoneCode":"+374"},{"name":"Aruba","code":"AW","phoneCode":"+297"},{"name":"Ascension Island","code":"AC","phoneCode":"+247"},{"name":"Australia","code":"AU","phoneCode":"+61"},{"name":"Austria","code":"AT","phoneCode":"+43"},{"name":"Azerbaijan","code":"AZ","phoneCode":"+994"},{"name":"Bahamas","code":"BS","phoneCode":"+1"},{"name":"Bahrain","code":"BH","phoneCode":"+973"},{"name":"Bangladesh","code":"BD","phoneCode":"+880"},{"name":"Barbados","code":"BB","phoneCode":"+1"},{"name":"Belarus","code":"BY","phoneCode":"+375"},{"name":"Belgium","code":"BE","phoneCode":"+32"},{"name":"Belize","code":"BZ","phoneCode":"+501"},{"name":"Benin","code":"BJ","phoneCode":"+229"},{"name":"Bermuda","code":"BM","phoneCode":"+1"},{"name":"Bhutan","code":"BT","phoneCode":"+975"},{"name":"Bolivia","code":"BO","phoneCode":"+591"},{"name":"Bosnia & Herzegovina","code":"BA","phoneCode":"+387"},{"name":"Botswana","code":"BW","phoneCode":"+267"},{"name":"Brazil","code":"BR","phoneCode":"+55"},{"name":"British Indian Ocean Territory","code":"IO","phoneCode":"+246"},{"name":"British Virgin Islands","code":"VG","phoneCode":"+1"},{"name":"Brunei","code":"BN","phoneCode":"+673"},{"name":"Bulgaria","code":"BG","phoneCode":"+359"},{"name":"Burkina Faso","code":"BF","phoneCode":"+226"},{"name":"Burundi","code":"BI","phoneCode":"+257"},{"name":"Cambodia","code":"KH","phoneCode":"+855"},{"name":"Cameroon","code":"CM","phoneCode":"+237"},{"name":"Canada","code":"CA","phoneCode":"+1"},{"name":"Cape Verde","code":"CV","phoneCode":"+238"},{"name":"Caribbean Netherlands","code":"BQ","phoneCode":"+599"},{"name":"Cayman Islands","code":"KY","phoneCode":"+1"},{"name":"Central African Republic","code":"CF","phoneCode":"+236"},{"name":"Chad","code":"TD","phoneCode":"+235"},{"name":"Chile","code":"CL","phoneCode":"+56"},{"name":"China","code":"CN","phoneCode":"+86"},{"name":"Christmas Island","code":"CX","phoneCode":"+61"},{"name":"Cocos (Keeling) Islands","code":"CC","phoneCode":"+61"},{"name":"Colombia","code":"CO","phoneCode":"+57"},{"name":"Comoros","code":"KM","phoneCode":"+269"},{"name":"Congo - Brazzaville","code":"CG","phoneCode":"+242"},{"name":"Congo - Kinshasa","code":"CD","phoneCode":"+243"},{"name":"Cook Islands","code":"CK","phoneCode":"+682"},{"name":"Costa Rica","code":"CR","phoneCode":"+506"},{"name":"C\u00F4te d\u2019Ivoire","code":"CI","phoneCode":"+225"},{"name":"Croatia","code":"HR","phoneCode":"+385"},{"name":"Cuba","code":"CU","phoneCode":"+53"},{"name":"Cura\u00E7ao","code":"CW","phoneCode":"+599"},{"name":"Cyprus","code":"CY","phoneCode":"+357"},{"name":"Czechia","code":"CZ","phoneCode":"+420"},{"name":"Denmark","code":"DK","phoneCode":"+45"},{"name":"Djibouti","code":"DJ","phoneCode":"+253"},{"name":"Dominica","code":"DM","phoneCode":"+1"},{"name":"Dominican Republic","code":"DO","phoneCode":"+1"},{"name":"Ecuador","code":"EC","phoneCode":"+593"},{"name":"Egypt","code":"EG","phoneCode":"+20"},{"name":"El Salvador","code":"SV","phoneCode":"+503"},{"name":"Equatorial Guinea","code":"GQ","phoneCode":"+240"},{"name":"Eritrea","code":"ER","phoneCode":"+291"},{"name":"Estonia","code":"EE","phoneCode":"+372"},{"name":"Eswatini","code":"SZ","phoneCode":"+268"},{"name":"Ethiopia","code":"ET","phoneCode":"+251"},{"name":"Falkland Islands","code":"FK","phoneCode":"+500"},{"name":"Faroe Islands","code":"FO","phoneCode":"+298"},{"name":"Fiji","code":"FJ","phoneCode":"+679"},{"name":"Finland","code":"FI","phoneCode":"+358"},{"name":"France","code":"FR","phoneCode":"+33"},{"name":"French Guiana","code":"GF","phoneCode":"+594"},{"name":"French Polynesia","code":"PF","phoneCode":"+689"},{"name":"Gabon","code":"GA","phoneCode":"+241"},{"name":"Gambia","code":"GM","phoneCode":"+220"},{"name":"Georgia","code":"GE","phoneCode":"+995"},{"name":"Germany","code":"DE","phoneCode":"+49"},{"name":"Ghana","code":"GH","phoneCode":"+233"},{"name":"Gibraltar","code":"GI","phoneCode":"+350"},{"name":"Greece","code":"GR","phoneCode":"+30"},{"name":"Greenland","code":"GL","phoneCode":"+299"},{"name":"Grenada","code":"GD","phoneCode":"+1"},{"name":"Guadeloupe","code":"GP","phoneCode":"+590"},{"name":"Guam","code":"GU","phoneCode":"+1"},{"name":"Guatemala","code":"GT","phoneCode":"+502"},{"name":"Guernsey","code":"GG","phoneCode":"+44"},{"name":"Guinea","code":"GN","phoneCode":"+224"},{"name":"Guinea-Bissau","code":"GW","phoneCode":"+245"},{"name":"Guyana","code":"GY","phoneCode":"+592"},{"name":"Haiti","code":"HT","phoneCode":"+509"},{"name":"Honduras","code":"HN","phoneCode":"+504"},{"name":"Hong Kong SAR China","code":"HK","phoneCode":"+852"},{"name":"Hungary","code":"HU","phoneCode":"+36"},{"name":"Iceland","code":"IS","phoneCode":"+354"},{"name":"India","code":"IN","phoneCode":"+91"},{"name":"Indonesia","code":"ID","phoneCode":"+62"},{"name":"Iran","code":"IR","phoneCode":"+98"},{"name":"Iraq","code":"IQ","phoneCode":"+964"},{"name":"Ireland","code":"IE","phoneCode":"+353"},{"name":"Isle of Man","code":"IM","phoneCode":"+44"},{"name":"Israel","code":"IL","phoneCode":"+972"},{"name":"Italy","code":"IT","phoneCode":"+39"},{"name":"Jamaica","code":"JM","phoneCode":"+1"},{"name":"Japan","code":"JP","phoneCode":"+81"},{"name":"Jersey","code":"JE","phoneCode":"+44"},{"name":"Jordan","code":"JO","phoneCode":"+962"},{"name":"Kazakhstan","code":"KZ","phoneCode":"+7"},{"name":"Kenya","code":"KE","phoneCode":"+254"},{"name":"Kiribati","code":"KI","phoneCode":"+686"},{"name":"Kosovo","code":"XK","phoneCode":"+383"},{"name":"Kuwait","code":"KW","phoneCode":"+965"},{"name":"Kyrgyzstan","code":"KG","phoneCode":"+996"},{"name":"Laos","code":"LA","phoneCode":"+856"},{"name":"Latvia","code":"LV","phoneCode":"+371"},{"name":"Lebanon","code":"LB","phoneCode":"+961"},{"name":"Lesotho","code":"LS","phoneCode":"+266"},{"name":"Liberia","code":"LR","phoneCode":"+231"},{"name":"Libya","code":"LY","phoneCode":"+218"},{"name":"Liechtenstein","code":"LI","phoneCode":"+423"},{"name":"Lithuania","code":"LT","phoneCode":"+370"},{"name":"Luxembourg","code":"LU","phoneCode":"+352"},{"name":"Macao SAR China","code":"MO","phoneCode":"+853"},{"name":"Madagascar","code":"MG","phoneCode":"+261"},{"name":"Malawi","code":"MW","phoneCode":"+265"},{"name":"Malaysia","code":"MY","phoneCode":"+60"},{"name":"Maldives","code":"MV","phoneCode":"+960"},{"name":"Mali","code":"ML","phoneCode":"+223"},{"name":"Malta","code":"MT","phoneCode":"+356"},{"name":"Marshall Islands","code":"MH","phoneCode":"+692"},{"name":"Martinique","code":"MQ","phoneCode":"+596"},{"name":"Mauritania","code":"MR","phoneCode":"+222"},{"name":"Mauritius","code":"MU","phoneCode":"+230"},{"name":"Mayotte","code":"YT","phoneCode":"+262"},{"name":"Mexico","code":"MX","phoneCode":"+52"},{"name":"Micronesia","code":"FM","phoneCode":"+691"},{"name":"Moldova","code":"MD","phoneCode":"+373"},{"name":"Monaco","code":"MC","phoneCode":"+377"},{"name":"Mongolia","code":"MN","phoneCode":"+976"},{"name":"Montenegro","code":"ME","phoneCode":"+382"},{"name":"Montserrat","code":"MS","phoneCode":"+1"},{"name":"Morocco","code":"MA","phoneCode":"+212"},{"name":"Mozambique","code":"MZ","phoneCode":"+258"},{"name":"Myanmar (Burma)","code":"MM","phoneCode":"+95"},{"name":"Namibia","code":"NA","phoneCode":"+264"},{"name":"Nauru","code":"NR","phoneCode":"+674"},{"name":"Nepal","code":"NP","phoneCode":"+977"},{"name":"Netherlands","code":"NL","phoneCode":"+31"},{"name":"New Caledonia","code":"NC","phoneCode":"+687"},{"name":"New Zealand","code":"NZ","phoneCode":"+64"},{"name":"Nicaragua","code":"NI","phoneCode":"+505"},{"name":"Niger","code":"NE","phoneCode":"+227"},{"name":"Nigeria","code":"NG","phoneCode":"+234"},{"name":"Niue","code":"NU","phoneCode":"+683"},{"name":"Norfolk Island","code":"NF","phoneCode":"+672"},{"name":"Northern Mariana Islands","code":"MP","phoneCode":"+1"},{"name":"North Korea","code":"KP","phoneCode":"+850"},{"name":"North Macedonia","code":"MK","phoneCode":"+389"},{"name":"Norway","code":"NO","phoneCode":"+47"},{"name":"Oman","code":"OM","phoneCode":"+968"},{"name":"Pakistan","code":"PK","phoneCode":"+92"},{"name":"Palau","code":"PW","phoneCode":"+680"},{"name":"Palestinian Territories","code":"PS","phoneCode":"+970"},{"name":"Panama","code":"PA","phoneCode":"+507"},{"name":"Papua New Guinea","code":"PG","phoneCode":"+675"},{"name":"Paraguay","code":"PY","phoneCode":"+595"},{"name":"Peru","code":"PE","phoneCode":"+51"},{"name":"Philippines","code":"PH","phoneCode":"+63"},{"name":"Poland","code":"PL","phoneCode":"+48"},{"name":"Portugal","code":"PT","phoneCode":"+351"},{"name":"Puerto Rico","code":"PR","phoneCode":"+1"},{"name":"Qatar","code":"QA","phoneCode":"+974"},{"name":"R\u00E9union","code":"RE","phoneCode":"+262"},{"name":"Romania","code":"RO","phoneCode":"+40"},{"name":"Russia","code":"RU","phoneCode":"+7"},{"name":"Rwanda","code":"RW","phoneCode":"+250"},{"name":"Samoa","code":"WS","phoneCode":"+685"},{"name":"San Marino","code":"SM","phoneCode":"+378"},{"name":"S\u00E3o Tom\u00E9 & Pr\u00EDncipe","code":"ST","phoneCode":"+239"},{"name":"Saudi Arabia","code":"SA","phoneCode":"+966"},{"name":"Senegal","code":"SN","phoneCode":"+221"},{"name":"Serbia","code":"RS","phoneCode":"+381"},{"name":"Seychelles","code":"SC","phoneCode":"+248"},{"name":"Sierra Leone","code":"SL","phoneCode":"+232"},{"name":"Singapore","code":"SG","phoneCode":"+65"},{"name":"Sint Maarten","code":"SX","phoneCode":"+1"},{"name":"Slovakia","code":"SK","phoneCode":"+421"},{"name":"Slovenia","code":"SI","phoneCode":"+386"},{"name":"Solomon Islands","code":"SB","phoneCode":"+677"},{"name":"Somalia","code":"SO","phoneCode":"+252"},{"name":"South Africa","code":"ZA","phoneCode":"+27"},{"name":"South Korea","code":"KR","phoneCode":"+82"},{"name":"South Sudan","code":"SS","phoneCode":"+211"},{"name":"Spain","code":"ES","phoneCode":"+34"},{"name":"Sri Lanka","code":"LK","phoneCode":"+94"},{"name":"St. Barth\u00E9lemy","code":"BL","phoneCode":"+590"},{"name":"St. Helena","code":"SH","phoneCode":"+290"},{"name":"St. Kitts & Nevis","code":"KN","phoneCode":"+1"},{"name":"St. Lucia","code":"LC","phoneCode":"+1"},{"name":"St. Martin","code":"MF","phoneCode":"+590"},{"name":"St. Pierre & Miquelon","code":"PM","phoneCode":"+508"},{"name":"St. Vincent & Grenadines","code":"VC","phoneCode":"+1"},{"name":"Sudan","code":"SD","phoneCode":"+249"},{"name":"Suriname","code":"SR","phoneCode":"+597"},{"name":"Svalbard & Jan Mayen","code":"SJ","phoneCode":"+47"},{"name":"Sweden","code":"SE","phoneCode":"+46"},{"name":"Switzerland","code":"CH","phoneCode":"+41"},{"name":"Syria","code":"SY","phoneCode":"+963"},{"name":"Taiwan","code":"TW","phoneCode":"+886"},{"name":"Tajikistan","code":"TJ","phoneCode":"+992"},{"name":"Tanzania","code":"TZ","phoneCode":"+255"},{"name":"Thailand","code":"TH","phoneCode":"+66"},{"name":"Timor-Leste","code":"TL","phoneCode":"+670"},{"name":"Togo","code":"TG","phoneCode":"+228"},{"name":"Tokelau","code":"TK","phoneCode":"+690"},{"name":"Tonga","code":"TO","phoneCode":"+676"},{"name":"Trinidad & Tobago","code":"TT","phoneCode":"+1"},{"name":"Tristan da Cunha","code":"TA","phoneCode":"+290"},{"name":"Tunisia","code":"TN","phoneCode":"+216"},{"name":"T\u00FCrkiye","code":"TR","phoneCode":"+90"},{"name":"Turkmenistan","code":"TM","phoneCode":"+993"},{"name":"Turks & Caicos Islands","code":"TC","phoneCode":"+1"},{"name":"Tuvalu","code":"TV","phoneCode":"+688"},{"name":"U.S. Virgin Islands","code":"VI","phoneCode":"+1"},{"name":"Uganda","code":"UG","phoneCode":"+256"},{"name":"Ukraine","code":"UA","phoneCode":"+380"},{"name":"United Arab Emirates","code":"AE","phoneCode":"+971"},{"name":"United Kingdom","code":"GB","phoneCode":"+44"},{"name":"United States","code":"US","phoneCode":"+1"},{"name":"Uruguay","code":"UY","phoneCode":"+598"},{"name":"Uzbekistan","code":"UZ","phoneCode":"+998"},{"name":"Vanuatu","code":"VU","phoneCode":"+678"},{"name":"Vatican City","code":"VA","phoneCode":"+39"},{"name":"Venezuela","code":"VE","phoneCode":"+58"},{"name":"Vietnam","code":"VN","phoneCode":"+84"},{"name":"Wallis & Futuna","code":"WF","phoneCode":"+681"},{"name":"Western Sahara","code":"EH","phoneCode":"+212"},{"name":"Yemen","code":"YE","phoneCode":"+967"},{"name":"Zambia","code":"ZM","phoneCode":"+260"},{"name":"Zimbabwe","code":"ZW","phoneCode":"+263"}],"initialPhoneFormat":{"id":0,"type":"PHONE_NUMBER","country":"US","labelLocale":"en-US","fields":[{"type":"SEPARATOR","label":"(","identifier":"LeftParen","length":0,"required":false,"metadata":{}},{"type":"FIELD","label":"1","identifier":"1","length":3,"required":false,"metadata":{}},{"type":"SEPARATOR","label":")","identifier":"RightParen","length":0,"required":false,"metadata":{}},{"type":"SEPARATOR","label":" ","identifier":"Space","length":0,"required":false,"metadata":{}},{"type":"FIELD","label":"2","identifier":"2","length":3,"required":false,"metadata":{}},{"type":"SEPARATOR","label":"-","identifier":"Dash","length":0,"required":false,"metadata":{}},{"type":"FIELD","label":"3","identifier":"3","length":14,"required":false,"metadata":{}}]},"initialNameOrder":"GIVEN_FIRST","initialAddressFormat":{"id":0,"type":"ADDRESS","country":"US","labelLocale":"en","fields":[{"type":"FIELD","label":"Address Line 1","identifier":"Line1","length":0,"required":true,"metadata":{"autocomplete":"address-line1"}},{"type":"SEPARATOR","label":"\n","identifier":"Newline","length":0,"required":false,"metadata":{}},{"type":"FIELD","label":"Address Line 2","identifier":"Line2","length":0,"required":false,"metadata":{"autocomplete":"address-line2"}},{"type":"SEPARATOR","label":"\n","identifier":"Newline","length":0,"required":false,"metadata":{}},{"type":"FIELD","label":"City","identifier":"City","length":0,"required":true,"metadata":{"autocomplete":"address-level2"}},{"type":"SEPARATOR","label":",","identifier":"Comma","length":0,"required":false,"metadata":{}},{"type":"SEPARATOR","label":" ","identifier":"Space","length":0,"required":false,"metadata":{}},{"type":"FIELD","label":"State","identifier":"State","length":0,"required":true,"metadata":{"autocomplete":"address-level1"}},{"type":"SEPARATOR","label":" ","identifier":"Space","length":0,"required":false,"metadata":{}},{"type":"FIELD","label":"ZIP Code","identifier":"Zip","length":0,"required":true,"metadata":{"autocomplete":"postal-code"}}]}},"localizedStrings":{"validation":{"noValidSelection":"A valid selection must be made.","invalidUrl":"Must be a valid URL.","stringTooLong":"Value should have a length no longer than {0}.","containsInvalidKey":"{0} contains an invalid key.","invalidTwitterUsername":"Must be a valid Twitter username.","valueOutsideRange":"Value must be in the range {0} to {1}.","invalidPassword":"Passwords should not contain whitespace.","missingRequiredSubfields":"{0} is missing required subfields: {1}","invalidCurrency":"Currency value should be formatted like 1234 or 123.99.","invalidMapSize":"Value should contain exactly {0} elements.","subfieldsRequired":"All fields in {0} are required.","formSubmissionFailed":"Form submission failed. Review the following information: {0}.","invalidCountryCode":"Country code should have an optional plus and up to 4 digits.","invalidDate":"This is not a real date.","required":"{0} is required.","invalidStringLength":"Value should be {0} characters long.","invalidEmail":"Email addresses should follow the format user@domain.com.","invalidListLength":"Value should be {0} elements long.","allEmpty":"Please fill out at least one form field.","missingRequiredQuestion":"Missing a required question.","invalidQuestion":"Contained an invalid question.","captchaFailure":"Captcha validation failed. Please try again.","stringTooShort":"Value should have a length of at least {0}.","invalid":"{0} is not valid.","formErrors":"Form Errors","containsInvalidValue":"{0} contains an invalid value.","invalidUnsignedNumber":"Numbers must contain only digits and no other characters.","invalidName":"Valid names contain only letters, numbers, spaces, ', or - characters."},"submit":"Submit","status":{"title":"{@} Block","learnMore":"Learn more"},"name":{"firstName":"First Name","lastName":"Last Name"},"lightbox":{"openForm":"Open Form"},"likert":{"agree":"Agree","stronglyDisagree":"Strongly Disagree","disagree":"Disagree","stronglyAgree":"Strongly Agree","neutral":"Neutral"},"time":{"am":"AM","second":"Second","pm":"PM","minute":"Minute","amPm":"AM/PM","hour":"Hour"},"notFound":"Form not found.","date":{"yyyy":"YYYY","year":"Year","mm":"MM","day":"Day","month":"Month","dd":"DD"},"phone":{"country":"Country","number":"Number","prefix":"Prefix","areaCode":"Area Code","line":"Line"},"submitError":"Unable to submit form. Please try again later.","address":{"stateProvince":"State/Province","country":"Country","zipPostalCode":"Zip/Postal Code","address2":"Address 2","address1":"Address 1","city":"City"},"email":{"signUp":"Sign up for news and updates"},"required":"(required)","invalidData":"Invalid form data."}}};</script><script type="text/javascript">SQUARESPACE_ROLLUPS = {};</script>
+<script>(function(rollups, name) { if (!rollups[name]) { rollups[name] = {}; } rollups[name].js = ["//assets.squarespace.com/universal/scripts-compressed/visitor-site-error-reporter-976d22448e700b77-min.en-US.js"]; })(SQUARESPACE_ROLLUPS, 'squarespace-visitor_site_error_reporter');</script>
+<script crossorigin="anonymous" src="//assets.squarespace.com/universal/scripts-compressed/visitor-site-error-reporter-976d22448e700b77-min.en-US.js" ></script><script>(function(rollups, name) { if (!rollups[name]) { rollups[name] = {}; } rollups[name].js = ["//assets.squarespace.com/universal/scripts-compressed/extract-css-runtime-83be3114c62b36ba-min.en-US.js"]; })(SQUARESPACE_ROLLUPS, 'squarespace-extract_css_runtime');</script>
+<script crossorigin="anonymous" src="//assets.squarespace.com/universal/scripts-compressed/extract-css-runtime-83be3114c62b36ba-min.en-US.js" ></script><script>(function(rollups, name) { if (!rollups[name]) { rollups[name] = {}; } rollups[name].js = ["//assets.squarespace.com/universal/scripts-compressed/extract-css-moment-js-vendor-a5cfdec1ae227f33-min.en-US.js"]; })(SQUARESPACE_ROLLUPS, 'squarespace-extract_css_moment_js_vendor');</script>
+<script crossorigin="anonymous" src="//assets.squarespace.com/universal/scripts-compressed/extract-css-moment-js-vendor-a5cfdec1ae227f33-min.en-US.js" ></script><script>(function(rollups, name) { if (!rollups[name]) { rollups[name] = {}; } rollups[name].js = ["//assets.squarespace.com/universal/scripts-compressed/cldr-resource-pack-22bdf933fb74be0d-min.en-US.js"]; })(SQUARESPACE_ROLLUPS, 'squarespace-cldr_resource_pack');</script>
+<script crossorigin="anonymous" src="//assets.squarespace.com/universal/scripts-compressed/cldr-resource-pack-22bdf933fb74be0d-min.en-US.js" ></script><script>(function(rollups, name) { if (!rollups[name]) { rollups[name] = {}; } rollups[name].js = ["//assets.squarespace.com/universal/scripts-compressed/common-vendors-stable-784b947826b4c445-min.en-US.js"]; })(SQUARESPACE_ROLLUPS, 'squarespace-common_vendors_stable');</script>
+<script crossorigin="anonymous" src="//assets.squarespace.com/universal/scripts-compressed/common-vendors-stable-784b947826b4c445-min.en-US.js" ></script><script>(function(rollups, name) { if (!rollups[name]) { rollups[name] = {}; } rollups[name].js = ["//assets.squarespace.com/universal/scripts-compressed/common-vendors-94acdaabac92f1bf-min.en-US.js"]; })(SQUARESPACE_ROLLUPS, 'squarespace-common_vendors');</script>
+<script crossorigin="anonymous" src="//assets.squarespace.com/universal/scripts-compressed/common-vendors-94acdaabac92f1bf-min.en-US.js" ></script><script>(function(rollups, name) { if (!rollups[name]) { rollups[name] = {}; } rollups[name].js = ["//assets.squarespace.com/universal/scripts-compressed/common-75ed080b594d6d40-min.en-US.js"]; })(SQUARESPACE_ROLLUPS, 'squarespace-common');</script>
+<script crossorigin="anonymous" src="//assets.squarespace.com/universal/scripts-compressed/common-75ed080b594d6d40-min.en-US.js" ></script><script>(function(rollups, name) { if (!rollups[name]) { rollups[name] = {}; } rollups[name].js = ["//assets.squarespace.com/universal/scripts-compressed/user-account-core-b8a639c331cc5d86-min.en-US.js"]; })(SQUARESPACE_ROLLUPS, 'squarespace-user_account_core');</script>
+<script crossorigin="anonymous" src="//assets.squarespace.com/universal/scripts-compressed/user-account-core-b8a639c331cc5d86-min.en-US.js" ></script><script>(function(rollups, name) { if (!rollups[name]) { rollups[name] = {}; } rollups[name].css = ["//assets.squarespace.com/universal/styles-compressed/user-account-core-433d5f055f1af432-min.en-US.css"]; })(SQUARESPACE_ROLLUPS, 'squarespace-user_account_core');</script>
+<link rel="stylesheet" type="text/css" href="//assets.squarespace.com/universal/styles-compressed/user-account-core-433d5f055f1af432-min.en-US.css"><script>(function(rollups, name) { if (!rollups[name]) { rollups[name] = {}; } rollups[name].js = ["//assets.squarespace.com/universal/scripts-compressed/performance-210fa8ab59d4f8e3-min.en-US.js"]; })(SQUARESPACE_ROLLUPS, 'squarespace-performance');</script>
+<script crossorigin="anonymous" src="//assets.squarespace.com/universal/scripts-compressed/performance-210fa8ab59d4f8e3-min.en-US.js" defer ></script><link rel="stylesheet" type="text/css" href="https://definitions.sqspcdn.com/website-component-definition/static-assets/website.components.code/d28a797c-3ae4-4700-806e-9ba44de81050_856/website.components.code.styles.css"/><script src="https://definitions.sqspcdn.com/website-component-definition/static-assets/website.components.code/d28a797c-3ae4-4700-806e-9ba44de81050_856/website.components.code.visitor.js"></script><script>Squarespace.load(window);</script>
+<link rel="alternate" type="application/rss+xml" title="RSS Feed" href="https://www.thezdi.com/blog?format=rss" />
+<script type="application/ld+json">{"url":"https://www.thezdi.com","name":"Zero Day Initiative","description":"","@context":"http://schema.org","@type":"WebSite"}</script><script type="application/ld+json">{"address":"","@context":"http://schema.org","@type":"LocalBusiness"}</script><script type="application/ld+json">{"name":"Zero Day Initiative \u2014 The June 2026 Apple Security Update Review","url":"https://www.thezdi.com/blog/2026/6/30/the-june-2026-apple-security-update-review","datePublished":"2026-07-01T10:03:53-0500","dateModified":"2026-07-29T17:18:10-0500","headline":"The June 2026 Apple Security Update Review","author":"Dustin Childs","publisher":{"name":"Zero Day Initiative","logo":{"@type":"ImageObject"},"@context":"http://schema.org","@type":"Organization"},"image":"http://static1.squarespace.com/static/5894c269e4fcb5e65a1ed623/58a5b38cb3db2bd67b608658/6a4436173553052dfb4b6904/1785363490599/Apple+Patch+Blog+Title+Card.png?format=1500w","@context":"http://schema.org","@type":"Article"}</script><link rel="stylesheet" type="text/css" href="https://static1.squarespace.com/static/sitecss/5894c269e4fcb5e65a1ed623/71/67aa61355065f439ea56543f/67aa61375065f439ea565441/53/site.css?nocustom=true"/><script>
+if (window.location.host == "www.thezdi.com") {window.location = "https://www.zerodayinitiative.com" + window.location.pathname}</script><script>Static.COOKIE_BANNER_CAPABLE = true;</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-93169700-1"></script><script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('set', 'developer_id.dZjQwMz', true);gtag('config', 'UA-93169700-1');</script><!-- End of Squarespace Headers -->
+</head>
+<body class="bg-black text-white">
+
+    <!-- GLOBAL FIXED BACKGROUND -->
+    <div id="global-fixed-bg" class="fixed inset-0 z-0 pointer-events-none opacity-0">
+        <div class="absolute inset-0 bg-cover bg-center" style="filter: brightness(0.5) saturate(.5);">
+			<picture class="w-full h-full object-cover">
+				<source srcset="https://www.zerodayinitiative.com/images/main-body-bg.webp" type="image/webp" media="(min-width: 1280px)">
+				<source srcset="https://www.zerodayinitiative.com/images/main-body-bg.jpg" type="image/jpeg" media="(min-width: 1280px)">
+				<source srcset="https://www.zerodayinitiative.com/images/main-body-bg-1300.webp" type="image/webp" media="(min-width: 768px)">
+				<source srcset="https://www.zerodayinitiative.com/images/main-body-bg-1300.jpg" type="image/jpeg" media="(min-width: 768px)">
+				<source srcset="https://www.zerodayinitiative.com/images/main-body-bg-800.webp" type="image/webp" media="(max-width: 767px)">
+				<source srcset="https://www.zerodayinitiative.com/images/main-body-bg-800.jpg" type="image/jpeg" media="(max-width: 767px)">
+				<img src="https://www.zerodayinitiative.com/images/main-body-bg-800.jpg" alt="Body Background" class="w-full h-full object-cover">
+			</picture>
+		</div>
+        <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black/80"></div>
+    </div>
+
+ <!-- 1. MAIN HEADER -->
+ <header id="main-header" class="xl:max-w-[2000px] xl:w-[90%] xl:mx-auto relative top-0  w-full z-40 px-4 md:px-6 xl:px-0 py-6 flex justify-between items-center text-white">
+  <div class="flex items-center gap-2 cursor-pointer">
+   <a href="/" class="logo-holder font-bold text-xl tracking-tighter block w-[90%] max-w-[400px]" aria-label="ZDI Home"><img src="https://www.zerodayinitiative.com/images/RGB_ZDI_TrendAI_Horizontal-Inverse.svg" class="w-[100%]" alt="TrendAI™ Zero Day Initiative™ Logo"></a>
+  </div>
+  <nav class="hidden xl:flex items-center gap-8" aria-label="Main Navigation">
+   <a href="/about/" class="text-sm font-medium hover: transition-colors uppercase tracking-widest border-b-2 border-transparent hover:border-zdi-blue">About</a>
+   <a href="/about/benefits/" class="text-sm font-medium hover: transition-colors uppercase tracking-widest border-b-2 border-transparent hover:border-zdi-blue">How It Works</a>
+   <a href="/about/faq/" class="text-sm font-medium hover: transition-colors uppercase tracking-widest border-b-2 border-transparent hover:border-zdi-blue">FAQ<span class="lowercase">s</span></a>
+   <a href="/blog/" class="text-sm font-medium hover: transition-colors uppercase tracking-widest border-b-2 border-zdi-blue hover:border-zdi-blue">Blog</a>
+   <a href="/advisories/published/" class="text-sm font-medium hover: transition-colors uppercase tracking-widest border-b-2 border-transparent hover:border-zdi-blue">Advisories</a>
+   <div class="xl:flex items-center gap-2">
+    <a href="/portal/register/" class="px-4 md:px-4 py-2 hover:bg-zdi-blue hover:text-white rounded-full transition-all text-zdi-blue duration-300 text-sm font-bold uppercase" aria-label="Sign Up">
+     Sign Up
+    </a>
+    <a href="/portal/login/" class="px-4 md:px-8 py-2 border-2 border-zdi-yellow rounded-full hover:bg-zdi-yellow hover:text-white transition-all text-zdi-yellow duration-300 text-sm font-bold uppercase" aria-label="Log In">
+     Log In
+    </a>
+   </div>
+  </nav>
+  <button class="xl:hidden text-white menu-trigger" aria-label="Open Menu">
+   <i data-lucide="menu"></i>
+  </button>
+ </header>
+ <!-- 2. STICKY FLOATING NAV -->
+ <div id="sticky-header" class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 py-6 floating-nav-gradient transform -translate-y-full transition-transform duration-500 ease-out pointer-events-none" aria-hidden="true">
+  <a href="/" class="flex items-center gap-2 pointer-events-auto cursor-pointer" aria-label="ZDI Home" tabindex="-1">
+   <div class="w-9 h-9 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+    <span class="text-black font-bold text-xs"><img src="https://www.zerodayinitiative.com/images/zdi-emblem.svg" class="w-[100%]" alt="ZDI Emblem" loading="lazy"></span>
+   </div>
+  </a>
+  <button class="text-white menu-trigger pointer-events-auto hover:scale-110 transition-transform bg-white/10 p-3 rounded-full backdrop-blur-md border border-white/10 cursor-pointer" aria-label="Open Menu" tabindex="-1">
+   <i data-lucide="menu" class="w-6 h-6 lg:w-8 lg:h-8"></i>
+  </button>
+ </div>
+ <!-- 3. FULL SCREEN MENU -->
+ <div id="menu-overlay" class="fixed inset-0 z-[60] menu-overlay transform -translate-y-full transition-transform duration-500 ease-in-out flex flex-col" role="dialog" aria-modal="true" aria-label="Navigation Menu">
+  <div class="flex justify-between items-center px-6 py-6">
+   <div class="flex items-center gap-2">
+    <div class="w-9 h-9 rounded-full flex items-center justify-center">
+     <span class="text-black font-bold text-xs"><a href="/"><img src="https://www.zerodayinitiative.com/images/zdi-emblem.svg" class="w-[100%]" alt="ZDI Emblem" loading="lazy"></a></span>
+    </div>
+   </div>
+   <button id="menu-close" class="text-white hover:rotate-90 transition-transform" aria-label="Close Menu">
+    <i data-lucide="x" class="w-9 h-9"></i>
+   </button>
+  </div>
+  <div class="flex-1 flex flex-col md:flex-row items-center justify-center gap-10 md:gap-20 p-10">
+   <nav class="flex flex-col gap-6 text-center md:text-left" aria-label="Mobile Navigation">
+    <a href="/about/" class="text-3xl md:text-5xl font-bold hover:text-zdi-blue  transition-colors">About</a>
+    <a href="/about/benefits/" class="text-3xl md:text-5xl font-bold hover:text-zdi-blue transition-colors">How It Works</a>
+    <a href="/about/faq/" class="text-3xl md:text-5xl font-bold hover:text-zdi-blue  transition-colors">FAQ<span class="lowercase">s</span></a>
+    <a href="/blog/" class="text-3xl md:text-5xl font-bold hover:text-zdi-blue border-b-2 border-zdi-blue transition-colors">Blog</a>
+    <a href="/advisories/published/" class="text-3xl md:text-5xl font-bold hover:text-zdi-blue transition-colors">Advisories</a>
+   </nav>
+   <div class=" xl:flex flex-col gap-6 border-0 md:border-l border-white/10 md:pl-10">
+    <div class="flex items-center gap-2">
+     <a href="/portal/register/" class="px-4 md:px-4 py-2 hover:bg-zdi-blue hover:text-white rounded-full transition-all text-zdi-blue duration-300 text-sm font-bold uppercase" aria-label="Sign Up">
+      Sign Up
+     </a>
+     <a href="/portal/login/" class="px-4 md:px-8 py-2 border-2 border-zdi-yellow rounded-full hover:bg-zdi-yellow hover:text-white transition-all text-zdi-yellow duration-300 text-sm font-bold uppercase" aria-label="Log In">
+      Log In
+     </a>
+    </div>
+    <div class="text-gray-400 mt-[20px] lg:mt-[20px] text-center">
+     <p class="mb-2">Find us on</p>
+     <div class="flex gap-4 " aria-label="Social Media Links">
+      <div class="flex gap-6 items-center justify-center lg:justify-left w-full">
+       <a href="https://x.com/thezdi" target="_blank" rel="noopener noreferrer" class="footer-link text-white" aria-label="X">
+        <img alt="X" src="https://www.zerodayinitiative.com/images/X-icon.svg" class="w-[24px]">
+       </a>
+       <a href="https://infosec.exchange/@thezdi" target="_blank" rel="noopener noreferrer" class="footer-link text-white" aria-label="Mastodon">
+        <img alt="Mastodon" src="https://www.zerodayinitiative.com/images/Mastodon-icon.svg" class="w-[24px]">
+       </a>
+       <a href="https://bsky.app/profile/thezdi.bsky.social" target="_blank" rel="noopener noreferrer" class="footer-link text-white" aria-label="BlueSky">
+        <img alt="BlueSky" src="https://www.zerodayinitiative.com/images/BlueSky-icon.svg" class="w-[24px]">
+       </a>
+
+       <a href="https://www.linkedin.com/company/zerodayinitiative" target="_blank" rel="noopener noreferrer" class="footer-link text-white" aria-label="LinkedIn">
+        <img alt="LinkedIn" src="https://www.zerodayinitiative.com/images/LinkedIn-icon.svg" class="w-[24px]">
+       </a>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+ </div>
+
+<main role="main" data-content-field="main-content"><script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Override Squarespace default styling which sets white-space: pre-wrap on paragraphs
+      document.querySelectorAll('div.squarespace p').forEach(p => {
+        p.style.whiteSpace = 'normal';
+      });
+    });
+  </script>
+  <style>
+    /* GitHub's stylesheet is document.write()n into the body, after this style
+       block, so equal-specificity rules lose the cascade — force these. */
+    .gist .gist-file {
+      border: 1px solid #30363d !important;
+      border-radius: 8px;
+      background: #0d1117;
+      margin-bottom: 0 !important;
+    }
+    .gist .gist-data {
+      background: #0d1117 !important;
+      border-bottom: 1px solid #30363d !important;
+    }
+    .gist .gist-meta {
+      background: #161b22 !important;
+      color: #8b949e;
+      border-radius: 0 0 8px 8px;
+    }
+    /* .file has my-2 margins that let .gist-data show through as a frame */
+    .gist .gist-data .file { margin: 0 !important; }
+    .gist .gist-meta a { color: #58a6ff; }
+    /* code table + line numbers */
+    .gist .blob-wrapper,
+    .gist table.highlight,
+    .gist table.highlight tr,
+    .gist table.highlight td { background: #0d1117 !important; }
+    .gist td.blob-num {
+      color: #6e7681 !important;
+      border-color: #30363d !important;
+    }
+    .gist td.blob-code,
+    .gist td.blob-code-inner,
+    .gist .blob-code-context,
+    .gist .blob-code-inner { color: #c9d1d9 !important; }
+    /* body font (Inter) leaks into the code table now that GitHub's own
+       monospace declaration loses the cascade; restore the site mono stack */
+    .gist td.blob-num,
+    .gist td.blob-code,
+    .gist td.blob-code-inner,
+    .gist .blob-code-context,
+    .gist .blob-code-inner,
+    .gist .blob-wrapper,
+    .gist pre,
+    .gist code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+        "Liberation Mono", "Courier New", monospace !important;
+    }
+    /* syntax-highlight tokens (GitHub "primer" .pl-* classes) */
+    .gist .pl-c, .gist .pl-c span { color: #8b949e !important; }      /* comments */
+    .gist .pl-k { color: #ff7b72 !important; }                         /* keywords */
+    .gist .pl-s, .gist .pl-pds,
+    .gist .pl-s .pl-pse .pl-s1 { color: #a5d6ff !important; }          /* strings */
+    .gist .pl-en { color: #d2a8ff !important; }                        /* entity/function names */
+    .gist .pl-smi, .gist .pl-v, .gist .pl-vo { color: #ffa657 !important; } /* variables */
+    .gist .pl-c1, .gist .pl-s .pl-s1 { color: #79c0ff !important; }    /* constants/numbers */
+    .gist .pl-e, .gist .pl-ent { color: #7ee787 !important; }          /* tags/entities */
+    /* added/removed lines in diffs */
+    .gist .blob-code-addition { background: rgba(46,160,67,0.15) !important; }
+    .gist .blob-code-deletion { background: rgba(248,81,73,0.15) !important; }
+  </style>
+
+    <!-- 4. ADVISORY ARTICLE SECTION -->
+    <article class="min-h-screen w-full relative pt-20 lg:pt-48 pb-20 z-10 blog-article">
+        <div class="max-w-[1600px] w-[90%] mx-auto relative px-1 md:px-0">
+
+            <div class="w-full text-left mb-16 relative !mt-[-50px]">
+				 <div class="flex items-center gap-4 mb-[20px]">
+                         <div class="h-px bg-white/20 w-20"></div>
+                         <h1 class="text-zdi-blue text-sm font-bold uppercase tracking-widest">Blog</h1>
+                    </div>
+
+               <h1 class="text-4xl sm:text-4xl md:text-4xl lg:text-5xl font-semibold tracking-relaxed mb-6 text-white w-full lg:w-[90%] leading-snug ">
+                   The June 2026 Apple Security Update Review
+               </h1>
+			   <div>
+               <div class="inline-flex items-center gap-2 mb-2 px-4 py-1 rounded-full border border-zdi-blue/30 bg-zdi-blue/10">
+                   <i data-lucide="calendar" class="w-4 h-4 text-zdi-blue"></i>
+                   <span class="text-zdi-blue text-xs uppercase tracking-widest font-bold">July 01, 2026</span>
+               </div>
+			   </div>
+			   <div>
+			   <div class="inline-flex items-center gap-2 mb-8 px-4 py-1">
+                   <i data-lucide="user" class="w-4 h-4 text-zdi-yellow"></i>
+                   <span class="text-zdi-yellow text-xs uppercase tracking-widest font-bold">Dustin Childs</span>
+               </div>
+			   </div>
+               <div class="w-full h-px bg-zdi-blue opacity-30"></div>
+            </div>
+
+            <div class="flex flex-col lg:flex-row gap-12 lg:gap-10 items-start left-content-holder">
+                <!-- Right Col (Content) 80% -->
+                <div class="w-full lg:w-[80%] content-article glass-panel p-5 rounded-xl">
+                    <div class="prose prose-invert prose-lg max-w-none text-gray-300 leading-relaxed space-y-6 flex-col">
+<div class="squarespace">
+            <div class="sqs-layout sqs-grid-12 columns-12" data-layout-label="Post Body" data-type="item" data-updated-on="1782855283657" id="item-6a4436173553052dfb4b6904"><div class="row sqs-row"><div class="col sqs-col-12 span-12"><div class="sqs-block html-block sqs-block-html" data-block-type="2" data-sqsp-block="text" id="block-76fd43230c6794497290"><div class="sqs-block-content">
+
+<div class="sqs-html-content" data-sqsp-text-block-content>
+  <p class="" style="white-space:pre-wrap;">We’re back with our look at the Apple macOS and iOS security updates. As this is a new feature for us, please let us know your feedback on the blog. </p><p class="" style="white-space:pre-wrap;">For June 2026, Apple released 37 unique CVEs across iOS 26.5.2 / iPadOS 26.5.2, macOS Tahoe 26.5.2, Safari 26.5.2. Since Apple doesn’t provide CVSS scores or other severity information, we’re left to speculate on which of these bugs is the most severe. The overwhelming majority (31 of 37) are WebKit/WebRTC bugs reachable through malicious web content. Most of those are crash/DoS bugs rather than code execution, so the real risk lives in the small set of kernel bugs and the handful of WebKit sandbox escapes. However, there are a couple that stand out.</p><p style="margin-left:40px;white-space:pre-wrap;" class="">-&nbsp;&nbsp;&nbsp;&nbsp;<strong>CVE-2026-43724 (Kernel)</strong> – According to Apple, “An app may be able to cause unexpected system termination or write kernel memory.” A kernel memory write is the highest-value primitive here: it's the privilege-escalation half of a full exploit chain and leads to complete device control. The bug was credited to Hyunwoo Kim (@v4bel), who is known to be a serious kernel researcher. </p><p style="margin-left:40px;white-space:pre-wrap;" class="">-&nbsp;&nbsp;&nbsp;&nbsp;<strong>CVE-2026-39868 (Kernel)</strong> – Another kernel bug, this one could “cause unexpected system termination or corrupt kernel memory.” This is kernel memory corruption, and notably credited to a roster of elite offensive researchers (STAR Labs, Positive Technologies, Baidu Security). This kind of attribution usually signals a weaponizable, possibly Pwn2Own-grade bug rather than a theoretical crash.</p><p style="margin-left:40px;white-space:pre-wrap;" class="">-&nbsp;&nbsp;&nbsp;&nbsp;<strong>CVE-2026-43725 / CVE-2026-43701 (WebKit)</strong> – Apple states these bugs could allow a website to process restricted web content outside the sandbox. I'm flagging this sandbox-escape pair over the many WebKit crash bugs because a sandbox escape is the bridge that turns a web-content bug into a path toward the kernel issues above. It's the most dangerous remotely-triggered class in the release.</p><p class="" style="white-space:pre-wrap;">Here’s a look at all the bugs released by Apple this month:</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+</div></div><div class="sqs-block website-component-block sqs-block-website-component sqs-block-code code-block" data-block-css="[&quot;https://definitions.sqspcdn.com/website-component-definition/static-assets/website.components.code/d28a797c-3ae4-4700-806e-9ba44de81050_856/website.components.code.styles.css&quot;]" data-block-scripts="[&quot;https://definitions.sqspcdn.com/website-component-definition/static-assets/website.components.code/d28a797c-3ae4-4700-806e-9ba44de81050_856/website.components.code.visitor.js&quot;]" data-block-type="1337" data-definition-name="website.components.code" data-sqsp-block="code" data-website-component-id="yui_3_17_2_1_1782855184214_31998" id="block-yui_3_17_2_1_1782855184214_31998"><div class="sqs-block-content">
+  
+
+<div
+  class="sqs-code-container"
+  
+  
+    data-localized="{&quot;enableSafeModeButton&quot;:&quot;Preview in safe mode&quot;,&quot;enableSafeModeText&quot;:&quot;This block contains embedded scripts. Embedded scripts are disabled while you're logged in and editing your site.&quot;,&quot;enableSafeModeTitle&quot;:&quot;Embedded Scripts&quot;,&quot;exitSafeModeButton&quot;:&quot;Exit safe preview&quot;,&quot;exitSafeModeText&quot;:&quot;Please view the page after logging out for accurate rendering.&quot;,&quot;exitSafeModeTitle&quot;:&quot;Safe Preview&quot;,&quot;globalSafeMode&quot;:&quot;Embedded Code: This block contains embedded code that has been disabled.&quot;,&quot;scriptDisabled&quot;:&quot;Script Disabled&quot;}"
+  
+  
+  
+  
+>
+  
+    <!DOCTYPE html>
+<html xmlns:og="http://opengraphprotocol.org/schema/" xmlns:fb="http://www.facebook.com/2008/fbml" lang="en-US"  lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apple Security Update &ndash; June 29, 2026</title>
+<style>
+  :root {
+    --zdi-navy:#1b2a4a;
+    --zdi-red:#e4002b;
+    --ink:#222;
+    --rule:#d9dce1;
+  }
+  *   
+  .azdi {
+    font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;
+    color:var(--ink); line-height:1.5; max-width:1040px; margin:0 auto;
+    -webkit-font-smoothing:antialiased;
+  }
+  .azdi .cards {
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+    gap:12px; margin:0 0 22px;
+  }
+  .azdi .card {
+    background:#fff; border:1px solid var(--rule); border-top:4px solid var(--zdi-navy);
+    border-radius:4px; padding:16px 14px; text-align:center;
+    box-shadow:0 1px 3px rgba(0,0,0,.06);
+  }
+  .azdi .card-total { border-top-color:var(--zdi-red); background:var(--zdi-navy); }
+  .azdi .card-total .num   
+  .azdi .card-total .lbl   
+  .azdi .card .num { display:block; font-size:32px; font-weight:800; color:var(--zdi-navy); line-height:1; }
+  .azdi .card .lbl {
+    display:block; margin-top:8px; font-size:11.5px; font-weight:700;
+    text-transform:uppercase; letter-spacing:.05em; color:#6a7180;
+  }
+  .azdi table {
+    width:100%; border-collapse:collapse; font-size:14px;
+    background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.08);
+  }
+  .azdi caption {
+    caption-side:top; text-align:left; font-size:13px; color:#6a7180; padding:0 0 10px;
+  }
+  .azdi thead th {
+    background:var(--zdi-navy); color:#fff; font-weight:700; text-align:left;
+    padding:11px 14px; font-size:12.5px; text-transform:uppercase; letter-spacing:.04em;
+    border:1px solid var(--zdi-navy); vertical-align:bottom;
+  }
+  .azdi thead th.center   
+  .azdi tbody td { padding:9px 14px; border:1px solid var(--rule); vertical-align:top; }
+  .azdi tbody tr:nth-child(even) td   
+  .azdi tbody tr:hover td   
+  .azdi td.cve a { color:var(--zdi-red); font-weight:600; text-decoration:none; white-space:nowrap; }
+  .azdi td.cve a:hover   
+  .azdi td.impact   
+  .azdi td.yes, .azdi td.no { text-align:center; font-weight:700; }
+  .azdi td.yes   
+  .azdi td.no   
+  @media (max-width:680px) {
+    .azdi thead th, .azdi tbody td { padding:8px 9px; font-size:12.5px; }
+    .azdi .card .num   
+  }
+</style>
+</head>
+<body>
+  <div class="azdi">
+    <div class="cards">
+      <div class="card"><span class="num">37</span><span class="lbl">Total CVEs</span></div>
+      <div class="card"><span class="num">22</span><span class="lbl">Denial of Service</span></div>
+      <div class="card"><span class="num">7</span><span class="lbl">Information Disclosure</span></div>
+      <div class="card"><span class="num">3</span><span class="lbl">Memory Corruption</span></div>
+      <div class="card"><span class="num">2</span><span class="lbl">Elevation of Privilege</span></div>
+      <div class="card"><span class="num">2</span><span class="lbl">Sandbox Escape</span></div>
+      <div class="card"><span class="num">1</span><span class="lbl">Spoofing</span></div>
+    </div>
+
+    <table>
+      <caption>Apple security release &mdash; June 29, 2026. "Yes/No" indicates whether each update is affected. CVE IDs link to NVD.</caption>
+      <thead>
+        <tr>
+          <th>CVE ID</th>
+          <th>Component</th>
+          <th>Impact</th>
+          <th class="center">iOS 26.5.2 / iPadOS 26.5.2</th>
+          <th class="center">macOS Tahoe 26.5.2</th>
+          <th class="center">Safari 26.5.2</th>
+        </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43743" target="_blank" rel="noopener">CVE-2026-43743</a></td>
+        <td>IOGPUFamily</td>
+        <td class="impact">An app may be able to cause unexpected system termination</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-39868" target="_blank" rel="noopener">CVE-2026-39868</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to cause unexpected system termination or corrupt kernel memory</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43722" target="_blank" rel="noopener">CVE-2026-43722</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to leak sensitive kernel state</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43724" target="_blank" rel="noopener">CVE-2026-43724</a></td>
+        <td>Kernel</td>
+        <td class="impact">An app may be able to cause unexpected system termination or write kernel memory</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43703" target="_blank" rel="noopener">CVE-2026-43703</a></td>
+        <td>libxslt</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43706" target="_blank" rel="noopener">CVE-2026-43706</a></td>
+        <td>libxslt</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="no">No</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43704" target="_blank" rel="noopener">CVE-2026-43704</a></td>
+        <td>Web Extensions</td>
+        <td class="impact">A malicious web extension may be able to cause an unexpected process crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-39872" target="_blank" rel="noopener">CVE-2026-39872</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43663" target="_blank" rel="noopener">CVE-2026-43663</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43676" target="_blank" rel="noopener">CVE-2026-43676</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected Safari crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43699" target="_blank" rel="noopener">CVE-2026-43699</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43700" target="_blank" rel="noopener">CVE-2026-43700</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may disclose sensitive user information</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43701" target="_blank" rel="noopener">CVE-2026-43701</a></td>
+        <td>WebKit</td>
+        <td class="impact">A malicious website may be able to process restricted web content outside the sandbox</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43705" target="_blank" rel="noopener">CVE-2026-43705</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to memory corruption</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43707" target="_blank" rel="noopener">CVE-2026-43707</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43708" target="_blank" rel="noopener">CVE-2026-43708</a></td>
+        <td>WebKit</td>
+        <td class="impact">A malicious website may exfiltrate data cross-origin</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43709" target="_blank" rel="noopener">CVE-2026-43709</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43712" target="_blank" rel="noopener">CVE-2026-43712</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43713" target="_blank" rel="noopener">CVE-2026-43713</a></td>
+        <td>WebKit</td>
+        <td class="impact">Visiting a website may leak sensitive data</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43715" target="_blank" rel="noopener">CVE-2026-43715</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to memory corruption</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43716" target="_blank" rel="noopener">CVE-2026-43716</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected Safari crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43725" target="_blank" rel="noopener">CVE-2026-43725</a></td>
+        <td>WebKit</td>
+        <td class="impact">A malicious website may be able to process restricted web content outside the sandbox</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43726" target="_blank" rel="noopener">CVE-2026-43726</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43727" target="_blank" rel="noopener">CVE-2026-43727</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected Safari crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43731" target="_blank" rel="noopener">CVE-2026-43731</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to memory corruption</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43732" target="_blank" rel="noopener">CVE-2026-43732</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may disclose sensitive user information</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43734" target="_blank" rel="noopener">CVE-2026-43734</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43735" target="_blank" rel="noopener">CVE-2026-43735</a></td>
+        <td>WebKit</td>
+        <td class="impact">A malicious website may exfiltrate data cross-origin</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43740" target="_blank" rel="noopener">CVE-2026-43740</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may result in the disclosure of process memory</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43742" target="_blank" rel="noopener">CVE-2026-43742</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43745" target="_blank" rel="noopener">CVE-2026-43745</a></td>
+        <td>WebKit</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected Safari crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43720" target="_blank" rel="noopener">CVE-2026-43720</a></td>
+        <td>WebKit Canvas</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected Safari crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43721" target="_blank" rel="noopener">CVE-2026-43721</a></td>
+        <td>WebKit Storage</td>
+        <td class="impact">A malicious website may be able to silently hijack clipboard data</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-28979" target="_blank" rel="noopener">CVE-2026-28979</a></td>
+        <td>WebRTC</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected process crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43717" target="_blank" rel="noopener">CVE-2026-43717</a></td>
+        <td>WebRTC</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected Safari crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43718" target="_blank" rel="noopener">CVE-2026-43718</a></td>
+        <td>WebRTC</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected Safari crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      <tr>
+        <td class="cve"><a href="https://nvd.nist.gov/vuln/detail/CVE-2026-43746" target="_blank" rel="noopener">CVE-2026-43746</a></td>
+        <td>WebRTC</td>
+        <td class="impact">Processing maliciously crafted web content may lead to an unexpected Safari crash</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+        <td class="yes">Yes</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
+
+  
+  
+
+
+
+</div>
+
+<style class="transform-vars">
+    #block-yui_3_17_2_1_1782855184214_31998 {
+      --opacity: 100%;
+      --translate-x: 0px;
+      --translate-y: 0px;
+      --rotation: 0deg;
+      --scale-x: 100%;
+      --scale-y: 100%;
+      --skew-x: 0deg;
+      --skew-y: 0deg;
+      --origin-x: 50%;
+      --origin-y: 50%;
+      --block-transform: none;
+
+      opacity: var(--opacity, 1);
+      transform: var(--block-transform);
+      transform-origin: var(--origin-x) var(--origin-y);
+    }
+  </style><style class="transform-overrides-vars">
+  
+</style>
+
+</div></div><div class="sqs-block html-block sqs-block-html" data-block-type="2" data-sqsp-block="text" id="block-yui_3_17_2_1_1782855184214_32437"><div class="sqs-block-content">
+
+<div class="sqs-html-content" data-sqsp-text-block-content>
+  <p class="" style="white-space:pre-wrap;">We’ll continue these macOS updates if people find them useful. Stay tuned for the regularly schedule Patch Tuesday blog covering Adobe and Microsoft.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+</div></div></div></div></div>
+</div>
+
+			<ul class="blog-tags">
+
+				<li><a href="/blog/tag/Security+Patch" class="inline-block px-3 py-1 bg-zdi-blue border border-zdi-blue/50 rounded text-xs font-mono text-white no-underline hover:opacity-50 transition-opacity">Security Patch</a></li>
+
+				<li><a href="/blog/tag/macOS" class="inline-block px-3 py-1 bg-zdi-blue border border-zdi-blue/50 rounded text-xs font-mono text-white no-underline hover:opacity-50 transition-opacity">macOS</a></li>
+
+				<li><a href="/blog/tag/iOS" class="inline-block px-3 py-1 bg-zdi-blue border border-zdi-blue/50 rounded text-xs font-mono text-white no-underline hover:opacity-50 transition-opacity">iOS</a></li>
+
+            </ul>
+
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </article>
+
+
+   <!-- CTA BANNER (FIXED ANIMATION) -->
+    <section id="cta-section" class="h-auto md:h-[90vh] min-h-[90vh] w-full relative bg-black flex items-center justify-center overflow-hidden z-10  py-20 md:py-0">
+		<video autoplay muted loop playsinline class="w-full h-full object-cover opacity-30 scale-100 absolute inset-0 invisible hidden md:!block md:!visible " id="hero-video-fixed" aria-hidden="true">
+			<source src="https://www.zerodayinitiative.com/vid/ZDI-BANNER-01.webm" type="video/webm">
+            <source src="https://www.zerodayinitiative.com/vid/ZDI-BANNER-01.mp4" type="video/mp4">
+		</video>
+		<div class="absolute inset-0 bg-cover bg-center block md:hidden" style="filter: brightness(0.5) saturate(.5);">
+			<picture class="w-full h-full object-cover">
+				<!-- Mobile (small) -->
+				<source srcset="https://www.zerodayinitiative.com/images/hero-banner-bg-800.webp" type="image/webp" media="(max-width: 767px)">
+				<source srcset="https://www.zerodayinitiative.com/images/hero-banner-bg-800.jpg" type="image/jpeg" media="(max-width: 767px)">
+				<!-- Fallback -->
+				<img src="https://www.zerodayinitiative.com/images/hero-banner-bg.jpg" alt="Hero Background" class="w-full h-full object-cover">
+			</picture>
+		</div>
+       <div class="gradient-full-bg"></div>
+        <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black/80"></div>
+
+        <div id="cta-content" class="xl:max-w-[2000px] xl:w-[90%] xl:mx-auto relative z-10 w-[90vw] mx-auto flex flex-col items-start text-left">
+            <div class="overflow-hidden mb-8">
+                <h2 id="cta-title" class="text-5xl md:text-7xl font-bold tracking-tighter text-white max-w-7xl origin-left" style="clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%);">
+                    Stand at the front line of <span class="gradient-text">proactive security</span>
+                </h2>
+            </div>
+             <div class="overflow-hidden mb-16">
+                <p id="cta-sub" class="text-xl md:text-2xl max-w-5xl font-light origin-left" style="clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%);">
+                    TrendAI™ ZDI connects the experts who discover, remediate, and defend. <br>Add your voice to the work that pushes attackers back.
+
+                </p>
+             </div>
+
+            <div id="cta-buttons" class="w-full max-w-[1600px] grid grid-cols-1 md:grid-cols-3 gap-8 opacity-0 translate-y-20">
+                <a href="/portal/login/" class="bg-gradient-to-t to-zdi-blue/15 from-transparent group p-8 border border-white/10 rounded-xl hover:bg-white/5 transition-all hover:border-zdi-blue cursor-pointer backdrop-blur-sm" aria-label="For Researchers">
+                    <h4 class="text-gray-500 font-bold tracking-widest text-xs md:text-sm mb-4">RESEARCHERS</h4>
+                    <div class="flex items-center justify-between">
+                        <span class="text-lg md:text-xl font-bold text-white group-hover:text-zdi-blue transition-colors">Submit a vulnerability</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4" aria-hidden="true"></i>
+                    </div>
+                </a>
+                <a href="/about/benefits/" class="bg-gradient-to-t to-zdi-blue/15 from-transparent group p-8 border border-white/10 rounded-xl hover:bg-white/5 transition-all hover:border-zdi-blue cursor-pointer backdrop-blur-sm" aria-label="For Vendors">
+                    <h4 class="text-gray-500 font-bold tracking-widest text-xs md:text-sm mb-4">VENDORS</h4>
+                    <div class="flex items-center justify-between">
+                        <span class="text-lg md:text-xl font-bold text-white group-hover:text-zdi-blue transition-colors">Learn how it works</span>
+                       <i data-lucide="arrow-right" class="w-4 h-4" aria-hidden="true"></i>
+                    </div>
+                </a>
+                <a href="/advisories/published/" class="bg-gradient-to-t to-zdi-blue/15 from-transparent group p-8 border border-white/10 rounded-xl hover:bg-white/5 transition-all hover:border-zdi-blue cursor-pointer backdrop-blur-sm" aria-label="For Organizations">
+                    <h4 class="text-gray-500 font-bold tracking-widest text-xs md:text-sm mb-4">ORGANIZATIONS</h4>
+                    <div class="flex items-center justify-between">
+                        <span class="text-lg md:text-xl font-bold text-white group-hover:text-zdi-blue transition-colors">See how you're protected</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4" aria-hidden="true"></i>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section></main>
+
+  <!-- FOOTER -->
+ <footer class="w-full bg-black text-white py-20 px-6 md:px-16 border-t border-white/10 relative z-20 bg-gradient-to-b from-zdi-blue/10 to-zdi-blue/20">
+  <div class="xl:max-w-[2000px] xl:mx-auto relative flex flex-col-reverse md:flex-row gap-16 md:gap-10 lg:gap-0 ">
+   <!-- Column 1: 40% -->
+   <div class="w-full md:w-[30%] lg:w-[40%] flex flex-col items-start pt-0 items-center md:items-start">
+    <a href="/" class="block w-[90%] max-w-[300px] mb-[60px]">
+     <img src="https://www.zerodayinitiative.com/images/RGB_ZDI_TrendAI_Horizontal-White.svg" alt="TrendAI™ Zero Day Initiative™ Logo" class="w-full">
+    </a>
+    <div class="mb-[50px] md:p-[10px]">
+     <p class="text-sm font-bold uppercase tracking-widest text-white mb-6 text-center md:text-left">Find us on</p>
+     <div class="flex gap-6 items-center">
+      <!-- X SVG -->
+      <a href="https://x.com/thezdi" target="_blank" rel="noopener noreferrer" class="footer-link text-white" aria-label="X">
+       <img alt="X" src="https://www.zerodayinitiative.com/images/X-icon.svg" class="w-[24px]">
+      </a>
+      <!-- Mastodon SVG -->
+      <a href="https://infosec.exchange/@thezdi" target="_blank" rel="noopener noreferrer" class="footer-link text-white" aria-label="Mastodon">
+       <img alt="Mastodon" src="https://www.zerodayinitiative.com/images/Mastodon-icon.svg" class="w-[24px]">
+      </a>
+      <!-- BlueSky SVG -->
+      <a href="https://bsky.app/profile/thezdi.bsky.social" target="_blank" rel="noopener noreferrer" class="footer-link text-white" aria-label="BlueSky">
+       <img alt="BlueSky" src="https://www.zerodayinitiative.com/images/BlueSky-icon.svg" class="w-[24px]">
+      </a>
+      <!-- LinkedIn SVG -->
+      <a href="https://www.linkedin.com/company/zerodayinitiative" target="_blank" rel="noopener noreferrer" class="footer-link text-white" aria-label="LinkedIn">
+       <img alt="LinkedIn" src="https://www.zerodayinitiative.com/images/LinkedIn-icon.svg" class="w-[24px]">
+      </a>
+     </div>
+    </div>
+    <p class="copyright text-xs text-gray-500 uppercase tracking-widest mt-auto leading-relaxed text-center md:text-left">
+     ©2026 TrendAI™ Zero Day Initiative™ (ZDI). <br>All rights reserved.
+    </p>
+   </div>
+   <!-- Column 2: 60% -->
+   <div class="w-full md:w-[70%] lg:w-[60%] flex flex-col items-start pt-0">
+    <!-- Row 1: Emails (Vertical List) -->
+    <div class="w-full flex flex-col gap-6 mb-8">
+     <div class="flex flex-col w-full">
+      <span class="text-xs font-bold uppercase tracking-widest text-white mb-2">General inquiries</span>
+      <a href="mailto:zdi@trendmicro.com" class="footer-link-blue text-sm">zdi@trendmicro.com</a>
+     </div>
+     <div class="flex flex-col w-full">
+      <span class="text-xs font-bold uppercase tracking-widest text-white mb-2">Media inquiries</span>
+      <a href="mailto:media_relations@trendmicro.com" class="footer-link-blue text-sm">media_relations@trendmicro.com</a>
+     </div>
+     <div class="flex flex-col w-full">
+      <span class="text-xs font-bold uppercase tracking-widest text-white mb-2">Sensitive email communications</span>
+      <a href="https://www.zerodayinitiative.com/documents/zdi-pgp-key.asc" class="footer-link-blue text-sm">PGP key</a>
+     </div>
+    </div>
+    <!-- 5px Blue Line -->
+    <div class="w-full h-[5px] mb-10 bg-linear-[266deg] from-zdi-yellow via-zdi-blue to-zdi-darkblue"></div>
+
+    <!-- Row 2: 4 Columns of Links -->
+    <div class="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12 md:gap-8">
+     <!-- Section 1 -->
+     <div class="text-center md:text-left">
+      <a href="/about/" class="block text-sm font-bold text-white mb-6 footer-link uppercase tracking-wider">Who We Are</a>
+      <ul class="flex flex-col gap-4">
+       <li><a href="/about/" class="footer-link text-sm">Our Mission</a></li>
+       <li><a href="https://www.trendmicro.com/" class="footer-link text-sm">TrendAI™</a></li>
+       <li><a href="https://www.trendmicro.com/en_us/business/products/one-platform.html" class="footer-link text-sm">TrendAI Vision One™</a></li>
+      </ul>
+     </div>
+     <!-- Section 2 -->
+     <div class="text-center md:text-left">
+      <a href="/about/benefits/" class="block text-sm font-bold text-white mb-6 footer-link uppercase tracking-wider">How It Works</a>
+      <ul class="flex flex-col gap-4">
+       <li><a href="/about/benefits/#submission-process" class="footer-link text-sm">Process</a></li>
+       <li><a href="/about/benefits/#rewards-program" class="footer-link text-sm">Researcher Rewards</a></li>
+       <li><a href="/about/faq/" class="footer-link text-sm">FAQs</a></li>
+       <li><a href="https://www.trendmicro.com/privacy/" class="footer-link text-sm">Privacy</a></li>
+      </ul>
+     </div>
+     <!-- Section 3 -->
+     <div class="text-center md:text-left">
+      <a href="/advisories/published/" class="block text-sm font-bold text-white mb-6 footer-link uppercase tracking-wider">Advisories</a>
+      <ul class="flex flex-col gap-4">
+       <li><a href="/advisories/published/" class="footer-link text-sm">Published Advisories</a></li>
+       <li><a href="/advisories/upcoming/" class="footer-link text-sm">Upcoming Advisories</a></li>
+       <li><a href="/rss/" class="footer-link text-sm">RSS Feeds</a></li>
+      </ul>
+     </div>
+     <!-- Section 4 -->
+     <div class="text-center md:text-left">
+      <a href="/blog/" class="block text-sm font-bold text-white mb-6 footer-link uppercase tracking-wider">Blog</a>
+     </div>
+    </div>
+    <button onclick="lenis.scrollTo(0)" class="absolute bottom-10 right-10 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors hidden xl:block" aria-label="Back to top"><i data-lucide="arrow-up" class="w-6 h-6 text-white"></i></button>
+   </div>
+  </div>
+ </footer>
+
+    <!-- SCRIPTS -->
+    <script src="https://www.zerodayinitiative.com/js/script.js"></script>
+
+<script data-sqs-type="imageloader-bootstrapper">if(window.ImageLoader) window.ImageLoader.bootstrap({}, document);</script><script>Squarespace.afterBodyLoad(Y);</script><svg xmlns="http://www.w3.org/2000/svg" version="1.1" style="display:none" data-usage="social-icons-svg"><symbol id="youtube-icon" viewBox="0 0 64 64"><path d="M46.7,26c0,0-0.3-2.1-1.2-3c-1.1-1.2-2.4-1.2-3-1.3C38.3,21.4,32,21.4,32,21.4h0 c0,0-6.3,0-10.5,0.3c-0.6,0.1-1.9,0.1-3,1.3c-0.9,0.9-1.2,3-1.2,3S17,28.4,17,30.9v2.3c0,2.4,0.3,4.9,0.3,4.9s0.3,2.1,1.2,3 c1.1,1.2,2.6,1.2,3.3,1.3c2.4,0.2,10.2,0.3,10.2,0.3s6.3,0,10.5-0.3c0.6-0.1,1.9-0.1,3-1.3c0.9-0.9,1.2-3,1.2-3s0.3-2.4,0.3-4.9 v-2.3C47,28.4,46.7,26,46.7,26z M28.9,35.9l0-8.4l8.1,4.2L28.9,35.9z"/></symbol><symbol id="youtube-mask" viewBox="0 0 64 64"><path d="M0,0v64h64V0H0z M47,33.1c0,2.4-0.3,4.9-0.3,4.9s-0.3,2.1-1.2,3c-1.1,1.2-2.4,1.2-3,1.3 C38.3,42.5,32,42.6,32,42.6s-7.8-0.1-10.2-0.3c-0.7-0.1-2.2-0.1-3.3-1.3c-0.9-0.9-1.2-3-1.2-3S17,35.6,17,33.1v-2.3 c0-2.4,0.3-4.9,0.3-4.9s0.3-2.1,1.2-3c1.1-1.2,2.4-1.2,3-1.3c4.2-0.3,10.5-0.3,10.5-0.3h0c0,0,6.3,0,10.5,0.3c0.6,0.1,1.9,0.1,3,1.3 c0.9,0.9,1.2,3,1.2,3s0.3,2.4,0.3,4.9V33.1z M28.9,35.9l8.1-4.2l-8.1-4.2L28.9,35.9z"/></symbol></svg>
+
+</body>
+</html>

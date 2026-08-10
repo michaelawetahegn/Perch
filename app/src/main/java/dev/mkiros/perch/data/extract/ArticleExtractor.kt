@@ -186,8 +186,8 @@ object ArticleExtractor {
      *
      * Pages that break an article into several sibling `<div>`s are common enough — a lede
      * block, then the body, then a code appendix — that taking the top candidate alone
-     * truncates them. A sibling joins on its own score, or on being a substantial
-     * paragraph, and on nothing else.
+     * truncates them. A sibling joins on its own score, on carrying substantial prose, or
+     * on carrying a table, and on nothing else.
      */
     private fun assemble(top: Element, topScore: Double, scores: Map<Element, Double>): Element {
         val parent = top.parent() ?: return top.clone()
@@ -197,14 +197,52 @@ object ArticleExtractor {
         for (sibling in parent.children()) {
             val keep = sibling === top ||
                 (scores[sibling] ?: 0.0) >= threshold ||
-                sibling.isSubstantialParagraph()
+                sibling.carriesSubstantialProse() ||
+                sibling.carriesContentTable()
             if (keep) article.appendChild(sibling.clone())
         }
         return if (article.children().isEmpty()) top.clone() else article
     }
 
-    private fun Element.isSubstantialParagraph(): Boolean =
-        tagName() == "p" && text().length > SIBLING_PARAGRAPH_CHARS && linkDensity() < LINKY
+    /**
+     * A paragraph long enough to be article, or a wrapper holding one.
+     *
+     * The wrapper case is what a block-per-`<div>` CMS needs: Squarespace's closing
+     * paragraph is not a sibling `<p>`, it is a `sqs-block` two levels above one, and a
+     * predicate that only recognises a bare `<p>` truncates the article at the last block
+     * that happened to score.
+     */
+    private fun Element.carriesSubstantialProse(): Boolean {
+        val prose = (if (tagName() == "p") listOf(this) else select("p")).sumOf { it.text().length }
+        return prose > SIBLING_PARAGRAPH_CHARS && linkDensity() < LINKY
+    }
+
+    /**
+     * A sibling that is, or wraps, a table carrying data (V09).
+     *
+     * Scoring is text density, and a table is mostly markup, so a table never clears
+     * [MIN_SIBLING_SCORE] however much it says. On a CMS that gives every block its own
+     * `<div>` — Squarespace's `sqs-block` — that puts the table one sibling away from the
+     * winning subtree, and on a Zero Day Initiative post the table of the month's CVEs
+     * *is* the post: dropping it leaves two paragraphs promising a look at all the bugs,
+     * above nothing.
+     *
+     * The counter-risk is resurrecting the layout table, so this asks for the shape of
+     * data rather than for a `<table>`: a real grid (several rows, more than one column),
+     * no table nested inside it — nesting is how a page is laid out, not how data is
+     * written — and prose rather than a column of links, which is the same signal that
+     * separates an article from a navigation block everywhere else in this file.
+     */
+    private fun Element.carriesContentTable(): Boolean {
+        if (namesChrome()) return false
+        val table = (if (tagName() == "table") this else selectFirst("table")) ?: return false
+        if (table.namesChrome() || table.select("table").size > 1) return false
+
+        val rows = table.select("tr")
+        if (rows.size < MIN_TABLE_ROWS) return false
+        if (rows.maxOf { it.select("td, th").size } < MIN_TABLE_COLUMNS) return false
+        return table.linkDensity() < LINKY
+    }
 
     /**
      * The chrome that lives *inside* the article: a share row under the title, a
@@ -285,6 +323,10 @@ object ArticleExtractor {
     private const val MIN_SIBLING_SCORE = 10.0
     private const val SIBLING_SHARE = 0.2
     private const val SIBLING_PARAGRAPH_CHARS = 80
+
+    /** A grid this small is a layout trick or a two-cell aside, not the article's data. */
+    private const val MIN_TABLE_ROWS = 3
+    private const val MIN_TABLE_COLUMNS = 2
     private const val LINKY = 0.5
     private const val CHROME_TEXT_CEILING = 200
 

@@ -258,7 +258,7 @@ do when installing. The template lives in the repo so no release re-invents it.
         screenshot of the scoped list; `./gradlew test` green; issue #10 closed.
       - Rung: screenshot
 
-- [ ] **V09 — The extractor keeps a Squarespace page's tables. TDD. Issue #4.**
+- [x] **V09 — The extractor keeps a Squarespace page's tables. TDD. Issue #4.**
       `gh issue view 4` — it carries the diagnosis and the trap. `ArticleExtractor.assemble()`
       grows the winning subtree by a one-level sibling sweep keyed on text density, and
       Squarespace wraps every block in its own `sqs-block` div, so a table — mostly markup,

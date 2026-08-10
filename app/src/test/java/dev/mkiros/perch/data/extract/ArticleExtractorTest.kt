@@ -98,6 +98,60 @@ class ArticleExtractorTest {
         assertThat(unsupported).isEmpty()
     }
 
+    /**
+     * V09/#4: on a ZDI post the table *is* the post — a month's CVEs, one per row — and
+     * dropping it leaves two paragraphs saying "here's a look at all the bugs" above
+     * nothing. Squarespace gives every block its own `sqs-block` div, so the table is a
+     * *sibling* of the winning subtree, and a sibling sweep keyed on text density will
+     * never keep it: a table is mostly markup.
+     *
+     * The count is taken off the page rather than written down, so this asserts the table
+     * survived whole rather than that some table survived.
+     */
+    @Test
+    fun `a Squarespace page keeps the table its article is made of`() {
+        val fixture = ArticleFixtures.squarespaceTable
+        val onPage = cells(Jsoup.parse(fixture.html(), fixture.url))
+        assertThat(onPage).isEqualTo(EXPECTED_ZDI_CELLS)
+
+        val extracted = requireNotNull(ArticleExtractor.extract(fixture.html(), fixture.url))
+        val doc = Jsoup.parse(extracted, fixture.url)
+
+        assertThat(doc.select("table")).hasSize(1)
+        assertThat(cells(doc)).isEqualTo(onPage)
+        assertThat(doc.text()).contains("CVE-2026-43743")
+    }
+
+    /**
+     * The recovered table has to survive the *rest* of the pipeline too — U15's gate 6b
+     * asks the live corpus for exactly this, and extraction is a second way into it, so
+     * the property is worth having offline as well as on the wire: one table, rectangular
+     * rows, the header the markup declared, and every written cell still written.
+     */
+    @Test
+    fun `the recovered Squarespace table lowers rectangular with its header intact`() {
+        val fixture = ArticleFixtures.squarespaceTable
+        val written = Jsoup.parse(fixture.html(), fixture.url)
+            .select("table td, table th")
+            .count { it.text().isNotBlank() }
+
+        val extracted = requireNotNull(ArticleExtractor.extract(fixture.html(), fixture.url))
+        val tables = flatten(ArticleLowering.toBlocks(HtmlSanitizer.sanitize(extracted, fixture.url)))
+            .filterIsInstance<ArticleBlock.Table>()
+
+        assertThat(tables).hasSize(1)
+        val table = tables.single()
+        assertThat(table.rows.map { it.size }.distinct()).containsExactly(table.header.size)
+        assertThat(table.header.map { it.text }).containsExactly(
+            "CVE ID", "Component", "Impact",
+            "iOS 26.5.2 / iPadOS 26.5.2", "macOS Tahoe 26.5.2", "Safari 26.5.2",
+        ).inOrder()
+
+        val lowered = table.header.count { it.text.isNotBlank() } +
+            table.rows.sumOf { row -> row.count { it.text.isNotBlank() } }
+        assertThat(lowered).isEqualTo(written)
+    }
+
     @Test
     fun `a page with no article on it extracts nothing rather than its navigation`() {
         val html = """
@@ -150,7 +204,13 @@ class ArticleExtractorTest {
     private fun flatten(blocks: List<ArticleBlock>): List<ArticleBlock> =
         blocks.flatMap { if (it is ArticleBlock.Quote) listOf(it) + flatten(it.blocks) else listOf(it) }
 
+    /** Every cell in every table of [doc], header cells included. */
+    private fun cells(doc: org.jsoup.nodes.Document): Int = doc.select("table td, table th").size
+
     private companion object {
         const val MIN_EXCERPT_RATIO = 10.0
+
+        /** 6 header cells + 37 CVEs × 6 columns, as harvested. */
+        const val EXPECTED_ZDI_CELLS = 228
     }
 }

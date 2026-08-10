@@ -27,11 +27,11 @@ data class ArticleFixture(
 }
 
 /**
- * The fifteen pages U10 is measured against: five from fabiensanglard.net (§0's "no body
+ * The sixteen pages U10 is measured against: five from fabiensanglard.net (§0's "no body
  * at all" shape), five from gpuopen.com (§0's "excerpt standing in for the body"), and
- * five more excerpt-only sources drawn from the corpus by measurement — the five feeds
- * whose median item body is shortest after those two — so the CMS coverage the task asks
- * for is real rather than assumed.
+ * six more excerpt-only sources drawn from the corpus by measurement — the five feeds
+ * whose median item body is shortest after those two, plus V09's Squarespace page — so the
+ * CMS coverage the task asks for is real rather than assumed.
  */
 object ArticleFixtures {
 
@@ -135,7 +135,29 @@ object ArticleFixtures {
         ),
     )
 
-    /** Five more excerpt-only sources, chosen for CMS spread rather than for difficulty. */
+    /**
+     * The ZDI page V09/#4 is about: a Squarespace post whose table *is* the post.
+     *
+     * The five `zdi-*.html` fixtures beside it are feed **bodies** and exercise lowering;
+     * this is the **page**, so it exercises extraction. Squarespace wraps every block in
+     * its own `sqs-block` div, which is what puts the table one sibling away from the
+     * winning subtree and out of reach of a text-density sweep.
+     */
+    val squarespaceTable: ArticleFixture = ArticleFixture(
+        slug = "zdi-page-june-2026-apple-update-review",
+        url = "https://www.thezdi.com/blog/2026/6/30/the-june-2026-apple-security-update-review",
+        cms = "Squarespace",
+        mid = "The overwhelming majority (31 of 37) are WebKit/WebRTC bugs " +
+            "reachable through malicious web content.",
+        last = "Stay tuned for the regularly schedule Patch Tuesday blog covering Adobe and Microsoft.",
+        excludes = listOf(
+            "Stand at the front line of proactive security",
+            "Submit a vulnerability",
+            "Researcher Rewards",
+        ),
+    )
+
+    /** Six more excerpt-only sources, chosen for CMS spread rather than for difficulty. */
     val other: List<ArticleFixture> = listOf(
         ArticleFixture(
             slug = "hexacorn-msconfig-secret",
@@ -187,6 +209,7 @@ object ArticleFixtures {
             last = "Perhaps the next time you catch a glimpse of the Moon",
             excludes = listOf("Copyright © 2026 Bartosz Ciechanowski"),
         ),
+        squarespaceTable,
     )
 
     val all: List<ArticleFixture> = noBody + excerptOnly + other
