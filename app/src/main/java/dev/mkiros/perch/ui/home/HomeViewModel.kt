@@ -1,5 +1,6 @@
 package dev.mkiros.perch.ui.home
 
+import androidx.compose.runtime.saveable.Saver
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
@@ -81,11 +82,16 @@ data class FolderUiItem(
 }
 
 /**
- * What the drawer has narrowed the reading list to (PLAN-2 §0).
+ * What the reading list has been narrowed to (PLAN-2 §0).
  *
  * Folder and source are siblings rather than a hierarchy: they are two independent SQL
  * predicates, so nothing here has to resolve a folder into the feeds it holds — a move
  * would invalidate that list the moment it happened.
+ *
+ * Since V08 this is **hoisted state**, owned by the shell and pushed down into the
+ * view-model, for the reason the drawer's selection is (U09a): it is a rung of the back
+ * chain, and the drawer is no longer the only thing that sets it — tapping a source's
+ * name in an article does too.
  */
 sealed interface HomeScope {
 
@@ -98,6 +104,34 @@ sealed interface HomeScope {
 
     val feedId: Long? get() = (this as? Source)?.id
     val folderId: Long? get() = (this as? Folder)?.id
+
+    /** Anything but the unified inbox, which is the back chain's whole question. */
+    val isNarrowed: Boolean get() = this != All
+
+    fun save(): List<Long> = when (this) {
+        All -> listOf(KIND_ALL)
+        is Folder -> listOf(KIND_FOLDER, id)
+        is Source -> listOf(KIND_SOURCE, id)
+    }
+
+    companion object {
+        private const val KIND_ALL = 0L
+        private const val KIND_FOLDER = 1L
+        private const val KIND_SOURCE = 2L
+
+        fun restore(saved: List<Long>): HomeScope {
+            val id = saved.getOrNull(1) ?: return All
+            return when (saved.firstOrNull()) {
+                KIND_FOLDER -> Folder(id)
+                KIND_SOURCE -> Source(id)
+                else -> All
+            }
+        }
+
+        /** Hoisted into the shell, so a process death must not silently widen the list. */
+        val Saver: Saver<HomeScope, List<Long>> =
+            Saver(save = { it.save() }, restore = ::restore)
+    }
 }
 
 /**
@@ -377,14 +411,25 @@ class HomeViewModel(
         else -> null
     }
 
+    /**
+     * Narrows the list, or widens it back to the unified inbox.
+     *
+     * The screen pushes the shell's hoisted scope in here (V08) rather than this being
+     * the place the scope lives: there is one owner, so the drawer, a tapped source name
+     * and the back chain cannot end up disagreeing about what the reader is looking at.
+     */
+    fun setScope(newScope: HomeScope) {
+        scope.value = newScope
+    }
+
     /** Filters the list to one source, or back to the unified inbox with null. */
     fun selectSource(feedId: Long?) {
-        scope.value = if (feedId == null) HomeScope.All else HomeScope.Source(feedId)
+        setScope(if (feedId == null) HomeScope.All else HomeScope.Source(feedId))
     }
 
     /** Filters the list to one folder's sources (U06). */
     fun selectFolder(folderId: Long) {
-        scope.value = HomeScope.Folder(folderId)
+        setScope(HomeScope.Folder(folderId))
     }
 
     /**

@@ -228,7 +228,7 @@ do when installing. The template lives in the repo so no release re-invents it.
 
 ## Phase 3 — Reading
 
-- [ ] **V08 — Tapping the blog's name opens that blog's articles. TDD + screenshot.
+- [x] **V08 — Tapping the blog's name opens that blog's articles. TDD + screenshot.
       Issue #10.** `gh issue view 10`. On the article screen the source name at the top is
       inert; every other reader treats it as the way into that source's list. Perch already
       has the destination — the drawer scopes the Feed to a single source — so this is

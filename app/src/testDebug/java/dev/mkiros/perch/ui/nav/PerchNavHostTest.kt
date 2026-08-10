@@ -7,7 +7,9 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performScrollToIndex
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -20,6 +22,7 @@ import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.di.AppContainer
 import dev.mkiros.perch.data.repo.PerchPaging
+import dev.mkiros.perch.ui.article.ArticleTestTags
 import dev.mkiros.perch.ui.home.HomeTestTags
 import dev.mkiros.perch.ui.home.TimeFilter
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
@@ -259,6 +262,67 @@ class PerchNavHostTest {
         assertThat(compose.activity.isFinishing).isTrue()
     }
 
+    // ---- V08 (issue #10): the source name in an article's byline ------------------
+
+    /**
+     * The whole gesture, end to end: read something, tap who wrote it, get their list.
+     *
+     * Asserted through the shell rather than against `HomeViewModel`, because what V08
+     * decided is a *shell* question — the scoped list is state the shell owns, not a route
+     * — and a view-model test would pass with the byline still inert.
+     */
+    @Test
+    fun `tapping a source name in an article opens that source's list`() {
+        val entryId = seedTwoSources()
+        showNavHost()
+        navigateTo(Routes.article(entryId))
+        awaitText("Chris on threads")
+
+        tapSourceName()
+
+        assertThat(currentRoute()).isEqualTo(Routes.FEED)
+        // The bar names the source, and the list holds that source's entry and not the
+        // other one — the scope is real, not just a title.
+        compose.awaitInRealTime("the scoped list") { isDisplayed("Chris on allocators") }
+        compose.onNodeWithTag(HomeTestTags.TITLE).assertTextEquals("Null Program")
+        assertThat(isDisplayed("Someone else on something else")).isFalse()
+    }
+
+    /**
+     * V08's back decision, stated once here and guarded as an order in `BackChainTest`:
+     * back out of a scoped list **widens the Feed** rather than returning to the article.
+     * The reader tapped a name to get here; the article they left is one row away in the
+     * list they are now looking at, and the alternative — bouncing back into the piece
+     * they had finished — is the thing every reader complains about.
+     */
+    @Test
+    fun `back from a scoped list widens the Feed rather than returning to the article`() {
+        val entryId = seedTwoSources()
+        showNavHost()
+        navigateTo(Routes.article(entryId))
+        awaitText("Chris on threads")
+        tapSourceName()
+
+        pressBack()
+
+        assertThat(currentRoute()).isEqualTo(Routes.FEED)
+        compose.awaitInRealTime("the unified inbox") {
+            isDisplayed("Someone else on something else")
+        }
+        compose.onNodeWithTag(HomeTestTags.TITLE).assertTextEquals("Feed")
+        assertThat(compose.activity.isFinishing).isFalse()
+    }
+
+    /**
+     * By the node's own click semantics rather than a synthesised tap: the byline sits
+     * inside the article's `SelectionContainer`, which claims the pointer stream first.
+     */
+    private fun tapSourceName() {
+        compose.onNodeWithTag(ArticleTestTags.SOURCE)
+            .performSemanticsAction(SemanticsActions.OnClick)
+        compose.waitForIdle()
+    }
+
     private fun selectTab(tab: PerchTab) {
         compose.onNodeWithTag(NavTestTags.tab(tab)).performClick()
         compose.waitForIdle()
@@ -313,11 +377,28 @@ class PerchNavHostTest {
         database.entryDao().insert(entry(insertFeed(), index = 0, title = title))
     }
 
-    private suspend fun insertFeed(): Long = database.feedDao().insert(
+    /**
+     * Two sources, one entry each; returns the id of the entry on *Null Program*, so a
+     * scoped list has something to exclude.
+     */
+    private fun seedTwoSources(): Long = runBlocking {
+        val nullProgram = insertFeed(title = "Null Program", url = "https://nullprogram.com/feed.xml")
+        val other = insertFeed(title = "Somewhere Else", url = "https://elsewhere.example/feed.xml")
+        database.entryDao().insert(entry(other, index = 1, title = "Someone else on something else"))
+        // Two on Null Program: opening one marks it read, and the Feed hides read entries,
+        // so the *unread* sibling is what proves the list is scoped rather than empty.
+        database.entryDao().insert(entry(nullProgram, index = 2, title = "Chris on allocators"))
+        database.entryDao().insert(entry(nullProgram, index = 0, title = "Chris on threads"))
+    }
+
+    private suspend fun insertFeed(
+        title: String = "Example",
+        url: String = "https://example.com/feed.xml",
+    ): Long = database.feedDao().insert(
         FeedEntity(
-            feedUrl = "https://example.com/feed.xml",
+            feedUrl = url,
             siteUrl = "https://example.com",
-            title = "Example",
+            title = title,
             customTitle = null,
             faviconUrl = null,
             etag = null,

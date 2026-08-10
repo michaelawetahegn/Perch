@@ -43,6 +43,7 @@ import dev.mkiros.perch.ui.collection.Collection
 import dev.mkiros.perch.ui.collection.CollectionScreen
 import dev.mkiros.perch.ui.collection.CollectionViewModel
 import dev.mkiros.perch.ui.home.DrawerSelection
+import dev.mkiros.perch.ui.home.HomeScope
 import dev.mkiros.perch.ui.home.HomeScreen
 import dev.mkiros.perch.ui.home.HomeViewModel
 import dev.mkiros.perch.ui.settings.SettingsScreen
@@ -147,12 +148,22 @@ fun PerchNavHost(
         mutableStateOf<ZoomedImage?>(null)
     }
 
+    // What the Feed is narrowed to (V08), hoisted for the third time and the third time
+    // for the same reason: it is a rung of the back chain. It also has two writers now —
+    // the drawer, and the source name in an article's byline — and two writers with no
+    // single owner is how the drawer and the list come to disagree about what is on
+    // screen. `rememberSaveable` so process death does not quietly widen the list.
+    val homeScope = rememberSaveable(stateSaver = HomeScope.Saver) {
+        mutableStateOf<HomeScope>(HomeScope.All)
+    }
+
     val backState = BackState(
         selectionActive = drawerSelection.value.isActive,
         overlayOpen = drawerState.isOpen,
         imageViewerOpen = zoomedImage.value != null,
         onArticle = route == Routes.ARTICLE,
         tab = tab ?: PerchTab.Feed,
+        feedScoped = homeScope.value.isNarrowed,
         feedScrolled = feedListState.canScrollBackward,
     )
     val step = nextBackStep(backState)
@@ -170,6 +181,7 @@ fun PerchNavHost(
             BackStep.CloseImageViewer -> zoomedImage.value = null
             BackStep.PopArticle -> navController.popBackStack()
             BackStep.ReturnToFeed -> selectTab(navController, PerchTab.Feed)
+            BackStep.LeaveScope -> homeScope.value = HomeScope.All
             // Not a navigation: nothing is popped and nothing animates as a transition.
             BackStep.ScrollFeedToTop -> scope.launch { feedListState.animateScrollToItem(0) }
             BackStep.Exit -> Unit
@@ -212,6 +224,7 @@ fun PerchNavHost(
                     drawerState = drawerState,
                     listState = feedListState,
                     selection = drawerSelection,
+                    homeScope = homeScope,
                 )
             }
 
@@ -241,6 +254,29 @@ fun PerchNavHost(
                 ArticleScreen(
                     viewModel = viewModel(factory = ArticleViewModel.factory(container, entryId)),
                     onBack = { navController.popBackStack() },
+                    // V08: the scoped list is *state*, not a route. Perch already has one
+                    // way to be narrowed to a source — the drawer's — and giving the Feed
+                    // an optional `feedId` argument would have made a second, so that a
+                    // reader could be scoped by the route and unscoped by the drawer at
+                    // once. Scoping the shell's state and switching to the Feed tab reuses
+                    // the list, its title, its banner and its pull-to-refresh exactly as
+                    // they already are, and leaves the other tabs' saved state alone.
+                    onOpenSource = { feedId ->
+                        homeScope.value = HomeScope.Source(feedId)
+                        // Pop first, then switch tabs only if the article was opened from
+                        // one of the other two. [selectTab] alone cannot do this from the
+                        // article: its `popUpTo(start) { saveState }` saves the article as
+                        // it pops it and its `restoreState` puts it straight back, so the
+                        // navigation is a no-op. Popping is also the truthful move — the
+                        // reader is not opening a fourth destination, they are going back
+                        // to the list with it narrowed.
+                        navController.popBackStack()
+                        if (PerchTab.ofRoute(navController.currentDestination?.route)
+                            != PerchTab.Feed
+                        ) {
+                            selectTab(navController, PerchTab.Feed)
+                        }
+                    },
                     zoomed = zoomedImage,
                 )
             }

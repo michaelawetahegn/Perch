@@ -85,6 +85,9 @@ folder or a source. Rules that hold regardless of visual treatment:
   list it came from; To-Read or Liked returns to Feed; **Feed scrolled down scrolls to
   top**; and only Feed-already-at-top exits the app. Support predictive back — the
   scroll-to-top step is not a back *navigation*, so it must not animate as one.
+  **PLAN-3's V08 adds one rung**: a Feed narrowed to a source or a folder widens back to
+  the unified inbox, *above* scroll-to-top and below "To-Read or Liked returns to Feed".
+  `BackChain.kt`'s enum is the order; PLAN-3 §0 and that file's KDoc are authoritative.
 
 **The UI's visual decisions are the implementing session's to make.** §0 fixes *behaviour
 and information architecture*; icons, labels, badge counts, ordering, empty-state

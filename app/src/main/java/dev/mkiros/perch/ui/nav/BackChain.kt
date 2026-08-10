@@ -37,6 +37,16 @@ enum class BackStep {
     ReturnToFeed,
 
     /**
+     * Feed, narrowed to one source or one folder, widens back to the unified inbox (V08).
+     *
+     * Above [ScrollFeedToTop] deliberately. Since V08 the scope is somewhere the reader
+     * *goes* — one tap on a source name in an article puts them in that source's list —
+     * and one tap in should cost one press out. Scrolling to the top first would make
+     * leaving a source they entered with a single tap cost two.
+     */
+    LeaveScope,
+
+    /**
      * Feed, scrolled down, scrolls to the top.
      *
      * This is the Reddit rule's whole point, and it is deliberately **not** a navigation:
@@ -66,6 +76,9 @@ enum class BackStep {
  * @param onArticle the article route is on top of the stack. `NavHost` pops it, so this
  *   rung exists to keep the root handler *out of the way* of predictive back.
  * @param tab which of §0's three destinations is showing.
+ * @param feedScoped Feed is narrowed to one source or folder rather than showing the
+ *   unified inbox (V08). Answered by the shell, which owns the scope for exactly this
+ *   reason: a rung the chain cannot see is a rung that is only true by luck.
  * @param feedScrolled Feed's list is not at its first row.
  */
 data class BackState(
@@ -74,6 +87,7 @@ data class BackState(
     val imageViewerOpen: Boolean = false,
     val onArticle: Boolean = false,
     val tab: PerchTab = PerchTab.Feed,
+    val feedScoped: Boolean = false,
     val feedScrolled: Boolean = false,
 )
 
@@ -89,6 +103,7 @@ fun nextBackStep(state: BackState): BackStep = when {
     state.imageViewerOpen -> BackStep.CloseImageViewer
     state.onArticle -> BackStep.PopArticle
     state.tab != PerchTab.Feed -> BackStep.ReturnToFeed
+    state.feedScoped -> BackStep.LeaveScope
     state.feedScrolled -> BackStep.ScrollFeedToTop
     else -> BackStep.Exit
 }

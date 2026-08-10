@@ -133,6 +133,14 @@ fun HomeScreen(
     selection: MutableState<DrawerSelection> = rememberSaveable(
         stateSaver = DrawerSelection.Saver,
     ) { mutableStateOf(DrawerSelection.None) },
+    // Hoisted for the third time and the same reason (V08). What the list is narrowed to
+    // is now a rung of the back chain — back widens a scoped Feed before it thinks about
+    // leaving — and the drawer is no longer the only thing that sets it: tapping a
+    // source's name in an article scopes the Feed to that source from another screen
+    // entirely. One owner, up here, and the view-model is told.
+    homeScope: MutableState<HomeScope> = rememberSaveable(
+        stateSaver = HomeScope.Saver,
+    ) { mutableStateOf<HomeScope>(HomeScope.All) },
 ) {
     val totalUnread by viewModel.totalUnread.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -170,13 +178,17 @@ fun HomeScreen(
 
     fun folderOf(id: Long?) = uiState.folders.firstOrNull { it.id == id }
 
+    // The hoisted scope is the only writer; the view-model is told, never asked. Keyed on
+    // the value so a recomposition does not re-issue a query the list is already showing.
+    LaunchedEffect(homeScope.value) { viewModel.setScope(homeScope.value) }
+
     fun select(feedId: Long?) {
-        viewModel.selectSource(feedId)
+        homeScope.value = if (feedId == null) HomeScope.All else HomeScope.Source(feedId)
         scope.launch { drawerState.close() }
     }
 
     fun selectFolder(folderId: Long) {
-        viewModel.selectFolder(folderId)
+        homeScope.value = HomeScope.Folder(folderId)
         scope.launch { drawerState.close() }
     }
 

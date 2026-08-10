@@ -3,13 +3,16 @@ package dev.mkiros.perch.ui.article
 import android.content.Context
 import android.content.Intent
 import androidx.activity.ComponentActivity
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
@@ -19,6 +22,7 @@ import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.repo.ArticleTextRepository
 import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.ui.theme.Dimens
 import dev.mkiros.perch.ui.theme.PerchTheme
 import java.time.Clock
 import java.time.Instant
@@ -81,8 +85,11 @@ class ArticleScreenTest {
         showArticle(entryId)
 
         compose.onNodeWithTag(ArticleTestTags.HEADLINE).assertTextEquals("An Async Runtime in C")
+        // V08 split the line: the source is its own segment because it is the only one
+        // that goes anywhere. Together they still read `SOURCE · AUTHOR · DATE`.
+        compose.onNodeWithTag(ArticleTestTags.SOURCE).assertTextEquals("NULL PROGRAM")
         compose.onNodeWithTag(ArticleTestTags.BYLINE)
-            .assertTextEquals("NULL PROGRAM · CHRIS WELLONS · 3 AUG 2026")
+            .assertTextEquals("CHRIS WELLONS · 3 AUG 2026")
         compose.onNodeWithText("Coroutines without a language runtime.").assertIsDisplayed()
         compose.onNodeWithText("The trick").assertIsDisplayed()
     }
@@ -94,6 +101,58 @@ class ArticleScreenTest {
 
         showArticle(entryId)
 
+        compose.onNodeWithTag(ArticleTestTags.SOURCE).assertTextEquals("CHRIS WELLONS")
+        // The author matched the source, so the source segment took it and the rest of
+        // the line is the date alone rather than the same name twice.
+        compose.onNodeWithTag(ArticleTestTags.BYLINE).assertTextEquals("3 AUG 2026")
+    }
+
+    // ---- V08 (issue #10): the source's name is the way into its list ----------------
+
+    /**
+     * The reader's complaint was that the name at the top does nothing. What it must do
+     * is say *which* source, and it must be a control while it does — a bare text with a
+     * click on it is invisible to a screen reader and to a thumb.
+     */
+    @Test
+    fun `tapping the source name asks for that source's list`() {
+        val feedId = seedFeed(title = "Null Program")
+        val entryId = seedEntry(feedId = feedId, title = "An Async Runtime in C")
+        val opened = mutableListOf<Long>()
+
+        showArticle(entryId, onOpenSource = { opened += it })
+        compose.onNodeWithTag(ArticleTestTags.SOURCE).performClick()
+
+        assertThat(opened).containsExactly(feedId)
+    }
+
+    @Test
+    fun `the source name is a button with a hit area a thumb can find`() {
+        val feedId = seedFeed(title = "Null Program")
+        val entryId = seedEntry(feedId = feedId, title = "An Async Runtime in C")
+
+        showArticle(entryId)
+
+        val node = compose.onNodeWithTag(ArticleTestTags.SOURCE).fetchSemanticsNode()
+        assertThat(node.config[SemanticsProperties.Role]).isEqualTo(Role.Button)
+        with(compose.density) {
+            assertThat(node.size.height.toDp().value).isAtLeast(Dimens.touchTarget.value)
+        }
+    }
+
+    /** A feed that shipped no title has nothing to tap, and the line just starts later. */
+    @Test
+    fun `a source with no name at all leaves the byline without a first segment`() {
+        val feedId = seedFeed(title = "")
+        val entryId = seedEntry(
+            feedId = feedId,
+            title = "An Async Runtime in C",
+            author = "Chris Wellons",
+        )
+
+        showArticle(entryId)
+
+        compose.onNodeWithTag(ArticleTestTags.SOURCE).assertDoesNotExist()
         compose.onNodeWithTag(ArticleTestTags.BYLINE)
             .assertTextEquals("CHRIS WELLONS · 3 AUG 2026")
     }
@@ -261,7 +320,7 @@ class ArticleScreenTest {
 
     // ---- harness ---------------------------------------------------------------
 
-    private fun showArticle(entryId: Long) {
+    private fun showArticle(entryId: Long, onOpenSource: (Long) -> Unit = {}) {
         val viewModel = ArticleViewModel(
             entries = container.entries,
             feeds = container.feeds,
@@ -274,7 +333,7 @@ class ArticleScreenTest {
         )
         compose.setContent {
             PerchTheme(dynamicColor = false) {
-                ArticleScreen(viewModel = viewModel, onBack = {})
+                ArticleScreen(viewModel = viewModel, onBack = {}, onOpenSource = onOpenSource)
             }
         }
         await { viewModel.state.value !is ArticleUiState.Loading }

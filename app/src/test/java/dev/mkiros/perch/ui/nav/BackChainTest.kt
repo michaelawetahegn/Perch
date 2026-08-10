@@ -87,6 +87,27 @@ class BackChainTest {
             .isEqualTo(BackStep.ReturnToFeed)
     }
 
+    /**
+     * V08's rung. A reader reaches a scoped Feed by tapping a source's name in an article
+     * — one tap — so back has to be able to undo it in one press. Below [BackStep.ReturnToFeed]
+     * because the scope belongs to the Feed and a reader on Liked is not looking at it.
+     */
+    @Test
+    fun `a scoped Feed widens before it scrolls to the top`() {
+        val step = nextBackStep(
+            BackState(tab = PerchTab.Feed, feedScoped = true, feedScrolled = true),
+        )
+
+        assertThat(step).isEqualTo(BackStep.LeaveScope)
+    }
+
+    @Test
+    fun `Liked returns to Feed before the Feed's own scope is touched`() {
+        val step = nextBackStep(BackState(tab = PerchTab.Liked, feedScoped = true))
+
+        assertThat(step).isEqualTo(BackStep.ReturnToFeed)
+    }
+
     @Test
     fun `Feed scrolled down scrolls to the top instead of quitting`() {
         val step = nextBackStep(BackState(tab = PerchTab.Feed, feedScrolled = true))
@@ -113,6 +134,7 @@ class BackChainTest {
             BackState(onArticle = true),
             BackState(tab = PerchTab.ToRead),
             BackState(tab = PerchTab.Liked),
+            BackState(feedScoped = true),
             BackState(feedScrolled = true),
         )
 
@@ -129,6 +151,7 @@ class BackChainTest {
             BackStep.CloseImageViewer,
             BackStep.PopArticle,
             BackStep.ReturnToFeed,
+            BackStep.LeaveScope,
             BackStep.ScrollFeedToTop,
             BackStep.Exit,
         ).inOrder()

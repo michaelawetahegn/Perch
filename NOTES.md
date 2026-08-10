@@ -7,65 +7,56 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
 
 ## Log
 - **Standing grep gate:** no `Color(0x` / `N.dp` / `N.sp` outside `ui/theme/` — screens address roles, never tones.
-  **U01: the repo is public** (MIT) — never un-redact the `apiKey` in `fixtures/homepages/research-nccgroup-com.html`.
+  **U01: the repo is public** (MIT) — never un-redact the `apiKey` in `fixtures/homepages/`.
 - 2026-08-07 — **Standing UI-test traps.** Compose UI tests live in **`app/src/testDebug/`** (`ui-test-manifest` is
   `debugImplementation`). An injected tap/long-press **never reaches a node inside a drawer sheet, bottom sheet or
   dropdown** — use `performSemanticsAction(OnClick/OnLongClick)`. `PullToRefreshBox` ignores a swipe unless its child
-  scrolls — since V03 **every empty state is a `LazyColumn` with one `fillParentMaxSize` item**. Screenshots: **never
-  `captureToImage()`** (CLAUDE.md is wrong) — `PixelCopy` waits on a frame callback Robolectric never delivers,
-  `@GraphicsMode(NATIVE)`'s `View.draw(Canvas)` is synchronous; a sheet/dialog/dropdown is its **own window**, so draw
-  its `rootView` over the decor view **translated by `getLocationOnScreen`**.
+  scrolls — since V03 **every empty state is a `LazyColumn` with one `fillParentMaxSize` item**. Screenshots: go
+  through `Screenshots` (its KDoc says why **never `captureToImage()`** — CLAUDE.md is wrong).
 - 2026-08-07 — **Live acceptance** (`acceptance/LiveAcceptanceTest`, `testDebug`): `./gradlew :app:testDebugUnitTest
   -Pperch.live=true --tests '*LiveAcceptance*'`. **Gate 1 sits on the 38/42 floor** — `danluu.com`/`projectzero.google`
   bust SPEC §6's 8 MiB cap, `research.nccgroup.com` has no feed, `rachelbythebay.com` times out (issue #8/V12).
   **Not ours:** the LLVM feed omits spaces around inline `<code>`/`<a>` — do not "repair" it.
 - 2026-08-07 — **U02: losing `~/.perch/perch-release.jks` or `signing.properties` makes every future install a data
-  wipe** — the cert (SHA-256 `61367c04…fce489`) *is* the update identity and cannot be rotated to a key you no longer
-  have. Both `chmod 600`, outside the repo, **not backed up yet**; absent the key, release falls back to debug
-  signing silently. Version lives only atop `app/build.gradle.kts`; **`assembleRelease` runs `lintVitalRelease`.**
-- 2026-08-07 — **U03: build test databases with `PerchDatabase.inMemory(context)`**, never
-  `Room.inMemoryDatabaseBuilder` — only the former seeds Uncategorized, whose FK the first feed needs.
-- 2026-08-07 — **U04: `isRead`/`isSaved`/`isStarred` are independent reader-owned flags**, each nulling its timestamp
-  when it goes off. **Add a fourth and two places erase it:** `EntryDao.upsertAll` (never Room `@Upsert` — it
-  resolves on the primary key, ours on `(feedId, guid)`) and `deleteReadOlderThan`.
-- 2026-08-07 — **U07: the window is a *calendar* one** (`TimeFilter.since(clock)` = local midnight) and **defaults to
-  Today** — a UI test seeding anything older must pin `TimeFilter.AllTime` via its own `SettingsStore` or it asserts
-  against an empty screen. Address section headers by `HomeTestTags.section(id)`, never by text (the drawer composes
-  while closed). `uiState` is `WhileSubscribed`: an action needing the window reads `settings.current()`.
+  wipe** — the cert (SHA-256 `61367c04…fce489`) *is* the update identity and cannot be rotated. Both `chmod 600`,
+  outside the repo, **not backed up yet**; absent the key, release falls back to debug signing silently. Version
+  lives only atop `app/build.gradle.kts`; **`assembleRelease` runs `lintVitalRelease`.**
+- 2026-08-07 — **U03: build test databases with `PerchDatabase.inMemory(context)`** — only it seeds Uncategorized,
+  whose FK the first feed needs.
+- 2026-08-07 — **U04: adding a fourth reader-owned flag beside `isRead`/`isSaved`/`isStarred` needs two edits** —
+  `EntryDao.upsertAll` (never Room `@Upsert`: it resolves on the primary key, ours on `(feedId, guid)`) and
+  `deleteReadOlderThan`, both of which otherwise erase it.
+- 2026-08-07 — **U07: the window is a *calendar* one** (local midnight) and **defaults to Today** — a UI test seeding
+  anything older must pin `TimeFilter.AllTime` via its own `SettingsStore` or it asserts against an empty screen.
+  Address section headers by `HomeTestTags.section(id)`, never by text (the drawer composes while closed).
 - 2026-08-07 — **U08: the row's 96dp thumbnail square is always reserved** (absent/loading/failed draw one
   placeholder). Coil offline: a `Mapper` succeeds, an `Interceptor` returning `ErrorResult` fails, one that
   `awaitCancellation()`s stays loading; a list screenshot needs `stubThumbnails()`.
-- 2026-08-08 — **U08a. `hasVisualOverflow` is not a clipping assertion** — assert `lineCount` +
-  `size.width >= maxIntrinsicWidth` under `@GraphicsMode(NATIVE)` (Robolectric measures every char at ~1px).
-- 2026-08-08 — **U09: the bottom bar and the `NavHost` are siblings**, not nested; **Feed's `DrawerState`/
-  `LazyListState` are hoisted into `PerchNavHost`** (state remembered inside Feed dies on a tab switch). §0's back
-  policy is the pure `nextBackStep(BackState)` in `BackChain.kt`, the enum's declaration order *being* the priority.
-  **`EntryRow` owns its own `combinedClickable`**: an inner `clickable` eats the pointer stream.
+- 2026-08-08 — **U09: the bottom bar and the `NavHost` are siblings**; **Feed's `DrawerState`/`LazyListState` are
+  hoisted into `PerchNavHost`** (state remembered inside Feed dies on a tab switch). §0's back policy is the pure
+  `nextBackStep(BackState)` in `BackChain.kt`, the enum's order *being* the priority; **`EntryRow` owns its own
+  `combinedClickable`** — an inner `clickable` eats the pointer stream.
 - 2026-08-08 — **U09a: the selection `BackHandler` must live inside `ModalDrawerSheet`** — the root one registers
   first and loses. A batch delete's dialog is **a coroutine behind its tap**, so wait in wall-clock time.
-- 2026-08-08 — **U07a: all three lists are Paging 3.** `PerchPaging.config` is shared — **placeholders off**, so
-  `startsSection` is answerable at a page edge. The three list queries live once in **`EntryQueries`** (`const val`,
-  resolved by Room/KSP) because each exists twice — `Flow<List>` *and* `PagingSource`. **`uiState.entries` is gone**:
-  ask the screen (`compose.rowTitles()`); `performScrollToIndex` past loaded rows throws.
+- 2026-08-08 — **U07a: all three lists are Paging 3**, **placeholders off** so `startsSection` is answerable at a
+  page edge. The three list queries live once in **`EntryQueries`** because each exists twice — `Flow<List>` *and*
+  `PagingSource`. **`uiState.entries` is gone**: ask the screen; `performScrollToIndex` past loaded rows throws.
 - 2026-08-08 — **U10:** Readability-over-jsoup in `data/extract/`, **no new dependency**. Three traps.
-  (1) **`ArticleLowering` deletes truncation markers as chrome** (T25's `CHROME`), so `FullText` looks for
-  "Continue reading" in the *unlowered* text. (2) Scoring finds the *tightest* subtree, so a decorative
-  single-child wrapper wins and the article's last section, its sibling, is lost — hence `unwrapped()`.
-  (3) **An extraction only ever replaces a body it beats** (`upsertAll`), making auto-extract-on-open safe.
-  Fixtures: `fixtures/articles/` (2 MB).
+  (1) **`ArticleLowering` deletes truncation markers as chrome**, so `FullText` looks for "Continue reading" in the
+  *unlowered* text. (2) Scoring finds the *tightest* subtree, so a decorative single-child wrapper wins and the
+  article's last section, its sibling, is lost — hence `unwrapped()`. (3) **An extraction only ever replaces a body
+  it beats**, making auto-extract-on-open safe. Fixtures: `fixtures/articles/`.
 - 2026-08-08 — **U11 (code).** Bundled JetBrains Mono 2.304 (OFL 1.1, licence in `assets/`) is DESIGN.md §3's one
   exception, **ligatures off**. **`HtmlSanitizer` keeps `class` on `pre` only**, holding a `language-x` normalised
   before `Cleaner` runs. The gutter sits **outside** the `horizontalScroll`, inside a **`DisableSelection`**.
-- 2026-08-08 — **U11a. Inside a `horizontalScroll` a `fillMaxWidth` divider measures to 0** — rules are drawn at the summed column width. `fixtures/articles/zdi-*.html` are **feed bodies, not pages**.
 - 2026-08-08 — **U12: the viewer is an overlay, not a destination** — a sibling of the article's `Scaffold` in one
   `Box`, so the reading position survives; `ZoomedImage` is hoisted to `PerchNavHost` because
   **`BackStep.CloseImageViewer` sits between `CloseOverlay` and `PopArticle`**, an order `BackChainTest` guards.
-  Math is pure (`ZoomGeometry`). An open overlay eats `performTouchInput` — scroll under it first; `performClick`
-  needs `mainClock.advanceTimeBy`.
+  An open overlay eats `performTouchInput` — scroll under it first; `performClick` needs `mainClock.advanceTimeBy`.
 - 2026-08-08 — **U13 (OPML folders).** A folder is a **name, not an id** — ids do not survive the file (U14 inherits
-  this). Export writes Uncategorized's sources **unfiled at top level**; import files a source under the **outermost**
-  container and flattens deeper nesting. A **duplicate is left entirely alone, folder included**, and a folder is
-  created **only when a source goes into it** (re-import: `0/n/k/0 folders`). Fixture: `fixtures/opml/other-reader.opml`.
+  this). Export leaves Uncategorized's sources unfiled at top level; import files a source under the **outermost**
+  container, flattens deeper nesting, leaves a **duplicate entirely alone** and creates a folder only when a source
+  goes into it (re-import: `0/n/k/0 folders`).
 - 2026-08-08 — **U14 (profile).** DB is **version 5**: `pending_entry_state`, keyed `(feedUrl, guid)`, **no FK to
   `feeds`** — its job is outliving a source that does not exist yet. **`EntryDao.upsertAll` consumes parked rows**,
   which is what stops the refresh straight after a restore undoing it. A restore turns a flag **on** and never off,
@@ -75,7 +66,7 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   *owns* (`create`). `ProcessLifecycleTest` guards it; `LoudUncaughtHandler` stays — the flake never reproduced.
 - 2026-08-09 — **Every full-suite flake so far: waiting on Room is not waiting on the screen.** `ArticleFullTextTest`
   awaited the body reaching the DB then asserted rendered text at once, losing the emit→recompose hop (giveaway:
-  *"could not find any node … the unmerged tree contains 1"*). **Poll in wall-clock time** (`awaitText`), not `waitForIdle`.
+  *"could not find any node … the unmerged tree contains 1"*). **Poll in wall-clock time**, not `waitForIdle`.
 - 2026-08-09 — **V02/#9: a `Clock` carries a zone, and the container's was Greenwich's.** `AppContainer` now injects
   `systemDefaultZone()`; **`DateParser` stays UTC deliberately.** A zone test must pin `TimeZone.setDefault` —
   inheriting the JVM's cannot tell UTC-the-bug from UTC-the-agent.
@@ -88,7 +79,8 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   (`Placeholder(marked = true)`); **only `loading` keeps the bare frame**. `ColorFilter.tint` flattens the mark to its
   silhouette, so `perchMarkMonochrome(ink, paper)` rebuilds it with `paper` = the fill; `outlineVariant` ink would be
   invisible (same tone as the fill in dark). `Screenshots.rasterize` reads pixels without writing a file.
-- 2026-08-08 — **U16: v0.2.0 shipped** (versionCode 3, `app/build/outputs/apk/release/app-release.apk`). **Never `clean` before `test assembleRelease`** — it deletes `build/perch-screenshots/`, the evidence.
+- 2026-08-08 — **U16: v0.2.0 shipped** (versionCode 3, `app/build/outputs/apk/release/app-release.apk`). **Never
+  `clean` before `test assembleRelease`** — it deletes `build/perch-screenshots/`, the evidence.
 - 2026-08-09 — **V04/#3: the inset contract is one doc comment in `ui/nav/PerchNavHost.kt`** — four clauses, one
   test each in `WindowInsetsTest`. Never add `.statusBarsPadding()` to a screen. **Robolectric has no bars or cutout
   on any profile**, so a test dispatches its own — `ui/WindowInsetsSupport.kt`'s `applyWindowInsets` reaches **every
@@ -98,3 +90,11 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   `drawer_all_sources` = "All sources"). Identifiers keep the word on purpose — the flag is real.
   **`PerchNavHostTest` must pin `HomeTestTags.TITLE`, not `onNodeWithText("Feed")`**: the bottom-bar tab has
   read "Feed" since U09, so a text assertion passes without the top bar existing.
+- 2026-08-09 — **V08/#10: the scoped list is state, not a route.** `HomeScope` is **hoisted into `PerchNavHost`** —
+  third such state — because `BackStep.LeaveScope` is a rung, *above* `ScrollFeedToTop`, and the drawer is no longer
+  its only writer; `HomeScreen` pushes it down through one `LaunchedEffect` and nothing else writes `scope`.
+  **`selectTab` is a silent no-op from the article route**: `popUpTo(start){saveState}` saves the article and
+  `restoreState` puts it straight back — pop first, switch tabs only if needed. The byline is segments now
+  (`ArticleTestTags.SOURCE` / `BYLINE`), the source carrying §8's editorial underline, never a colour. Scoping
+  **does not touch the time window** — a navigation must not rewrite a persisted setting, and U07's empty-window
+  state already names it. Residual: a scoped list still repeats the source's name on every row — polish, T29.

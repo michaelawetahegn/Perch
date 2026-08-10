@@ -30,8 +30,20 @@ sealed interface ArticleUiState {
     data object Missing : ArticleUiState
 
     /**
+     * The tappable half of the byline (V08, issue #10): the source's name as the reader
+     * sees it, and the id whose list the name opens.
+     *
+     * It is a segment of its own rather than a span inside [Loaded.byline] because only
+     * the source is a way somewhere — the author is not a destination Perch has, and the
+     * date is not a link at all.
+     */
+    data class SourceLink(val feedId: Long, val name: String)
+
+    /**
      * @param standfirst the summary, but only when it says something the body does not.
-     * @param byline `SOURCE · AUTHOR · 3 AUG 2026`, already uppercased.
+     * @param source the byline's first segment, absent when the feed row has gone.
+     * @param byline the rest of it — `AUTHOR · 3 AUG 2026`, already uppercased, and
+     *   drawn after [source] with a separator between them when both are there.
      * @param blocks the lowered body; empty means the feed carried no full text.
      * @param summary kept separately from [standfirst] because the empty-body fallback
      *   shows it even when it would have been redundant beside a body.
@@ -48,6 +60,7 @@ sealed interface ArticleUiState {
     data class Loaded(
         val title: String,
         val standfirst: String?,
+        val source: SourceLink?,
         val byline: String,
         val blocks: List<ArticleBlock>,
         val summary: String?,
@@ -85,9 +98,13 @@ class ArticleViewModel(
                 _state.value = ArticleUiState.Missing
                 return@launch
             }
-            val source = feeds.find(entry.feedId)
+            val feed = feeds.find(entry.feedId)
+            val sourceName = feed?.let { it.customTitle ?: it.title }?.takeIf { it.isNotBlank() }
+            source = sourceName?.let {
+                ArticleUiState.SourceLink(entry.feedId, it.uppercase(Locale.getDefault()))
+            }
             byline = byline(
-                source = source?.let { it.customTitle ?: it.title },
+                source = sourceName,
                 author = entry.author,
                 publishedAt = entry.publishedAt,
             )
@@ -138,6 +155,7 @@ class ArticleViewModel(
         return ArticleUiState.Loaded(
             title = entry.title,
             standfirst = standfirst(entry.summary, blocks),
+            source = source,
             byline = byline,
             blocks = blocks,
             summary = entry.summary?.takeIf { it.isNotBlank() },
@@ -154,7 +172,8 @@ class ArticleViewModel(
         _state.value = block(current)
     }
 
-    /** Computed once from the feed and the entry; re-lowering a body does not change it. */
+    /** Computed once from the feed and the entry; re-lowering a body does not change them. */
+    private var source: ArticleUiState.SourceLink? = null
     private var byline: String = ""
 
     /**
@@ -231,13 +250,16 @@ class ArticleViewModel(
     private fun String.collapsed(): String = trim().replace(WHITESPACE, " ")
 
     /**
-     * `SOURCE · AUTHOR · 3 AUG 2026`, with the parts a given entry lacks simply absent —
-     * a byline reading `· · 3 AUG 2026` is worse than a short one.
+     * `AUTHOR · 3 AUG 2026` — the byline after the source, which V08 draws separately
+     * because it is the one segment that goes somewhere. Parts a given entry lacks are
+     * simply absent: a byline reading `· · 3 AUG 2026` is worse than a short one.
+     *
+     * [source] is still passed in, and still never appears in the result: a one-author
+     * blog puts its own name in both fields, and saying it twice looks broken.
      */
     private fun byline(source: String?, author: String?, publishedAt: Long): String {
         val date = DATE.format(Instant.ofEpochMilli(publishedAt).atZone(zone))
-        // A one-author blog puts its own name in both fields; saying it twice looks broken.
-        val parts = listOfNotNull(source, author.takeUnless { it.equals(source, ignoreCase = true) }, date)
+        val parts = listOfNotNull(author.takeUnless { it.equals(source, ignoreCase = true) }, date)
         return parts.filter { it.isNotBlank() }.joinToString(SEPARATOR).uppercase(Locale.getDefault())
     }
 
@@ -253,7 +275,8 @@ class ArticleViewModel(
             }
         }
 
-        private const val SEPARATOR = " · "
+        /** Also drawn between the source segment and the rest (V08). */
+        internal const val SEPARATOR = " · "
         private const val ELLIPSIS = "…"
         private val WHITESPACE = Regex("""\s+""")
 

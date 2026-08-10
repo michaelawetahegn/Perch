@@ -4,15 +4,19 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.net.Uri
 import androidx.browser.customtabs.CustomTabsIntent
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
@@ -43,10 +47,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.mkiros.perch.R
 import dev.mkiros.perch.data.parse.ArticleBlock
@@ -68,6 +74,9 @@ import dev.mkiros.perch.ui.theme.Dimens
 fun ArticleScreen(
     viewModel: ArticleViewModel,
     onBack: () -> Unit,
+    // V08: the source's name in the byline is a way into that source's list. The screen
+    // does not know what that list is — the shell scopes the Feed and shows it.
+    onOpenSource: (Long) -> Unit = {},
     modifier: Modifier = Modifier,
     zoomed: MutableState<ZoomedImage?> = rememberSaveable(stateSaver = ZoomedImage.Saver) {
         mutableStateOf(null)
@@ -168,6 +177,7 @@ fun ArticleScreen(
                         }
                         Article(
                             state = current,
+                            onOpenSource = onOpenSource,
                             onOpenLink = { url -> openInBrowser(context, url) },
                             onOpenImage = { image -> zoomed.value = ZoomedImage(image.url, image.alt) },
                         )
@@ -255,6 +265,7 @@ private fun ToggleAction(
 @Composable
 private fun Article(
     state: ArticleUiState.Loaded,
+    onOpenSource: (Long) -> Unit,
     onOpenLink: (String) -> Unit,
     onOpenImage: (ArticleBlock.Image) -> Unit,
 ) {
@@ -276,14 +287,7 @@ private fun Article(
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.testTag(ArticleTestTags.HEADLINE),
                 )
-                Text(
-                    text = state.byline,
-                    style = ArticleType.byline,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier
-                        .padding(top = Dimens.md, bottom = Dimens.xl)
-                        .testTag(ArticleTestTags.BYLINE),
-                )
+                Byline(state, onOpenSource)
                 state.standfirst?.let { standfirst ->
                     Text(
                         text = standfirst,
@@ -308,6 +312,64 @@ private fun Article(
 
                 Spacer(modifier = Modifier.height(Dimens.xxl))
             }
+        }
+    }
+}
+
+/**
+ * `SOURCE · AUTHOR · 3 AUG 2026`, with the source segment a way into that source's list
+ * (V08, issue #10).
+ *
+ * Only the source is interactive: the author is not a destination Perch has and a date is
+ * not a link at all, so the line is composed of segments rather than made tappable whole.
+ * The segment is a control and is dressed as one — `Role.Button`, a ripple, and a hit
+ * area of [Dimens.touchTarget] whatever the type size — but dressed in §8's editorial
+ * underline rather than in a coloured hyperlink, which is the loudest way for a reading
+ * surface to stop looking like a publication.
+ *
+ * The row is [Dimens.touchTarget] tall whether or not the source is there, so an entry
+ * whose feed row has gone does not shift the article up under the headline.
+ */
+@Composable
+private fun Byline(state: ArticleUiState.Loaded, onOpenSource: (Long) -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.heightIn(min = Dimens.touchTarget).padding(bottom = Dimens.sm),
+    ) {
+        val rest = state.byline
+        state.source?.let { source ->
+            Text(
+                text = source.name,
+                style = ArticleType.byline,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textDecoration = ArticleType.link,
+                modifier = Modifier
+                    .clip(MaterialTheme.shapes.extraSmall)
+                    .clickable(
+                        role = Role.Button,
+                        onClickLabel = stringResource(R.string.article_open_source),
+                    ) { onOpenSource(source.feedId) }
+                    .heightIn(min = Dimens.touchTarget)
+                    .wrapContentHeight()
+                    .testTag(ArticleTestTags.SOURCE),
+            )
+            if (rest.isNotEmpty()) {
+                Text(
+                    text = ArticleViewModel.SEPARATOR,
+                    style = ArticleType.byline,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+        if (rest.isNotEmpty()) {
+            Text(
+                text = rest,
+                style = ArticleType.byline,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                // Lets a long author name wrap rather than run off the measure; the
+                // source keeps its intrinsic width because it is the tappable one.
+                modifier = Modifier.weight(1f, fill = false).testTag(ArticleTestTags.BYLINE),
+            )
         }
     }
 }
@@ -352,6 +414,9 @@ private fun openInBrowser(context: Context, url: String) {
 object ArticleTestTags {
     const val HEADLINE = "article:headline"
     const val BYLINE = "article:byline"
+
+    /** The byline's tappable first segment (V08); [BYLINE] is the rest of the line. */
+    const val SOURCE = "article:source"
     const val STANDFIRST = "article:standfirst"
     const val OPEN_IN_BROWSER = "article:open-in-browser"
     const val LIKE = "article:like"

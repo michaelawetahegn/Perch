@@ -5,6 +5,8 @@ import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import androidx.activity.ComponentActivity
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.assertTextEquals
@@ -36,6 +38,7 @@ import dev.mkiros.perch.ui.nav.PerchNavHost
 import dev.mkiros.perch.ui.nav.PerchTab
 import dev.mkiros.perch.ui.article.ArticleUiState
 import dev.mkiros.perch.ui.article.ArticleViewModel
+import dev.mkiros.perch.ui.home.HomeScope
 import dev.mkiros.perch.ui.home.HomeScreen
 import dev.mkiros.perch.ui.home.HomeTestTags
 import dev.mkiros.perch.ui.home.HomeViewModel
@@ -229,6 +232,25 @@ class DesignScreenshotTest {
         capture("to-read-dark")
     }
 
+    /**
+     * V08's scoped list — where tapping a source's name in an article lands the reader.
+     *
+     * What the shot is for: the bar has to say *which* source without any other change to
+     * the screen, because the whole decision was that this is the Feed narrowed rather
+     * than a second kind of list. If it reads as a different screen, the decision was
+     * wrong.
+     */
+    @Test
+    fun `the list scoped to one source`() {
+        seed()
+        val feedId = feedIdOf("nullprogram.com")
+        showHome(ThemeMode.Dark, scope = HomeScope.Source(feedId))
+
+        compose.onNodeWithTag(HomeTestTags.TITLE).assertTextEquals("null program")
+
+        capture("feed-scoped-to-source")
+    }
+
     @Test
     fun `the first launch with no sources`() {
         showHome(ThemeMode.Light)
@@ -336,7 +358,11 @@ class DesignScreenshotTest {
         }
     }
 
-    private fun showHome(mode: ThemeMode) {
+    private fun feedIdOf(host: String): Long = runBlocking {
+        database.feedDao().getAll().first { it.feedUrl.contains(host) }.id
+    }
+
+    private fun showHome(mode: ThemeMode, scope: HomeScope = HomeScope.All) {
         stubThumbnails()
         homeViewModel = HomeViewModel(
             entries = container.entries,
@@ -353,6 +379,7 @@ class DesignScreenshotTest {
                     addSourceViewModel = addSourceViewModel,
                     onOpenEntry = {},
                     onOpenSettings = {},
+                    homeScope = remember { mutableStateOf(scope) },
                 )
             }
         }
