@@ -222,24 +222,25 @@ class HomeTimeFilterTest {
     // ---- folder sections ---------------------------------------------------------
 
     @Test
-    fun `entries are sectioned under folder headers in folder order`() {
+    fun `entries are sectioned under folder headers in alphabetical folder order`() {
+        // Created out of alphabetical order on purpose (V06): creation order used to decide.
         val security = seedFolder("Security", sortIndex = 0)
         val ai = seedFolder("AI", sortIndex = 1)
         val zdi = seedFeed("ZDI", folderId = security)
         val llm = seedFeed("LLM Weekly", folderId = ai)
         // Newest overall is in the *second* section: folder order outranks recency
         // across sections, and recency orders rows within one.
-        seedEntry(llm, "Newest of all", at = "2026-08-07T11:00:00Z")
-        seedEntry(zdi, "An advisory", at = "2026-08-07T08:00:00Z")
+        seedEntry(zdi, "Newest of all", at = "2026-08-07T11:00:00Z")
+        seedEntry(llm, "A model release", at = "2026-08-07T08:00:00Z")
 
         showHome()
 
         // Headers are addressed by tag, not by text: the drawer behind the list is
         // composed even while closed, so every folder name is on screen twice.
-        assertThat(topOfSection(security)).isLessThan(topOf("An advisory"))
-        assertThat(topOf("An advisory")).isLessThan(topOfSection(ai))
-        assertThat(topOfSection(ai)).isLessThan(topOf("Newest of all"))
-        compose.onNodeWithTag(HomeTestTags.section(security)).assertTextEquals("Security")
+        assertThat(topOfSection(ai)).isLessThan(topOf("A model release"))
+        assertThat(topOf("A model release")).isLessThan(topOfSection(security))
+        assertThat(topOfSection(security)).isLessThan(topOf("Newest of all"))
+        compose.onNodeWithTag(HomeTestTags.section(ai)).assertTextEquals("AI")
     }
 
     @Test

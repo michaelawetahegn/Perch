@@ -93,6 +93,12 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   whole day. Now `systemDefaultZone()`, which also dates the OPML/profile export filenames right. **`DateParser`
   stays UTC deliberately.** A zone test must pin `TimeZone.setDefault`: inheriting the JVM's cannot tell
   UTC-the-bug from UTC-the-agent.
+- 2026-08-09 — **V06/#11: folder order is alphabetical (`COLLATE NOCASE`), Uncategorized still pinned
+  by `(id = 1) ASC`.** The clause is stated **three** times and they must agree — `FolderDao.observeAll`,
+  `FolderDao.getAll`, `EntryQueries.LIST_ITEMS` (the drawer and the section headers read *different*
+  ones). `sortIndex` stays a column (OPML/profile round-trips) but decides nothing. **`COLLATE NOCASE`
+  folds ASCII only**: `Émacs` sorts after every plain name, by UTF-8 byte — pinned by a test, accepted,
+  not a bug to "fix" without an ICU collation.
 - 2026-08-08 — **U16: v0.2.0 shipped** (versionCode 3, `app/build/outputs/apk/release/app-release.apk`). **Never
   `clean` before `test assembleRelease`** — it deletes `build/perch-screenshots/`, the evidence.
 - 2026-08-09 — **Never wait on a WSL→Windows `cmd.exe /c start` — background it** (encoded in `device.sh`/`loop.sh`);

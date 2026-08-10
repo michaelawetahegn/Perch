@@ -106,6 +106,30 @@ class FolderDrawerTest {
         assertThat(topOf("Security")).isLessThan(topOf("Zero Day Initiative"))
     }
 
+    /**
+     * V06/§0: alphabetical, case-insensitive, Uncategorized last — and the drawer and the
+     * list headers read *different* queries (`FolderDao.observeAll`, `EntryDao.LIST_ITEMS`),
+     * so they are the pair that can disagree.
+     */
+    @Test
+    fun `the drawer and the list sections agree on alphabetical folder order`() {
+        // Created in reverse: while creation order decided, Security led both lists.
+        val security = seedFolder("Security")
+        val ai = seedFolder("ai")
+        seedEntry(seedFeed(title = "Zero Day Initiative", folderId = security), title = "advisory")
+        seedEntry(seedFeed(title = "LLM Weekly", folderId = ai), title = "a model")
+
+        showHome()
+
+        assertThat(topOfTag(HomeTestTags.section(ai)))
+            .isLessThan(topOfTag(HomeTestTags.section(security)))
+
+        openDrawer()
+
+        assertThat(topOfTag(HomeTestTags.folderHeader(ai)))
+            .isLessThan(topOfTag(HomeTestTags.folderHeader(security)))
+    }
+
     @Test
     fun `a folder header carries the unread count of every source in it`() {
         val graphics = seedFolder("Graphics")
@@ -288,6 +312,10 @@ class FolderDrawerTest {
 
     private fun topOf(text: String): Float =
         compose.onNodeWithText(text).fetchSemanticsNode().positionInRoot.y
+
+    /** A folder's name is on screen in the drawer *and* as a section header, so: by tag. */
+    private fun topOfTag(testTag: String): Float =
+        compose.onNodeWithTag(testTag).fetchSemanticsNode().positionInRoot.y
 
     private fun folders() = runBlocking { database.folderDao().getAll() }
 

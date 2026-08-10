@@ -79,14 +79,51 @@ class FolderDaoTest {
     }
 
     @Test
-    fun `folders are observed in sort order with Uncategorized last`() = runTest {
-        folders.insert(folder("Security", sortIndex = 2))
-        folders.insert(folder("Graphics", sortIndex = 1))
+    fun `folders are observed alphabetically, ignoring case, with Uncategorized last`() = runTest {
+        // sortIndex is append-on-create, so these are in creation order and every one of
+        // them is ahead of nothing alphabetically. V03 §0: creation order is not an order
+        // anybody asked for.
+        folders.insert(folder("Security", sortIndex = 1))
+        folders.insert(folder("ai", sortIndex = 2))
+        folders.insert(folder("3D Printing", sortIndex = 3))
+        folders.insert(folder("Graphics", sortIndex = 4))
 
         val observed = folders.observeAll().first()
 
         assertThat(observed.map { it.name })
-            .containsExactly("Graphics", "Security", FolderEntity.UNCATEGORIZED_NAME)
+            .containsExactly(
+                "3D Printing",
+                "ai",
+                "Graphics",
+                "Security",
+                FolderEntity.UNCATEGORIZED_NAME,
+            )
+            .inOrder()
+    }
+
+    @Test
+    fun `the one-shot read returns the same order the drawer observes`() = runTest {
+        folders.insert(folder("Security", sortIndex = 1))
+        folders.insert(folder("ai", sortIndex = 2))
+        folders.insert(folder("Graphics", sortIndex = 3))
+
+        assertThat(folders.getAll().map { it.name })
+            .isEqualTo(folders.observeAll().first().map { it.name })
+    }
+
+    /**
+     * `COLLATE NOCASE` folds ASCII and nothing else, so an accented name sorts by its
+     * UTF-8 bytes and lands after every plain one. Accepted, deliberately: the alternative
+     * is an ICU collation Room would have to carry, for a case a reading list hits about
+     * never. See [FolderDao.observeAll].
+     */
+    @Test
+    fun `an accented name sorts after the ASCII ones rather than case-folding`() = runTest {
+        folders.insert(folder("Émacs", sortIndex = 1))
+        folders.insert(folder("zig", sortIndex = 2))
+
+        assertThat(folders.observeAll().first().map { it.name })
+            .containsExactly("zig", "Émacs", FolderEntity.UNCATEGORIZED_NAME)
             .inOrder()
     }
 

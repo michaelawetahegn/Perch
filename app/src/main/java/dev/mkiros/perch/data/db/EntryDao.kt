@@ -50,7 +50,7 @@ internal object EntryQueries {
         WHERE (:includeRead OR e.isRead = 0) AND (:feedId IS NULL OR e.feedId = :feedId)
           AND (:folderId IS NULL OR f.folderId = :folderId)
           AND (:publishedAfter IS NULL OR e.publishedAt >= :publishedAfter)
-        ORDER BY (fo.id = 1) ASC, fo.sortIndex ASC, fo.name COLLATE NOCASE ASC,
+        ORDER BY (fo.id = 1) ASC, fo.name COLLATE NOCASE ASC,
                  e.publishedAt DESC, e.id DESC
     """
 

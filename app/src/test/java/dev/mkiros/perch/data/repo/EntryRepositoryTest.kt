@@ -356,20 +356,24 @@ class EntryRepositoryTest {
     }
 
     @Test
-    fun `the list is sectioned by folder in folder order, newest first inside a folder`() =
+    fun `the list is sectioned alphabetically by folder, newest first inside a folder`() =
         runTest {
-            val ai = folders.insert(folder(name = "AI", sortIndex = 1))
+            // Created out of alphabetical order on purpose: V06 took the decision away
+            // from sortIndex, which was only ever creation order.
             val security = folders.insert(folder(name = "Security", sortIndex = 0))
+            val ai = folders.insert(folder(name = "AI", sortIndex = 1))
             val inAi = feeds.insert(feed("https://ai.example/feed", folderId = ai))
             val inSecurity = feeds.insert(feed("https://sec.example/feed", folderId = security))
             insertEntry(inAi, "ai-old", publishedAt = MIDNIGHT)
             insertEntry(inAi, "ai-new", publishedAt = MIDNIGHT + 2)
-            insertEntry(inSecurity, "sec", publishedAt = MIDNIGHT + 1)
+            // Newest overall, and it still comes last: folder outranks recency across
+            // sections, recency orders rows within one.
+            insertEntry(inSecurity, "sec", publishedAt = MIDNIGHT + 3)
 
             val listed = repo.observeEntries().first()
 
             assertThat(listed.map { it.title })
-                .containsExactly("Entry sec", "Entry ai-new", "Entry ai-old").inOrder()
+                .containsExactly("Entry ai-new", "Entry ai-old", "Entry sec").inOrder()
         }
 
     @Test

@@ -49,7 +49,9 @@ class FolderRepository(
      * OPML import, which creates folders wholesale from another reader's file, would
      * otherwise fill the drawer with near-duplicates.
      *
-     * New folders are appended after the existing ones; the user reorders from there.
+     * A new folder gets the next `sortIndex` so the column keeps recording creation order
+     * for OPML and profile round-trips, but it appears wherever its name puts it: the
+     * drawer sorts alphabetically (PLAN-3 §0, V06).
      */
     suspend fun createFolder(name: String): Long {
         val clean = name.clean()

@@ -17,19 +17,28 @@ import kotlinx.coroutines.flow.Flow
 abstract class FolderDao {
 
     /**
-     * Drawer order (PLAN-2 §0): the user's `sortIndex`, with Uncategorized pinned last
-     * whatever its own value. Pinning it in SQL rather than in the drawer means every
-     * caller — drawer, home sections, OPML export — gets the same order for free.
+     * Drawer order (PLAN-3 §0): alphabetical, case-insensitive, with Uncategorized pinned
+     * last whatever it is called. This replaces PLAN-2 §0's `sortIndex` order — no reorder
+     * UI was ever built, so `sortIndex` only ever meant creation order. Pinning it in SQL
+     * rather than in the drawer means every caller — drawer, home sections, OPML export —
+     * gets the same order for free; the same clause is stated in [EntryQueries.LIST_ITEMS],
+     * which sections the list, and the two must never disagree.
+     *
+     * `COLLATE NOCASE` folds ASCII and nothing else, so `Émacs` sorts by its UTF-8 bytes,
+     * after every plain name rather than among the E's. Accepted: the alternative is an ICU
+     * collation to carry, for a case a reading list hits about never. `FolderDaoTest` pins
+     * the behaviour so it is a decision and not a surprise.
      */
     @Query(
         """
         SELECT * FROM folders
-        ORDER BY (id = 1) ASC, sortIndex ASC, name COLLATE NOCASE ASC
+        ORDER BY (id = 1) ASC, name COLLATE NOCASE ASC
         """,
     )
     abstract fun observeAll(): Flow<List<FolderEntity>>
 
-    @Query("SELECT * FROM folders ORDER BY (id = 1) ASC, sortIndex ASC")
+    /** The one-shot read of [observeAll], and it must sort identically. */
+    @Query("SELECT * FROM folders ORDER BY (id = 1) ASC, name COLLATE NOCASE ASC")
     abstract suspend fun getAll(): List<FolderEntity>
 
     @Query("SELECT * FROM folders WHERE id = :id")

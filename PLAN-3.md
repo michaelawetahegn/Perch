@@ -173,7 +173,7 @@ do when installing. The template lives in the repo so no release re-invents it.
         updated; `maestro/regression.yaml` still matches the app; issue #12 closed.
       - Rung: unit
 
-- [ ] **V06 — Folders sort alphabetically, Uncategorized last. TDD. Issue #11.**
+- [x] **V06 — Folders sort alphabetically, Uncategorized last. TDD. Issue #11.**
       `gh issue view 11` and §0 above. Today's order is `sortIndex ASC` with `name` only as
       a tie-break, and `sortIndex` is append-on-create (`FolderDao.kt:47` takes
       `MAX(sortIndex)+1`), so in practice it is creation order — and nothing in the UI

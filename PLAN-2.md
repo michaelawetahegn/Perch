@@ -30,6 +30,9 @@ wins** and the task that touches it updates the older doc in the same commit.
 goes to the built-in folder **"Uncategorized"** (id 1, undeletable, unrenameable).
 Deleting a folder moves its sources to Uncategorized — it never deletes sources.
 Folder order is user-controlled (`sortIndex`); Uncategorized sorts last.
+**Superseded by PLAN-3.md §0 (V06): folder order is alphabetical, case-insensitive, with
+Uncategorized still last.** The `sortIndex` column stays — OPML and profile round-trips
+carry it — it just no longer decides the display order.
 
 **The two grouping dimensions are not the same dimension.** Time is a *filter*, folder is
 a *section*. Home has **one dropdown** — Today · Past Week · Past Month · Past Year · All

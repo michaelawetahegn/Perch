@@ -12,8 +12,10 @@ import androidx.room.PrimaryKey
  * somewhere to put its sources. It is seeded on create and by migration 1 → 2, and the
  * repository refuses to rename or delete it.
  *
- * @param sortIndex the user's order. Uncategorized is pinned last regardless of its own
- *   value — see [dev.mkiros.perch.data.db.FolderDao.observeAll].
+ * @param sortIndex creation order, carried across OPML and profile round-trips. It does
+ *   **not** decide the display order any more (PLAN-3 §0, V06): folders are shown
+ *   alphabetically with Uncategorized pinned last — see
+ *   [dev.mkiros.perch.data.db.FolderDao.observeAll].
  */
 @Entity(tableName = "folders", indices = [Index(value = ["name"], unique = true)])
 data class FolderEntity(
