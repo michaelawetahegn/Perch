@@ -812,6 +812,11 @@ private fun SourceDrawer(
  * the sources, the name scopes the list to the folder, and the `⋮` renames or deletes it.
  * They are deliberately *not* merged into a single node — a merged row could offer only
  * one of the three, and expanding a folder is not the same gesture as reading it.
+ *
+ * A selection the header cannot join draws it as unavailable rather than letting the
+ * press land on nothing (V10): dimmed, no ripple, and `disabled` in its semantics so the
+ * rule reaches a screen reader too. Which selections those are is [refusesFolder]'s to
+ * say — the drawer draws the refusal, it does not restate it.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -825,14 +830,21 @@ private fun FolderHeaderRow(
     onToggle: () -> Unit,
     onActions: () -> Unit,
 ) {
+    val unavailable = selection.refusesFolder(folder.id)
     val container =
         if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent
-    val content =
+    // Two colours, because the row is not uniformly unavailable: the *header* is refused
+    // but the chevron beside it is not, and dimming a control that still works would
+    // misreport it. So [live] paints the controls and [content] the name and its count —
+    // dimmed, never invisible, since the reader still reads the name to find the source
+    // underneath it.
+    val live =
         if (selected) {
             MaterialTheme.colorScheme.onSecondaryContainer
         } else {
             MaterialTheme.colorScheme.onSurface
         }
+    val content = if (unavailable) live.copy(alpha = UNAVAILABLE_ALPHA) else live
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -876,7 +888,7 @@ private fun FolderHeaderRow(
                         if (expanded) R.string.folder_collapse else R.string.folder_expand,
                         folder.name,
                     ),
-                    tint = content,
+                    tint = live,
                     modifier = Modifier.size(Dimens.icon),
                 )
             }
@@ -886,7 +898,11 @@ private fun FolderHeaderRow(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight()
-                .combinedClickable(onClick = onSelect, onLongClick = onLongPress)
+                .combinedClickable(
+                    enabled = !unavailable,
+                    onClick = onSelect,
+                    onLongClick = onLongPress,
+                )
                 .semantics(mergeDescendants = true) {}
                 .padding(horizontal = Dimens.xs)
                 .testTag(HomeTestTags.folderHeader(folder.id)),
@@ -905,7 +921,13 @@ private fun FolderHeaderRow(
             Text(
                 text = folder.unreadCount.toString(),
                 style = MaterialTheme.typography.labelLarge,
-                color = if (selected) content else MaterialTheme.colorScheme.onSurfaceVariant,
+                // The count follows the name down when the header is unavailable: half a
+                // row dimmed would read as a rendering fault rather than as a state.
+                color = if (selected || unavailable) {
+                    content
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
                 modifier = Modifier.testTag(HomeTestTags.folderBadge(folder.id)),
             )
         }
@@ -917,7 +939,7 @@ private fun FolderHeaderRow(
                 Icon(
                     imageVector = Icons.Default.MoreVert,
                     contentDescription = stringResource(R.string.folder_more, folder.name),
-                    tint = content,
+                    tint = live,
                     modifier = Modifier.size(Dimens.icon),
                 )
             }
@@ -1400,6 +1422,9 @@ private fun EmptyState(
         }
     }
 }
+
+/** Material's disabled-content opacity: the one number a reader already knows (V10). */
+private const val UNAVAILABLE_ALPHA = 0.38f
 
 private const val SKELETON_ROWS = 6
 private const val TITLE_BAR_FRACTION = 0.85f

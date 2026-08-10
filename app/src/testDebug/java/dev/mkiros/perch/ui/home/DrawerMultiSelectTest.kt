@@ -10,6 +10,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertTextEquals
@@ -184,6 +186,53 @@ class DrawerMultiSelectTest {
 
         assertThat(selection.value).isEqualTo(DrawerSelection.Folders(setOf(graphics)))
         compose.onNodeWithTag(SelectionTestTags.COUNT).assertTextEquals("1 selected")
+    }
+
+    /**
+     * V10: the rule above is enforced and silent, which reads as a broken row rather than
+     * as a rule. A refused header is drawn as unavailable — disabled semantics, so a
+     * screen reader is told the same thing the dimming says — while the folder's chevron
+     * beside it stays live, since opening a collapsed folder to reach the sources inside
+     * it is exactly what a reader mid-source-selection wants to do.
+     */
+    @Test
+    fun `mid-source-selection a folder header is drawn as unavailable`() {
+        val graphics = seedFolder("Graphics")
+        seedFeed(title = "GPUOpen", folderId = graphics)
+
+        showHome()
+        longPress("GPUOpen")
+
+        compose.onNodeWithTag(HomeTestTags.folderHeader(graphics)).assertIsNotEnabled()
+        compose.onNodeWithTag(HomeTestTags.folderExpand(graphics)).assertIsEnabled()
+    }
+
+    @Test
+    fun `mid-folder-selection only Uncategorized is drawn as unavailable`() {
+        val graphics = seedFolder("Graphics")
+        seedFeed(title = "GPUOpen", folderId = graphics)
+        seedFeed(title = "nullprogram.com")
+
+        showHome()
+        longPressFolder(graphics)
+
+        compose.onNodeWithTag(HomeTestTags.folderHeader(FolderEntity.UNCATEGORIZED_ID))
+            .assertIsNotEnabled()
+        compose.onNodeWithTag(HomeTestTags.folderHeader(graphics)).assertIsEnabled()
+    }
+
+    @Test
+    fun `outside selection every folder header is available`() {
+        val graphics = seedFolder("Graphics")
+        seedFeed(title = "GPUOpen", folderId = graphics)
+        seedFeed(title = "nullprogram.com")
+
+        showHome()
+        openDrawer()
+
+        compose.onNodeWithTag(HomeTestTags.folderHeader(graphics)).assertIsEnabled()
+        compose.onNodeWithTag(HomeTestTags.folderHeader(FolderEntity.UNCATEGORIZED_ID))
+            .assertIsEnabled()
     }
 
     @Test

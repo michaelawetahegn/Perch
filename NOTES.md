@@ -54,14 +54,12 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   **`BackStep.CloseImageViewer` sits between `CloseOverlay` and `PopArticle`**, an order `BackChainTest` guards.
   An open overlay eats `performTouchInput` — scroll under it first; `performClick` needs `mainClock.advanceTimeBy`.
 - 2026-08-08 — **U13 (OPML folders).** A folder is a **name, not an id** — ids do not survive the file (U14 inherits
-  this). Export leaves Uncategorized unfiled at top level; import files a source under the **outermost** container,
-  flattens deeper nesting, leaves a **duplicate alone**, creates a folder only when a source goes into it.
+  this). Import files a source under the **outermost** container and leaves a duplicate alone.
 - 2026-08-08 — **U14 (profile).** DB is **version 5**: `pending_entry_state`, keyed `(feedUrl, guid)`, **no FK to
   `feeds`** — its job is outliving a source that does not exist yet. **`EntryDao.upsertAll` consumes parked rows**,
   which is what stops the refresh straight after a restore undoing it. A restore turns a flag **on** and never off,
   so it is idempotent. Codec is `org.json` — **its tests need Robolectric**; on a bare JVM `JSONObject` stubs.
-- 2026-08-09 — **V01/#1: Robolectric builds `PerchApp` for every test**, so `onCreate` work outlived it. `startupScope`
-  dies in `onTerminate()`; a store cancels only a scope it *owns*. `LoudUncaughtHandler` stays — the flake never repro'd.
+- 2026-08-09 — **V01/#1: Robolectric builds `PerchApp` for every test** — a store cancels only a scope it *owns*.
 - 2026-08-09 — **Every full-suite flake so far: waiting on Room is not waiting on the screen** — asserting rendered
   text the moment the DB has it loses the emit→recompose hop. **Poll in wall-clock time**, not `waitForIdle`.
 - 2026-08-09 — **V02/#9: a `Clock` carries a zone, and the container's was Greenwich's.** `AppContainer` now injects
@@ -75,15 +73,18 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
 - 2026-08-09 — **V07/#13: a missing thumbnail is `surfaceVariant` + the mark as line art in `outline`**
   (`Placeholder(marked = true)`); **only `loading` keeps the bare frame**. `ColorFilter.tint` flattens the mark to a
   silhouette — `perchMarkMonochrome(ink, paper)` rebuilds it. `Screenshots.rasterize` reads pixels, writes no file.
+- 2026-08-10 — **V10/#5: a refused row is `refusesFolder` = "a tick would change nothing"**, so the affordance cannot
+  drift from `toggleFolder`. **`combinedClickable(enabled = false)` keeps its `OnClick` semantics action** — only
+  `Disabled` is added, so `performSemanticsAction` still fires it: assert `assertIsNotEnabled`, never a missing action.
+  The header dims (name + badge, `UNAVAILABLE_ALPHA`) while its chevron keeps full contrast — it is still live.
 - 2026-08-08 — **U16: v0.2.0 shipped** (versionCode 3, `app/build/outputs/apk/release/app-release.apk`).
 - 2026-08-09 — **V04/#3: the inset contract is one doc comment in `ui/nav/PerchNavHost.kt`** — four clauses, one
   test each in `WindowInsetsTest`. Never add `.statusBarsPadding()` to a screen. **Robolectric has no bars or cutout
   on any profile**, so a test dispatches its own — `ui/WindowInsetsSupport.kt`'s `applyWindowInsets` reaches **every
   Compose root** (`WindowInsetsHolder` listens on the `AndroidComposeView`). The bottom bar and the `NavHost` are
   siblings and both spent the bottom inset; the shell now `consumeWindowInsets` while a tab is showing.
-- 2026-08-09 — **V05/#12: "Unread" is gone from every string a reader sees** (`home_title_feed`, `drawer_all_sources`);
-  identifiers keep the word on purpose. **Pin `HomeTestTags.TITLE`, never `onNodeWithText("Feed")`** — the bottom-bar
-  tab has read "Feed" since U09, so a text assertion passes without the top bar existing.
+- 2026-08-09 — **V05/#12: "Unread" is gone from every string a reader sees**; identifiers keep the word on purpose.
+  **Pin `HomeTestTags.TITLE`, never `onNodeWithText("Feed")`** — the bottom-bar tab has read "Feed" since U09.
 - 2026-08-09 — **V08/#10: the scoped list is state, not a route.** `HomeScope` is **hoisted into `PerchNavHost`** —
   third such state — because `BackStep.LeaveScope` is a rung, *above* `ScrollFeedToTop`, and the drawer is no longer
   its only writer; `HomeScreen` pushes it down through one `LaunchedEffect` and nothing else writes `scope`.

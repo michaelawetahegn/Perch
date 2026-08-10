@@ -75,6 +75,31 @@ class DrawerSelectionTest {
         assertThat(other.toggleFolder(FolderEntity.UNCATEGORIZED_ID)).isEqualTo(other)
     }
 
+    // ---- what the drawer draws as unavailable (V10) -----------------------------------
+
+    @Test
+    fun `no folder is refused when there is no selection to add it to`() {
+        assertThat(DrawerSelection.None.refusesFolder(3)).isFalse()
+        assertThat(DrawerSelection.None.refusesFolder(FolderEntity.UNCATEGORIZED_ID)).isFalse()
+    }
+
+    @Test
+    fun `a source selection refuses every folder`() {
+        val sources = DrawerSelection.None.toggleSource(7)
+
+        assertThat(sources.refusesFolder(3)).isTrue()
+        assertThat(sources.refusesFolder(FolderEntity.UNCATEGORIZED_ID)).isTrue()
+    }
+
+    @Test
+    fun `a folder selection refuses only Uncategorized`() {
+        val folders = DrawerSelection.None.toggleFolder(3)
+
+        assertThat(folders.refusesFolder(FolderEntity.UNCATEGORIZED_ID)).isTrue()
+        assertThat(folders.refusesFolder(3)).isFalse()
+        assertThat(folders.refusesFolder(4)).isFalse()
+    }
+
     @Test
     fun `a source selection survives being written out and read back`() {
         val selection = DrawerSelection.None.toggleSource(7).toggleSource(8)

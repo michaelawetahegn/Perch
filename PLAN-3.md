@@ -277,7 +277,7 @@ do when installing. The template lives in the repo so no release re-invents it.
 
 ## Phase 4 — Rules you can see
 
-- [ ] **V10 — An unavailable folder header says so. TDD + screenshot. Issue #5.**
+- [x] **V10 — An unavailable folder header says so. TDD + screenshot. Issue #5.**
       `gh issue view 5`. Mid-*source* selection, tapping a folder header does nothing: the
       selection is deliberately homogeneous (sources or folders, never both), and
       Uncategorized refuses selection outright. The rule is right and its tests

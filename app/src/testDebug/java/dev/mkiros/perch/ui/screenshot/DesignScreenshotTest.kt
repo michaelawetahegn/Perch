@@ -169,9 +169,12 @@ class DesignScreenshotTest {
     }
 
     /**
-     * U09a's selection mode, with three sources ticked. The shot is the check on the one
-     * thing the tests cannot see: whether the contextual bar reads as a *mode* — whether
-     * a reader glancing at it can tell the drawer has stopped being somewhere to navigate.
+     * U09a's selection mode, with three sources ticked. The shot is the check on the two
+     * things the tests cannot see: whether the contextual bar reads as a *mode* — whether
+     * a reader glancing at it can tell the drawer has stopped being somewhere to navigate
+     * — and whether V10's folder headers, unavailable to a source selection, read as
+     * quietly out of reach rather than as a rendering fault. Sources are ticked in it, so
+     * every folder header in the shot is a refused one.
      */
     @Test
     fun `the drawer in selection mode with three sources ticked`() {

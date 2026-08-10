@@ -91,6 +91,17 @@ fun DrawerSelection.toggleFolder(folderId: Long): DrawerSelection = when {
     else -> this
 }
 
+/**
+ * Whether the drawer must draw [folderId]'s header as unavailable (V10).
+ *
+ * Refusal is *defined* as "a tick would change nothing", so it cannot drift away from
+ * [toggleFolder]: a source selection refuses every folder, a folder selection refuses
+ * Uncategorized, and outside selection mode a header is not a tick target at all — it
+ * scopes the list, which is always available.
+ */
+fun DrawerSelection.refusesFolder(folderId: Long): Boolean =
+    isActive && toggleFolder(folderId) == this
+
 private fun Set<Long>.toggle(id: Long): Set<Long> = if (id in this) this - id else this + id
 
 private fun DrawerSelection.orNone(): DrawerSelection = if (count == 0) DrawerSelection.None else this
