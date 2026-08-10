@@ -68,22 +68,21 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   Stated **three** times and they must agree — `FolderDao.observeAll`, `.getAll`, `EntryQueries.LIST_ITEMS` (drawer
   and section headers read *different* ones). `sortIndex` stays a column (round-trips) but decides nothing.
   **`COLLATE NOCASE` folds ASCII only**: `Émacs` sorts last by UTF-8 byte — pinned by a test, not a bug to "fix".
-- 2026-08-09 — **V07/#13: a missing thumbnail is `surfaceVariant` + the mark as line art in `outline`**
-  (`Placeholder(marked = true)`), **only `loading` keeps the bare frame**; `ColorFilter.tint` would flatten the mark
-  to a silhouette, so `perchMarkMonochrome(ink, paper)`. `Screenshots.rasterize` reads pixels, writes no file.
+- **V07/#13: a missing thumbnail is `surfaceVariant` + the mark as line art in `outline`** (`Placeholder(marked =
+  true)`), **only `loading` keeps the bare frame**; `ColorFilter.tint` would flatten the mark to a silhouette, so
+  `perchMarkMonochrome(ink, paper)`. `Screenshots.rasterize` reads pixels, writes no file.
 - **V10/#5: a refused row is `refusesFolder` = "a tick would change nothing"**, so the affordance cannot drift
   from `toggleFolder`; the header dims while its chevron keeps full contrast. **`combinedClickable(enabled =
   false)` keeps its `OnClick` semantics action** — assert `assertIsNotEnabled`, never a missing action.
 - **U16: v0.2.0 shipped** (versionCode 3, `app/build/outputs/apk/release/`); **V13/#2: the v0.1.0 bridge is
-  executed and attached** (`perch-0.2.0-debug.apk`). Device traps: **`run-as` dies on a release build** (verify
-  through the UI, not sqlite3), `keyevent 4` at the list root **quits to the launcher**, a file written to
-  Downloads leaves the SAF picker on uninstall until MediaStore rescans.
+  executed and attached** (`perch-0.2.0-debug.apk`). On device, **`run-as` dies on a release build** — verify
+  through the UI, not sqlite3.
 - 2026-08-09 — **V04/#3: the inset contract is one doc comment in `ui/nav/PerchNavHost.kt`** — four clauses, one
   test each in `WindowInsetsTest`. Never add `.statusBarsPadding()` to a screen. **Robolectric has no bars or cutout
   on any profile**, so a test dispatches its own — `ui/WindowInsetsSupport.kt`'s `applyWindowInsets` reaches every
   Compose root.
-- **V05/#12: "Unread" is gone from every reader-facing string** (identifiers keep it); **pin
-  `HomeTestTags.TITLE`, never `onNodeWithText("Feed")`** — the bottom-bar tab has read "Feed" since U09.
+- **V05/#12: "Unread" is gone from every reader-facing string** (identifiers keep it); **pin `HomeTestTags.TITLE`,
+  never `onNodeWithText("Feed")`** — the bottom-bar tab has read "Feed" since U09.
 - 2026-08-09 — **V08/#10: the scoped list is state, not a route.** `HomeScope` is **hoisted into `PerchNavHost`** —
   third such state — `BackStep.LeaveScope` is a rung above `ScrollFeedToTop` and the drawer is no longer its
   only writer. **`selectTab` is a silent no-op from the article route**: `popUpTo(start){saveState}` saves the
@@ -97,5 +96,5 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
 - **V11/#7.** Anything spanning a scrolling child — the gutter's rule, a table's edge fade — measures 0 against
   the article's unbounded height: the rule needs the Row at **`height(IntrinsicSize.Min)`**, the fade is a
   draw-only `matchParentSize` **sibling** of the scroll (inside it it lands off-screen at the content's far end).
-  **The back sheet is now only its visible sliver** — it ran through the P's counter on the hollow themed layer;
-  the counter is a 5.9 × 7.8 hole `LauncherIconTest` measures on both layers, in all three statements of the path.
+  **The back sheet is only its visible sliver** now; the P's counter is a 5.9 × 7.8 hole `LauncherIconTest`
+  measures on both icon layers, in all **three** statements of the path.
