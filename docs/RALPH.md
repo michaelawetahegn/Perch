@@ -107,11 +107,43 @@ Rules that belong in every plan's preamble, because all three versions needed th
   commit. Say "at most three foreground runs", then fix the invariant regardless.
 - **Two attempts, then `BLOCKED`.** Never loop on a failing task.
 - **Close the issue, push the commit.** The task is not done until both happen.
+- **A review box, second from last.** Every plan ends with a review task immediately before
+  live acceptance and release — see §6. A plan without one is incomplete.
+
+The review box is standard furniture, so copy it rather than inventing it each time:
+
+```markdown
+- [ ] **W10 — The review pass. Everything this plan changed, read as a whole.**
+      Read `git diff <last-tag>..HEAD` — the whole of it, not one task's worth — and answer,
+      in the commit message and in NOTES.md where it outlives the plan:
+      1. Does any doc still describe the version before this one? README.md, SPEC.md,
+         DESIGN.md, NOTES.md, CLAUDE.md, docs/RALPH.md, against what actually shipped.
+      2. Did any task leave a helper, string, dimension or test tag orphaned? Name the ones
+         this plan scheduled to die and confirm they did, everywhere.
+      3. Was any test weakened rather than rewritten? Name every changed assertion and say
+         which is at least as strong as the one it replaced.
+      4. Is the suite still ≥N tests, and did any fix land without a test?
+      Fix what is small and mechanical **in this session**. Anything larger becomes a new
+      issue for the next plan, named here — do not start a feature in a review.
+      - Done: the four questions answered in the commit message, each with the command that
+        settled it; `./gradlew test` green; any new issue created and linked.
+      - Rung: unit
+```
 
 ### 3. Point the loop at it
 
-Two one-line edits: `PLAN=${PLAN:-PLAN-N.md}` in `loop.sh`, and the active-plan section at
-the top of `CLAUDE.md`. Move the finished plan into `docs/plans/`.
+**Four** one-line edits, not two — a plan turnover that misses one leaves a tool quietly
+reporting on the previous version:
+
+1. `PLAN=${PLAN:-PLAN-N.md}` in [`loop.sh`](../loop.sh) — the driver.
+2. The active-plan section at the top of [`CLAUDE.md`](../CLAUDE.md) — what a cold session
+   reads.
+3. `PLAN=${PLAN:-PLAN-N.md}` in [`scripts/progress.sh`](../scripts/progress.sh) — the
+   watcher. Miss this one and `./scripts/progress.sh` says "complete" all run.
+4. The table row in [`docs/plans/README.md`](plans/README.md) — the map of what each
+   version's plan was.
+
+Then move the finished plan into `docs/plans/`.
 
 ### 4. Launch it detached
 
@@ -140,11 +172,34 @@ spent its whole turn reporting status.
 
 ### 6. Land it
 
-The last two tasks of every plan so far have been a **live acceptance pass** (the real
-corpus, real network, screenshots critiqued against `DESIGN.md`) and a **release**
-(version bump, release-signed APK, `gh release create` with notes written to
-[`RELEASE-NOTES.md`](RELEASE-NOTES.md)). Keep that shape: the loop should end with
-something installable, not with the last bug fix.
+Every plan ends with the same three tasks, in this order: a **review pass**, a **live
+acceptance pass** (the real corpus, real network, screenshots critiqued against
+`DESIGN.md`) and a **release** (version bump, release-signed APK, `gh release create` with
+notes written to [`RELEASE-NOTES.md`](RELEASE-NOTES.md)). Keep that shape: the loop should
+end with something installable, not with the last bug fix.
+
+**The review comes first, and it is not optional.** One session reads the whole of
+`git diff <last-tag>..HEAD` and nothing else. It exists because of a class of defect that a
+per-task session **structurally cannot see**: each session only ever opens the files its own
+task names, so nobody is ever looking at the version as a whole. What that misses, every
+time —
+
+- a doc that still describes the version before this one (v0.4 was started because the
+  README shipped in v0.3 still talked about v0.2 — [#18](https://github.com/michaelawetahegn/Perch/issues/18));
+- a helper, string, dimension or test tag that the task which orphaned it did not delete;
+- a test *weakened* to pass instead of rewritten — visible only next to the assertion it
+  replaced, which is in a different commit;
+- a claim in `SPEC.md` or `CLAUDE.md` that the plan quietly stopped being true.
+
+There is **no CI in this repo** — `.github/` does not exist and every gate is local, run by
+whichever session happened to touch that file. That is precisely why the review is the only
+thing that ever reads a whole version's diff, and why skipping it means nothing does.
+
+**Make it a plan task, never a step in the driver.** `loop.sh` exits cleanly at zero
+unchecked tasks and knows nothing about findings; a review wired into the driver would have
+to halt it, and a halted loop has no way to report what it found. As a task it gets a
+session, a commit and an issue comment like everything else — and its findings that are too
+big to fix become issues for the next plan, which is where they belong.
 
 **Which digit moves is not the release task's judgement call.** Read the plan you just
 finished: if it landed any notable new feature or user-visible behaviour change, the

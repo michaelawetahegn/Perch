@@ -103,6 +103,12 @@ Do not skip ahead, do not do two tasks, do not refactor code the task doesn't to
   identity and never resets. Both live at `app/build.gradle.kts:12-13`
   (`perchVersionCode` / `perchVersionName`) and **nowhere else**: never bump a version in
   two places. Full statement and rationale: SPEC.md §1.
+- **Every plan ends with a review box, second from last** — one session that reads the whole
+  of `git diff <last-tag>..HEAD` before live acceptance and release. A plan without one is
+  incomplete; add it rather than starting the release. It catches what a per-task session
+  structurally cannot see, because each session only opens its own task's files: a doc still
+  describing the previous version, an orphaned helper, a weakened test. There is no CI here,
+  so nothing else ever reads a whole version's diff. Shape and rationale: `docs/RALPH.md` §6.
 - **No new dependencies** beyond SPEC.md §2 without a one-line justification in NOTES.md.
 - Never re-derive a decision already in SPEC.md or DESIGN.md. If in doubt between
   exploring and executing: **execute the plan.**

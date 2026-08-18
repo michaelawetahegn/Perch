@@ -367,7 +367,7 @@ longer true.
         open for W09.
       - Rung: unit
 
-- [ ] **W09 — Every loop ends with a review, and the process says so. Issue #18.**
+- [x] **W09 — Every loop ends with a review, and the process says so. Issue #18.**
       Second half of #18: "add a code review pass after every Ralph loop ends, where it makes
       sure everything looks okay. Right now for example, we include some stuff in the readme
       that's stale … a code review would have helped."
