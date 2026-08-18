@@ -212,6 +212,27 @@ object ArticleFixtures {
         squarespaceTable,
     )
 
+    /**
+     * Pages that do **not** extract today, kept out of [all] so the suite stays green (W06).
+     *
+     * A fixture lands here the moment it is harvested and leaves it the moment the defect it
+     * pins is fixed; [all] is a contract, and a page that is known to fail cannot be part of
+     * one. `ArticleExtractorBlindSpotTest` measures each of these and names the mechanism,
+     * and the task that flips the mechanism promotes the fixture into [other] in the same
+     * commit.
+     */
+    val pending: List<ArticleFixture> = listOf(
+        ArticleFixture(
+            slug = "huggingface-efficient-knowledge-distillation",
+            url = "https://huggingface.co/blog/MultiverseComputingCAI/" +
+                "efficient-knowledge-distillation",
+            cms = "Hugging Face blog (Svelte, Tailwind utility classes)",
+            mid = "The teacher never has to sit in memory during training",
+            last = "We have also open-sourced the chunked-loss implementation",
+            excludes = listOf("Models mentioned in this article", "Back to Articles"),
+        ),
+    )
+
     val all: List<ArticleFixture> = noBody + excerptOnly + other
 
     /** The live gpuopen feed as harvested, so the ≥10× gate measures a real excerpt. */

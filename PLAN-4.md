@@ -265,7 +265,7 @@ longer true.
         sheet's existing share; `./gradlew test` green at ≥1489 tests; issue #16 closed.
       - Rung: unit
 
-- [ ] **W06 — Why the Hugging Face page loses its body, written down and pinned. TDD. Issue #17.**
+- [x] **W06 — Why the Hugging Face page loses its body, written down and pinned. TDD. Issue #17.**
       `gh issue view 17 --json body` — the reader's own framing is the task's: "the big question
       is why those websites and why everything else works", and the fix must not be "just a
       narrow implementation just for this website".
