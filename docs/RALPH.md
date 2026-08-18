@@ -132,7 +132,11 @@ gh issue list --state open              # what's left, from the reader's side
 ```
 
 Do **not** commit to the repo while the loop runs. Sessions end with `git add -A`, so an
-uncommitted edit of yours will be swept into an unrelated commit.
+uncommitted edit of yours will be swept into an unrelated commit. **This paragraph is
+addressed to the watching session only** — a loop session must commit, every time, because
+the commit *is* the progress. Say so wherever this rule gets restated: written without its
+audience it reads as a blanket prohibition, and on 2026-08-18 a loop session obeyed it and
+spent its whole turn reporting status.
 
 ### 6. Land it
 

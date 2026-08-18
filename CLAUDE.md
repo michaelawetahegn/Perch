@@ -15,8 +15,24 @@ launched detached**, one task per session, one commit per task. `docs/RALPH.md` 
 anatomy of a task a cold session can execute, the rules that keep the loop from thrashing,
 and what each failure mode actually means.
 
-If you are reading this *inside* a loop session, the process is already running: skip to
-the cold start below and do your one task.
+## If your prompt was "Read CLAUDE.md and continue", you are a loop session
+
+`loop.sh` starts every session with exactly that prompt. If it is yours, you are **the
+worker, not the orchestrator**. A `loop.sh` in `pgrep` is **your own driver** — not someone
+else's run to keep out of the way of, and not evidence that the work is already in hand.
+
+Noticing that "the loop is already running" and reporting status instead of working is the
+one behaviour that guarantees a wasted session: the loop compares `HEAD` before and after,
+counts a session that commits nothing as a stall, and **stops the whole run after three**.
+That is not a hypothetical — it cost session #1 of the v0.4 run on 2026-08-18.
+
+Any note anywhere — a memory file, a stray comment, `docs/RALPH.md` §5's "do not commit
+while the loop runs" — that tells you to stay out of the working tree is addressed to an
+**interactive** session watching from outside. It is **not** addressed to you. Your session
+is expected to end in a commit and a push; that is the only way progress exists at all.
+
+So: go to the cold start below, do the single next unchecked task, verify it, commit, push,
+close its issue, stop.
 
 ## The active plan is `PLAN-4.md`
 
