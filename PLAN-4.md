@@ -397,7 +397,7 @@ longer true.
 
 ## Phase 3 — Land it
 
-- [ ] **W10 — The review pass. Everything this plan changed, read as a whole.**
+- [x] **W10 — The review pass. Everything this plan changed, read as a whole.**
       The box W09 just wrote into the process, run for the first time on this plan.
       Read `git diff v0.3.0..HEAD` — the whole of it, not one task's worth — and answer, in a
       comment on this box and in NOTES.md where it outlives the plan:
@@ -418,12 +418,54 @@ longer true.
       - Done: the four questions answered in the commit message, each with the command that
         settled it; `./gradlew test` green; any new issue created and linked.
       - Rung: unit
+      - **Reviewed 2026-08-18** over `git diff v0.3.0..HEAD` (49 files, +2335/-589).
+        1. **Docs.** SPEC/DESIGN/CLAUDE/RALPH describe what shipped. **README did not**, twice:
+           it offered "a row's swipe actions" (there are none — row actions are the long-press
+           sheet) and "tap a source name to narrow the Feed" on the row (the row's meta is
+           plain text; V08's scoping is the *article byline* and the drawer). Both rewritten,
+           with the screenshot alt text. NOTES' W02 line still sent a reader to
+           `HomeTestTags.section(id)`, which W03 deleted — rewritten. Four KDocs still
+           explained folder section headers (`TimeFilter`, `EntryDao.observeListItems`,
+           `EntryRepository`'s placeholder rationale, `FolderDrawerTest`) — rewritten.
+        2. **Orphans.** `startsSection`, home's `SectionHeader`, `showSections`,
+           `HomeTestTags.section` and `Dimens.sectionHeaderTop/Bottom` are gone everywhere
+           (`grep -rn` finds only Settings' unrelated `SectionHeader` and the article's
+           `sectionHeadAbove`); `home_filter_today` survives deliberately, relabelled
+           "Past 24 Hours". Two genuinely dead strings — `home_empty_no_entries` and
+           `home_empty_no_entries_body`, unreferenced since T21 — deleted.
+           `ArticleFixtures.pending` was an empty val nothing read, whose KDoc claimed
+           `ArticleExtractorBlindSpotTest` measured it: the test now holds every pending
+           fixture to still failing, so the slot cannot keep a page that has been fixed.
+        3. **Tests: none weakened.** `TimeFilterTest` traded a midnight equality for the
+           rolling edge *plus* three new invariants (zone-invariance, inclusive edge, the
+           window slides with the clock). `EntryRepositoryTest`/`EntryPagingTest` kept exact
+           `inOrder` assertions and gained strict `publishedAt` ordering across 90 paged rows.
+           `HomeTimeFilterTest` swapped four section assertions for "no section node exists",
+           and its one deleted test is covered twice over. `HomeScreenTest` made
+           "interleaved newest first" seed **two folders**, which is the only version of it
+           that can fail. `FolderDrawerTest` lost the list half of a rule the list no longer
+           obeys and kept the drawer half. `EntryRowTest` was the one real regression: the
+           relative-time bands went from `"Simon Willison / 47min"` to a bare
+           `onNodeWithText(label)`, which would pass on a row printing another entry's time —
+           restored as a per-row `EntryRowTestTags.DATE` assertion. `FeedCorpusTest` untouched.
+        4. **1524 tests, 0 failures** (`./gradlew cleanTestDebugUnitTest
+           cleanTestReleaseUnitTest test`, 1 skipped = the network-gated live gate), against a
+           floor of 1489. Every commit that touched `src/main` carried tests in the same
+           commit (W02 4/6, W03 6/7, W04 2/6, W05 5/3, W07 1/2 main/test files).
+        **Found and fixed beyond the four questions:** live **gate 9 still asserted the
+        folder-grouped list W03 deleted** — it read `observeListItems`, folded it into runs of
+        `folderName` and required each folder to open exactly once, which the one-stream list
+        cannot satisfy. It would have failed W11 as a mystery. Now the drawer's two queries
+        only, with the reason written down. `MIN_SECTIONS` renamed `MIN_NAMED_FOLDERS`.
+        **No new issue filed**: nothing survived that a fifth feature would be needed for.
 
 - [ ] **W11 — Live acceptance v4.** Re-run V15's twelve gates against the live corpus with
       `./gradlew :app:testDebugUnitTest -Pperch.live=true --tests '*LiveAcceptance*'`, with the
       two this plan invalidated **rewritten by the task that invalidated it**: gate 8 is no
       longer a UTC-versus-zone margin (W02 — a rolling window has none by construction) and
-      gate 7 no longer counts folder sections (W03 — there are none). Gate 1 still has no
+      gate 7 no longer counts folder sections (W03 — there are none). **Gate 9 lost its list
+      half in W10** for the same reason: folder order is the drawer's rule now, so the gate
+      asks `FolderDao`'s two queries and nothing else. Gate 1 still has no
       quota: every source in `feeds.txt` bar `EXCLUDED_SOURCES` must pull.
       Add this plan's own questions: the Feed's first page is in non-increasing `publishedAt`
       order across the live corpus; every live entry inside 24 h is in the window and nothing

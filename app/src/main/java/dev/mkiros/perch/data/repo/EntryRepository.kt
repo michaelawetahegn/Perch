@@ -21,10 +21,10 @@ import java.time.Clock
  * for the next one while a third of a screen still stands between the reader and the end
  * of what is loaded — at any plausible flick speed the rows are there before the eye is.
  *
- * [PagingConfig.enablePlaceholders] is off deliberately, and the section headers depend on
- * it: with placeholders the list is full of nulls whose folder nothing can know, so "is a
- * header due here" would have no answer at a page edge. Off, every index below `itemCount`
- * is a row that has been loaded, and the question is always answerable.
+ * [PagingConfig.enablePlaceholders] is off deliberately: with placeholders the list is full
+ * of nulls, and every question a row is asked — what it is filed under, when it was
+ * published, whether it has been read — has no answer at a page edge. Off, every index below
+ * `itemCount` is a row that has been loaded, so the questions are always answerable.
  *
  * `initialLoadSize` is one page rather than Paging's default of three. Three is tuned for
  * a cold list on a fast scroll; this list is re-collected every time a flag changes, and

@@ -9,9 +9,9 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
 - **Standing grep gate:** no `Color(0x` / `N.dp` / `N.sp` outside `ui/theme/` — screens address roles, never tones.
   **U01: the repo is public** (MIT) — a harvested fixture may differ from the served page by exactly one thing,
   a third-party key rewritten `REDACTED-THIRD-PARTY-KEY` (`fixtures/homepages/`, the huggingface article page).
-- **This `gh` is old:** bare `gh issue view N` dies on a Projects-classic GraphQL field (use `--json`), there is
-  no `gh label list`, `gh issue close` has no `-r`. **V14: `scripts/release-notes.sh <last-tag>`** drafts a release
-  page from the issues closed since it, through the `docs/RELEASE-NOTES.md` template.
+- **This `gh` is old:** bare `gh issue view N` dies on a Projects-classic GraphQL field (use `--json`), no
+  `gh label list`, `gh issue close` has no `-r`. **V14: `scripts/release-notes.sh <last-tag>`** drafts a release page
+  from the issues closed since it, through the `docs/RELEASE-NOTES.md` template.
 - 2026-08-07 — **Standing UI-test traps.** Compose UI tests live in **`app/src/testDebug/`** (`ui-test-manifest` is
   `debugImplementation`). An injected tap/long-press **never reaches a node inside a drawer sheet, bottom sheet or
   dropdown** — use `performSemanticsAction(OnClick/OnLongClick)`. `PullToRefreshBox` ignores a swipe unless its child
@@ -27,17 +27,18 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   wipe** — the cert (SHA-256 `61367c04…fce489`) *is* the update identity and cannot be rotated. Both `chmod 600`,
   outside the repo, **not backed up yet**; absent it, release silently debug-signs. `assembleRelease` runs `lintVitalRelease`.
 - 2026-08-07 — **U03: test databases come from `PerchDatabase.inMemory(context)`** (only it seeds Uncategorized).
-  **U04: a fourth reader-owned flag beside `isRead`/`isSaved`/`isStarred` needs two edits** — `EntryDao.upsertAll`
-  (never Room `@Upsert`: it resolves on the primary key, ours on `(feedId, guid)`) and `deleteReadOlderThan`.
+  **U04: a fourth reader-owned flag needs two edits** — `EntryDao.upsertAll` (never Room `@Upsert`: it resolves on the
+  primary key, ours on `(feedId, guid)`) and `deleteReadOlderThan`.
 - 2026-08-18 — **W06+W07/#17: `namesChrome()` matched an unanchored substring**, so Tailwind's `max-lg:overflow-hidden`
-  read as `hidden` and `strip()` deleted the Hugging Face wrapper (7389 of 7419 prose chars) before anything scored.
-  **W07: a page that extracts to null is read again with every `class`/`id` erased** — name rules see a blank, structure
-  alone decides, and a page that already worked never reaches it. Corpus cost **zero** (16 fixtures identical to the
-  char, ratios 22.9–63.5×, ZDI 228 cells); HF 0 → 9355. A failing page goes in `ArticleFixtures.pending`, never `all`.
+  read as `hidden` and `strip()` deleted the Hugging Face wrapper before anything scored. **W07: a page that extracts to
+  null is read again with every `class`/`id` erased** — structure alone decides, and a page that already worked never
+  reaches it; corpus cost **zero**, HF 0 → 9355. A page that fails goes in `ArticleFixtures.pending`, never `all`, and
+  the blind-spot test holds it to still failing (W10).
 - 2026-08-18 — **W02/#15: the window is a *rolling* one** (24 h / 7 / 30 / 365 days back from `clock.instant()`),
-  label **"Past 24 Hours"**, **defaults to Today** — a UI test seeding anything older pins `TimeFilter.AllTime` via
-  its own `SettingsStore`, and addresses section headers by `HomeTestTags.section(id)`, never by text (the drawer
-  composes while closed). U07's calendar window is dead; the zone now only decides what a human *reads*.
+  label **"Past 24 Hours"**, **defaults to Today** — a UI test seeding anything older pins `TimeFilter.AllTime` via its
+  own `SettingsStore`. U07's calendar window is dead; the zone now only decides what a human *reads*. **W03: the Feed is
+  one stream** — `HomeTestTags.section` and `startsSection` are gone; a test naming `"home:section:N"` spells the dead
+  tag out on purpose, so nothing can put a header back unnoticed.
 - **U08: the row's 96dp thumbnail square is always reserved.** Coil offline: a `Mapper` succeeds, an `Interceptor`
   returning `ErrorResult` fails, one that `awaitCancellation()`s stays loading; `stubThumbnails()` for list shots.
 - 2026-08-08 — **U09: the bottom bar and the `NavHost` are siblings**; **Feed's `DrawerState`/`LazyListState` are
@@ -45,39 +46,37 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   `nextBackStep(BackState)` in `BackChain.kt`, the enum's order *being* the priority.
 - 2026-08-08 — **U09a: the selection `BackHandler` must live inside `ModalDrawerSheet`** — the root one wins
   otherwise; a batch delete's dialog is **a coroutine behind its tap**, so wait in wall-clock time.
-- 2026-08-08 — **U07a: all three lists are Paging 3**, **placeholders off**. The three list queries live once in
-  **`EntryQueries`** because each exists twice — `Flow<List>` *and* `PagingSource`. **`uiState.entries` is gone**:
-  ask the screen; `performScrollToIndex` past loaded rows throws.
+- 2026-08-08 — **U07a: all three lists are Paging 3**, **placeholders off**; the queries live once in **`EntryQueries`**
+  because each exists twice — `Flow<List>` *and* `PagingSource`. **`uiState.entries` is gone**: ask the screen.
 - 2026-08-08 — **U10:** Readability-over-jsoup in `data/extract/`, **no new dependency**; fixtures in
   `fixtures/articles/`. **`ArticleLowering` deletes truncation markers as chrome**, so `FullText` looks for
   "Continue reading" in the *unlowered* text; **an extraction only ever replaces a body it beats.**
 - **U12: the viewer is an overlay, not a destination** — a sibling of the article's `Scaffold` in one `Box`, so the
-  reading position survives; `ZoomedImage` is hoisted to `PerchNavHost` because **`BackStep.CloseImageViewer` sits
-  between `CloseOverlay` and `PopArticle`**. An open overlay eats `performTouchInput` — scroll under it first.
+  reading position survives; `ZoomedImage` is hoisted to `PerchNavHost`. An open overlay eats `performTouchInput`.
 - 2026-08-08 — **U14 (profile).** DB is **version 5**: `pending_entry_state`, keyed `(feedUrl, guid)`, **no FK to
   `feeds`** — its job is outliving a source that does not exist yet. **`EntryDao.upsertAll` consumes parked rows**,
   so the refresh after a restore cannot undo it; a restore turns a flag **on** and never off, so it is idempotent.
   Codec is `org.json` — **its tests need Robolectric**; on a bare JVM `JSONObject` stubs.
 - 2026-08-09 — **V01/#1: Robolectric builds `PerchApp` for every test** — a store cancels only a scope it *owns*.
-  **Every full-suite flake so far: waiting on Room is not waiting on the screen** — asserting rendered text the
-  moment the DB has it loses the emit→recompose hop. **Poll in wall-clock time**, not `waitForIdle`.
+  **Every full-suite flake so far: waiting on Room is not waiting on the screen. Poll in wall-clock time**, not `waitForIdle`.
 - **V02/#9: a `Clock` carries a zone**; `AppContainer` injects `systemDefaultZone()`, **`DateParser` stays UTC
-  deliberately**; a zone test pins `TimeZone.setDefault`.
+  deliberately**; a zone test pins `TimeZone.setDefault`. Since W02 the zone decides only what a human *reads*.
 - **V06/#11: folder order is alphabetical (`COLLATE NOCASE`), Uncategorized pinned by `(id = 1) ASC`.** It governs
   the **drawer only** since W03 — `FolderDao.observeAll` and `.getAll`, which must agree; `EntryQueries.LIST_ITEMS`
   left the rule and is pure recency. `sortIndex` stays a column but decides nothing. **`COLLATE NOCASE` folds
   ASCII only**: `Émacs` sorts last by UTF-8 byte — pinned by a test, not a bug to "fix".
-- **V07/#13: a missing thumbnail is `surfaceVariant` + the mark as line art in `outline`** (`Placeholder(marked =
-  true)`), **only `loading` keeps the bare frame**; `ColorFilter.tint` would flatten the mark to a silhouette, so
-  `perchMarkMonochrome(ink, paper)`. `Screenshots.rasterize` reads pixels, writes no file.
-- **V10/#5: a refused row is `refusesFolder` = "a tick would change nothing"**, so the affordance cannot drift
-  from `toggleFolder`; the header dims while its chevron keeps full contrast. **`combinedClickable(enabled =
-  false)` keeps its `OnClick` semantics action** — assert `assertIsNotEnabled`, never a missing action.
+- **V07/#13: a missing thumbnail is `surfaceVariant` + the mark in `outline`** (`Placeholder(marked = true)`), **only
+  `loading` keeps the bare frame**; `ColorFilter.tint` flattens the mark, so `perchMarkMonochrome(ink, paper)`.
+- **V10/#5: a refused row is `refusesFolder` = "a tick would change nothing"**, so the affordance cannot drift from
+  `toggleFolder`. **`combinedClickable(enabled = false)` keeps its `OnClick` action** — assert `assertIsNotEnabled`.
 - **V16: v0.3.0 shipped** — versionCode 4, `app/build/outputs/apk/release/perch-0.3.0.apk`, U02-signed. On device
   **`run-as` dies on a release build** — verify through the UI, not sqlite3.
+- 2026-08-18 — **W10 (the review) caught what a per-task session cannot**: live **gate 9 still read the folder-grouped
+  list W03 deleted** (it would have failed W11), the README claimed swipe actions and a row source-tap that do not
+  exist, and `ArticleFixtures.pending` said a test measured it when none did.
 - **V04/#3: the inset contract is one doc comment in `ui/nav/PerchNavHost.kt`** — four clauses, one test each in
-  `WindowInsetsTest`; never add `.statusBarsPadding()` to a screen. **Robolectric has no bars or cutout on any
-  profile**, so `ui/WindowInsetsSupport.kt`'s `applyWindowInsets` dispatches its own to every Compose root.
+  `WindowInsetsTest`; never `.statusBarsPadding()` a screen. **Robolectric has no bars**, so `WindowInsetsSupport.kt`'s
+  `applyWindowInsets` dispatches its own to every Compose root.
 - **V05/#12: "Unread" is gone from every reader-facing string** (identifiers keep it); **pin `HomeTestTags.TITLE`,
   never `onNodeWithText("Feed")`** — the tab has read "Feed" since U09. **W04/#20: a row's meta is now the bare
   source name** (`EntryRowTestTags.META`, category dimmed after a `·`, Uncategorized unlabelled; `DATE` beneath),
@@ -93,8 +92,8 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   draw-only `matchParentSize` **sibling** of the scroll (inside it it lands off-screen at the content's far end).
 - 2026-08-10 — **V15: the live gate is twelve gates.** V02's day boundary is **gate 8** (`America/Chicago`, 23:30
   on the entry's own day — 636 of 1037 live entries would have been dropped by a UTC clock), V06's order is **gate
-  9**, and gate 6b fetches V09's ZDI *page* by name because its feed ships full bodies. Gate 7 stopped counting
-  folder sections at W03 and now checks a live page is in non-increasing `publishedAt`. Gate 5b's floor is
-  U15's 75.4% less 10 points: the sampled set is ~70 entries, so one entry is 1.4 of them.
+  9** (the drawer's two queries only, since W03), and gate 6b fetches V09's ZDI *page* by name because its feed ships
+  full bodies. Gate 7 stopped counting folder sections at W03 and now checks a live page is in non-increasing
+  `publishedAt`. Gate 5b's floor is U15's 75.4% less 10: the sampled set is ~70 entries, so one entry is 1.4 of them.
   **`research.checkpoint.com` answers 202 empty when live runs come too close together** (Cloudflare; **a `curl`
   probe spends the allowance the next run needs**) — wait ~10 quiet minutes and rerun. Healthy, not an exclusion.

@@ -10,6 +10,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertHeightIsEqualTo
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.assertWidthIsEqualTo
@@ -154,8 +155,13 @@ class EntryRowTest {
             },
         )
 
-        bands.forEach { (label, _) ->
-            compose.onNodeWithText(label).assertIsDisplayed()
+        // Each label on the date line of its *own* row: before W04 split the meta in two
+        // this read "Simon Willison / 47min", and a bare text lookup would now pass on a
+        // row that printed some other entry's time.
+        val dates = compose.onAllNodesWithTag(EntryRowTestTags.DATE, useUnmergedTree = true)
+        dates.assertCountEquals(bands.size)
+        bands.forEachIndexed { index, (label, _) ->
+            dates[index].assertIsDisplayed().assertTextEquals(label)
         }
     }
 

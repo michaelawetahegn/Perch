@@ -104,7 +104,8 @@ abstract class EntryDao {
      *   than in the view model for the same reason as the other two: a filter the UI
      *   applied afterwards would page the rows it then threw away.
      *
-     * Ordering, and why the section headers depend on it, are in [EntryQueries.LIST_ITEMS].
+     * Ordering, and why the folder no longer decides any of it, are in
+     * [EntryQueries.LIST_ITEMS].
      */
     @Query(EntryQueries.LIST_ITEMS)
     abstract fun observeListItems(

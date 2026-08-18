@@ -163,6 +163,21 @@ class ArticleExtractorBlindSpotTest {
         assertThat(prose(body)).isAtLeast(7000)
     }
 
+    /**
+     * W10: [ArticleFixtures.pending] said this file measured it, and nothing read it. It
+     * does now — a page parked there must still fail, so the slot cannot quietly hold a
+     * page that has since been fixed. Vacuous while the list is empty, which is the state
+     * the corpus should normally be in; the moment a harvest parks a page it starts
+     * biting, and the task that fixes that page promotes it into [ArticleFixtures.other]
+     * rather than deleting a red test.
+     */
+    @Test
+    fun `a pending fixture is one that genuinely still fails to extract`() {
+        ArticleFixtures.pending.forEach { fixture ->
+            assertThat(ArticleExtractor.extract(fixture.html(), fixture.url)).isNull()
+        }
+    }
+
     // ---- the extractor's own constants, restated so this test measures *it* -------
 
     private fun prose(element: Element): Int =

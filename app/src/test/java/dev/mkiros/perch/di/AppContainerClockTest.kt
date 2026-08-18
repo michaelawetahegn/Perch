@@ -2,6 +2,7 @@ package dev.mkiros.perch.di
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import com.google.common.collect.Range
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.net.PerchHttp
@@ -56,7 +57,7 @@ class AppContainerClockTest {
                 assertThat(now - HOUR * 25).isLessThan(since)
                 // A tolerance, not an equality: the container's clock is the real one, so
                 // `since` and `now` are two reads of it and a tick can land between them.
-                assertThat(now - since).isIn(com.google.common.collect.Range.closed(HOUR * 24, HOUR * 24 + 5_000))
+                assertThat(now - since).isIn(Range.closed(HOUR * 24, HOUR * 24 + 5_000))
             }
         }
     }

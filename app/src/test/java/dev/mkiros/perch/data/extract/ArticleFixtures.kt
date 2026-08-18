@@ -230,10 +230,10 @@ object ArticleFixtures {
      *
      * Empty, and kept for the next one. A fixture lands here the moment it is harvested and
      * leaves it the moment the defect it pins is fixed; [all] is a contract, and a page that
-     * is known to fail cannot be part of one. `ArticleExtractorBlindSpotTest` measures each
-     * of them and names the mechanism, and the task that flips the mechanism promotes the
-     * fixture into [other] in the same commit — which is what W07 did with the Hugging Face
-     * page W06 harvested.
+     * is known to fail cannot be part of one. `ArticleExtractorBlindSpotTest` holds every
+     * fixture here to still failing, so the slot cannot keep a page that has since been
+     * fixed, and the task that flips the mechanism promotes the fixture into [other] in the
+     * same commit — which is what W07 did with the Hugging Face page W06 harvested.
      */
     val pending: List<ArticleFixture> = emptyList()
 

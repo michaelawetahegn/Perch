@@ -309,7 +309,7 @@ class FolderDrawerTest {
     private fun topOf(text: String): Float =
         compose.onNodeWithText(text).fetchSemanticsNode().positionInRoot.y
 
-    /** A folder's name is on screen in the drawer *and* as a section header, so: by tag. */
+    /** A folder's name is on screen in the drawer *and* on every row it filed, so: by tag. */
     private fun topOfTag(testTag: String): Float =
         compose.onNodeWithTag(testTag).fetchSemanticsNode().positionInRoot.y
 

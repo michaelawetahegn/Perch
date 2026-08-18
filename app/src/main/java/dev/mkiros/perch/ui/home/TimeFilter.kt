@@ -6,7 +6,7 @@ import java.time.Duration
 /**
  * How far back the reading list reaches (PLAN-4 §0, W02/#15).
  *
- * Time is a *filter* and folder is a *section*; they are two different dimensions and
+ * Time is a *filter* and folder is a *scope* (W03); they are two different dimensions and
  * this is the filter half. It is a **rolling** window, not a calendar one: "Today" opens
  * twenty-four hours before the moment the query runs, so an article published at 23:59
  * last night is still today's at 00:30. U07 had it the other way — the window opened at

@@ -107,19 +107,20 @@ import org.robolectric.annotation.GraphicsMode
  * Twelve gates, in one method because they are one run: the pull feeds the standardize
  * pass, which picks the sample the article screenshots render; the sampled *opens* feed the
  * thumbnail and full-text gates; the folders the OPML gate builds are what the folder-order
- * gate reads and what the home screenshot has sections for. Every gate collects its failures
- * rather than throwing, so one broken source names itself and the other eleven still report
- * their counts — a live run that tells you only the first thing that went wrong costs
- * another ten minutes to learn the second.
+ * gate reads and what puts more than one category on the home screenshot's rows (W04).
+ * Every gate collects its failures rather than throwing, so one broken source names itself
+ * and the other eleven still report their counts — a live run that tells you only the first
+ * thing that went wrong costs another ten minutes to learn the second.
  *
  * **PLAN-3 V15** re-runs U15's list and adds to it. Its clauses map onto this file as:
  * (1) gate 1, with V12's exclusion list; (2) **gate 8** — the Feed's time window, asked of
  * the live corpus (V15 asked it of V02's day boundary; W02/#15 made the window a rolling
- * twenty-four hours and the gate asks that instead); (3) **gate 9**, new — V06's folder order across the live folder
- * set; (4) gate 6b, now reaching V09's *page* path as well as every feed body; (5) gates 4
- * and 5b, now floored at what U15 actually measured rather than at U15's opening bid;
- * (6) gate 6c; and (7) gate 7, which grew the three surfaces v0.3 added — V08's scoped
- * list, V10's refused folder header, and V04's viewer under a cutout.
+ * twenty-four hours and the gate asks that instead); (3) **gate 9**, new — V06's folder
+ * order across the live folder set, asked of the drawer's two queries alone since W03 took
+ * the list out of the rule; (4) gate 6b, now reaching V09's *page* path as well as every
+ * feed body; (5) gates 4 and 5b, now floored at what U15 actually measured rather than at
+ * U15's opening bid; (6) gate 6c; and (7) gate 7, which grew the three surfaces v0.3
+ * added — V08's scoped list, V10's refused folder header, and V04's viewer under a cutout.
  *
  * Where it deviates from PLAN.md: the file lives in `src/testDebug` rather than
  * `src/test`. Gate 3 needs a Compose rule, and `ui-test-manifest` is a
@@ -825,22 +826,21 @@ class LiveAcceptanceTest {
         val failures = mutableListOf<String>()
         var drawer = emptyList<String>()
         var expected = emptyList<String>()
-        var sections = emptyList<String>()
         fun summary() = "drawer   ${drawer.joinToString(" · ")}\n" +
-            "  expected ${expected.joinToString(" · ")}\n" +
-            "  sections ${sections.joinToString(" · ")} (the folders the live list actually opens)"
+            "  expected ${expected.joinToString(" · ")}"
     }
 
     /**
      * V06/V15 clause (3): alphabetical, case-insensitive, Uncategorized last — across the
      * live folder set, from all three of the places that state it.
      *
-     * The three statements are `FolderDao.observeAll`, its non-Flow twin, and
-     * `EntryQueries.LIST_ITEMS`, and the drawer and the home section headers read *different*
-     * ones, so agreeing with each other is the property that matters rather than any one of
-     * them being right on its own. The live list is asked for its section sequence and held
-     * to two things: the folders it opens are in the drawer's order, and each opens exactly
-     * once — a folder whose entries are not contiguous would draw its header twice.
+     * There were three statements of the rule until W03; `EntryQueries.LIST_ITEMS` left it
+     * when the Feed became one chronological stream, so the two that remain are
+     * `FolderDao.observeAll` and its non-Flow twin — the drawer reads one, everything else
+     * reads the other, and agreeing with each other is the property that matters rather
+     * than either being right on its own. The list is deliberately *not* asked about folder
+     * order any more: gate 7 asks it about recency instead, and a live list that grouped by
+     * folder would fail there.
      *
      * [FOLDER_NAMES] is deliberately created in an order alphabetising undoes, and the gate
      * says so out loud: if a future edit made the creation order already sorted, this would
@@ -856,7 +856,7 @@ class LiveAcceptanceTest {
         val uncategorised = direct.filter { it.id == FolderEntity.UNCATEGORIZED_ID }
         report.expected = named.map { it.name }.sortedBy { it.lowercase() } + uncategorised.map { it.name }
 
-        if (named.size < MIN_SECTIONS) {
+        if (named.size < MIN_NAMED_FOLDERS) {
             report.failures += "gate 9: ${named.size} named folders in the live library, " +
                 "too few for an order to mean anything"
             return@runBlocking report
@@ -871,25 +871,6 @@ class LiveAcceptanceTest {
         if (observed.map { it.name } != report.drawer) {
             report.failures += "gate 9: FolderDao.observeAll returned ${observed.map { it.name }}, " +
                 "which the drawer and the non-Flow twin disagree with"
-        }
-
-        // The list's own statement of the clause, read off the live list rather than off the
-        // query: the section headers are drawn where the folder changes, so the sequence of
-        // folders down the list *is* the order a reader sees them in.
-        val items = database.entryDao()
-            .observeListItems(feedId = null, folderId = null, includeRead = true, publishedAfter = null)
-            .first()
-        val runs = items.map { it.folderName }.fold(emptyList<String>()) { acc, name ->
-            if (acc.lastOrNull() == name) acc else acc + name
-        }
-        report.sections = runs
-        if (runs.size != runs.distinct().size) {
-            report.failures += "gate 9: the live list opens a folder twice — $runs — so a " +
-                "section header is drawn twice for the same folder"
-        }
-        if (runs != report.expected.filter { it in runs }) {
-            report.failures += "gate 9: the list sectioned as $runs, but the drawer reads " +
-                "${report.expected} — EntryQueries.LIST_ITEMS and FolderDao disagree"
         }
         report
     }
@@ -1530,7 +1511,7 @@ class LiveAcceptanceTest {
     private suspend fun fileForTheShot(): String {
         val named = database.folderDao().getAll()
             .filter { it.id != FolderEntity.UNCATEGORIZED_ID }
-        if (named.size < MIN_SECTIONS) return "not staged: ${named.size} named folders"
+        if (named.size < MIN_NAMED_FOLDERS) return "not staged: ${named.size} named folders"
         val quietestFirst = database.feedDao().getAll()
             .map { it to database.entryDao().observeByFeed(it.id).first() }
             .sortedBy { (_, entries) -> entries.size }
@@ -1758,7 +1739,7 @@ class LiveAcceptanceTest {
         val FOLDER_NAMES = listOf("Systems", "Security", "Graphics")
 
         /** Two named sections plus Uncategorized is what §0's home is supposed to look like. */
-        const val MIN_SECTIONS = 2
+        const val MIN_NAMED_FOLDERS = 2
         const val SAVED_FOR_THE_SHOT = 8
 
         /** How far down the quietest sources [fileForTheShot] may look for its two openers. */

@@ -38,8 +38,8 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 /**
- * PLAN-2 §0's two grouping dimensions on home (U07): time is a **filter**, folder is a
- * **section**, and they are not the same dimension.
+ * Home's two dimensions (PLAN-4 §0, W03): time is a **filter** and folder is a **scope**,
+ * and they are not the same dimension. Neither of them sections the list any more.
  *
  * "Now" is a fixed [Clock] at noon UTC, so the window's edge is an assertion rather than
  * a race — a test that cannot pin *now* is not a test of a window measured from it.

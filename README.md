@@ -9,7 +9,7 @@
 <p align="center">
   <img src="screenshots/home-dark.png" width="15.5%" alt="The Feed, one chronological stream, dark theme">
   <img src="screenshots/article.png" width="15.5%" alt="Article reader view, the source name in the byline a link into that source">
-  <img src="screenshots/scoped-source-dark.png" width="15.5%" alt="The Feed scoped to a single source, reached by tapping its name">
+  <img src="screenshots/scoped-source-dark.png" width="15.5%" alt="The Feed scoped to a single source, reached from an article's byline">
   <img src="screenshots/code-dark.png" width="15.5%" alt="Syntax-highlighted code block with a pinned line-number gutter">
   <img src="screenshots/table-dark.png" width="15.5%" alt="A tabular security advisory rendered with rules and a header row">
   <img src="screenshots/to-read-dark.png" width="15.5%" alt="The To-Read queue">
@@ -34,7 +34,8 @@ found first. RSS 2.0/0.9x, Atom 1.0 and RSS 1.0 (RDF). Folders, multi-select del
 
 **One Feed.** Every source in a single stream, newest first, over a window you pick — Past 24
 Hours through All Time, each measured back from right now, not from a midnight. Each row says
-who published it, in what category, and when; tap a source name to narrow the Feed to it.
+who published it, in what category, and when. Tap the source name in an article's byline —
+or pick it in the drawer — to narrow the Feed to that source alone.
 
 **Reading.** Native Compose, not a WebView: paragraphs, headings, lists, quotes, tables with
 real rules, pinch-zoom images, and code blocks that scroll horizontally, syntax-highlighted in a
@@ -47,8 +48,8 @@ never on refresh, never replacing text with less text. *Load full article* force
 
 **Keeping.** Three independent flags per entry — read, **liked** and **saved for later** —
 each with its own destination in the bottom bar, each surviving a refresh and a reinstall.
-Saved and Liked ignore the time window. Share an article from the toolbar or a row's swipe
-actions, or *Copy link* from the overflow. A profile export writes folders, sources and every
+Saved and Liked ignore the time window. Share an article from its toolbar or from a row's
+long-press sheet; *Copy link* sits beside it in both. A profile export writes folders, sources and every
 flag to one JSON file; importing it merges and is idempotent.
 
 **Quietly.** Conditional GET (`ETag` / `If-Modified-Since`), so a quiet feed costs a 304 and

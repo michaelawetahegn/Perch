@@ -7,7 +7,6 @@
 
     <!-- Home -->
     <string name="home_title_feed">Feed</string>
-    <string name="home_empty_no_entries">Nothing here yet</string>
     <string name="action_open_sources">Open sources</string>
 
     <!-- Home: the entry list -->
@@ -19,7 +18,6 @@
     <string name="home_empty_no_sources_body">Paste a feed or a site address and Perch will follow it.</string>
     <string name="home_empty_all_read_title">You\'re all caught up</string>
     <string name="home_empty_all_read_body">New entries land here after the next refresh.</string>
-    <string name="home_empty_no_entries_body">This source has not published anything yet.</string>
 
     <!-- Home: refresh, mark-all-read and its undo (DESIGN.md §5, §7) -->
     <string name="action_more">More options</string>
