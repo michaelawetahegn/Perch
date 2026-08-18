@@ -104,12 +104,12 @@ import org.robolectric.annotation.GraphicsMode
  * ./gradlew :app:testDebugUnitTest -Pperch.live=true --tests '*LiveAcceptance*'
  * ```
  *
- * Twelve gates, in one method because they are one run: the pull feeds the standardize
+ * Thirteen gates, in one method because they are one run: the pull feeds the standardize
  * pass, which picks the sample the article screenshots render; the sampled *opens* feed the
  * thumbnail and full-text gates; the folders the OPML gate builds are what the folder-order
  * gate reads and what puts more than one category on the home screenshot's rows (W04).
  * Every gate collects its failures rather than throwing, so one broken source names itself
- * and the other eleven still report their counts — a live run that tells you only the first
+ * and the other twelve still report their counts — a live run that tells you only the first
  * thing that went wrong costs another ten minutes to learn the second.
  *
  * **PLAN-3 V15** re-runs U15's list and adds to it. Its clauses map onto this file as:
@@ -121,6 +121,14 @@ import org.robolectric.annotation.GraphicsMode
  * feed body; (5) gates 4 and 5b, now floored at what U15 actually measured rather than at
  * U15's opening bid; (6) gate 6c; and (7) gate 7, which grew the three surfaces v0.3
  * added — V08's scoped list, V10's refused folder header, and V04's viewer under a cutout.
+ *
+ * **PLAN-4 W11** asks this plan's own three questions. Two of them were already here, put
+ * there by the tasks that changed the answer: the Feed's first live page is in
+ * non-increasing `publishedAt` order (**gate 7**, since W03 made the Feed one stream) and
+ * every live entry inside twenty-four hours is in the window with nothing older beside it
+ * (**gate 8**, since W02 made the window rolling). The third is **gate 5c**, new — #17's
+ * Hugging Face page, fetched live, held to extracting a body that beats the teaser it
+ * replaces.
  *
  * Where it deviates from PLAN.md: the file lives in `src/testDebug` rather than
  * `src/test`. Gate 3 needs a Compose rule, and `ui-test-manifest` is a
@@ -222,6 +230,10 @@ class LiveAcceptanceTest {
         val perSource = thumbnailsPerSource(opened)
         report("GATE 5b (thumbnails per source)", perSource.summary())
         failures += perSource.failures
+
+        val blindSpot = theBlindSpotPageStillYieldsItsArticle()
+        report("GATE 5c (W07's blind spot)", blindSpot.summary)
+        failures += blindSpot.failures
 
         val folders = foldersRoundTrip()
         report("GATE 6 (folders survive OPML)", folders.summary())
@@ -743,6 +755,74 @@ class LiveAcceptanceTest {
         report
     }
 
+    // ---- gate 5c: the page W07 was structurally blind to --------------------------
+
+    /** What the live probe of #17's page found. */
+    private class BlindSpotReport(val summary: String) {
+        val failures = mutableListOf<String>()
+    }
+
+    /**
+     * W11 clause: #17's page, asked of the live web rather than of the harvested copy.
+     *
+     * `fixtures/articles/huggingface-efficient-knowledge-distillation.html` pins the defect
+     * W06 diagnosed and W07 fixed, but a fixture is a page as it was on the day it was
+     * harvested, and this one's whole failure mode was a *utility class name* — Tailwind's
+     * `max-lg:overflow-hidden`, read as `hidden` by an unanchored `namesChrome()`. Names
+     * like that change when the site rebuilds, and the offline copy would never notice.
+     * So the gate goes and gets the page.
+     *
+     * The oracle is the one FullText itself uses: an extraction only ever earns its place by
+     * beating the body it replaces. Two ways to lose — extracting to nothing at all, which is
+     * literally the symptom #17 was filed about, and extracting to something no better than
+     * the teaser the page's own metadata already carries. The floor is
+     * [FullText.MIN_PROSE_CHARS], the *trigger* for going to look: a body under it is one
+     * Perch would itself call short, so an extraction landing under it recovered nothing
+     * worth the fetch. Deliberately not the fixture's 9355 characters — that would red the
+     * run the day the post is edited, which is the publisher's business and not Perch's.
+     *
+     * Unreachable reports and does not fail, on the gpuopen and ZDI precedent: this is one
+     * page outside the contracted forty-one, and gate 1 is where reachability is judged.
+     */
+    private fun theBlindSpotPageStillYieldsItsArticle(): BlindSpotReport = runBlocking {
+        val label = "#17's Hugging Face post"
+        val fetched = runCatching { FeedFetcher(container.httpClient).fetch(BLIND_SPOT_PAGE_URL) }
+            .getOrNull()
+            ?: return@runBlocking BlindSpotReport(
+                "$label: $BLIND_SPOT_PAGE_URL could not be fetched — reported, not gated",
+            )
+        val page = Jsoup.parse(ByteArrayInputStream(fetched.bytes), null, fetched.finalUrl)
+        val teaser = TEASER_META
+            .firstNotNullOfOrNull {
+                page.selectFirst(it)?.attr("content")?.takeIf(String::isNotBlank)
+            }
+            .orEmpty()
+        val extracted = ArticleExtractor.extract(page.outerHtml(), fetched.finalUrl)
+        val prose = FullText.prose(extracted).length
+        val report = BlindSpotReport(
+            "$label: the page's own teaser is ${teaser.length} chars, extraction returned " +
+                "$prose chars of prose (${if (prose == 0) "nothing" else "×%.0f".format(
+                    prose.toDouble() / maxOf(teaser.length, 1),
+                )})",
+        )
+        if (extracted == null) {
+            report.failures += "gate 5c: $label — $BLIND_SPOT_PAGE_URL extracted to nothing " +
+                "at all, which is the symptom #17 was filed about (W06/W07)"
+            return@runBlocking report
+        }
+        if (prose < FullText.MIN_PROSE_CHARS) {
+            report.failures += "gate 5c: $label — extraction recovered $prose chars, under " +
+                "FullText's own ${FullText.MIN_PROSE_CHARS}-char threshold for calling a " +
+                "body short, so it recovered nothing worth the fetch"
+        }
+        if (prose <= teaser.length) {
+            report.failures += "gate 5c: $label — extraction returned $prose chars against " +
+                "the page's ${teaser.length}-char teaser. An extraction only replaces a body " +
+                "it beats (U10), so this one would never reach the reader"
+        }
+        report
+    }
+
     // ---- gate 6: folders survive the OPML round trip ----------------------------
 
     private class FolderReport {
@@ -947,7 +1027,7 @@ class LiveAcceptanceTest {
             .map { it.id }
             .toSet()
         report.queried = "through the list query: ${visible.size} rows, against " +
-            "${expected.size} entries measured 24 h back from " +
+            "${expected.size} entries on the far side of the 24 h edge, which fell at " +
             "${Instant.ofEpochMilli(edge).atZone(READER_ZONE)}"
 
         (expected - visible).forEach { id ->
@@ -1371,8 +1451,9 @@ class LiveAcceptanceTest {
             captures.failures += "gate 7: not one row on the home shot resolved a thumbnail, " +
                 "so the shot is not the mixed list clause (7) asks for"
         }
-        captures.gate7 += "  ${capture("u15-home-dark").file.name} — home, $sections folders " +
-            "mixed into one stream, $images thumbnails and $marks V07 placeholders on screen"
+        captures.gate7 += "  ${capture("u15-home-dark").file.name} — home, one stream " +
+            "carrying $sections categories across the first page, $images thumbnails and " +
+            "$marks V07 placeholders on screen"
 
         compose.onNodeWithTag(NavTestTags.tab(PerchTab.ToRead)).performClick()
         compose.awaitInRealTime("the queue to load") {
@@ -1491,64 +1572,57 @@ class LiveAcceptanceTest {
     /**
      * Re-files the live library so the home shot can show what §0's home is *for*.
      *
-     * Home orders by folder first and recency second, and a page is thirty rows — so with
-     * gate 6's arbitrary round-robin split, a quarter of a thousand-entry corpus sits in the
-     * first folder and the first screenful is one section, correctly and uninformatively.
-     * Sorting the sources by how much they publish and giving the two quietest a folder each
-     * puts three headers inside the first page and two of them on screen.
+     * **W03 changed what "for" means here.** Until this plan the Feed ordered by folder
+     * first and recency second, so staging chose the two *quietest* sources: a small folder
+     * fitted inside the first page and put a second section header on screen where a quarter
+     * of a thousand-entry corpus did not. There are no sections now. The first screenful is
+     * simply the newest thirty entries, and a folder places nothing — what it still does is
+     * name each row's category beside its source (W04/#20). So the sources worth staging are
+     * the ones whose newest entries are actually *on* that screenful, and the rule inverts:
+     * **freshest first, not quietest first.** Staged by the old rule on 2026-08-18 this shot
+     * came back reading "Systems" on all six visible rows: a true picture of one stream and
+     * a useless one of a category label.
      *
      * The folders are taken in the order the **reader** sees them, which since V06 is
      * alphabetical and not `sortIndex`. Staging by creation order instead is what left this
      * shot with one section of three from V06 until V15: the bulk went to `Graphics`, which
-     * was created last and displays first, so the whole first page was one folder.
+     * was created last and displayed first, so the whole first page was one folder.
      *
      * This is staging, in the same sense as the eight saved entries below and the flat
      * placeholder images in [setUp]: it arranges what the camera points at, and asserts
      * nothing about folders. Gate 6, above, is where folder membership is actually tested,
      * and it has already run and passed against the arbitrary split by the time this moves
-     * anything.
+     * anything. It cannot bias the thumbnail mix either — since W03 nothing about a folder
+     * decides which rows are on screen, so the placeholders and images the shot catches are
+     * the corpus's own and not the staging's.
      */
     private suspend fun fileForTheShot(): String {
         val named = database.folderDao().getAll()
             .filter { it.id != FolderEntity.UNCATEGORIZED_ID }
         if (named.size < MIN_NAMED_FOLDERS) return "not staged: ${named.size} named folders"
-        val quietestFirst = database.feedDao().getAll()
+        val freshestFirst = database.feedDao().getAll()
             .map { it to database.entryDao().observeByFeed(it.id).first() }
-            .sortedBy { (_, entries) -> entries.size }
+            .sortedByDescending { (_, entries) -> entries.maxOfOrNull { it.publishedAt } ?: 0L }
 
-        // The two openers are *chosen*, in this order, because clause (7) asks for a mixed
-        // list and taking the two quietest outright gave a screenful that happened to be all
-        // pictures — a shot with no placeholder in it says nothing about the state V07 built.
-        // First a source not one of whose entries carries an image, so the top of the list is
-        // placeholders by construction; then one whose newest entry does, so the row under it
-        // is a thumbnail. Both are drawn from the quietest [OPENER_POOL] so that their two
-        // sections and the third header all still fit inside the first page. The illustrated
-        // one leads because it is the shorter claim to make — one row proves a thumbnail
-        // arrives — while the placeholder needs a source that mostly has none.
-        val pool = quietestFirst.take(OPENER_POOL)
-        val illustrated = pool.firstOrNull { (_, rows) -> rows.firstOrNull()?.imageUrl != null }
-        val imageless = pool
-            .filter { (feed, rows) ->
-                feed.id != illustrated?.first?.id && rows.any { it.imageUrl == null }
-            }
-            .minByOrNull { (_, rows) -> rows.count { it.imageUrl != null } * 100 / rows.size }
-        // Neither kind is guaranteed to exist among the quietest, so any opener slot left
-        // over is topped up with the quietest source remaining — which is what this did for
-        // every slot before it started choosing.
-        val chosen = listOfNotNull(illustrated, imageless)
-        val openers = (chosen + quietestFirst.filterNot { left -> chosen.any { it.first.id == left.first.id } })
-            .take(named.size - 1)
+        // One opener per named folder bar the last, taken off the top: a source's newest
+        // entry is on the first screenful only if few entries anywhere are newer than it, so
+        // the freshest sources are exactly the ones whose category label the camera can see.
+        // [OPENER_POOL] is the guard, not the selector — a source that has published nothing
+        // for a year cannot put its name on the shot, so it is no more useful as an opener
+        // than the bulk folder it would otherwise fall into.
+        val openers = freshestFirst.take(minOf(named.size - 1, OPENER_POOL))
 
         openers.forEachIndexed { index, (feed, _) ->
             container.folders.moveSource(feed.id, named[index].id)
         }
-        quietestFirst.map { (feed, _) -> feed }
+        freshestFirst.map { (feed, _) -> feed }
             .filterNot { feed -> openers.any { it.first.id == feed.id } }
             .forEach { container.folders.moveSource(it.id, named.last().id) }
 
         return "staged: " + openers.mapIndexed { index, (feed, rows) ->
-            "${named[index].name} ← ${feed.title} (${rows.size} entries, " +
-                "${rows.count { it.imageUrl != null }} with an image)"
+            val newest = rows.maxOfOrNull { it.publishedAt } ?: 0L
+            val hours = (System.currentTimeMillis() - newest) / 3_600_000
+            "${named[index].name} ← ${feed.title} (${rows.size} entries, newest ${hours}h old)"
         }.joinToString("; ") + "; ${named.last().name} ← the rest"
     }
 
@@ -1705,6 +1779,17 @@ class LiveAcceptanceTest {
         const val ZDI_PAGE_URL =
             "https://www.thezdi.com/blog/2026/6/30/the-june-2026-apple-security-update-review"
 
+        /**
+         * W06/W07/#17's page, fetched by name for gate 5c.
+         * `fixtures/articles/huggingface-efficient-knowledge-distillation.html` is the
+         * offline copy of this same URL; the live one is what notices a Tailwind rebuild.
+         */
+        const val BLIND_SPOT_PAGE_URL =
+            "https://huggingface.co/blog/MultiverseComputingCAI/efficient-knowledge-distillation"
+
+        /** Where a page keeps the teaser a feed would have carried, best first. */
+        val TEASER_META = listOf("meta[property=og:description]", "meta[name=description]")
+
         /** PLAN-2 U15 gate 5, for both the recovery share and the tenfold share. */
         const val MIN_RECOVERY_PERCENT = 90
 
@@ -1742,7 +1827,7 @@ class LiveAcceptanceTest {
         const val MIN_NAMED_FOLDERS = 2
         const val SAVED_FOR_THE_SHOT = 8
 
-        /** How far down the quietest sources [fileForTheShot] may look for its two openers. */
+        /** How far down the freshest sources [fileForTheShot] may look for its openers. */
         const val OPENER_POOL = 12
 
         const val SCREENSHOT_DIR = "build/perch-screenshots"

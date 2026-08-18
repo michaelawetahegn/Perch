@@ -29,11 +29,10 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
 - 2026-08-07 — **U03: test databases come from `PerchDatabase.inMemory(context)`** (only it seeds Uncategorized).
   **U04: a fourth reader-owned flag needs two edits** — `EntryDao.upsertAll` (never Room `@Upsert`: it resolves on the
   primary key, ours on `(feedId, guid)`) and `deleteReadOlderThan`.
-- 2026-08-18 — **W06+W07/#17: `namesChrome()` matched an unanchored substring**, so Tailwind's `max-lg:overflow-hidden`
-  read as `hidden` and `strip()` deleted the Hugging Face wrapper before anything scored. **W07: a page that extracts to
-  null is read again with every `class`/`id` erased** — structure alone decides, and a page that already worked never
-  reaches it; corpus cost **zero**, HF 0 → 9355. A page that fails goes in `ArticleFixtures.pending`, never `all`, and
-  the blind-spot test holds it to still failing (W10).
+- 2026-08-18 — **W07/#17: a page that extracts to null is read again with every `class`/`id` erased** — structure
+  alone decides, and a page that already worked never reaches it (the defect was `namesChrome()` matching an
+  unanchored substring: Tailwind's `max-lg:overflow-hidden` read as `hidden`). Corpus cost **zero**, HF 0 → 9355. A
+  page that fails goes in `ArticleFixtures.pending`, never `all`, held to still failing by the blind-spot test (W10).
 - 2026-08-18 — **W02/#15: the window is a *rolling* one** (24 h / 7 / 30 / 365 days back from `clock.instant()`),
   label **"Past 24 Hours"**, **defaults to Today** — a UI test seeding anything older pins `TimeFilter.AllTime` via its
   own `SettingsStore`. U07's calendar window is dead; the zone now only decides what a human *reads*. **W03: the Feed is
@@ -71,6 +70,10 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   `toggleFolder`. **`combinedClickable(enabled = false)` keeps its `OnClick` action** — assert `assertIsNotEnabled`.
 - **V16: v0.3.0 shipped** — versionCode 4, `app/build/outputs/apk/release/perch-0.3.0.apk`, U02-signed. On device
   **`run-as` dies on a release build** — verify through the UI, not sqlite3.
+- 2026-08-18 — **W11: the live gate is thirteen gates** — **5c** is #17's Hugging Face page fetched *live* (a fixture
+  cannot notice a Tailwind class rename), held to beating the page's own teaser: 9355 vs 51 chars. **The home shot is
+  staged freshest-first, not quietest-first** — quietest was right while a small folder bought a section header, and
+  after W03 it put every category off-screen. 38/38 pull, 1038 entries, 0 rows out of order, 7 inside 24 h.
 - 2026-08-18 — **W10 (the review) caught what a per-task session cannot**: live **gate 9 still read the folder-grouped
   list W03 deleted** (it would have failed W11), the README claimed swipe actions and a row source-tap that do not
   exist, and `ArticleFixtures.pending` said a test measured it when none did.
@@ -90,10 +93,9 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
 - **V11/#7.** Anything spanning a scrolling child — the gutter's rule, a table's edge fade — measures 0 against
   the article's unbounded height: the rule needs the Row at **`height(IntrinsicSize.Min)`**, the fade is a
   draw-only `matchParentSize` **sibling** of the scroll (inside it it lands off-screen at the content's far end).
-- 2026-08-10 — **V15: the live gate is twelve gates.** V02's day boundary is **gate 8** (`America/Chicago`, 23:30
-  on the entry's own day — 636 of 1037 live entries would have been dropped by a UTC clock), V06's order is **gate
-  9** (the drawer's two queries only, since W03), and gate 6b fetches V09's ZDI *page* by name because its feed ships
-  full bodies. Gate 7 stopped counting folder sections at W03 and now checks a live page is in non-increasing
-  `publishedAt`. Gate 5b's floor is U15's 75.4% less 10: the sampled set is ~70 entries, so one entry is 1.4 of them.
-  **`research.checkpoint.com` answers 202 empty when live runs come too close together** (Cloudflare; **a `curl`
-  probe spends the allowance the next run needs**) — wait ~10 quiet minutes and rerun. Healthy, not an exclusion.
+- 2026-08-10 — **V15.** Gate 8 is the time window, **gate 9** V06's order (the drawer's two queries only, since W03),
+  **gate 7** the live page's `publishedAt` order (it stopped counting folder sections at W03), and gate 6b fetches
+  V09's ZDI *page* by name because its feed ships full bodies. Gate 5b's floor is U15's 75.4% less 10: the sampled set
+  is ~70 entries, so one entry is 1.4 of them. **`research.checkpoint.com` answers 202 empty when live runs come too
+  close together** (Cloudflare; **a `curl` probe spends the allowance the next run needs**) — wait ~10 quiet minutes
+  and rerun. Healthy, not an exclusion.

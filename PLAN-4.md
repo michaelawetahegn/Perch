@@ -459,7 +459,7 @@ longer true.
         only, with the reason written down. `MIN_SECTIONS` renamed `MIN_NAMED_FOLDERS`.
         **No new issue filed**: nothing survived that a fifth feature would be needed for.
 
-- [ ] **W11 — Live acceptance v4.** Re-run V15's twelve gates against the live corpus with
+- [x] **W11 — Live acceptance v4.** Re-run V15's twelve gates against the live corpus with
       `./gradlew :app:testDebugUnitTest -Pperch.live=true --tests '*LiveAcceptance*'`, with the
       two this plan invalidated **rewritten by the task that invalidated it**: gate 8 is no
       longer a UTC-versus-zone margin (W02 — a rolling window has none by construction) and
@@ -482,6 +482,25 @@ longer true.
       - Done: every gate's count pasted into the commit message; the screenshots exist; the
         default no-network `./gradlew test` still green.
       - Rung: screenshot
+      - **Green 2026-08-18, thirteen gates, two runs** (the second only because the first
+        showed the home shot up). Gate 1 **38/38** sources pulled, no new exclusion, and
+        `research.checkpoint.com` answered both runs — ten quiet minutes apart, no `curl`
+        probe. Gate 2 1038 entries → 26048 blocks, 0 Unsupported. Gate 4 54/69 (78.3%) and
+        gate 5b's floor held. Gate 5 48/53 recovered (90.6%), teasers ×35.6. Gate 6 38
+        sources across 3 named folders round-tripped. Gate 6b 127 tables, 2222 cells, ZDI's
+        page kept 228/228. Gate 6c 30 rows of 1038. Gate 8 7 in-window entries, and Today's
+        query returned exactly those. Gate 9 the drawer read `Graphics · Security · Systems ·
+        Uncategorized`. Gate 7 found **0 of the first 30 live rows out of order**.
+        **Gate 5c is new**, this plan's own third question: #17's Hugging Face URL fetched
+        live, not from the fixture, extracted **9355 chars against a 51-char teaser (×183)** —
+        a fixture cannot notice a Tailwind rebuild renaming the class W06 tripped on.
+        **The home shot was staged by a rule W03 had orphaned**: `fileForTheShot` picked the
+        *quietest* sources, which was right when a small folder bought a second section
+        header, and after W03 put the categories nowhere near the screen — the shot came back
+        reading "Systems" on all six visible rows. Staging is freshest-first now, and the shot
+        carries **3 categories, 5 thumbnails and 1 placeholder** in one recency stream.
+        `./gradlew test assembleRelease` green: **1524 tests, 0 failures**, 1 skipped (this
+        gate, network-gated). Screenshots in `build/perch-screenshots/`.
 
 - [ ] **W12 — Release v0.4.0.** Bump `perchVersionCode` 4 → **5** and `perchVersionName`
       `0.3.0` → **`0.4.0`** at `app/build.gradle.kts:12-13` — §0's rule: this release carries
