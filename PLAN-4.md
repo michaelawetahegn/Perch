@@ -119,7 +119,7 @@ longer true.
 
 ## Phase 1 — What the reader asked for
 
-- [ ] **W02 — "Today" becomes the last 24 hours, and every window is measured from now. TDD. Issue #15.**
+- [x] **W02 — "Today" becomes the last 24 hours, and every window is measured from now. TDD. Issue #15.**
       `gh issue view 15 --json body` — the reader's reason: a calendar cutoff "would leave us
       with an empty feed sometimes", and a week should be "a week from this exact moment in
       time when the refresh is done".

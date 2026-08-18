@@ -195,7 +195,12 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
   scrolls to top → and only Feed-already-at-top leaves the app. The scroll-to-top rung is
   not a navigation, so it must not animate as one.
 
-- **The time range (U08a)** is one control, not five: a text button carrying the active
+- **The time range (U08a)** is a **rolling** window measured from now, not a calendar one
+  (W02/#15): "Past 24 Hours" is the last twenty-four hours, "Past Week" the last seven
+  days, counted back from the moment the query runs. U07 opened it at local midnight, and
+  the reader said what that costs — just after midnight the Feed is empty, which is
+  exactly when they look at it. A window that slides always has something in it.
+  It is one control, not five: a text button carrying the active
   range and a chevron, set in the accent colour so it reads as a control rather than as a
   second title, opening a menu of the five with a tick against the active one. It says
   what the reader chose and nothing about what they did not — a row of five chips spends a
@@ -242,7 +247,7 @@ Restrained and standard. Material 3 defaults; do not hand-roll easing.
 | State | Rule |
 |---|---|
 | **Loading** | First load only: 6 shimmer-free skeleton rows (`surfaceContainer` blocks). Refreshes use the pull indicator, never a blocking spinner, never a full-screen replace. |
-| **Empty** | Centred icon (48dp, `onSurfaceVariant`; the 72dp brand mark in the *no sources yet* case — U09b), one-line title, one-line explanation, one action button. Distinct copy per case: *no sources yet* → "Add your first source"; *all read* → "You're all caught up" + "Show read entries"; *source has no entries* → "Nothing here yet"; *empty time window* (U07) → "Nothing in this window" + **Show &lt;next window&gt; instead**, never a blank screen. |
+| **Empty** | Centred icon (48dp, `onSurfaceVariant`; the 72dp brand mark in the *no sources yet* case — U09b), one-line title, one-line explanation, one action button. Distinct copy per case: *no sources yet* → "Add your first source"; *all read* → "You're all caught up" + "Show read entries"; *source has no entries* → "Nothing here yet"; *empty time window* (U07, rolling since W02) → "Nothing in this window" + **Show &lt;next window&gt; instead**, never a blank screen. |
 | **Error** | Per-source failures **never block the list**. The feed shows its last-known entries plus a `⚠` in the drawer; tapping shows the message + Retry. Global failure (all feeds failed) = inline banner above the list, dismissible, with Retry. |
 | **Offline** | Detected via connectivity, shown as a slim inline banner: "Offline — showing saved entries". Cached content stays fully readable and navigable. Never a blocking dialog. |
 

@@ -67,8 +67,8 @@ import dev.mkiros.perch.ui.theme.ThemeMode
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.time.Clock
+import java.time.Duration
 import java.time.Instant
-import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
 import kotlinx.coroutines.Dispatchers
@@ -113,8 +113,9 @@ import org.robolectric.annotation.GraphicsMode
  * another ten minutes to learn the second.
  *
  * **PLAN-3 V15** re-runs U15's list and adds to it. Its clauses map onto this file as:
- * (1) gate 1, with V12's exclusion list; (2) **gate 8**, new — V02's day boundary asked in
- * a zone that is not UTC; (3) **gate 9**, new — V06's folder order across the live folder
+ * (1) gate 1, with V12's exclusion list; (2) **gate 8** — the Feed's time window, asked of
+ * the live corpus (V15 asked it of V02's day boundary; W02/#15 made the window a rolling
+ * twenty-four hours and the gate asks that instead); (3) **gate 9**, new — V06's folder order across the live folder
  * set; (4) gate 6b, now reaching V09's *page* path as well as every feed body; (5) gates 4
  * and 5b, now floored at what U15 actually measured rather than at U15's opening bid;
  * (6) gate 6c; and (7) gate 7, which grew the three surfaces v0.3 added — V08's scoped
@@ -237,8 +238,8 @@ class LiveAcceptanceTest {
         report("GATE 6c (paging)", paging.summary())
         failures += paging.failures
 
-        val boundary = theDayBoundaryIsTheReadersDay()
-        report("GATE 8 (the reader's day)", boundary.summary())
+        val boundary = theWindowIsTheLastTwentyFourHours()
+        report("GATE 8 (the last 24 hours)", boundary.summary())
         failures += boundary.failures
 
         if (standard.samples.isEmpty()) {
@@ -893,39 +894,41 @@ class LiveAcceptanceTest {
         report
     }
 
-    // ---- gate 8: the day boundary is the reader's, not Greenwich's --------------
+    // ---- gate 8: the window is the last twenty-four hours -----------------------
 
     private class DayBoundaryReport {
         val failures = mutableListOf<String>()
         var corpus = 0
-        var kept = 0
-        var utcWouldDrop = 0
+        var inWindow = 0
         var zone = ""
         var queried = ""
 
-        fun summary() = "$kept/$corpus live entries fall in Today's bucket on their own " +
-            "$READER_ZONE day; $utcWouldDrop of them would have been dropped by a UTC clock " +
-            "at the same instant\n  the app's own clock zone: $zone\n  $queried"
+        fun summary() = "$inWindow of $corpus live entries were published inside the last " +
+            "24 hours, and Today's own query returns exactly those\n  the app's own clock " +
+            "zone: $zone\n  $queried"
     }
 
     /**
-     * V02/V15 clause (2): "today" is the reader's today, asked of the live corpus in a zone
-     * that is not UTC.
+     * V15 clause (2), rewritten by W02/#15: Today is the **last twenty-four hours**, asked
+     * of the live corpus.
      *
-     * For each live entry, the clock is fixed at half past eleven on the entry's own Chicago
-     * evening — which is already the *next* UTC day, and so exactly the window in which the
-     * reader's Feed emptied out (issue #9: "usually around 7 or 8 p.m. Central"). Today's
-     * bucket must still hold the entry. The UTC count beside it is what the bug did: entries
-     * published before 19:00 Central that a `Clock.systemUTC()` would have hidden. That
-     * number has to be non-zero or the corpus never reached the boundary and the gate proved
-     * nothing.
+     * U07 opened this window at local midnight, and the gate that lived here measured the
+     * margin between the reader's midnight and Greenwich's — issue #9, which emptied the
+     * Feed "around 7 or 8 p.m. Central". A rolling window has no such margin *by
+     * construction*: there is no midnight in it to belong to the wrong zone, so a gate
+     * demanding that margin be non-zero would now fail on a correct app.
      *
-     * Two more rungs, because `TimeFilter.since` being right is not the same as the app
-     * being right: the container's default clock must carry the *device's* zone (the bug was
-     * a correct filter handed a zoneless clock), and one entry is put through the list query
-     * itself so the boundary is asserted where the reader meets it.
+     * What the reader still has a question about is the boundary itself, so that is what
+     * this asks: fix one "now", work out from the entries in hand which ones were published
+     * inside the last 24 h, and require Today's own list query — the SQL, the filter and
+     * `TimeFilter.since` together — to return exactly that set and nothing else. The count
+     * has to be non-zero or a live pull returned nothing recent and the gate proved nothing.
+     *
+     * One rung more, because the window being right is not the same as the app being right:
+     * the container's default clock must still carry the *device's* zone. The window no
+     * longer reads it, but every date a reader sees does (`RelativeTime`, the byline).
      */
-    private fun theDayBoundaryIsTheReadersDay(): DayBoundaryReport = runBlocking {
+    private fun theWindowIsTheLastTwentyFourHours(): DayBoundaryReport = runBlocking {
         val report = DayBoundaryReport()
         val entries = database.entryDao().observeAll().first()
         report.corpus = entries.size
@@ -937,51 +940,46 @@ class LiveAcceptanceTest {
                 "the device's ${ZoneId.systemDefault()} — this is issue #9 exactly"
         }
         if (entries.isEmpty()) {
-            report.failures += "gate 8: nothing was pulled, so there was no day to bound"
+            report.failures += "gate 8: nothing was pulled, so there was no window to bound"
             return@runBlocking report
         }
 
-        // The entry a UTC clock would have hidden by the widest margin: the clearest single
-        // case to put through the query below, and the one the reader would have missed most.
-        var widest: Triple<EntryEntity, Long, Long>? = null
-        entries.forEach { entry ->
-            val published = Instant.ofEpochMilli(entry.publishedAt)
-            val evening = published.atZone(READER_ZONE).toLocalDate()
-                .atTime(EVENING).atZone(READER_ZONE).toInstant()
-            // Past 19:00 Central the UTC day has already turned; an entry published later
-            // than that in its own evening simply gets a "now" a minute after itself.
-            val now = maxOf(evening, published.plusSeconds(60))
-            val readers = TimeFilter.Today.since(Clock.fixed(now, READER_ZONE)) ?: return@forEach
-            val greenwich = TimeFilter.Today.since(Clock.fixed(now, ZoneOffset.UTC)) ?: return@forEach
+        // One "now" for the whole gate: two reads of a live clock would put entries either
+        // side of a boundary that moved underneath them.
+        val clock = Clock.fixed(Instant.now(), READER_ZONE)
+        val since = TimeFilter.Today.since(clock)!!
+        // Derived from the durations the reader was promised, not from `since` — a gate
+        // that asks `since` what `since` means asks nothing.
+        val edge = Instant.now(clock).minus(Duration.ofHours(24)).toEpochMilli()
+        val expected = entries.filter { it.publishedAt >= edge }.map { it.id }.toSet()
+        report.inWindow = expected.size
 
-            if (entry.publishedAt >= readers) report.kept++ else {
-                report.failures += "gate 8: “${entry.title.take(TABLE_LABEL)}” was published on " +
-                    "${published.atZone(READER_ZONE)} and Today at ${Instant.ofEpochMilli(readers)} " +
-                    "does not hold it"
-            }
-            if (entry.publishedAt < greenwich) {
-                report.utcWouldDrop++
-                val margin = greenwich - entry.publishedAt
-                if (margin > (widest?.third ?: -1L)) widest = Triple(entry, readers, margin)
-            }
-        }
-
-        val probe = widest
-        if (probe == null) {
-            report.failures += "gate 8: not one live entry sits between UTC midnight and the " +
-                "reader's, so the corpus never reached the boundary this gate is about"
+        if (expected.isEmpty()) {
+            report.failures += "gate 8: not one of ${entries.size} live entries was published in " +
+                "the last 24 hours, so Today's window was never exercised"
             return@runBlocking report
         }
-        val (entry, since, _) = probe
+
         val visible = database.entryDao()
             .observeListItems(feedId = null, folderId = null, includeRead = true, publishedAfter = since)
             .first()
-        report.queried = "through the list query: “${entry.title.take(TABLE_LABEL)}” " +
-            "(${Instant.ofEpochMilli(entry.publishedAt).atZone(READER_ZONE).toLocalTime()} Central) " +
-            "is 1 of ${visible.size} rows Today returns"
-        if (visible.none { it.id == entry.id }) {
-            report.failures += "gate 8: Today's own query dropped “${entry.title.take(TABLE_LABEL)}”, " +
-                "published on the reader's day at ${Instant.ofEpochMilli(entry.publishedAt)}"
+            .map { it.id }
+            .toSet()
+        report.queried = "through the list query: ${visible.size} rows, against " +
+            "${expected.size} entries measured 24 h back from " +
+            "${Instant.ofEpochMilli(edge).atZone(READER_ZONE)}"
+
+        (expected - visible).forEach { id ->
+            val entry = entries.first { it.id == id }
+            report.failures += "gate 8: “${entry.title.take(TABLE_LABEL)}” was published " +
+                "${Instant.ofEpochMilli(entry.publishedAt).atZone(READER_ZONE)}, inside the last " +
+                "24 hours, and Today's query dropped it"
+        }
+        (visible - expected).forEach { id ->
+            val entry = entries.first { it.id == id }
+            report.failures += "gate 8: “${entry.title.take(TABLE_LABEL)}” was published " +
+                "${Instant.ofEpochMilli(entry.publishedAt).atZone(READER_ZONE)}, older than 24 " +
+                "hours, and Today's query kept it"
         }
         report
     }
@@ -1702,13 +1700,12 @@ class LiveAcceptanceTest {
         const val LIVE_DRIFT = 10.0
 
         /**
-         * V15 clause (2) asks the day-boundary question in a zone that is not UTC, and this
-         * is the zone issue #9 was reported from — "no articles, usually around 7 or 8 p.m.
-         * Central". [EVENING] is late enough that the UTC day has already turned (19:00
-         * Central is UTC midnight) and still inside the reader's own evening.
+         * The zone issue #9 was reported from — "no articles, usually around 7 or 8 p.m.
+         * Central". Gate 8's window no longer depends on it (W02/#15 made the window
+         * rolling), but every instant that gate prints is rendered in it, so a failure
+         * still reads in the reader's own wall clock rather than in Greenwich's.
          */
         val READER_ZONE: ZoneId = ZoneId.of("America/Chicago")
-        val EVENING: LocalTime = LocalTime.of(23, 30)
 
         /**
          * V09/#4's page, fetched by name for gate 6b: ZDI's feed ships full bodies, so the

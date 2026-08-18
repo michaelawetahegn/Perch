@@ -93,7 +93,7 @@ class HomeTimeRangeTest {
 
         showHome()
 
-        rangeLabel().assertTextEquals("Today")
+        rangeLabel().assertTextEquals("Past 24 Hours")
         listOf("Past Week", "Past Month", "Past Year", "All Time").forEach { absent ->
             compose.onNodeWithText(absent).assertDoesNotExist()
         }
@@ -182,8 +182,11 @@ class HomeTimeRangeTest {
     @GraphicsMode(GraphicsMode.Mode.NATIVE)
     @Test
     fun `the longest label still fits at font scale 1_3`() {
-        seedEntry(seedFeed("Source One"), "Last month", at = "2026-07-20T09:00:00Z")
-        runBlocking { settings.setTimeFilter(TimeFilter.PastMonth) }
+        // The longest of the five, which W02/#15 moved: "Past 24 Hours" is two characters
+        // longer than "Past Month" was. Re-pin this when a label changes — the assertion
+        // is only worth anything against whichever one is widest.
+        seedEntry(seedFeed("Source One"), "This morning")
+        runBlocking { settings.setTimeFilter(TimeFilter.Today) }
 
         showHome(fontScale = 1.3f)
 

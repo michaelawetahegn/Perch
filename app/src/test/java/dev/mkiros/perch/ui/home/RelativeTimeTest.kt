@@ -10,6 +10,12 @@ import org.junit.Test
  * and **compact** — the row says `47min`, not `47 minutes ago`. The reference row
  * (`design/reference/feed-row-reference.jpg`) sets `Source / 5h` on one line beside a
  * thumbnail, and "ago" is a word the position of the text already implies.
+ *
+ * This is also where the **zone** is pinned now (W02/#15). It used to be pinned on the
+ * time window, because U07's "Today" opened at midnight and issue #9 was that midnight
+ * being Greenwich's. W02 made the window rolling, so it has no midnight left to get wrong
+ * and the zone cannot regress there. It can still regress here: past a week the row stops
+ * counting and prints a date, and a date is a calendar answer that only a zone can give.
  */
 class RelativeTimeTest {
 
@@ -50,6 +56,20 @@ class RelativeTimeTest {
     @Test
     fun `beyond a week ago becomes a date`() {
         assertThat(format(now - 8 * DAY)).isEqualTo("30 Jul")
+    }
+
+    @Test
+    fun `the date a row prints is the reader's, not Greenwich's`() {
+        // Issue #9's arithmetic, moved here from `TimeFilterTest` by W02/#15. 20:30 in
+        // Chicago is already 01:30 the next day in UTC: a row that renders that instant
+        // in UTC dates it a day after the evening the reader spent reading it.
+        val chicagoEvening = ZonedDateTime.of(2026, 8, 9, 1, 30, 0, 0, utc).toInstant().toEpochMilli()
+        val muchLater = chicagoEvening + 30 * DAY
+
+        assertThat(RelativeTime.format(chicagoEvening, muchLater, ZoneId.of("America/Chicago")))
+            .isEqualTo("8 Aug")
+        assertThat(RelativeTime.format(chicagoEvening, muchLater, utc))
+            .isEqualTo("9 Aug")
     }
 
     @Test

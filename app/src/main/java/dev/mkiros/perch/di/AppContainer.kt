@@ -34,11 +34,13 @@ class AppContainer(
      * The **device's zoned** clock, not `systemUTC()` (issue #9 / PLAN-3 §0).
      *
      * A `Clock` carries a zone as well as an instant, and everything downstream that
-     * computes a *calendar* boundary — `TimeFilter.since`, which opens Today at midnight
-     * in `clock.zone` — reads it. With `systemUTC()` that midnight was Greenwich's, so
-     * west of Greenwich the Feed emptied every evening once local time passed UTC
-     * midnight (19:00 CDT / 18:00 CST): "Today" opened *after* everything the reader's
-     * day had published. The zone is resolved once, when the process builds its
+     * computes a *calendar* answer reads it. That used to include the reading list's own
+     * window: U07 opened Today at midnight in `clock.zone`, and with `systemUTC()` that
+     * midnight was Greenwich's, so west of Greenwich the Feed emptied every evening once
+     * local time passed UTC midnight (19:00 CDT / 18:00 CST). W02/#15 made the window a
+     * rolling twenty-four hours, which has no midnight to get wrong — but the zone stays,
+     * because every date a reader *reads* is still a calendar answer (`RelativeTime` past
+     * a week, the article byline). The zone is resolved once, when the process builds its
      * container; a reader who crosses a zone sees the new one from the next launch.
      */
     val clock: Clock = Clock.systemDefaultZone(),

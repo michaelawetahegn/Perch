@@ -284,8 +284,8 @@ class HomeViewModel(
      * the screen would start the list again at the top.
      *
      * `since` is resolved here, once per query, rather than inside [TimeFilter]: the
-     * boundary is a moment in time, and re-deriving it per row would let a list straddle
-     * midnight and disagree with itself.
+     * boundary is a moment in time, and since W02/#15 it is a rolling one, so re-deriving
+     * it per row would let a list drift while the reader scrolls and disagree with itself.
      */
     @OptIn(ExperimentalCoroutinesApi::class)
     val pagedEntries: Flow<PagingData<EntryListItem>> =

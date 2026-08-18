@@ -2,66 +2,109 @@ package dev.mkiros.perch.ui.home
 
 import com.google.common.truth.Truth.assertThat
 import java.time.Clock
+import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZoneOffset
 import org.junit.Test
 
 /**
- * Home's time window (PLAN-2 §0, U07).
+ * Home's time window (PLAN-4 §0, W02/#15).
  *
- * The whole point of this type is that "Today" is a *calendar* answer, not an arithmetic
- * one: an article published at 23:59 last night is not "today" at 00:30, even though it
- * is well inside the last twenty-four hours. So every case here is stated as a wall-clock
- * instant in a named zone rather than as a subtraction, and the boundary is asserted
- * against midnight rather than against `now - n`.
+ * The window is a **rolling** one, measured back from the instant the query runs: "Today"
+ * is the last twenty-four hours, not the calendar day. U07 had it the other way and the
+ * reader said why that was wrong — a cutoff at local midnight empties the Feed just after
+ * midnight, which is exactly when they look. So every case here is stated as a
+ * subtraction from a fixed "now", and the boundary is asserted against `now - n` rather
+ * than against midnight.
+ *
+ * Nothing here pins a zone any more, because the window no longer reads one: a duration
+ * back from an instant is the same instant in every zone. The zone still decides what a
+ * human *reads* (`RelativeTimeTest` owns issue #9's arithmetic now, on the date label),
+ * and the container still injects a zoned clock — `AppContainerClockTest` pins that.
  */
 class TimeFilterTest {
 
     private val zone = ZoneId.of("Europe/Berlin")
+    private val now = Instant.parse("2026-08-07T14:30:00Z")
 
     @Test
-    fun `today opens at local midnight, not twenty-four hours ago`() {
-        val filter = TimeFilter.Today
+    fun `today opens twenty-four hours ago, not at local midnight`() {
+        val since = TimeFilter.Today.since(clockAt(now, zone))
 
-        val since = filter.since(clockAt("2026-08-07T14:30:00", zone))
-
-        assertThat(since).isEqualTo(instantAt("2026-08-07T00:00:00", zone))
+        assertThat(since).isEqualTo(now.minus(Duration.ofHours(24)).toEpochMilli())
     }
 
     @Test
-    fun `an entry published at 23_59 yesterday is out of today and in the past week`() {
-        val clock = clockAt("2026-08-07T00:30:00", zone)
-        val lastNight = instantAt("2026-08-06T23:59:00", zone)
+    fun `an entry published at 23_59 yesterday is still inside today at 00_30`() {
+        // U07's counter-example, now the point: at half past midnight the reader has not
+        // yet read last night's articles, and a calendar cutoff hides all of them.
+        val justAfterMidnight = LocalInstant("2026-08-07T00:30:00", zone)
+        val clock = clockAt(justAfterMidnight, zone)
+        val lastNight = LocalInstant("2026-08-06T23:59:00", zone).toEpochMilli()
 
-        assertThat(lastNight).isLessThan(TimeFilter.Today.since(clock))
-        assertThat(lastNight).isAtLeast(TimeFilter.PastWeek.since(clock))
+        assertThat(lastNight).isAtLeast(TimeFilter.Today.since(clock))
     }
 
     @Test
-    fun `the day boundary follows the clock's zone, not UTC`() {
-        // 01:00 in Berlin is still 23:00 the previous day in UTC: a reader east of
-        // Greenwich must not spend their morning looking at yesterday's bucket.
-        val clock = clockAt("2026-08-07T01:00:00", zone)
+    fun `the boundary is exactly twenty-four hours wide`() {
+        val clock = clockAt(now, zone)
 
-        assertThat(TimeFilter.Today.since(clock)).isEqualTo(instantAt("2026-08-07T00:00:00", zone))
+        val twentyThreeHoursOld = now.minus(Duration.ofHours(23)).toEpochMilli()
+        val twentyFiveHoursOld = now.minus(Duration.ofHours(25)).toEpochMilli()
+
+        assertThat(twentyThreeHoursOld).isAtLeast(TimeFilter.Today.since(clock))
+        assertThat(twentyFiveHoursOld).isLessThan(TimeFilter.Today.since(clock))
     }
 
     @Test
-    fun `the wider windows reach back whole days, each from midnight`() {
-        val clock = clockAt("2026-08-07T14:30:00", zone)
+    fun `the edge itself is inside the window`() {
+        // `since` is the *inclusive* opening edge, and the query is `publishedAt >= since`:
+        // an entry published exactly twenty-four hours ago is the last one still in.
+        val clock = clockAt(now, zone)
+        val exactlyOnTheEdge = now.minus(Duration.ofHours(24)).toEpochMilli()
+
+        assertThat(exactlyOnTheEdge).isAtLeast(TimeFilter.Today.since(clock))
+    }
+
+    @Test
+    fun `the wider windows reach back whole durations from the same moment`() {
+        val clock = clockAt(now, zone)
 
         assertThat(TimeFilter.PastWeek.since(clock))
-            .isEqualTo(instantAt("2026-07-31T00:00:00", zone))
+            .isEqualTo(now.minus(Duration.ofDays(7)).toEpochMilli())
         assertThat(TimeFilter.PastMonth.since(clock))
-            .isEqualTo(instantAt("2026-07-07T00:00:00", zone))
+            .isEqualTo(now.minus(Duration.ofDays(30)).toEpochMilli())
         assertThat(TimeFilter.PastYear.since(clock))
-            .isEqualTo(instantAt("2025-08-07T00:00:00", zone))
+            .isEqualTo(now.minus(Duration.ofDays(365)).toEpochMilli())
+    }
+
+    @Test
+    fun `the same instant opens the same window in every zone`() {
+        // The whole zone question the calendar window had. A rolling window cannot
+        // regress the way issue #9 did: there is no midnight in it to be Greenwich's.
+        val berlin = TimeFilter.Today.since(clockAt(now, zone))
+        val chicago = TimeFilter.Today.since(clockAt(now, ZoneId.of("America/Chicago")))
+        val greenwich = TimeFilter.Today.since(clockAt(now, ZoneOffset.UTC))
+
+        assertThat(chicago).isEqualTo(berlin)
+        assertThat(greenwich).isEqualTo(berlin)
+    }
+
+    @Test
+    fun `a window moves with the clock rather than jumping at midnight`() {
+        val evening = LocalInstant("2026-08-07T23:00:00", zone)
+        val anHourLater = evening.plus(Duration.ofHours(1))
+
+        val before = TimeFilter.Today.since(clockAt(evening, zone))!!
+        val after = TimeFilter.Today.since(clockAt(anHourLater, zone))!!
+
+        assertThat(after - before).isEqualTo(Duration.ofHours(1).toMillis())
     }
 
     @Test
     fun `all time has no boundary at all`() {
-        assertThat(TimeFilter.AllTime.since(clockAt("2026-08-07T14:30:00", zone))).isNull()
+        assertThat(TimeFilter.AllTime.since(clockAt(now, zone))).isNull()
     }
 
     @Test
@@ -86,32 +129,18 @@ class TimeFilterTest {
     }
 
     @Test
-    fun `a window is measured against the same zone a UTC clock reports`() {
-        val clock = clockAt("2026-08-07T14:30:00", ZoneOffset.UTC)
+    fun `each window contains the one before it`() {
+        val clock = clockAt(now, zone)
 
-        assertThat(TimeFilter.Today.since(clock))
-            .isEqualTo(instantAt("2026-08-07T00:00:00", ZoneOffset.UTC))
+        val edges = listOf(TimeFilter.Today, TimeFilter.PastWeek, TimeFilter.PastMonth, TimeFilter.PastYear)
+            .map { it.since(clock)!! }
+
+        assertThat(edges).isInStrictOrder(Comparator<Long> { a, b -> b.compareTo(a) })
     }
 
-    @Test
-    fun `a Chicago evening's today still reaches back over that Chicago morning`() {
-        // Issue #9's arithmetic, stated once. 20:30 CDT is 01:30 the *next* day in UTC,
-        // so a UTC-zoned clock opens Today after everything the reader's day published
-        // and the Feed empties — "usually around 7 or 8 p.m. Central", exactly as
-        // reported. The same instant read in the reader's zone still includes it.
-        val chicago = ZoneId.of("America/Chicago")
-        val evening = Instant.parse("2026-08-09T01:30:00Z")
-        val thatMorning = Instant.parse("2026-08-08T14:00:00Z").toEpochMilli()
+    private fun clockAt(instant: Instant, zone: ZoneId): Clock = Clock.fixed(instant, zone)
 
-        assertThat(TimeFilter.Today.since(Clock.fixed(evening, chicago)))
-            .isAtMost(thatMorning)
-        assertThat(TimeFilter.Today.since(Clock.fixed(evening, ZoneOffset.UTC)))
-            .isGreaterThan(thatMorning)
-    }
-
-    private fun clockAt(local: String, zone: ZoneId): Clock =
-        Clock.fixed(Instant.ofEpochMilli(instantAt(local, zone)), zone)
-
-    private fun instantAt(local: String, zone: ZoneId): Long =
-        java.time.LocalDateTime.parse(local).atZone(zone).toInstant().toEpochMilli()
+    @Suppress("FunctionName")
+    private fun LocalInstant(local: String, zone: ZoneId): Instant =
+        java.time.LocalDateTime.parse(local).atZone(zone).toInstant()
 }

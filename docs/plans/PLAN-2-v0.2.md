@@ -41,8 +41,11 @@ is a dropdown and not a row of chips: five always-visible buttons spend a band o
 screen restating four options the user is not choosing. The surviving entries are
 sectioned under folder headers in folder order, exactly like the Feedly reference. When the drawer scopes
 to a single source or folder, the section headers collapse away (there is only one).
-"Today" means *since local midnight*, not "the last 24 h". An empty bucket renders the
-empty state with a "Show this week instead" affordance, never a blank screen.
+~~"Today" means *since local midnight*, not "the last 24 h".~~ **Superseded by PLAN-4 §0
+(W02/#15): the window is a rolling one — "Today" is the last 24 h, measured back from the
+moment the query runs, and the label a reader sees is "Past 24 Hours".** A calendar cutoff
+empties the Feed just after midnight, which is when the reader looks at it. An empty bucket
+renders the empty state with a "Show this week instead" affordance, never a blank screen.
 
 **Read later, liked, unread.** Three independent flags on an entry, all local, all
 surviving a reinstall via U02 + U14:

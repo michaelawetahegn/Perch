@@ -29,9 +29,10 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
 - 2026-08-07 — **U04: adding a fourth reader-owned flag beside `isRead`/`isSaved`/`isStarred` needs two edits** —
   `EntryDao.upsertAll` (never Room `@Upsert`: it resolves on the primary key, ours on `(feedId, guid)`) and
   `deleteReadOlderThan`, both of which otherwise erase it.
-- 2026-08-07 — **U07: the window is a *calendar* one** (local midnight), **defaults to Today** — a UI test seeding
-  anything older pins `TimeFilter.AllTime` via its own `SettingsStore`, and addresses section headers by
-  `HomeTestTags.section(id)`, never by text (the drawer composes while closed).
+- 2026-08-18 — **W02/#15: the window is a *rolling* one** (24 h / 7 / 30 / 365 days back from `clock.instant()`),
+  label **"Past 24 Hours"**, **defaults to Today** — a UI test seeding anything older pins `TimeFilter.AllTime` via
+  its own `SettingsStore`, and addresses section headers by `HomeTestTags.section(id)`, never by text (the drawer
+  composes while closed). U07's calendar window is dead; the zone now only decides what a human *reads*.
 - 2026-08-07 — **U08: the row's 96dp thumbnail square is always reserved.** Coil offline: a `Mapper` succeeds, an
   `Interceptor` returning `ErrorResult` fails, one that `awaitCancellation()`s stays loading; `stubThumbnails()` for list shots.
 - 2026-08-08 — **U09: the bottom bar and the `NavHost` are siblings**; **Feed's `DrawerState`/`LazyListState` are

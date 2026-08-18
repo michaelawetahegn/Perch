@@ -35,8 +35,8 @@
     </plurals>
 
     <!-- Home: the banner strip above the list. Never blocks the list (DESIGN.md §7). -->
-    <!-- The time window (U07). Labels are the chips, verbatim. -->
-    <string name="home_filter_today">Today</string>
+    <!-- The time window (U07, rolling since W02/#15). Labels are the menu items, verbatim. -->
+    <string name="home_filter_today">Past 24 Hours</string>
     <string name="home_filter_week">Past Week</string>
     <string name="home_filter_month">Past Month</string>
     <string name="home_filter_year">Past Year</string>

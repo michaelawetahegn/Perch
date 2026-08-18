@@ -41,8 +41,9 @@ import org.robolectric.RobolectricTestRunner
  * PLAN-2 §0's two grouping dimensions on home (U07): time is a **filter**, folder is a
  * **section**, and they are not the same dimension.
  *
- * "Now" is a fixed [Clock] at noon UTC, so "since local midnight" is an assertion rather
- * than a race — a test that cannot pin *today* is not a test of Today.
+ * "Now" is a fixed [Clock] at noon UTC, so the window's edge is an assertion rather than
+ * a race — a test that cannot pin *now* is not a test of a window measured from it.
+ * Since W02/#15 that window is a **rolling** twenty-four hours, not the calendar day.
  */
 @RunWith(RobolectricTestRunner::class)
 class HomeTimeFilterTest {
@@ -79,7 +80,10 @@ class HomeTimeFilterTest {
     // ---- the time filter ---------------------------------------------------------
 
     @Test
-    fun `home opens on today, which starts at local midnight and not a day ago`() {
+    fun `home opens on the last twenty-four hours, so late last night is still in`() {
+        // W02/#15. U07 opened this window at local midnight and hid last night's
+        // articles from a reader looking just after it — the emptiest possible Feed at
+        // the moment they most often open one.
         val feedId = seedFeed("Source One")
         seedEntry(feedId, "This morning", at = "2026-08-07T09:00:00Z")
         seedEntry(feedId, "Late last night", at = "2026-08-06T23:59:00Z")
@@ -88,15 +92,29 @@ class HomeTimeFilterTest {
 
         assertThat(viewModel.uiState.value.timeFilter).isEqualTo(TimeFilter.Today)
         compose.onNodeWithText("This morning").assertIsDisplayed()
-        compose.onNodeWithText("Late last night").assertDoesNotExist()
+        compose.onNodeWithText("Late last night").assertIsDisplayed()
     }
 
     @Test
-    fun `an evening west of Greenwich still lists what that day published`() {
-        // Issue #9 / V02. 20:30 in Chicago is already 01:30 the next day in UTC, so a
-        // list whose clock has no zone opens Today after the reader's whole day. The
-        // fix is the container's clock (`AppContainerClockTest`); this pins the screen
-        // to the zoned one, since the list is where a reader meets the bug.
+    fun `the list's edge is twenty-four hours back, and it holds`() {
+        // A rolling window with no boundary assertion is an untested window. "Now" is
+        // noon UTC, so these two straddle the edge by an hour on either side.
+        val feedId = seedFeed("Source One")
+        seedEntry(feedId, "Twenty-three hours old", at = "2026-08-06T13:00:00Z")
+        seedEntry(feedId, "Twenty-five hours old", at = "2026-08-06T11:00:00Z")
+
+        showHome()
+
+        compose.onNodeWithText("Twenty-three hours old").assertIsDisplayed()
+        compose.onNodeWithText("Twenty-five hours old").assertDoesNotExist()
+    }
+
+    @Test
+    fun `an evening west of Greenwich lists the same twenty-four hours as anywhere else`() {
+        // Issue #9 / V02, kept as a regression: 20:30 in Chicago is already 01:30 the
+        // next day in UTC, and under U07's calendar window that turn of the UTC day
+        // emptied the Feed. W02's rolling window cannot do that — it never asks what day
+        // it is — and this is the screen saying so with the reported zone on the clock.
         val evening = Clock.fixed(Instant.parse("2026-08-09T01:30:00Z"), CHICAGO)
         val feedId = seedFeed("A Daily Blogger")
         seedEntry(feedId, "Posted this morning", at = "2026-08-08T14:00:00Z")
@@ -107,16 +125,18 @@ class HomeTimeFilterTest {
     }
 
     @Test
-    fun `widening to the past week brings last night's entries back`() {
+    fun `widening to the past week brings the last few days' entries back`() {
         val feedId = seedFeed("Source One")
         seedEntry(feedId, "This morning", at = "2026-08-07T09:00:00Z")
-        seedEntry(feedId, "Late last night", at = "2026-08-06T23:59:00Z")
+        seedEntry(feedId, "Three days ago", at = "2026-08-04T09:00:00Z")
 
         showHome()
+        compose.onNodeWithText("Three days ago").assertDoesNotExist()
+
         chooseRange(TimeFilter.PastWeek)
 
         compose.onNodeWithText("This morning").assertIsDisplayed()
-        compose.onNodeWithText("Late last night").assertIsDisplayed()
+        compose.onNodeWithText("Three days ago").assertIsDisplayed()
     }
 
     @Test
