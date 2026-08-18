@@ -12,6 +12,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.filterToOne
 import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -120,6 +121,9 @@ class DesignScreenshotTest {
     @Test
     fun `the unread list in dark`() {
         seed()
+        // W04: the rows print the folder their source is filed under, so a flat seed
+        // would shoot the one case that has no label on every row.
+        sortIntoFolders()
         showHome(ThemeMode.Dark)
 
         capture("home-dark")
@@ -128,6 +132,7 @@ class DesignScreenshotTest {
     @Test
     fun `the unread list in light`() {
         seed()
+        sortIntoFolders()
         showHome(ThemeMode.Light)
 
         capture("home-light")
@@ -278,7 +283,8 @@ class DesignScreenshotTest {
      */
     /** A drawer row by its label. The same name is in the app bar and in the list too. */
     private fun drawerRow(label: String) =
-        compose.onAllNodesWithText(label).filterToOne(hasClickAction())
+        compose.onAllNodesWithText(label)
+            .filterToOne(hasClickAction() and !hasTestTag(HomeTestTags.ENTRY))
 
     private fun capture(name: String) {
         val shot =
@@ -300,7 +306,7 @@ class DesignScreenshotTest {
      * two named folders and the built-in one — rather than a flat list under a single
      * header, which is what an unsorted seed would produce. W03 took folders out of the
      * *list*, so this no longer stages section headers; the multi-folder seed stays
-     * because the drawer shot needs it and W04's category labels will too.
+     * because the drawer shot needs it and W04's category labels do too.
      */
     private fun sortIntoFolders() = runBlocking {
         val byHost = database.feedDao().getAll().associateBy { feed ->

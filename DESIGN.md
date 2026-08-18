@@ -70,7 +70,7 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
 | `headlineSmall` | 24/32 | Article title on the article screen |
 | `titleMedium` | 16/24, **w600** | Entry title in list rows (max **3 lines**, ellipsis) |
 | `bodyMedium` | 14/20 | Body copy in app furniture — settings, sheets, empty states |
-| `labelMedium` | 12/16 | `Source / 5h` metadata line under a row's title |
+| `labelMedium` | 12/16 | `Source · Category` and the time beneath it, under a row's title |
 | `titleLarge` | 22/28 | Top app bar title (`LargeTopAppBar` on home) |
 
 **The article surface has its own serif type scale — see §8.** App furniture is sans
@@ -129,11 +129,11 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
 │ ─────────────────────────────────────│
 │ EntryRow ×N  (pull-to-refresh)       │  ← one stream, newest first, folders mixed
 │  ● Title (≤3 lines)        ┌───────┐ │
-│    Source / 5h             │ thumb │ │
-│                            └───────┘ │
+│    Source · Category       │ thumb │ │
+│    5h                      └───────┘ │
 │  ● Title                   ┌───────┐ │
-│    Source / 6h             │ thumb │ │
-│                            └───────┘ │
+│    Source · Category       │ thumb │ │
+│    6h                      └───────┘ │
 │ ─────────────────────────────────────│
 │  ▣ Feed    ▤ To-Read    ♡ Liked      │  ← U09 NavigationBar; hidden on the article
 └──────────────────────────────────────┘
@@ -208,10 +208,15 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
   it hides some of them behind a horizontal scroll while doing it. The empty bucket's
   "Show Past Week instead" moves this control's own selection; the two never disagree.
 
-- **The entry row (U08),** built to `design/reference/feed-row-reference.jpg`: title
-  (`titleMedium` w600, ≤3 lines) over a `Source / 5h` metadata line in
-  `onSurfaceVariant`, and a **96dp square thumbnail** on the right with 12dp corners,
-  cropped. Relative time is compact — `47min`, `5h`, `1d`, `3d`, then a date past a week.
+- **The entry row (U08, W04),** built to `design/reference/feed-row-reference.jpg`: title
+  (`titleMedium` w600, ≤3 lines) over two `labelMedium` lines — `Source · Category` in
+  `onSurfaceVariant` with the category itself dimmed to `outline`, and the time on its own
+  line beneath, also `outline` — and a **96dp square thumbnail** on the right with 12dp
+  corners, cropped. Relative time is compact — `47min`, `5h`, `1d`, `3d`, then a date past
+  a week. The category is the folder the reader filed the source under (issue #20).
+  **Uncategorized prints nothing**: it is where a source lands when nobody has filed it, so
+  naming it would label most of the list with the absence of a label. Each meta line is a
+  single ellipsised line, so no length of publication or folder name moves the thumbnail.
   **No snippet:** the thumbnail does that work, and a row with both is a card in
   everything but name.
   The thumbnail square is **always reserved**. No image, an image in flight, and an image

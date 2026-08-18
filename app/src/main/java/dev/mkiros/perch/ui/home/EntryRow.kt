@@ -24,11 +24,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
 import dev.mkiros.perch.R
 import dev.mkiros.perch.data.db.EntryListItem
+import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.ui.brand.PerchMarkMonochrome
 import dev.mkiros.perch.ui.theme.Dimens
 
@@ -40,7 +45,12 @@ import dev.mkiros.perch.ui.theme.Dimens
  */
 object EntryRowTestTags {
     const val TITLE = "entry:title"
+
+    /** Who published it, and what it is filed under (W04). */
     const val META = "entry:meta"
+
+    /** When it was published — its own line beneath [META] (W04). */
+    const val DATE = "entry:date"
 
     /** The square the image lives in, drawn at the same size in every state. */
     const val THUMBNAIL = "entry:thumb"
@@ -58,8 +68,8 @@ object EntryRowTestTags {
  *
  * ```
  * ● Title, up to three lines     ┌────────┐
- *   Source / 5h                  │ thumb  │
- *                                └────────┘
+ *   Source · Category            │ thumb  │
+ *   5h                           └────────┘
  * ```
  *
  * The unread dot is `primary` and is the only coloured thing on the row (§2); a read row
@@ -114,21 +124,55 @@ fun EntryRow(
             )
             Spacer(modifier = Modifier.size(Dimens.xs))
             Text(
-                text = stringResource(
-                    R.string.home_entry_meta,
-                    item.sourceTitle,
-                    RelativeTime.format(item.publishedAt, now),
-                ),
+                text = sourceAndCategory(item),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.testTag(EntryRowTestTags.META),
             )
+            Text(
+                text = RelativeTime.format(item.publishedAt, now),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.outline,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.testTag(EntryRowTestTags.DATE),
+            )
         }
 
         Spacer(modifier = Modifier.size(Dimens.thumbnailGap))
         Thumbnail(url = item.imageUrl)
+    }
+}
+
+/**
+ * The row's first meta line (W04, issue #20): who published it, and what the reader filed
+ * that source under.
+ *
+ * The category is dimmer than the source name — `outline` against the line's own
+ * `onSurfaceVariant` — because the two answer different questions and the source is the
+ * one a reader scans for. One `Text` rather than a `Row` of two: a row of two texts has to
+ * be told how to divide a width neither of them controls, and gets it wrong the moment a
+ * publication and a folder are both long, whereas one ellipsised line cannot push the
+ * thumbnail anywhere.
+ *
+ * **Uncategorized prints nothing.** It is a real folder ([FolderEntity.UNCATEGORIZED_ID])
+ * rather than a null, so every unfiled source has one — and labelling most of the list
+ * with the word for "not filed" would spend the category slot saying nothing.
+ */
+@Composable
+private fun sourceAndCategory(item: EntryListItem): AnnotatedString {
+    val separator = stringResource(R.string.home_entry_category_separator)
+    val categoryColor = MaterialTheme.colorScheme.outline
+    return buildAnnotatedString {
+        append(item.sourceTitle)
+        if (item.folderId != FolderEntity.UNCATEGORIZED_ID) {
+            withStyle(SpanStyle(color = categoryColor)) {
+                append(separator)
+                append(item.folderName)
+            }
+        }
     }
 }
 

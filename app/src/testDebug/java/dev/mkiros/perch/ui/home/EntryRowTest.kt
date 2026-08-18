@@ -6,16 +6,20 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Column
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertHeightIsEqualTo
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.assertWidthIsEqualTo
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import coil.Coil
@@ -28,6 +32,7 @@ import coil.request.ImageResult
 import coil.request.Options
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.EntryListItem
+import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.ui.screenshot.Screenshots
 import dev.mkiros.perch.ui.theme.Dimens
 import dev.mkiros.perch.ui.theme.PerchTheme
@@ -78,7 +83,60 @@ class EntryRowTest {
         show(item(title = "An Async Runtime in C", sourceTitle = "Null Program"))
 
         compose.onNodeWithText("An Async Runtime in C").assertIsDisplayed()
-        compose.onNodeWithText("Null Program / 5h").assertIsDisplayed()
+        meta().assertTextEquals("Null Program")
+        date().assertTextEquals("5h")
+    }
+
+    /** W04, issue #20: the reader asked to see what a post is filed under, on the row. */
+    @Test
+    fun `a row filed in a folder names that folder beside its source`() {
+        show(item(sourceTitle = "Null Program", folderId = 4, folderName = "Systems"))
+
+        meta().assertTextEquals("Null Program \u00b7 Systems")
+    }
+
+    /**
+     * W04: Uncategorized is where a source lands when nobody has filed it, so printing it
+     * would label most of the list with the absence of a label.
+     */
+    @Test
+    fun `a row nobody has filed shows no category beside its source`() {
+        show(item(sourceTitle = "Null Program"))
+
+        meta().assertTextEquals("Null Program")
+    }
+
+    @Test
+    fun `the time a row was published sits on its own line beneath the source`() {
+        show(item(sourceTitle = "Null Program", folderId = 4, folderName = "Systems"))
+
+        val source = meta().fetchSemanticsNode().boundsInRoot
+        val published = date().fetchSemanticsNode().boundsInRoot
+        assertThat(published.top).isAtLeast(source.bottom)
+        assertThat(published.left).isEqualTo(source.left)
+    }
+
+    /**
+     * The meta lines are the one part of the row that grows with the reader's text size,
+     * and the thumbnail is the part that must not move when it does.
+     */
+    @Test
+    fun `a long source and a long category leave the thumbnail its square at a large font scale`() {
+        showAll(
+            listOf(
+                item(
+                    sourceTitle = "The Journal of Extremely Long Publication Names Quarterly",
+                    folderId = 4,
+                    folderName = "Programming Languages and Compiler Implementation",
+                ),
+            ),
+            fontScale = 1.3f,
+        )
+
+        thumbnail(EntryRowTestTags.THUMBNAIL)
+            .assertIsDisplayed()
+            .assertWidthIsEqualTo(Dimens.thumbnail)
+            .assertHeightIsEqualTo(Dimens.thumbnail)
     }
 
     @Test
@@ -97,7 +155,7 @@ class EntryRowTest {
         )
 
         bands.forEach { (label, _) ->
-            compose.onNodeWithText("Simon Willison / $label").assertIsDisplayed()
+            compose.onNodeWithText(label).assertIsDisplayed()
         }
     }
 
@@ -278,20 +336,29 @@ class EntryRowTest {
         )
     }
 
+    private fun meta() = compose.onNodeWithTag(EntryRowTestTags.META, useUnmergedTree = true)
+
+    private fun date() = compose.onNodeWithTag(EntryRowTestTags.DATE, useUnmergedTree = true)
+
     private fun show(item: EntryListItem) = showAll(listOf(item))
 
-    private fun showAll(items: List<EntryListItem>) {
+    private fun showAll(items: List<EntryListItem>, fontScale: Float = 1f) {
         compose.setContent {
-            PerchTheme(dynamicColor = false) {
-                Column {
-                    items.forEach {
-                        // The row wears its caller's tag, the way home's does.
-                        EntryRow(
-                            item = it,
-                            now = NOW,
-                            onClick = {},
-                            modifier = Modifier.testTag(ROW),
-                        )
+            val density = LocalDensity.current
+            CompositionLocalProvider(
+                LocalDensity provides Density(density.density, fontScale),
+            ) {
+                PerchTheme(dynamicColor = false) {
+                    Column {
+                        items.forEach {
+                            // The row wears its caller's tag, the way home's does.
+                            EntryRow(
+                                item = it,
+                                now = NOW,
+                                onClick = {},
+                                modifier = Modifier.testTag(ROW),
+                            )
+                        }
                     }
                 }
             }
@@ -306,6 +373,8 @@ class EntryRowTest {
         imageUrl: String? = null,
         publishedAt: Long = NOW - 5 * HOUR,
         isRead: Boolean = false,
+        folderId: Long = FolderEntity.UNCATEGORIZED_ID,
+        folderName: String = FolderEntity.UNCATEGORIZED_NAME,
     ) = EntryListItem(
         id = id,
         feedId = 1,
@@ -315,8 +384,8 @@ class EntryRowTest {
         publishedAt = publishedAt,
         isRead = isRead,
         sourceTitle = sourceTitle,
-        folderId = 1,
-        folderName = "Uncategorized",
+        folderId = folderId,
+        folderName = folderName,
     )
 
     /** Maps exactly one URL to a real drawable; anything else falls through and errors. */

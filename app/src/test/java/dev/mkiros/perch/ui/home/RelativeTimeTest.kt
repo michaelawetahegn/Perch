@@ -8,8 +8,8 @@ import org.junit.Test
 /**
  * The metadata line's clock (DESIGN.md §5, U08): coarser the further back an entry sits,
  * and **compact** — the row says `47min`, not `47 minutes ago`. The reference row
- * (`design/reference/feed-row-reference.jpg`) sets `Source / 5h` on one line beside a
- * thumbnail, and "ago" is a word the position of the text already implies.
+ * (`design/reference/feed-row-reference.jpg`) sets a compact time under the source name,
+ * beside a thumbnail, and "ago" is a word the position of the text already implies.
  *
  * This is also where the **zone** is pinned now (W02/#15). It used to be pinned on the
  * time window, because U07's "Today" opened at midnight and issue #9 was that midnight

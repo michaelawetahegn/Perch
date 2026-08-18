@@ -199,7 +199,7 @@ longer true.
         (net count named in the commit message if it moved); issue #20 **stays open** for W04.
       - Rung: unit
 
-- [ ] **W04 — A row says who published it, in what category, and when. TDD + screenshot. Issue #20.**
+- [x] **W04 — A row says who published it, in what category, and when. TDD + screenshot. Issue #20.**
       Second half of #20: "add a new label next to the name of the blog and the date posted
       under the post with the category". §0 fixes the reading: **the category sits beside the
       source name; the date posted goes on its own line beneath.**

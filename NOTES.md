@@ -23,8 +23,7 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   scope, not evidence against it. **Not ours:** the LLVM feed omits spaces around inline `<code>`/`<a>`.
 - 2026-08-07 — **U02: losing `~/.perch/perch-release.jks` or `signing.properties` makes every future install a data
   wipe** — the cert (SHA-256 `61367c04…fce489`) *is* the update identity and cannot be rotated. Both `chmod 600`,
-  outside the repo, **not backed up yet**; absent the key, release falls back to debug signing silently. Version
-  lives only atop `app/build.gradle.kts`; **`assembleRelease` runs `lintVitalRelease`.**
+  outside the repo, **not backed up yet**; absent it, release silently debug-signs. `assembleRelease` runs `lintVitalRelease`.
 - 2026-08-07 — **U03: build test databases with `PerchDatabase.inMemory(context)`** — only it seeds Uncategorized.
 - 2026-08-07 — **U04: adding a fourth reader-owned flag beside `isRead`/`isSaved`/`isStarred` needs two edits** —
   `EntryDao.upsertAll` (never Room `@Upsert`: it resolves on the primary key, ours on `(feedId, guid)`) and
@@ -50,8 +49,7 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   `Box`, so the reading position survives; `ZoomedImage` is hoisted to `PerchNavHost` because
   **`BackStep.CloseImageViewer` sits between `CloseOverlay` and `PopArticle`**, an order `BackChainTest` guards.
   An open overlay eats `performTouchInput` — scroll under it first; `performClick` needs `mainClock.advanceTimeBy`.
-- 2026-08-08 — **U13 (OPML folders).** A folder is a **name, not an id** — ids do not survive the file (U14 inherits
-  this). Import files a source under the **outermost** container and leaves a duplicate alone.
+- 2026-08-08 — **U13:** OPML import files a source under the **outermost** container and leaves a duplicate alone.
 - 2026-08-08 — **U14 (profile).** DB is **version 5**: `pending_entry_state`, keyed `(feedUrl, guid)`, **no FK to
   `feeds`** — its job is outliving a source that does not exist yet. **`EntryDao.upsertAll` consumes parked rows**,
   so the refresh after a restore cannot undo it; a restore turns a flag **on** and never off, so it is idempotent.
@@ -78,7 +76,9 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   `WindowInsetsTest`; never add `.statusBarsPadding()` to a screen. **Robolectric has no bars or cutout on any
   profile**, so `ui/WindowInsetsSupport.kt`'s `applyWindowInsets` dispatches its own to every Compose root.
 - **V05/#12: "Unread" is gone from every reader-facing string** (identifiers keep it); **pin `HomeTestTags.TITLE`,
-  never `onNodeWithText("Feed")`** — the bottom-bar tab has read "Feed" since U09.
+  never `onNodeWithText("Feed")`** — the tab has read "Feed" since U09. **W04/#20: a row's meta is now the bare
+  source name** (`EntryRowTestTags.META`, category dimmed after a `·`, Uncategorized unlabelled; `DATE` beneath),
+  so a drawer row is `hasClickAction() and !hasTestTag(HomeTestTags.ENTRY)`.
 - **V08/#10: the scoped list is state, not a route.** `HomeScope` is **hoisted into `PerchNavHost`** — third such
   state — `BackStep.LeaveScope` is a rung above `ScrollFeedToTop`. **`selectTab` is a silent no-op from the
   article route**: `popUpTo(start){saveState}` saves the article and `restoreState` puts it back — pop first,

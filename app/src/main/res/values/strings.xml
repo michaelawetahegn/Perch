@@ -11,8 +11,8 @@
     <string name="action_open_sources">Open sources</string>
 
     <!-- Home: the entry list -->
-    <!-- Source name / relative time, the metadata line under a row's title (U08). -->
-    <string name="home_entry_meta">%1$s / %2$s</string>
+    <!-- Between a row's source name and the category it is filed under (W04). -->
+    <string name="home_entry_category_separator">" \u00b7 "</string>
 
     <!-- Home: empty states, one per cause (DESIGN.md §7) -->
     <string name="home_empty_no_sources_title">Add your first source</string>

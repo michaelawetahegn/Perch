@@ -17,6 +17,7 @@ import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.filterToOne
 import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -406,7 +407,8 @@ class DrawerMultiSelectTest {
     }
 
     private fun row(label: String) =
-        compose.onAllNodesWithText(label).filterToOne(hasClickAction())
+        compose.onAllNodesWithText(label)
+            .filterToOne(hasClickAction() and !hasTestTag(HomeTestTags.ENTRY))
 
     private fun longPressFolder(folderId: Long) {
         openDrawer()

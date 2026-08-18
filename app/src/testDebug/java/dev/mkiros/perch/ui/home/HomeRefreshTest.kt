@@ -6,6 +6,7 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.filterToOne
 import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -356,7 +357,8 @@ class HomeRefreshTest {
     /** Matched by click action: the app bar can carry the same text as the drawer row. */
     private fun selectInDrawer(label: String) {
         openDrawer()
-        compose.onAllNodesWithText(label).filterToOne(hasClickAction())
+        compose.onAllNodesWithText(label)
+            .filterToOne(hasClickAction() and !hasTestTag(HomeTestTags.ENTRY))
             .performSemanticsAction(SemanticsActions.OnClick)
         awaitState { it.selectedTitle == label }
     }

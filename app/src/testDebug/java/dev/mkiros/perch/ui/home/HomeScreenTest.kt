@@ -8,6 +8,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.filterToOne
 import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
@@ -108,7 +109,10 @@ class HomeScreenTest {
         showHome()
 
         compose.onNodeWithText("An Async Runtime in C").assertIsDisplayed()
-        compose.onNodeWithText("Null Program / 3h").assertIsDisplayed()
+        // The source name also appears in the drawer, which composes while closed, so the
+        // row's own meta line is addressed by tag rather than by text.
+        meta().assertTextEquals("Null Program")
+        date().assertTextEquals("3h")
         // U08 dropped the snippet: the thumbnail does that work now, and the reference row
         // is title + metadata only.
         compose.onNodeWithText("Coroutines without a language runtime, in about 200 lines.")
@@ -122,7 +126,8 @@ class HomeScreenTest {
 
         showHome()
 
-        compose.onNodeWithText("Chris Wellons / 2d").assertIsDisplayed()
+        meta().assertTextEquals("Chris Wellons")
+        date().assertTextEquals("2d")
     }
 
     /**
@@ -423,7 +428,8 @@ class HomeScreenTest {
         awaitState { state -> state.sources.any { it.title == "Chris Wellons" } }
 
         // The drawer is still open behind the dialog, so the relabelled row is on screen.
-        compose.onNodeWithText("Chris Wellons").assertIsDisplayed()
+        // Addressed as a drawer row: since W04 the entry row prints the same name too.
+        drawerRow("Chris Wellons").assertIsDisplayed()
         compose.onNodeWithText("nullprogram.com").assertDoesNotExist()
         // The rename is display-only: the parsed title is what the next refresh
         // overwrites, and what clearing the rename falls back to.
@@ -463,6 +469,11 @@ class HomeScreenTest {
 
     // ---- harness ---------------------------------------------------------------
 
+    /** The row's two meta lines (W04), by tag: their text repeats elsewhere on screen. */
+    private fun meta() = compose.onNodeWithTag(EntryRowTestTags.META, useUnmergedTree = true)
+
+    private fun date() = compose.onNodeWithTag(EntryRowTestTags.DATE, useUnmergedTree = true)
+
     private fun openDrawer() {
         compose.onNodeWithContentDescription("Open sources").performClick()
         compose.waitForIdle()
@@ -499,10 +510,13 @@ class HomeScreenTest {
     /**
      * The drawer row carrying [label], as opposed to the app bar showing the same name —
      * which it does whenever the source being long-pressed is also the one being filtered
-     * on. The row is the only one of the two that answers a click.
+     * on — or an entry row published by it, which since W04 prints the source name on its
+     * own rather than welded to a time. Both of those and the drawer row answer a click,
+     * so clicking is no longer enough to tell them apart; an entry row is excluded by the
+     * tag every one of them carries.
      */
-    private fun drawerRow(label: String) =
-        compose.onAllNodesWithText(label).filterToOne(hasClickAction())
+    private fun drawerRow(label: String) = compose.onAllNodesWithText(label)
+        .filterToOne(hasClickAction() and !hasTestTag(HomeTestTags.ENTRY))
 
     /**
      * Taps a dialog button. The dialogs are in their own window rather than inside the
