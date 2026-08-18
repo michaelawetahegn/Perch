@@ -27,11 +27,11 @@ data class ArticleFixture(
 }
 
 /**
- * The sixteen pages U10 is measured against: five from fabiensanglard.net (§0's "no body
+ * The seventeen pages U10 is measured against: five from fabiensanglard.net (§0's "no body
  * at all" shape), five from gpuopen.com (§0's "excerpt standing in for the body"), and
- * six more excerpt-only sources drawn from the corpus by measurement — the five feeds
- * whose median item body is shortest after those two, plus V09's Squarespace page — so the
- * CMS coverage the task asks for is real rather than assumed.
+ * seven more excerpt-only sources drawn from the corpus by measurement — the five feeds
+ * whose median item body is shortest after those two, V09's Squarespace page, and W06's
+ * Hugging Face page — so the CMS coverage the task asks for is real rather than assumed.
  */
 object ArticleFixtures {
 
@@ -157,7 +157,11 @@ object ArticleFixtures {
         ),
     )
 
-    /** Six more excerpt-only sources, chosen for CMS spread rather than for difficulty. */
+    /**
+     * Seven more excerpt-only sources, chosen for CMS spread rather than for difficulty.
+     * The last of them arrived the other way round: the Hugging Face blog was harvested by
+     * W06 because it *failed*, and W07's two-pass rule is what let it join the contract.
+     */
     val other: List<ArticleFixture> = listOf(
         ArticleFixture(
             slug = "hexacorn-msconfig-secret",
@@ -209,19 +213,6 @@ object ArticleFixtures {
             last = "Perhaps the next time you catch a glimpse of the Moon",
             excludes = listOf("Copyright © 2026 Bartosz Ciechanowski"),
         ),
-        squarespaceTable,
-    )
-
-    /**
-     * Pages that do **not** extract today, kept out of [all] so the suite stays green (W06).
-     *
-     * A fixture lands here the moment it is harvested and leaves it the moment the defect it
-     * pins is fixed; [all] is a contract, and a page that is known to fail cannot be part of
-     * one. `ArticleExtractorBlindSpotTest` measures each of these and names the mechanism,
-     * and the task that flips the mechanism promotes the fixture into [other] in the same
-     * commit.
-     */
-    val pending: List<ArticleFixture> = listOf(
         ArticleFixture(
             slug = "huggingface-efficient-knowledge-distillation",
             url = "https://huggingface.co/blog/MultiverseComputingCAI/" +
@@ -231,7 +222,20 @@ object ArticleFixtures {
             last = "We have also open-sourced the chunked-loss implementation",
             excludes = listOf("Models mentioned in this article", "Back to Articles"),
         ),
+        squarespaceTable,
     )
+
+    /**
+     * Pages that do **not** extract today, kept out of [all] so the suite stays green (W06).
+     *
+     * Empty, and kept for the next one. A fixture lands here the moment it is harvested and
+     * leaves it the moment the defect it pins is fixed; [all] is a contract, and a page that
+     * is known to fail cannot be part of one. `ArticleExtractorBlindSpotTest` measures each
+     * of them and names the mechanism, and the task that flips the mechanism promotes the
+     * fixture into [other] in the same commit — which is what W07 did with the Hugging Face
+     * page W06 harvested.
+     */
+    val pending: List<ArticleFixture> = emptyList()
 
     val all: List<ArticleFixture> = noBody + excerptOnly + other
 

@@ -304,7 +304,7 @@ longer true.
         tests; the diagnosis commented on issue #17, which **stays open** for W07.
       - Rung: unit
 
-- [ ] **W07 — The extractor reaches pages it was structurally blind to. TDD. Issue #17.**
+- [x] **W07 — The extractor reaches pages it was structurally blind to. TDD. Issue #17.**
       Flip W06's pinned defect using a rule that **names no host** (§0). Whatever W06 measured
       decides the change; the shapes planning judged most likely, in order of generality:
       1. **A list can be prose.** `PROSE_TAGS` (`ArticleExtractor.kt:308`) excludes `ul`/`ol`

@@ -26,6 +26,17 @@ import org.jsoup.nodes.Element
  *  4. **Take the top subtree** plus any sibling that scores well enough to be part of the
  *     same article, and clean the chrome that survived inside it.
  *
+ * Two of those steps disagree about what evidence is worth. Judging markup by its *name*
+ * reads what a page calls itself; scoring reads what it holds. Names are the cheaper signal
+ * and the more wrong one — a class attribute is written by a build tool, and a utility
+ * framework will happily call an article's own wrapper `max-lg:overflow-hidden`, which says
+ * `hidden` to a regex and nothing at all to a reader (W06/#17). So a guess that can remove
+ * the whole article has to be able to be wrong: **a page that yields nothing is read a
+ * second time with every name erased**, and structure — tags, prose length, link density,
+ * the landmark elements — decides alone. A page that already yielded an article never
+ * reaches the second reading, so nothing that works today can be changed by it; the
+ * fallback costs one extra parse on exactly the pages that were returning null.
+ *
  * The output is unsanitized HTML, exactly like a feed body, and goes through the same
  * `HtmlSanitizer` → `ArticleLowering` pipeline. That is the point: an extracted article
  * gets no special treatment downstream, so everything the article screen already renders
@@ -44,7 +55,27 @@ object ArticleExtractor {
      */
     fun extract(html: String?, baseUrl: String?): String? {
         val raw = html?.takeIf { it.isNotBlank() } ?: return null
+        return read(raw, baseUrl, trustNames = true)
+            ?: read(raw, baseUrl, trustNames = false)
+    }
+
+    /**
+     * One reading of the page, with what the markup calls itself either believed or ignored.
+     *
+     * Ignoring it is one line and no second code path: every rule that reads a name reads
+     * `class` and `id`, so erasing those two attributes leaves each of them looking at a
+     * blank — the unlikely-candidate sweep drops nothing, [classWeight] adds and subtracts
+     * nothing, and [clean] falls back to the link-density rule it already applies to
+     * anonymous markup. Structure alone decides, which is exactly what the second reading
+     * is for.
+     *
+     * The document is parsed fresh each time because [strip] mutates it, which is also what
+     * makes the second reading honest: it starts from the bytes, not from what the first
+     * reading had left.
+     */
+    private fun read(raw: String, baseUrl: String?, trustNames: Boolean): String? {
         val doc = runCatching { Jsoup.parse(raw, baseUrl.orEmpty()) }.getOrNull() ?: return null
+        if (!trustNames) doc.select("*").forEach { it.removeAttr("class").removeAttr("id") }
 
         return runCatching {
             strip(doc)
@@ -83,6 +114,8 @@ object ArticleExtractor {
         // Readability's unlikely-candidate pass, in its original conservative form: a
         // container is only dropped when its name says chrome *and* says nothing that
         // sounds like an article. `class="post-comments"` goes; `class="content"` stays.
+        // On the second reading there are no names left to ask, so this drops nothing —
+        // see [read].
         doc.body().select("div, section, ul, ol, aside, span, table")
             .filter { it.namesChrome() }
             .forEach { it.remove() }

@@ -29,10 +29,11 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
 - 2026-08-07 — **U03: test databases come from `PerchDatabase.inMemory(context)`** (only it seeds Uncategorized).
   **U04: a fourth reader-owned flag beside `isRead`/`isSaved`/`isStarred` needs two edits** — `EntryDao.upsertAll`
   (never Room `@Upsert`: it resolves on the primary key, ours on `(feedId, guid)`) and `deleteReadOlderThan`.
-- 2026-08-18 — **W06/#17: `namesChrome()` matches an unanchored substring**, so Tailwind's `max-lg:overflow-hidden`
-  reads as `hidden` and `strip()` deletes the Hugging Face article's wrapper (7389 of 7419 prose chars, and the
-  `blog-content prose` child that *does* name itself one) before anything scores — the body **is** in the HTML, and a
-  page that fails goes in `ArticleFixtures.pending`, never `all`.
+- 2026-08-18 — **W06+W07/#17: `namesChrome()` matched an unanchored substring**, so Tailwind's `max-lg:overflow-hidden`
+  read as `hidden` and `strip()` deleted the Hugging Face wrapper (7389 of 7419 prose chars) before anything scored.
+  **W07: a page that extracts to null is read again with every `class`/`id` erased** — name rules see a blank, structure
+  alone decides, and a page that already worked never reaches it. Corpus cost **zero** (16 fixtures identical to the
+  char, ratios 22.9–63.5×, ZDI 228 cells); HF 0 → 9355. A failing page goes in `ArticleFixtures.pending`, never `all`.
 - 2026-08-18 — **W02/#15: the window is a *rolling* one** (24 h / 7 / 30 / 365 days back from `clock.instant()`),
   label **"Past 24 Hours"**, **defaults to Today** — a UI test seeding anything older pins `TimeFilter.AllTime` via
   its own `SettingsStore`, and addresses section headers by `HomeTestTags.section(id)`, never by text (the drawer
