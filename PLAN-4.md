@@ -502,7 +502,7 @@ longer true.
         `./gradlew test assembleRelease` green: **1524 tests, 0 failures**, 1 skipped (this
         gate, network-gated). Screenshots in `build/perch-screenshots/`.
 
-- [ ] **W12 — Release v0.4.0.** Bump `perchVersionCode` 4 → **5** and `perchVersionName`
+- [x] **W12 — Release v0.4.0.** Bump `perchVersionCode` 4 → **5** and `perchVersionName`
       `0.3.0` → **`0.4.0`** at `app/build.gradle.kts:12-13` — §0's rule: this release carries
       new features, so the MINOR digit moves. Build the **release-signed** APK with U02's key;
       `assembleRelease` runs `lintVitalRelease` where `assembleDebug` does not.
@@ -526,3 +526,18 @@ longer true.
         `grep -c '^- \[ \]' PLAN-4.md` returns 0; `gh issue list --state open` holds only what
         is genuinely still open, each with a comment saying why.
       - Rung: build
+      - Outcome (2026-08-18): shipped. `perchVersionCode` 4 → 5, `perchVersionName`
+        0.3.0 → 0.4.0, in the one place they live. `assembleRelease` BUILD SUCCESSFUL
+        (`lintVitalRelease` clean); **verified on the file, not the note** —
+        `aapt2 dump badging perch-0.4.0.apk` reads `versionCode='5' versionName='0.4.0'`
+        and `apksigner verify --print-certs` prints U02's
+        `61367c0499de5c49c824f4d7ba7b4e692d33960cc57c0622772227a8b7fce489`, so v0.3.0
+        updates in place. **Gradle writes `app-release.apk`; the rename to
+        `perch-0.4.0.apk` is this task's, and `output-metadata.json` names the
+        unrenamed file** — that is the gap V16 fell into and it is now in NOTES.md.
+        README's six shots refreshed from W11's live captures (the home shot is the
+        staged freshest-first one: three categories, real dates, one placeholder).
+        Release page written by hand through `docs/RELEASE-NOTES.md`'s template — the
+        script's six issues collapse to four **New** bullets, one **Fixed**, and #18/#19
+        stay out because a reader cannot see a review pass or a versioning rule
+        (rule 7). NOTES.md pruned to 99 lines.

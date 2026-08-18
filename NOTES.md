@@ -68,15 +68,13 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   `loading` keeps the bare frame**; `ColorFilter.tint` flattens the mark, so `perchMarkMonochrome(ink, paper)`.
 - **V10/#5: a refused row is `refusesFolder` = "a tick would change nothing"**, so the affordance cannot drift from
   `toggleFolder`. **`combinedClickable(enabled = false)` keeps its `OnClick` action** — assert `assertIsNotEnabled`.
-- **V16: v0.3.0 shipped** — versionCode 4, `app/build/outputs/apk/release/perch-0.3.0.apk`, U02-signed. On device
-  **`run-as` dies on a release build** — verify through the UI, not sqlite3.
+- **W12: v0.4.0 shipped** — versionCode 5, `app/build/outputs/apk/release/perch-0.4.0.apk`, U02-signed; the release
+  task **renames `app-release.apk` itself** — nothing in Gradle does it, and `output-metadata.json` still names the
+  unrenamed file. On device **`run-as` dies on a release build** — verify through the UI, not sqlite3.
 - 2026-08-18 — **W11: the live gate is thirteen gates** — **5c** is #17's Hugging Face page fetched *live* (a fixture
   cannot notice a Tailwind class rename), held to beating the page's own teaser: 9355 vs 51 chars. **The home shot is
   staged freshest-first, not quietest-first** — quietest was right while a small folder bought a section header, and
   after W03 it put every category off-screen. 38/38 pull, 1038 entries, 0 rows out of order, 7 inside 24 h.
-- 2026-08-18 — **W10 (the review) caught what a per-task session cannot**: live **gate 9 still read the folder-grouped
-  list W03 deleted** (it would have failed W11), the README claimed swipe actions and a row source-tap that do not
-  exist, and `ArticleFixtures.pending` said a test measured it when none did.
 - **V04/#3: the inset contract is one doc comment in `ui/nav/PerchNavHost.kt`** — four clauses, one test each in
   `WindowInsetsTest`; never `.statusBarsPadding()` a screen. **Robolectric has no bars**, so `WindowInsetsSupport.kt`'s
   `applyWindowInsets` dispatches its own to every Compose root.
