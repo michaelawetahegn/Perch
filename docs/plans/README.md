@@ -12,7 +12,8 @@ Finished plans live here. The **active** plan stays at the repository root, beca
 |---|---|---|---|
 | [`PLAN-1-v0.1.md`](PLAN-1-v0.1.md) | v0.1.0 | T01–T32 | Build the reader: environment, parser, storage, the screens, first release. |
 | [`PLAN-2-v0.2.md`](PLAN-2-v0.2.md) | v0.2.0 | U01–U16 | The daily-driver pass: folders, to-read and liked, full-text extraction, code and tables, the image viewer, OPML and profile backup. |
-| [`PLAN-3.md`](../../PLAN-3.md) | v0.3.0 | V01–V16 | The issue-tracker pass: one task per open GitHub issue. |
+| [`PLAN-3-v0.3.md`](PLAN-3-v0.3.md) | v0.3.0 | V01–V16 | The issue-tracker pass: one task per open GitHub issue. |
+| [`PLAN-4.md`](../../PLAN-4.md) | v0.4.0 | W01–W12 | The reader's-own-words pass: rolling time windows, one mixed feed, sharing, a wider extractor, and a review pass before every release. |
 
 [`bootstrap-prompt.md`](bootstrap-prompt.md) is the original prompt that produced
 `SPEC.md`, `DESIGN.md`, `PLAN-1` and `loop.sh` in a single session, before any code
