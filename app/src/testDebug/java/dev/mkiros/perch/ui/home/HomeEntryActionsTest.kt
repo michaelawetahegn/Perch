@@ -1,6 +1,8 @@
 package dev.mkiros.perch.ui.home
 
+import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -8,6 +10,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.test.core.app.ApplicationProvider
+import androidx.core.content.IntentCompat
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.EntryEntity
@@ -29,6 +32,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 
 /**
@@ -151,6 +155,38 @@ class HomeEntryActionsTest {
 
         awaitEntry("the entry to become read") { it.isRead }
         assertThat(entry().readAt).isEqualTo(now.toEpochMilli())
+    }
+
+    /**
+     * The sheet's share row has been wired since U09 and never had a test. §0 (#16): the
+     * sheet Perch draws is not the share sheet — it fires a chooser and the OS draws that.
+     */
+    @Test
+    fun `share hands the row's link to the system`() {
+        seed(title = "An Async Runtime in C")
+        showHome()
+
+        openActions()
+        tap(EntryActionTestTags.SHARE)
+
+        val chooser = shadowOf(compose.activity).nextStartedActivity
+        val send = IntentCompat.getParcelableExtra(chooser, Intent.EXTRA_INTENT, Intent::class.java)!!
+        assertThat(send.action).isEqualTo(Intent.ACTION_SEND)
+        assertThat(send.getStringExtra(Intent.EXTRA_TEXT)).isEqualTo("https://example.com/post")
+    }
+
+    @Test
+    fun `copy link puts the row's link on the clipboard`() {
+        seed(title = "An Async Runtime in C")
+        showHome()
+
+        openActions()
+        tap(EntryActionTestTags.COPY_LINK)
+
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        assertThat(clipboard.primaryClip?.getItemAt(0)?.text?.toString())
+            .isEqualTo("https://example.com/post")
     }
 
     /** All three flags are independent (§0) — saving must not read, liking must not save. */

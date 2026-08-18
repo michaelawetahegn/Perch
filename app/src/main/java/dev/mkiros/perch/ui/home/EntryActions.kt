@@ -1,8 +1,12 @@
 package dev.mkiros.perch.ui.home
 
 import android.content.ActivityNotFoundException
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.os.Build
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.LibraryBooks
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.MarkEmailRead
 import androidx.compose.material.icons.filled.MarkEmailUnread
 import androidx.compose.material.icons.filled.PlaylistRemove
@@ -58,6 +63,7 @@ fun EntryActionsSheet(
     onToggleLiked: () -> Unit,
     onToggleRead: () -> Unit,
     onShare: () -> Unit,
+    onCopyLink: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     ModalBottomSheet(
@@ -118,6 +124,16 @@ fun EntryActionsSheet(
                 testTag = EntryActionTestTags.SHARE,
                 onClick = onShare,
             )
+            // Nothing to put on the clipboard if the entry never carried a link — an
+            // affordance that would copy the empty string is worse than its absence.
+            if (item.link != null) {
+                ActionRow(
+                    icon = Icons.Default.Link,
+                    label = stringResource(R.string.entry_action_copy_link),
+                    testTag = EntryActionTestTags.COPY_LINK,
+                    onClick = onCopyLink,
+                )
+            }
         }
     }
 }
@@ -149,23 +165,52 @@ private fun ActionRow(
 }
 
 /**
- * Sharing is the one action here that leaves Perch, so it is the one that has to survive a
- * device with nowhere to send it: an `ACTION_SEND` with no handler throws, and crashing out
- * of a reading list because a phone has no share targets is not a trade worth making.
+ * What leaves Perch when a reader shares an entry (PLAN-4 §0, #16).
  *
- * The link is what gets shared, with the title as the subject — a reader forwarding an
- * article means the article, not Perch's copy of its text.
+ * Perch never draws its own share sheet: the chooser is the system's and what is on it is
+ * the system's business. What Perch owns is this intent, so it is built by a pure function
+ * — no context, no launch — and pinned by `ShareIntentTest` on the JVM. The screens only
+ * fire what this returns.
+ *
+ * The link is what gets shared, with the title as the subject: a reader forwarding an
+ * article means the article, not Perch's copy of its text. An entry with no link at all
+ * falls back to its title, because sharing something beats sharing nothing.
  */
-fun shareEntry(context: Context, title: String, link: String?) {
+fun shareIntent(title: String, link: String?): Intent {
     val send = Intent(Intent.ACTION_SEND).apply {
         type = "text/plain"
         putExtra(Intent.EXTRA_SUBJECT, title)
         putExtra(Intent.EXTRA_TEXT, link ?: title)
     }
+    return Intent.createChooser(send, null)
+}
+
+/**
+ * Fires [shareIntent], and survives a device with nowhere to send it: an `ACTION_SEND`
+ * with no handler throws, and crashing out of a reading list because a phone has no share
+ * targets is not a trade worth making.
+ */
+fun shareEntry(context: Context, title: String, link: String?) {
     try {
-        context.startActivity(Intent.createChooser(send, null))
+        context.startActivity(shareIntent(title, link))
     } catch (_: ActivityNotFoundException) {
         // Nothing on the device can receive it. There is nothing useful to say.
+    }
+}
+
+/**
+ * The one share affordance Perch owns (§0, #16): the link, on the clipboard.
+ *
+ * Android 13 and up posts its own confirmation of a copy, so Perch says nothing there and
+ * a toast below it — a copy with no acknowledgement anywhere is indistinguishable from a
+ * dead button, and two acknowledgements are worse than one.
+ */
+fun copyLink(context: Context, link: String) {
+    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+        ?: return
+    clipboard.setPrimaryClip(ClipData.newPlainText(context.getString(R.string.entry_action_copy_link), link))
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+        Toast.makeText(context, R.string.entry_action_copy_link_done, Toast.LENGTH_SHORT).show()
     }
 }
 
@@ -175,4 +220,5 @@ object EntryActionTestTags {
     const val LIKE = "entry:actions:like"
     const val READ = "entry:actions:read"
     const val SHARE = "entry:actions:share"
+    const val COPY_LINK = "entry:actions:copy-link"
 }

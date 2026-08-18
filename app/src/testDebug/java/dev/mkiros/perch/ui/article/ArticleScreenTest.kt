@@ -1,5 +1,6 @@
 package dev.mkiros.perch.ui.article
 
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import androidx.activity.ComponentActivity
@@ -15,6 +16,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.test.core.app.ApplicationProvider
+import androidx.core.content.IntentCompat
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.EntryEntity
@@ -188,6 +190,44 @@ class ArticleScreenTest {
     }
 
     @Test
+    fun `sharing an article hands the system a send carrying its link`() {
+        val feedId = seedFeed(title = "Null Program")
+        val entryId = seedEntry(
+            feedId = feedId,
+            title = "An Async Runtime in C",
+            link = "https://nullprogram.com/blog/2026/08/03/",
+        )
+
+        showArticle(entryId)
+        tap(ArticleTestTags.SHARE)
+
+        // §0: the sheet is the OS's, so what leaves Perch is a chooser — the payload we
+        // care about is the `ACTION_SEND` wrapped inside it.
+        val chooser = shadowOf(compose.activity).nextStartedActivity
+        val send = IntentCompat.getParcelableExtra(chooser, Intent.EXTRA_INTENT, Intent::class.java)!!
+        assertThat(send.action).isEqualTo(Intent.ACTION_SEND)
+        assertThat(send.getStringExtra(Intent.EXTRA_TEXT))
+            .isEqualTo("https://nullprogram.com/blog/2026/08/03/")
+        assertThat(send.getStringExtra(Intent.EXTRA_SUBJECT)).isEqualTo("An Async Runtime in C")
+    }
+
+    @Test
+    fun `copy link puts the entry's link on the clipboard`() {
+        val feedId = seedFeed(title = "Null Program")
+        val entryId = seedEntry(
+            feedId = feedId,
+            title = "An Async Runtime in C",
+            link = "https://nullprogram.com/blog/2026/08/03/",
+        )
+
+        showArticle(entryId)
+        tap(ArticleTestTags.OVERFLOW)
+        tap(ArticleTestTags.COPY_LINK)
+
+        assertThat(clipboardText()).isEqualTo("https://nullprogram.com/blog/2026/08/03/")
+    }
+
+    @Test
     fun `an entry with no body offers its summary and a way to read it on the web`() {
         val feedId = seedFeed(title = "Null Program")
         val entryId = seedEntry(
@@ -344,6 +384,12 @@ class ArticleScreenTest {
      * reason `HomeScreenTest` does: under Robolectric an injected gesture does not
      * reliably reach a node that laid out inside a scrolling container.
      */
+    private fun clipboardText(): String? {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        return clipboard.primaryClip?.getItemAt(0)?.text?.toString()
+    }
+
     private fun tap(testTag: String) {
         compose.onNodeWithTag(testTag).performSemanticsAction(SemanticsActions.OnClick)
         compose.waitForIdle()

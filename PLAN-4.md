@@ -232,7 +232,7 @@ longer true.
         naming both W03 and W04.
       - Rung: screenshot
 
-- [ ] **W05 — An article can be shared and its link copied. TDD. Issue #16.**
+- [x] **W05 — An article can be shared and its link copied. TDD. Issue #16.**
       `gh issue view 16 --json body` — "a share option where it opens up the menu where you
       can either copy the article as a link or you can share to different places".
       **Most of this already exists and must be reused, not rewritten.**

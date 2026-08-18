@@ -26,6 +26,7 @@ import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Button
@@ -58,6 +59,8 @@ import dev.mkiros.perch.R
 import dev.mkiros.perch.data.parse.ArticleBlock
 import dev.mkiros.perch.ui.article.zoom.ImageViewer
 import dev.mkiros.perch.ui.article.zoom.ZoomedImage
+import dev.mkiros.perch.ui.home.copyLink
+import dev.mkiros.perch.ui.home.shareEntry
 import dev.mkiros.perch.ui.theme.ArticleType
 import dev.mkiros.perch.ui.theme.Dimens
 
@@ -143,6 +146,18 @@ fun ArticleScreen(
                             }
                         }
                         if (loaded != null) {
+                            // The article's own share, alongside the row's (§0, #16): the
+                            // chooser is the system's, and this only fires it.
+                            IconButton(
+                                onClick = { shareEntry(context, loaded.title, loaded.link) },
+                                modifier = Modifier.testTag(ArticleTestTags.SHARE),
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Share,
+                                    contentDescription = stringResource(R.string.entry_action_share),
+                                    modifier = Modifier.size(Dimens.icon),
+                                )
+                            }
                             Overflow(loaded, onLoadFullArticle = viewModel::loadFullArticle)
                         }
                     },
@@ -197,16 +212,21 @@ fun ArticleScreen(
 }
 
 /**
- * The overflow, which exists for one action: *Load full article* (U10).
+ * The overflow: *Load full article* (U10) and *Copy link* (§0, #16).
  *
- * It is enabled whenever the body did not already come from an extraction, not only when
- * the automatic trigger declined to fire. The trigger is a heuristic and will sometimes
- * read an excerpt as an article; this is how the reader gets out of that without leaving
- * the app, which is the whole point of the task.
+ * *Load full article* is enabled whenever the body did not already come from an
+ * extraction, not only when the automatic trigger declined to fire. The trigger is a
+ * heuristic and will sometimes read an excerpt as an article; this is how the reader gets
+ * out of that without leaving the app, which is the whole point of the task.
+ *
+ * *Copy link* is the one share affordance Perch owns rather than delegates, so it lives
+ * here rather than in the top bar: the button beside it opens the system's chooser, which
+ * is where a reader who wants to send the article anywhere else is already going.
  */
 @Composable
 private fun Overflow(state: ArticleUiState.Loaded, onLoadFullArticle: () -> Unit) {
     var open by rememberSaveable { mutableStateOf(false) }
+    val context = LocalContext.current
 
     Box {
         IconButton(
@@ -228,6 +248,15 @@ private fun Overflow(state: ArticleUiState.Loaded, onLoadFullArticle: () -> Unit
                     onLoadFullArticle()
                 },
                 modifier = Modifier.testTag(ArticleTestTags.LOAD_FULL_TEXT),
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.entry_action_copy_link)) },
+                enabled = state.link != null,
+                onClick = {
+                    open = false
+                    state.link?.let { copyLink(context, it) }
+                },
+                modifier = Modifier.testTag(ArticleTestTags.COPY_LINK),
             )
         }
     }
@@ -423,6 +452,8 @@ object ArticleTestTags {
     const val SAVE = "article:save"
     const val READ_ON_WEB = "article:read-on-web"
     const val OVERFLOW = "article:overflow"
+    const val SHARE = "article:share"
+    const val COPY_LINK = "article:copy-link"
     const val LOAD_FULL_TEXT = "article:load-full-text"
     const val FULL_TEXT_PROGRESS = "article:full-text-progress"
     const val CODE = "article:code"

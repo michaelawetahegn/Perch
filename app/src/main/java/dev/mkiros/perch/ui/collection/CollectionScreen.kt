@@ -48,6 +48,7 @@ import dev.mkiros.perch.R
 import dev.mkiros.perch.data.db.EntryListItem
 import dev.mkiros.perch.ui.home.EntryActionsSheet
 import dev.mkiros.perch.ui.home.EntryRow
+import dev.mkiros.perch.ui.home.copyLink
 import dev.mkiros.perch.ui.home.pagedFooter
 import dev.mkiros.perch.ui.home.shareEntry
 import dev.mkiros.perch.ui.theme.Dimens
@@ -160,6 +161,10 @@ fun CollectionScreen(
             onShare = {
                 actionsForId = null
                 shareEntry(context, item.title, item.link)
+            },
+            onCopyLink = {
+                actionsForId = null
+                item.link?.let { copyLink(context, it) }
             },
             onDismiss = { actionsForId = null },
         )

@@ -521,6 +521,10 @@ fun HomeScreen(
                     entryActionsForId = null
                     shareEntry(context, item.title, item.link)
                 },
+                onCopyLink = {
+                    entryActionsForId = null
+                    item.link?.let { copyLink(context, it) }
+                },
                 onDismiss = { entryActionsForId = null },
             )
         }
