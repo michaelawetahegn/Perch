@@ -95,6 +95,14 @@ Do not skip ahead, do not do two tasks, do not refactor code the task doesn't to
 - **v0.3.0 is installed on the human's real phone.** Every schema change ships a real Room
   `Migration` plus its `app/schemas/N.json`. `fallbackToDestructiveMigration()` never
   comes back — it would silently erase someone's read state, likes, and to-read queue.
+- **Versioning: MINOR for features, PATCH for fixes.** While Perch is 0.x, a release
+  carrying any notable new feature or user-visible behaviour change moves the **MINOR**
+  digit (`0.N.0`); a release that is only bug fixes, polish and docs moves the **PATCH**
+  digit (`0.N.M`). MAJOR is for 1.0 and for breaking a reader's data or workflow.
+  `versionCode` increments by exactly 1 on **every** release regardless — it is the update
+  identity and never resets. Both live at `app/build.gradle.kts:12-13`
+  (`perchVersionCode` / `perchVersionName`) and **nowhere else**: never bump a version in
+  two places. Full statement and rationale: SPEC.md §1.
 - **No new dependencies** beyond SPEC.md §2 without a one-line justification in NOTES.md.
 - Never re-derive a decision already in SPEC.md or DESIGN.md. If in doubt between
   exploring and executing: **execute the plan.**

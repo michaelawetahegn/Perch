@@ -97,7 +97,7 @@ longer true.
 
 ## Phase 0 — The rule that decides the release
 
-- [ ] **W01 — The versioning rule is written down where it binds. Issue #19.**
+- [x] **W01 — The versioning rule is written down where it binds. Issue #19.**
       `gh issue view 19 --json body` — the reader remembers "a note in the claude.md file about
       versioning"; planning searched CLAUDE.md, SPEC.md, DESIGN.md, docs/RALPH.md, every plan
       and `git log -S` for it: **it has never existed**. Say so on the issue rather than

@@ -146,6 +146,13 @@ corpus, real network, screenshots critiqued against `DESIGN.md`) and a **release
 [`RELEASE-NOTES.md`](RELEASE-NOTES.md)). Keep that shape: the loop should end with
 something installable, not with the last bug fix.
 
+**Which digit moves is not the release task's judgement call.** Read the plan you just
+finished: if it landed any notable new feature or user-visible behaviour change, the
+release is a **MINOR** bump (`0.N.0`); if it was only bug fixes, polish and docs, it is a
+**PATCH** bump (`0.N.M`). `versionCode` goes up by exactly 1 either way. The rule is stated
+in [SPEC.md](../SPEC.md) §1 and restated in [CLAUDE.md](../CLAUDE.md); the numbers
+themselves live only at the top of `app/build.gradle.kts`.
+
 ---
 
 ## When it goes wrong

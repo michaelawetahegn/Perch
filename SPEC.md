@@ -24,6 +24,25 @@ in one line in NOTES.md, and move on.
 No server, no accounts, no cloud sync, no analytics, no crash reporting. All state in
 Room/SQLite on-device. The app fetches feeds directly over OkHttp.
 
+### Versioning
+
+`MAJOR.MINOR.PATCH`. While Perch is 0.x:
+
+- **MINOR** (`0.N.0`) — the release carries any notable new feature or user-visible
+  behaviour change.
+- **PATCH** (`0.N.M`) — the release is only bug fixes, polish and docs.
+- **MAJOR** is reserved for 1.0, and thereafter for a release that breaks a reader's data
+  or workflow.
+
+`versionCode` increments by exactly **1 on every release**, whichever digit of the name
+moved: it is the update identity Android matches an install against, and it never resets.
+
+**Both numbers live in exactly one place** — `perchVersionCode` and `perchVersionName` at
+the top of `app/build.gradle.kts`. Settings' About line reads them back through
+`BuildConfig`, and the release APK is named from them. A release that bumps a version in a
+second place has created a way for the two to disagree; there is no second place. The
+binding restatement for a working session is the versioning bullet in CLAUDE.md.
+
 ## 2. Pinned toolchain & libraries
 
 Declared in `gradle/libs.versions.toml` (version catalog). Nothing else gets added
