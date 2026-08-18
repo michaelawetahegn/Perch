@@ -127,13 +127,13 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
 │ ─────────────────────────────────────│
 │ All Time ⌄                           │  ← U08a time range; a dropdown, never scrolls away
 │ ─────────────────────────────────────│
-│ Folder name                          │  ← section header, accent colour
-│ EntryRow ×N  (pull-to-refresh)       │
+│ EntryRow ×N  (pull-to-refresh)       │  ← one stream, newest first, folders mixed
 │  ● Title (≤3 lines)        ┌───────┐ │
 │    Source / 5h             │ thumb │ │
 │                            └───────┘ │
-│ Next folder                          │
-│ EntryRow ×N                          │
+│  ● Title                   ┌───────┐ │
+│    Source / 6h             │ thumb │ │
+│                            └───────┘ │
 │ ─────────────────────────────────────│
 │  ▣ Feed    ▤ To-Read    ♡ Liked      │  ← U09 NavigationBar; hidden on the article
 └──────────────────────────────────────┘
@@ -150,11 +150,11 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
     + Add source                → bottom sheet (which also picks the folder)
     + New folder                → name dialog
     Settings
-  Time is a *filter* and folder is a *section* (PLAN-2 §0): the range decides which
-  entries survive, the headers decide where the survivors sit. Sections collapse away
-  when the drawer has scoped the list to one folder or source, and when there is only
-  one folder to begin with. The range belongs to the Feed alone — To-Read and Liked
-  ignore it.
+  Time is a *filter* and folder is a *scope* (PLAN-4 §0, W03): the range decides which
+  entries survive, the drawer decides which sources are in play, and what is left is one
+  chronological stream — newest first, folders mixed together, no section headers. The
+  folder still reaches the row, as a category *label* (W04), never as a position. The
+  range belongs to the Feed alone — To-Read and Liked ignore it.
   FAB is NOT used on home. Adding a source is a drawer/overflow action; a FAB
   over a reading list is a Material cargo-cult.
 ```
@@ -169,8 +169,8 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
   articles, and a second row shape would make them read as a different kind of object.
   What changes is the ordering (when the reader filed it, not when it was published), the
   absence of the drawer and the range, and the absence of folder sections: these lists are
-  ordered by the reader's own gesture, and a folder header would cut across the one
-  ordering that means anything in them. Each empty state says what its list is *for*.
+  ordered by the reader's own gesture. Since W03 the Feed has no folder sections either —
+  all three lists are one stream apiece, differing only in what put an article in them. Each empty state says what its list is *for*.
 - **Multi-select in the drawer (U09a).** A long press on a source or a folder header
   starts a selection; every row of *that kind* gains a checkbox, the "All sources" row and
   the drawer's three navigation items are replaced by a contextual bar — close · *N

@@ -297,8 +297,10 @@ class DesignScreenshotTest {
 
     /**
      * Splits the seeded sources across folders so the drawer shot shows what U06 built —
-     * two named sections and the built-in one — rather than a flat list under a single
-     * header, which is what an unsorted seed would produce.
+     * two named folders and the built-in one — rather than a flat list under a single
+     * header, which is what an unsorted seed would produce. W03 took folders out of the
+     * *list*, so this no longer stages section headers; the multi-folder seed stays
+     * because the drawer shot needs it and W04's category labels will too.
      */
     private fun sortIntoFolders() = runBlocking {
         val byHost = database.feedDao().getAll().associateBy { feed ->

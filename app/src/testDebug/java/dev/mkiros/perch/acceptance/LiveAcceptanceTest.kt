@@ -245,7 +245,7 @@ class LiveAcceptanceTest {
         if (standard.samples.isEmpty()) {
             failures += "gate 3: nothing was pulled, so there was nothing to render"
         } else {
-            val shots = capture(standard.samples, folders.named)
+            val shots = capture(standard.samples)
             report("GATE 3 (one publication)", shots.gate3.joinToString("\n"))
             report("GATE 7 (the v0.2 surfaces)", shots.gate7.joinToString("\n"))
             failures += shots.failures
@@ -1200,7 +1200,7 @@ class LiveAcceptanceTest {
      * source is down, so a dead feed degrades the sample instead of failing the gate on
      * something gate 1 already reported.
      */
-    private fun capture(samples: List<Sample>, namedFolders: Int): Captures {
+    private fun capture(samples: List<Sample>): Captures {
         val captures = Captures()
         val scene = mutableStateOf<Scene?>(null)
         compose.setContent {
@@ -1234,7 +1234,7 @@ class LiveAcceptanceTest {
 
         captureCode(scene, samples, captures)
         val zoomed = captureImageViewer(scene, samples, captures)
-        captureLists(scene, namedFolders, captures)
+        captureLists(scene, captures)
         // The scoped list before the drawer, and not the other way round: opening the drawer
         // is a tap on the app bar, but *closing* it is a state change no assertion in this
         // file can see (the sheet composes while closed, NOTES.md/T22), and a tap meant for
@@ -1342,7 +1342,7 @@ class LiveAcceptanceTest {
      * first, because a live pull's newest item can be days old and an empty queue is not
      * what gate 7 is asking to look at.
      */
-    private fun captureLists(scene: MutableState<Scene?>, namedFolders: Int, captures: Captures) {
+    private fun captureLists(scene: MutableState<Scene?>, captures: Captures) {
         val staging = runBlocking {
             val how = fileForTheShot()
             settings.setTimeFilter(TimeFilter.AllTime)
@@ -1358,15 +1358,23 @@ class LiveAcceptanceTest {
         compose.awaitInRealTime("the Feed to fill") {
             compose.onAllNodesWithTag(HomeTestTags.ENTRY).fetchSemanticsNodes().isNotEmpty()
         }
-        val sections = database.folderDao().let { dao ->
-            runBlocking { dao.getAll() }.count { folder ->
-                compose.onAllNodesWithTag(HomeTestTags.section(folder.id)).fetchSemanticsNodes().isNotEmpty()
-            }
+        // W03: the Feed is one chronological stream. What used to be counted here was
+        // folder sections; what is checked now is that no folder moved an article — the
+        // live list, read a full page deep, is in non-increasing publication order.
+        val page = runBlocking { container.entries.observeEntries(includeRead = true).first() }
+            .take(PerchPaging.PAGE_SIZE)
+        val outOfOrder = page.zipWithNext().count { (above, below) ->
+            above.publishedAt < below.publishedAt
         }
-        if (sections < MIN_SECTIONS) {
-            captures.failures += "gate 7: home showed $sections folder sections of $namedFolders " +
-                "named folders; the shot has to show at least $MIN_SECTIONS"
+        if (page.size < PerchPaging.PAGE_SIZE) {
+            captures.failures += "gate 7: only ${page.size} live entries, fewer than the " +
+                "${PerchPaging.PAGE_SIZE}-row page the order is supposed to hold across"
         }
+        if (outOfOrder > 0) {
+            captures.failures += "gate 7: $outOfOrder of the first ${page.size} live rows are " +
+                "older than the row above them; the Feed is not one chronological stream"
+        }
+        val sections = page.map { it.folderName }.distinct().size
 
         // V15 clause (7) asks for *mixed* thumbnails, and V07 made the missing one a drawn
         // state rather than an absent one — so the shot has to carry both kinds. The mark is
@@ -1382,8 +1390,8 @@ class LiveAcceptanceTest {
             captures.failures += "gate 7: not one row on the home shot resolved a thumbnail, " +
                 "so the shot is not the mixed list clause (7) asks for"
         }
-        captures.gate7 += "  ${capture("u15-home-dark").file.name} — home, $sections folder " +
-            "sections, $images thumbnails and $marks V07 placeholders on screen"
+        captures.gate7 += "  ${capture("u15-home-dark").file.name} — home, $sections folders " +
+            "mixed into one stream, $images thumbnails and $marks V07 placeholders on screen"
 
         compose.onNodeWithTag(NavTestTags.tab(PerchTab.ToRead)).performClick()
         compose.awaitInRealTime("the queue to load") {

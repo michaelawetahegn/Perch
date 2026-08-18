@@ -4,8 +4,8 @@ import android.content.Context
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -239,32 +239,28 @@ class HomeTimeFilterTest {
         compose.onNodeWithTag(HomeTestTags.EMPTY_WIDEN).assertDoesNotExist()
     }
 
-    // ---- folder sections ---------------------------------------------------------
+    // ---- one chronological stream (W03) -------------------------------------------
 
     @Test
-    fun `entries are sectioned under folder headers in alphabetical folder order`() {
-        // Created out of alphabetical order on purpose (V06): creation order used to decide.
+    fun `entries from two folders are mixed together, newest first`() {
+        // Created out of alphabetical order on purpose: alphabetical folder order used to
+        // outrank recency here, and a seed already sorted could not tell the two apart.
         val security = seedFolder("Security", sortIndex = 0)
         val ai = seedFolder("AI", sortIndex = 1)
         val zdi = seedFeed("ZDI", folderId = security)
         val llm = seedFeed("LLM Weekly", folderId = ai)
-        // Newest overall is in the *second* section: folder order outranks recency
-        // across sections, and recency orders rows within one.
         seedEntry(zdi, "Newest of all", at = "2026-08-07T11:00:00Z")
         seedEntry(llm, "A model release", at = "2026-08-07T08:00:00Z")
 
         showHome()
 
-        // Headers are addressed by tag, not by text: the drawer behind the list is
-        // composed even while closed, so every folder name is on screen twice.
-        assertThat(topOfSection(ai)).isLessThan(topOf("A model release"))
-        assertThat(topOf("A model release")).isLessThan(topOfSection(security))
-        assertThat(topOfSection(security)).isLessThan(topOf("Newest of all"))
-        compose.onNodeWithTag(HomeTestTags.section(ai)).assertTextEquals("AI")
+        assertThat(topOf("Newest of all")).isLessThan(topOf("A model release"))
+        assertThat(sectionExists(ai)).isFalse()
+        assertThat(sectionExists(security)).isFalse()
     }
 
     @Test
-    fun `uncategorized sections last however the other folders sort`() {
+    fun `an uncategorized entry takes its place by date like any other`() {
         val ai = seedFolder("AI", sortIndex = 9)
         val loose = seedFeed("Unfiled Source")
         val inAi = seedFeed("LLM Weekly", folderId = ai)
@@ -273,38 +269,24 @@ class HomeTimeFilterTest {
 
         showHome()
 
-        assertThat(topOf("Filed entry"))
-            .isLessThan(topOfSection(FolderEntity.UNCATEGORIZED_ID))
-        assertThat(topOfSection(FolderEntity.UNCATEGORIZED_ID)).isLessThan(topOf("Unfiled entry"))
+        assertThat(topOf("Unfiled entry")).isLessThan(topOf("Filed entry"))
+        assertThat(sectionExists(FolderEntity.UNCATEGORIZED_ID)).isFalse()
     }
 
     @Test
-    fun `scoping the drawer to one folder collapses the headers away`() {
+    fun `scoping the drawer to one folder still narrows the list`() {
         val ai = seedFolder("AI", sortIndex = 0)
         val inAi = seedFeed("LLM Weekly", folderId = ai)
         seedFeed("Unfiled Source").let { seedEntry(it, "Unfiled entry") }
         seedEntry(inAi, "Filed entry")
 
         showHome()
-        // There are two sections to begin with, so the headers are earning their space.
-        compose.onNodeWithTag(HomeTestTags.section(ai)).assertIsDisplayed()
+        compose.onNodeWithText("Unfiled entry").assertIsDisplayed()
 
         selectFolderInDrawer("AI")
 
         compose.onNodeWithText("Filed entry").assertIsDisplayed()
-        compose.onNodeWithTag(HomeTestTags.section(ai)).assertDoesNotExist()
-    }
-
-    @Test
-    fun `one folder is no sections at all — a header over the whole list says nothing`() {
-        val feedId = seedFeed("Source One")
-        seedEntry(feedId, "Something to read")
-
-        showHome()
-
-        compose.onNodeWithText("Something to read").assertIsDisplayed()
-        compose.onNodeWithTag(HomeTestTags.section(FolderEntity.UNCATEGORIZED_ID))
-            .assertDoesNotExist()
+        compose.onNodeWithText("Unfiled entry").assertDoesNotExist()
     }
 
     // ---- harness -----------------------------------------------------------------
@@ -353,8 +335,13 @@ class HomeTimeFilterTest {
     private fun topOf(text: String): Float =
         compose.onNodeWithText(text).fetchSemanticsNode().positionInRoot.y
 
-    private fun topOfSection(folderId: Long): Float = compose
-        .onNodeWithTag(HomeTestTags.section(folderId)).fetchSemanticsNode().positionInRoot.y
+    /**
+     * Whether the list drew a folder header for [folderId]. The tag is spelled out rather
+     * than read from `HomeTestTags`, because W03 deleted the constant and the point of
+     * these assertions is that nothing puts one back.
+     */
+    private fun sectionExists(folderId: Long): Boolean = compose
+        .onAllNodesWithTag("home:section:$folderId").fetchSemanticsNodes().isNotEmpty()
 
     private fun showHome(clock: Clock = this.clock) {
         viewModel = HomeViewModel(

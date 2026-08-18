@@ -40,18 +40,20 @@ internal object EntryQueries {
     """
 
     /**
-     * Home, ordered by folder first and recency second so §0's sections fall out of the
-     * row order itself: the section a row belongs to is a property of the row, and a
-     * header is due wherever the previous row's folder differs. Nothing has to hold the
-     * whole list to work that out, which is what keeps the page boundaries honest.
+     * Home: one chronological stream, newest first (PLAN-4 §0, W03).
+     *
+     * It used to order by folder first so that section headers fell out of the row order.
+     * The reader asked for the opposite — everything mixed together — so the order is now
+     * exactly [SAVED]'s and [LIKED]'s, recency and then id to break a tie. The folder
+     * still travels on the row, but as a *label* the row prints rather than as a
+     * position: which folder an article is in no longer decides where it appears.
      */
     const val LIST_ITEMS = """
         $ROW
         WHERE (:includeRead OR e.isRead = 0) AND (:feedId IS NULL OR e.feedId = :feedId)
           AND (:folderId IS NULL OR f.folderId = :folderId)
           AND (:publishedAfter IS NULL OR e.publishedAt >= :publishedAfter)
-        ORDER BY (fo.id = 1) ASC, fo.name COLLATE NOCASE ASC,
-                 e.publishedAt DESC, e.id DESC
+        ORDER BY e.publishedAt DESC, e.id DESC
     """
 
     const val SAVED = """

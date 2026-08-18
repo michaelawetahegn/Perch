@@ -391,7 +391,6 @@ fun HomeScreen(
                         )
                         else -> EntryList(
                             entries = entries,
-                            showSections = uiState.showSections,
                             nowMillis = uiState.nowMillis,
                             listState = listState,
                             onOpenEntry = onOpenEntry,
@@ -1084,28 +1083,22 @@ object HomeTestTags {
 
     fun rangeItem(filter: TimeFilter) = "home:range:${filter.name}"
 
-    /**
-     * A folder section header *in the list*, as opposed to the folder's row in the
-     * drawer — the two carry the same name and the assertions have to tell them apart.
-     */
-    fun section(folderId: Long) = "home:section:$folderId"
-
     /** The empty bucket's way out, which only the bucket case has. */
     const val EMPTY_WIDEN = "home:empty:widen"
 }
 
 /**
- * The list proper, paged (U07a).
+ * The list proper, paged (U07a), and one chronological stream (W03).
  *
  * `LazyColumn` was already composing only what is on screen; what it was not doing was
  * *loading* only that. The rows now arrive a page at a time, and the reader is meant never
  * to find out: the only visible difference is a small footer while the next page is in
  * flight, and a marker where the list genuinely ends.
  *
- * `peek` rather than indexing for the neighbours: reading a row through `get` tells Paging
- * the reader has reached it, and asking "what folder was the row above in" is not the
- * reader reaching anything. Indexing the neighbour would drag the prefetch window along
- * behind the list by one row for no reason.
+ * There are no folder headers to place any more, so the only neighbour question left is
+ * where the last rule goes — and that is asked with `peek` rather than by indexing,
+ * because reading a row through `get` tells Paging the reader has reached it, and asking
+ * "is there a row after this one" is not the reader reaching anything.
  *
  * [rememberLazyListState] is saveable, so the scroll offset survives opening an article
  * and coming back; the reader returns to the row they left, not to the top.
@@ -1113,7 +1106,6 @@ object HomeTestTags {
 @Composable
 private fun EntryList(
     entries: LazyPagingItems<EntryListItem>,
-    showSections: Boolean,
     nowMillis: Long,
     listState: LazyListState,
     onOpenEntry: (Long) -> Unit,
@@ -1128,16 +1120,7 @@ private fun EntryList(
             key = entries.itemKey { it.id },
         ) { index ->
             val item = entries[index] ?: return@items
-            // Placeholders are off (see PerchPaging), so every index below `itemCount` is
-            // a loaded row and both neighbours are answerable — which is what keeps the
-            // header from reappearing at the top of every page.
-            val previous = if (index == 0) null else entries.peek(index - 1)
-            val next =
-                if (index + 1 < entries.itemCount) entries.peek(index + 1) else null
-            val opensSection = showSections && startsSection(previous, item)
-            val endsSection = showSections && next != null && next.folderId != item.folderId
             Column(modifier = Modifier.animateItem()) {
-                if (opensSection) SectionHeader(folderId = item.folderId, name = item.folderName)
                 EntryRow(
                     item = item,
                     now = nowMillis,
@@ -1145,8 +1128,9 @@ private fun EntryList(
                     onLongClick = { onLongPressEntry(item.id) },
                     modifier = Modifier.testTag(HomeTestTags.ENTRY),
                 )
-                // The header below is the break; a rule as well would be two.
-                if (next != null && !endsSection) {
+                // A rule between every pair and none under the last row, which is what
+                // the To-Read and Liked lists already do.
+                if (index + 1 < entries.itemCount) {
                     HorizontalDivider(
                         modifier = Modifier.padding(start = Dimens.dividerInset),
                         color = MaterialTheme.colorScheme.outlineVariant,
@@ -1156,33 +1140,6 @@ private fun EntryList(
         }
         pagedFooter(entries)
     }
-}
-
-/**
- * A folder's heading in the list (PLAN-2 §0, U07).
- *
- * Set in the accent colour rather than in `onSurface`: it is furniture the eye should be
- * able to skip past when scanning titles, and colour separates it from the row titles
- * without spending the vertical space a rule or a filled bar would.
- */
-@Composable
-private fun SectionHeader(folderId: Long, name: String) {
-    Text(
-        text = name,
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.primary,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(
-                start = Dimens.rowHorizontal,
-                end = Dimens.rowHorizontal,
-                top = Dimens.sectionHeaderTop,
-                bottom = Dimens.sectionHeaderBottom,
-            )
-            .testTag(HomeTestTags.section(folderId)),
-    )
 }
 
 /**

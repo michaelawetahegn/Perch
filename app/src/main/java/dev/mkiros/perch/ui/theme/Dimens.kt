@@ -185,8 +185,6 @@ object Dimens {
      */
     val rangeRowVertical = xs
     val rangeControlInset = xs
-    val sectionHeaderTop = lg
-    val sectionHeaderBottom = sm
 
     /**
      * The footer spinner of a paged list (U07a). Deliberately smaller and thinner than a

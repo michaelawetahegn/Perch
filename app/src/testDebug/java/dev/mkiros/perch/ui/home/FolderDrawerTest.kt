@@ -107,23 +107,19 @@ class FolderDrawerTest {
     }
 
     /**
-     * V06/§0: alphabetical, case-insensitive, Uncategorized last — and the drawer and the
-     * list headers read *different* queries (`FolderDao.observeAll`, `EntryDao.LIST_ITEMS`),
-     * so they are the pair that can disagree.
+     * V06/§0: alphabetical, case-insensitive, Uncategorized last. W03 took the *list* out
+     * of this rule — the Feed is one chronological stream now — so the drawer is where
+     * folder order lives, and `FolderDao.observeAll` is the only reader of it left.
      */
     @Test
-    fun `the drawer and the list sections agree on alphabetical folder order`() {
-        // Created in reverse: while creation order decided, Security led both lists.
+    fun `the drawer orders folders alphabetically whatever order they were made in`() {
+        // Created in reverse: while creation order decided, Security led the drawer.
         val security = seedFolder("Security")
         val ai = seedFolder("ai")
         seedEntry(seedFeed(title = "Zero Day Initiative", folderId = security), title = "advisory")
         seedEntry(seedFeed(title = "LLM Weekly", folderId = ai), title = "a model")
 
         showHome()
-
-        assertThat(topOfTag(HomeTestTags.section(ai)))
-            .isLessThan(topOfTag(HomeTestTags.section(security)))
-
         openDrawer()
 
         assertThat(topOfTag(HomeTestTags.folderHeader(ai)))

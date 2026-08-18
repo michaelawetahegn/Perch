@@ -190,19 +190,6 @@ data class HomeUiState(
     val selectedFeedId: Long? get() = scope.feedId
     val selectedFolderId: Long? get() = scope.folderId
 
-    /**
-     * Whether the list draws folder headers (PLAN-2 §0).
-     *
-     * Scoping the drawer to one folder or one source collapses them away — there is only
-     * one section, and a header over the whole list says nothing the app bar has not
-     * already said. So does a reader who has never made a second folder.
-     *
-     * Deliberately answered from the scope and the folder *list*, never from the entries:
-     * "how many distinct folders are in this list" is a question only the whole list can
-     * answer, and U07a is about to stop having the whole list.
-     */
-    val showSections: Boolean get() = scope is HomeScope.All && folders.size > 1
-
     /** The empty bucket's way out (§0): the next window out, or null at All Time. */
     val widerFilter: TimeFilter? get() = timeFilter.wider
 }

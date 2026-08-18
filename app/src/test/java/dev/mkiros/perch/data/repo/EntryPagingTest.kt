@@ -12,7 +12,6 @@ import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.db.entity.FolderEntity
-import dev.mkiros.perch.ui.home.startsSection
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -179,35 +178,30 @@ class EntryPagingTest {
         }
     }
 
-    // ---- sections across a page boundary ----------------------------------------
+    // ---- one stream across a page boundary ---------------------------------------
 
     /**
-     * The failure this guards against is a folder header reappearing at the top of every
-     * page. It cannot, because "is a header due" is a question about two adjacent rows
-     * rather than about a page — so the answer is the same whether the list arrived in one
-     * piece or in four.
-     *
-     * The seed is arranged so neither the page boundary nor the folder boundary is where
-     * the other one is: 45 rows in the first folder puts the folder change 15 rows into
-     * the second page, and the first page ends in the middle of a folder.
+     * W03's contract, asked of the paged list rather than the query: the Feed is one
+     * chronological stream, and a page boundary is not a seam in it. Two folders are
+     * seeded half a step out of phase, so a list that still grouped by folder would show
+     * 45 of one and then 45 of the other and fail the alternation below.
      */
     @Test
-    fun `a folder header falls once per folder across a page boundary`() = runTest {
+    fun `entries from two folders interleave newest first across a page boundary`() = runTest {
         val alpha = folders.insert(folder("Alpha", sortIndex = 0))
         val beta = folders.insert(folder("Beta", sortIndex = 1))
         seed(feeds.insert(feed("https://a.example/feed", alpha)), count = 45)
-        seed(feeds.insert(feed("https://b.example/feed", beta)), count = 45, guidPrefix = "b")
+        seed(feeds.insert(feed("https://b.example/feed", beta)), count = 45, guidPrefix = "b", shift = 500L)
 
         val paged = repo.pagedEntries(includeRead = true).asSnapshot { scrollTo(3 * page) }
 
         assertThat(paged).hasSize(90)
-        val headers = paged.filterIndexed { index, item ->
-            startsSection(paged.getOrNull(index - 1), item)
-        }
-        assertThat(headers.map { it.folderName }).containsExactly("Alpha", "Beta").inOrder()
-        // And the boundary is genuinely inside a page rather than on its edge, or this
-        // test would pass on a version that headers every page.
-        assertThat(paged[page].folderName).isEqualTo("Alpha")
+        assertThat(paged.map { it.publishedAt })
+            .isInOrder(Comparator<Long> { a, b -> b.compareTo(a) })
+        // Alternating folder names is what "mixed together" means; and the pair straddling
+        // the first page boundary alternates too, so paging did not re-group anything.
+        assertThat(paged.map { it.folderName }.distinct()).containsExactly("Alpha", "Beta")
+        assertThat(paged[page - 1].folderName).isNotEqualTo(paged[page].folderName)
     }
 
     // ---- fixtures ---------------------------------------------------------------
@@ -224,7 +218,12 @@ class EntryPagingTest {
         ) as PagingSource.LoadResult.Page
 
     /** Newest first by publication, so entry *n* is the *n*th row of the list. */
-    private suspend fun seed(feedId: Long, count: Int, guidPrefix: String = "a"): List<Long> =
+    private suspend fun seed(
+        feedId: Long,
+        count: Int,
+        guidPrefix: String = "a",
+        shift: Long = 0L,
+    ): List<Long> =
         (0 until count).map { index ->
             entries.insert(
                 EntryEntity(
@@ -233,7 +232,7 @@ class EntryPagingTest {
                     title = "Entry $index",
                     link = "https://example.com/$guidPrefix$index",
                     author = null,
-                    publishedAt = NOW - index * 1_000L,
+                    publishedAt = NOW - index * 1_000L - shift,
                     publishedIsEstimated = false,
                     summary = null,
                     contentHtml = null,

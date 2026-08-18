@@ -161,7 +161,7 @@ longer true.
         tests; the pasted line from each in the commit message; issue #15 closed.
       - Rung: unit
 
-- [ ] **W03 — The Feed is one chronological stream, not a pile of folders. TDD. Issue #20.**
+- [x] **W03 — The Feed is one chronological stream, not a pile of folders. TDD. Issue #20.**
       `gh issue view 20 --json body` — "Feed should not be split into different sections.
       Should all be mixed together."
       **The ordering is the sectioning.** `EntryQueries.LIST_ITEMS` at `EntryDao.kt:48-55`

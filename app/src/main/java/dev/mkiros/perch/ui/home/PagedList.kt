@@ -17,23 +17,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import dev.mkiros.perch.R
-import dev.mkiros.perch.data.db.EntryListItem
 import dev.mkiros.perch.data.repo.PerchPaging
 import dev.mkiros.perch.ui.theme.Dimens
-
-/**
- * Whether a folder header is due above this row (PLAN-2 §0, U07a).
- *
- * The whole question is answered by two adjacent rows, never by the list: the folder a row
- * belongs to is a column on the row, and the query orders by folder first, so a header
- * falls exactly where the folder changes. That is what survives paging — [previous] is the
- * row before this one *in the list*, not in its page, so a page boundary in the middle of
- * a folder is invisible and the header does not reappear at the top of every page.
- *
- * @param previous the row above, or null when this row is the first one loaded.
- */
-internal fun startsSection(previous: EntryListItem?, item: EntryListItem): Boolean =
-    previous == null || previous.folderId != item.folderId
 
 /**
  * What a paged list puts at its far end (U07a).

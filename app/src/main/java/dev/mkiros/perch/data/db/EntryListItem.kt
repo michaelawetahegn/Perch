@@ -9,10 +9,10 @@ package dev.mkiros.perch.data.db
  *
  * @param sourceTitle the feed's display name: its `customTitle` if the reader renamed
  *   it, otherwise the title the feed publishes for itself.
- * @param folderId the section this row falls under (U07), carried on the row rather than
- *   looked up per item so that deciding whether a header is due needs nothing but this
- *   row and the one before it — the property U07a's page boundaries depend on.
- * @param folderName the header's text, joined for the same reason [sourceTitle] is.
+ * @param folderId the folder this row's source is filed in. W03 stopped the list ordering
+ *   by it, so it no longer decides where a row goes; it stays on the row because the row
+ *   prints the folder as a category label (W04) and the join costs nothing extra.
+ * @param folderName that label's text, joined for the same reason [sourceTitle] is.
  * @param isSaved on the *Read later* queue (U04). Carried on the row because U09's
  *   long-press sheet has to offer *Save for later* or *Remove from Read later* — a sheet
  *   that has to go and ask the database which one it means opens showing the wrong verb.

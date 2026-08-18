@@ -3,11 +3,13 @@ package dev.mkiros.perch.ui.home
 import android.content.Context
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.filterToOne
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -21,6 +23,7 @@ import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.db.entity.FeedEntity
+import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.di.AppContainer
@@ -122,10 +125,17 @@ class HomeScreenTest {
         compose.onNodeWithText("Chris Wellons / 2d").assertIsDisplayed()
     }
 
+    /**
+     * W03: the Feed is one stream. Two *folders*, not merely two sources — a single-folder
+     * seed passes this on a list that groups by folder, and grouping by folder is exactly
+     * what the reader asked us to stop doing.
+     */
     @Test
     fun `entries from every source are interleaved newest first`() {
-        val one = seedFeed(title = "Source One")
-        val two = seedFeed(title = "Source Two")
+        val security = seedFolder("Security")
+        val ai = seedFolder("AI")
+        val one = seedFeed(title = "Source One", folderId = security)
+        val two = seedFeed(title = "Source Two", folderId = ai)
         seedEntry(feedId = one, title = "Oldest", publishedAt = now.minusSeconds(3 * DAY))
         seedEntry(feedId = two, title = "Newest", publishedAt = now.minusSeconds(1 * HOUR))
         seedEntry(feedId = one, title = "Middle", publishedAt = now.minusSeconds(1 * DAY))
@@ -134,6 +144,23 @@ class HomeScreenTest {
 
         assertThat(topOf("Newest")).isLessThan(topOf("Middle"))
         assertThat(topOf("Middle")).isLessThan(topOf("Oldest"))
+    }
+
+    /** And no header divides them: the ordering is the only sectioning there is. */
+    @Test
+    fun `the Feed draws no folder section header`() {
+        val security = seedFolder("Security")
+        val ai = seedFolder("AI")
+        seedEntry(feedId = seedFeed(title = "ZDI", folderId = security), title = "An advisory")
+        seedEntry(feedId = seedFeed(title = "LLM Weekly", folderId = ai), title = "A release")
+
+        showHome()
+
+        compose.onNodeWithText("An advisory").assertIsDisplayed()
+        compose.onAllNodesWithTag(HomeTestTags.ENTRY).assertCountEquals(2)
+        listOf(security, ai, FolderEntity.UNCATEGORIZED_ID).forEach { folderId ->
+            compose.onNodeWithTag("home:section:$folderId").assertDoesNotExist()
+        }
     }
 
     @Test
@@ -580,10 +607,15 @@ class HomeScreenTest {
     private fun topOf(text: String): Float =
         compose.onNodeWithText(text).fetchSemanticsNode().positionInRoot.y
 
+    private fun seedFolder(name: String): Long = runBlocking {
+        database.folderDao().insert(FolderEntity(name = name, sortIndex = 0, createdAt = 0L))
+    }
+
     private fun seedFeed(
         title: String,
         customTitle: String? = null,
         lastError: String? = null,
+        folderId: Long = FolderEntity.UNCATEGORIZED_ID,
     ): Long = runBlocking {
         database.feedDao().insert(
             FeedEntity(
@@ -598,6 +630,7 @@ class HomeScreenTest {
                 lastSuccessAt = null,
                 lastError = lastError,
                 addedAt = 0L,
+                folderId = folderId,
             ),
         )
     }
