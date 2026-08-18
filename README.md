@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <img src="screenshots/home-dark.png" width="15.5%" alt="The Feed, sectioned by folder, dark theme">
+  <img src="screenshots/home-dark.png" width="15.5%" alt="The Feed, one chronological stream, dark theme">
   <img src="screenshots/article.png" width="15.5%" alt="Article reader view, the source name in the byline a link into that source">
   <img src="screenshots/scoped-source-dark.png" width="15.5%" alt="The Feed scoped to a single source, reached by tapping its name">
   <img src="screenshots/code-dark.png" width="15.5%" alt="Syntax-highlighted code block with a pinned line-number gutter">
@@ -15,77 +15,46 @@
   <img src="screenshots/to-read-dark.png" width="15.5%" alt="The To-Read queue">
 </p>
 
-## Install
+## What Perch is
 
-Grab the APK from [Releases](https://github.com/michaelawetahegn/Perch/releases) and
-`adb install -r perch-*.apk`, or open it on the phone. minSdk is 26 (Android 8.0).
+An RSS reader that keeps everything on your phone. Your sources, folders and what you have
+read, liked and saved live in a database on the device and go nowhere else — the only network
+calls Perch makes are to the feeds you added.
 
-> **v0.2.0 → v0.3.0 installs in place** and keeps your read state, likes and to-read
-> queue. Nothing is required of you.
->
-> v0.1.0 is **debug-signed**. Android will not accept a release-signed APK as an update
-> to it, and an uninstall erases what you have read. **v0.2.0 onward is signed with a
-> stable release key and installs over itself**, keeping your read state, likes and
-> to-read queue — this is a one-time break, and only from v0.1.0.
->
-> **Coming from v0.1.0, carry your state across in four steps** (executed and verified on
-> an emulator, 2026-08-10, [#2](https://github.com/michaelawetahegn/Perch/issues/2)):
->
-> 1. Install `perch-0.2.0-debug.apk` from the [v0.2.0
->    release](https://github.com/michaelawetahegn/Perch/releases/tag/v0.2.0) over your
->    v0.1.0. It carries the same debug signature, so it updates in place and runs the
->    database migrations — nothing is lost yet.
-> 2. **Settings → Export profile**, and save the JSON somewhere off the app: Downloads,
->    Drive, anywhere that survives an uninstall.
-> 3. Uninstall Perch, then install the release-signed `perch-0.2.0.apk`.
-> 4. **Settings → Import profile** and pick that file. Sources and folders come back at
->    once; read, liked and to-read land as the first refresh fetches each entry.
->
-> The bridge APK is only for this crossing. Every release after it updates normally.
+Grab the APK from the [latest release](https://github.com/michaelawetahegn/Perch/releases/latest)
+and `adb install -r perch-*.apk`, or open it on the phone. minSdk is 26 (Android 8.0). Releases
+install over each other and keep your read state, likes and to-read queue — bar the first,
+debug-signed build, whose one-time crossing its own release page explains.
 
 ## What it does
 
-**Sources.** Paste anything — a feed URL or a site's homepage. Perch resolves the
-homepage to its feed via `<link rel="alternate">`, then the conventional paths
-(`/feed`, `/rss.xml`, `/atom.xml`, …), and shows you what it found before committing.
-RSS 2.0/0.9x, Atom 1.0 and RSS 1.0 (RDF), dispatched on the document root rather than
-on a file extension. Sources live in folders; long-press the drawer to select and
-delete several at once. OPML in and out through the system file picker.
+**Sources.** Paste a feed URL *or* a site's homepage — Perch resolves the homepage via `<link
+rel="alternate">`, then the conventional paths (`/feed`, `/rss.xml`, …), and shows you what it
+found first. RSS 2.0/0.9x, Atom 1.0 and RSS 1.0 (RDF). Folders, multi-select delete, OPML.
 
-**Reading.** One Feed across every source, sectioned by folder — alphabetically, with
-Uncategorized last — and filtered to a time range you pick, Today through All Time;
-"Today" means your today, on your phone's clock. Tap the source name above an
-article's title to narrow the Feed to just that blog. Entries render as native Compose, not
-a WebView: paragraphs, headings, lists, block quotes, images, tables with real rules
-and a header row, and code blocks that scroll horizontally instead of wrapping. Code
-is syntax-highlighted in a dozen languages with a pinned line-number gutter that stays
-put as the code scrolls and never ends up in what you copy. Tap an image for a
-full-screen viewer with pinch-zoom, double-tap and drag-to-dismiss. Feed HTML is
-sanitized against an allowlist on the way *into* the database, so nothing downstream
-ever sees publisher markup.
+**One Feed.** Every source in a single stream, newest first, over a window you pick — Past 24
+Hours through All Time, each measured back from right now, not from a midnight. Each row says
+who published it, in what category, and when; tap a source name to narrow the Feed to it.
 
-**Full text.** Plenty of feeds ship a headline and a link, or a 200-character teaser
-where the article should be. Perch fetches the page and runs a Readability-style
-extraction over it, then feeds the result through the same sanitizer and lowering
-pipeline as everything else — so an extracted article gets no special treatment
-downstream. It happens on open, never on refresh, and it never replaces text with
-less text. *Load full article* in the overflow forces it when the heuristic guesses
-wrong. Visiting the site should never be required to read an article.
+**Reading.** Native Compose, not a WebView: paragraphs, headings, lists, quotes, tables with
+real rules, pinch-zoom images, and code blocks that scroll horizontally, syntax-highlighted in a
+dozen languages behind a pinned line-number gutter that never lands in what you copy. Feed HTML
+is sanitized against an allowlist on the way *into* the database.
 
-**Keeping.** Three independent flags per entry — read, **liked**, and **saved for
-later** — each with its own destination in the bottom bar, each surviving a refresh
-and a reinstall. Saved and Liked ignore the time filter, because a to-read list that
-hides last month's articles is not a to-read list. A profile export writes folders,
-sources and every one of those flags to one JSON file; importing it merges, is
-idempotent, and parks state for entries that have not been fetched yet so a refresh
-straight after a restore doesn't undo it.
+**Full text.** When a feed ships a headline and a link, Perch fetches the page and runs a
+Readability-style extraction over it, through the same sanitizer as everything else — on open,
+never on refresh, never replacing text with less text. *Load full article* forces it.
 
-**Quietly.** Conditional GET (`ETag` / `If-Modified-Since`) on every refresh, so a
-quiet feed costs a 304 and nothing else. Background refresh on an interval you set,
-network-constrained, via WorkManager. All three lists are paged, so a thousand-entry
-All Time query loads a screenful and not the corpus. Material 3 in light and dark, the
-whole palette derived from one seed colour. Entries dedupe on `(feedId, guid)` and a
-refresh never resurrects something you have already read.
+**Keeping.** Three independent flags per entry — read, **liked** and **saved for later** —
+each with its own destination in the bottom bar, each surviving a refresh and a reinstall.
+Saved and Liked ignore the time window. Share an article from the toolbar or a row's swipe
+actions, or *Copy link* from the overflow. A profile export writes folders, sources and every
+flag to one JSON file; importing it merges and is idempotent.
+
+**Quietly.** Conditional GET (`ETag` / `If-Modified-Since`), so a quiet feed costs a 304 and
+nothing else. Background refresh on an interval you set, network-constrained, via WorkManager.
+Paged lists. Material 3 in light and dark from one seed colour. Entries dedupe on `(feedId,
+guid)`; a refresh never resurrects something you have read.
 
 ## Build
 
@@ -98,14 +67,15 @@ echo "sdk.dir=/path/to/Android/Sdk" > local.properties
 ./gradlew test              # full unit + Robolectric suite, offline and deterministic
 ```
 
-`./gradlew test` needs no emulator and no network. The parser, storage, repository,
-worker and most of the UI are covered by JVM and Robolectric tests; `fixtures/` holds
-39 real feed snapshots the parser corpus test runs against as a standing contract.
+`./gradlew test` needs no emulator and no network. `assembleRelease` signs with
+`~/.perch/signing.properties` if present and debug-signs if not, so a clean clone still builds.
 
-`assembleRelease` signs with `~/.perch/signing.properties` if it is present and falls
-back to debug signing with a warning if it is not, so a clean clone still builds.
+## Adding a feature
 
-## Layout
+Find its layer below, write the failing test beside the code it covers, then run the narrowest
+task — `./gradlew :app:testDebugUnitTest --tests '*YourTest*'` — before the full suite. Parser
+work answers to `fixtures/`: 39 feeds, 4 homepages and 23 article pages the corpus tests hold as
+a standing contract. Add a fixture; never weaken a test.
 
 ```
 app/src/main/java/dev/mkiros/perch/
@@ -116,42 +86,24 @@ app/src/main/java/dev/mkiros/perch/
   data/repo/     FeedRepository — fetch → parse → sanitize → store
   work/          RefreshWorker
   ui/            Compose screens, theme, brand, navigation
-design/brand/    the Perch mark; redrawn as vector paths in ui/theme/Brand.kt
-fixtures/        harvested feed + homepage corpus (the parser test contract)
-maestro/         end-to-end regression flow
+fixtures/        harvested feed, homepage and article corpus (the test contract)
 ```
 
-`SPEC.md` pins the toolchain and the behavioural rules, `DESIGN.md` is the visual spec,
-`PLAN-3.md` is what is being built next, and `docs/RELEASE-NOTES.md` is how a release
-page gets written (`scripts/release-notes.sh <last-tag>` drafts one).
+[`SPEC.md`](SPEC.md) pins the toolchain and the behavioural rules, [`DESIGN.md`](DESIGN.md) is
+the visual spec, the `PLAN-*.md` at the repository root is what is being built next, and
+`docs/RELEASE-NOTES.md` is how a release page gets written.
 
 ## How it is built
 
-Perch is written by an unattended loop of Claude Code sessions. A plan file is a list of
-checkbox tasks; `loop.sh` runs one session per task, each of which starts with no memory
-of the last, does a single task, verifies it, commits, and exits. The checkbox file on
-disk is the memory — which is what lets the work survive a session ending.
-
-[`docs/RALPH.md`](docs/RALPH.md) is the whole process: why it works, how to write a task
-a cold session can execute, and what each failure mode means. Finished plans are archived
-in [`docs/plans/`](docs/plans/).
-
-## Status
-
-v0.3.0 is the current release and is in daily use against 41 live sources. v0.2.0 added
-folders, the To-Read and Liked queues with a bottom bar, thumbnails, full-text
-extraction, syntax-highlighted code, real tables, a tap-to-zoom image viewer, paged
-lists, OPML with folders, and profile backup/restore. v0.3.0 is the pass that fixed
-what a year of using it turned up: an evening Feed that emptied itself, a
-pull-to-refresh that ignored an empty list, a close button under the status bar, and
-tables dropped out of recovered articles.
-
-Every version, with its notes and its APK, is on the
-[Releases page](https://github.com/michaelawetahegn/Perch/releases).
+Perch is written by an unattended loop of Claude Code sessions: `loop.sh` runs one session per
+checkbox task in the plan file, each starting with no memory of the last, doing one task,
+verifying it, committing, and exiting — the file on disk is the memory, which is what lets the
+work survive a session ending. [`docs/RALPH.md`](docs/RALPH.md) is the whole process; finished
+plans are archived in [`docs/plans/`](docs/plans/).
 
 ## Licence
 
 MIT — see [LICENSE](LICENSE).
 
-The contents of `fixtures/` are captured copies of third-party feeds and web pages,
-retained solely as test data; they remain the property of their respective publishers.
+The contents of `fixtures/` are captured copies of third-party feeds and web pages, retained
+solely as test data; they remain the property of their respective publishers.

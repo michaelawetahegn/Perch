@@ -344,7 +344,7 @@ longer true.
 
 ## Phase 2 — The docs, and the process that let them go stale
 
-- [ ] **W08 — A README a reader can scan in a minute. Issue #18.**
+- [x] **W08 — A README a reader can scan in a minute. Issue #18.**
       `gh issue view 18 --json body` — first half: "too long", must show at a glance what
       features exist, how to build and start contributing, and "a general section at the top".
       It is **157 lines** today. The shape is not bad; the proportions are: `## Install`
