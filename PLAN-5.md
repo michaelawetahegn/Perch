@@ -92,7 +92,7 @@ scoped to *this* plan's own diff.
         commit message.
       - Rung: unit
 
-- [ ] **X02 — The drawer starts collapsed, and every test opens what it needs. TDD. Issue #22.**
+- [x] **X02 — The drawer starts collapsed, and every test opens what it needs. TDD. Issue #22.**
       The behaviour change #22 actually asks for, plus the sweep it forces. **One commit:
       the default flip turns ~40 assertions red, so the flip and the fix cannot be separate
       sessions without leaving `HEAD` broken.**

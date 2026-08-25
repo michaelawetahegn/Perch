@@ -227,30 +227,14 @@ class HomeViewModel(
     private val scope = MutableStateFlow<HomeScope>(HomeScope.All)
 
     /**
-     * Which folder sections are open. §0.2: every folder starts shut, so the target default
-     * for this set is empty, not seeded — a reader who opens the drawer sees headers and
-     * nothing else. §0.3: a folder the reader creates still comes up expanded, but that is
-     * no longer a side effect of an empty set (the old collapsed-ids polarity, where nothing
-     * being collapsed meant everything open) — it is explicit: creating a folder is to add
-     * its id here.
-     *
-     * X01 note: this task only inverts the polarity, so the empty-default and the explicit
-     * add-on-create both wait for X02. Until then this set is seeded with every folder id as
-     * folders arrive (below), which keeps *today's* behaviour — everything expanded —
-     * identical under the new polarity.
+     * Which folder sections are open. §0.2: every folder starts shut, so the default is
+     * empty — a reader who opens the drawer sees headers and nothing else. §0.3: a folder
+     * the reader creates still comes up expanded, but that is not a side effect of an empty
+     * set the way it was under the old collapsed-ids polarity (nothing collapsed meant
+     * everything open); it is explicit — [createFolder] adds the new id here itself.
      */
     private val _expandedFolders = MutableStateFlow<Set<Long>>(emptySet())
     val expandedFolders: StateFlow<Set<Long>> = _expandedFolders.asStateFlow()
-
-    init {
-        // X01 seeding, deleted by X02: union every folder id as folders arrive so "all
-        // expanded" reads identically to the old empty-collapsed-set default.
-        viewModelScope.launch {
-            folders.observeFolders().collect { list ->
-                _expandedFolders.update { it + list.map(FolderEntity::id) }
-            }
-        }
-    }
 
     /** Settings' "show read entries" (T27). Flipping it re-queries; it never filters here. */
     private val showReadEntries: Flow<Boolean> =
@@ -466,11 +450,16 @@ class HomeViewModel(
      * Creates a folder, or finds the one already called [name] — [FolderRepository] makes
      * that decision, case-insensitively, so two spellings of one folder cannot appear in
      * the drawer. [then] receives the id either way, which is what lets the move dialog's
-     * "New folder" create and file in one gesture.
+     * "New folder" create and file in one gesture. §0.3: the new folder is expanded on
+     * creation, whether it is genuinely new or an existing one the reader just re-typed.
      */
     fun createFolder(name: String, then: (Long) -> Unit = {}) {
         if (name.isBlank()) return
-        viewModelScope.launch { then(folders.createFolder(name)) }
+        viewModelScope.launch {
+            val id = folders.createFolder(name)
+            _expandedFolders.update { it + id }
+            then(id)
+        }
     }
 
     fun renameFolder(folderId: Long, name: String) {

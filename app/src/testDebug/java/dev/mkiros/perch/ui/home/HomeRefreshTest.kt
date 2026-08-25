@@ -21,6 +21,7 @@ import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.db.entity.FeedEntity
+import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.net.ConnectivityMonitor
 import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.settings.SettingsStore
@@ -188,7 +189,7 @@ class HomeRefreshTest {
         showHome()
 
         compose.onNodeWithText("Fetched before it broke").assertIsDisplayed()
-        openDrawer()
+        expandInDrawer(FolderEntity.UNCATEGORIZED_ID)
         compose.onNodeWithContentDescription("Not updating").assertIsDisplayed()
     }
 
@@ -355,12 +356,27 @@ class HomeRefreshTest {
     }
 
     /** Matched by click action: the app bar can carry the same text as the drawer row. */
-    private fun selectInDrawer(label: String) {
-        openDrawer()
+    private fun selectInDrawer(label: String, folderId: Long = FolderEntity.UNCATEGORIZED_ID) {
+        expandInDrawer(folderId)
         compose.onAllNodesWithText(label)
             .filterToOne(hasClickAction() and !hasTestTag(HomeTestTags.ENTRY))
             .performSemanticsAction(SemanticsActions.OnClick)
         awaitState { it.selectedTitle == label }
+    }
+
+    /**
+     * Opens the drawer and, if [folderId]'s section is not already open, expands it —
+     * §0.1 means a source row does not exist in the tree until its folder is. Checked
+     * against the ViewModel rather than clicked unconditionally: a second click would
+     * collapse it again (`toggleFolderExpanded`).
+     */
+    private fun expandInDrawer(folderId: Long) {
+        openDrawer()
+        if (folderId !in viewModel.expandedFolders.value) {
+            compose.onNodeWithTag(HomeTestTags.folderExpand(folderId))
+                .performSemanticsAction(SemanticsActions.OnClick)
+            compose.waitForIdle()
+        }
     }
 
     private fun requestedPaths(): List<String> =

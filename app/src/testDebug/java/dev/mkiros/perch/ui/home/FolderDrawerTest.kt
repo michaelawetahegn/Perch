@@ -99,7 +99,8 @@ class FolderDrawerTest {
         seedFeed(title = "Zero Day Initiative", folderId = security)
 
         showHome()
-        openDrawer()
+        expandInDrawer(graphics)
+        expandInDrawer(security)
 
         assertThat(topOf("Graphics")).isLessThan(topOf("GPUOpen"))
         assertThat(topOf("GPUOpen")).isLessThan(topOf("Security"))
@@ -154,13 +155,45 @@ class FolderDrawerTest {
         badge(HomeTestTags.folderBadge(graphics)).assertTextEquals("0")
     }
 
+    /**
+     * §0.1: every folder starts shut, Uncategorized included — a reader who opens the
+     * drawer sees headers and nothing else.
+     */
     @Test
-    fun `collapsing a folder hides its sources and leaves the header`() {
+    fun `the drawer opens with every folder shut, headers only`() {
+        val graphics = seedFolder("Graphics")
+        seedFeed(title = "GPUOpen", folderId = graphics)
+        seedFeed(title = "nullprogram.com")
+
+        showHome()
+        openDrawer()
+
+        compose.onNodeWithText("Graphics").assertIsDisplayed()
+        compose.onNodeWithText(FolderEntity.UNCATEGORIZED_NAME).assertIsDisplayed()
+        compose.onNodeWithText("GPUOpen").assertDoesNotExist()
+        compose.onNodeWithText("nullprogram.com").assertDoesNotExist()
+    }
+
+    @Test
+    fun `opening one folder reveals only that folder's sources`() {
+        val graphics = seedFolder("Graphics")
+        seedFeed(title = "GPUOpen", folderId = graphics)
+        seedFeed(title = "nullprogram.com")
+
+        showHome()
+        expandInDrawer(graphics)
+
+        compose.onNodeWithText("GPUOpen").assertIsDisplayed()
+        compose.onNodeWithText("nullprogram.com").assertDoesNotExist()
+    }
+
+    @Test
+    fun `expanding a folder hides its sources again on a second tap`() {
         val graphics = seedFolder("Graphics")
         seedFeed(title = "GPUOpen", folderId = graphics)
 
         showHome()
-        openDrawer()
+        expandInDrawer(graphics)
         compose.onNodeWithText("GPUOpen").assertIsDisplayed()
         tap(HomeTestTags.folderExpand(graphics))
 
@@ -313,11 +346,24 @@ class FolderDrawerTest {
         compose.waitForIdle()
     }
 
-    private fun longPressInDrawer(label: String) {
-        openDrawer()
+    private fun longPressInDrawer(label: String, folderId: Long = FolderEntity.UNCATEGORIZED_ID) {
+        expandInDrawer(folderId)
         compose.onAllNodesWithText(label).filterToOne(hasClickAction())
             .performSemanticsAction(SemanticsActions.OnLongClick)
         compose.waitForIdle()
+    }
+
+    /**
+     * Opens the drawer and, if [folderId]'s section is not already open, expands it —
+     * §0.1 means a source row does not exist in the tree until its folder is. Checked
+     * against the ViewModel rather than clicked unconditionally: a second click would
+     * collapse it again (`toggleFolderExpanded`).
+     */
+    private fun expandInDrawer(folderId: Long) {
+        openDrawer()
+        if (folderId !in viewModel.expandedFolders.value) {
+            tap(HomeTestTags.folderExpand(folderId))
+        }
     }
 
     /** Drives a node's own click action: an injected tap never reaches the drawer sheet. */

@@ -294,7 +294,7 @@ class HomeScreenTest {
         seedEntry(feedId = none, title = "fourth", readAt = now.toEpochMilli())
 
         showHome()
-        openDrawer()
+        expandInDrawer(FolderEntity.UNCATEGORIZED_ID)
 
         badge(HomeTestTags.ALL_UNREAD_BADGE).assertTextEquals("3")
         badge(HomeTestTags.sourceBadge(two)).assertTextEquals("2")
@@ -310,7 +310,7 @@ class HomeScreenTest {
         seedEntry(feedId = healthy, title = "Something to read")
 
         showHome()
-        openDrawer()
+        expandInDrawer(FolderEntity.UNCATEGORIZED_ID)
 
         compose.onNodeWithText("Broken").assertIsDisplayed()
         compose.onNodeWithContentDescription("Not updating").assertIsDisplayed()
@@ -491,8 +491,12 @@ class HomeScreenTest {
      * re-runs the list query off the main thread, so this waits for the state the
      * assertions are about rather than for the click.
      */
-    private fun selectInDrawer(label: String, expectedTitle: String? = label) {
-        openDrawer()
+    private fun selectInDrawer(
+        label: String,
+        folderId: Long = FolderEntity.UNCATEGORIZED_ID,
+        expectedTitle: String? = label,
+    ) {
+        expandInDrawer(folderId)
         drawerRow(label).performSemanticsAction(SemanticsActions.OnClick)
         awaitState { it.selectedTitle == expectedTitle }
     }
@@ -501,10 +505,23 @@ class HomeScreenTest {
      * Opens the drawer and long-presses a source, the way a reader reaches rename and
      * remove. Same reason as [selectInDrawer] for driving the semantics action directly.
      */
-    private fun longPressInDrawer(label: String) {
-        openDrawer()
+    private fun longPressInDrawer(label: String, folderId: Long = FolderEntity.UNCATEGORIZED_ID) {
+        expandInDrawer(folderId)
         drawerRow(label).performSemanticsAction(SemanticsActions.OnLongClick)
         compose.waitForIdle()
+    }
+
+    /**
+     * Opens the drawer and, if [folderId]'s section is not already open, expands it —
+     * §0.1 means a source row does not exist in the tree until its folder is. Checked
+     * against the ViewModel rather than clicked unconditionally: a second click would
+     * collapse it again (`toggleFolderExpanded`).
+     */
+    private fun expandInDrawer(folderId: Long) {
+        openDrawer()
+        if (folderId !in viewModel.expandedFolders.value) {
+            tap(HomeTestTags.folderExpand(folderId))
+        }
     }
 
     /**

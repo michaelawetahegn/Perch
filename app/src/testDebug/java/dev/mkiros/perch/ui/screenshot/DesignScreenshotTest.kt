@@ -191,6 +191,10 @@ class DesignScreenshotTest {
 
         val ticked = homeViewModel.uiState.value.sources.take(3)
         assertThat(ticked).hasSize(3)
+        // §0.1: every folder opens shut, so each ticked source's own folder is expanded
+        // first. Safe mid-selection: V10 only disables the *chevron* for a folder
+        // selection, never for a source one (X02).
+        ticked.forEach { source -> expandInDrawer(source.folderId) }
         drawerRow(ticked.first().title).performSemanticsAction(SemanticsActions.OnLongClick)
         compose.waitForIdle()
         ticked.drop(1).forEach { source ->
@@ -285,6 +289,19 @@ class DesignScreenshotTest {
     private fun drawerRow(label: String) =
         compose.onAllNodesWithText(label)
             .filterToOne(hasClickAction() and !hasTestTag(HomeTestTags.ENTRY))
+
+    /**
+     * Expands [folderId]'s section if it is not already open — §0.1 means a source row
+     * does not exist in the tree until its folder is. Checked against the ViewModel
+     * rather than clicked unconditionally: a second click would collapse it again.
+     */
+    private fun expandInDrawer(folderId: Long) {
+        if (folderId !in homeViewModel.expandedFolders.value) {
+            compose.onNodeWithTag(HomeTestTags.folderExpand(folderId))
+                .performSemanticsAction(SemanticsActions.OnClick)
+            compose.waitForIdle()
+        }
+    }
 
     private fun capture(name: String) {
         val shot =

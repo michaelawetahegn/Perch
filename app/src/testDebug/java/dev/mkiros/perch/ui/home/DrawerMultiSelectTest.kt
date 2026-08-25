@@ -162,7 +162,7 @@ class DrawerMultiSelectTest {
         seedFeed(title = "GPUOpen", folderId = graphics)
 
         showHome()
-        longPress("GPUOpen")
+        longPress("GPUOpen", folderId = graphics)
 
         // The rule is drawn as well as enforced: mid-source-selection a folder header
         // carries no tick at all, and neither pressing it nor long-pressing it takes one.
@@ -180,10 +180,13 @@ class DrawerMultiSelectTest {
         val gpuopen = seedFeed(title = "GPUOpen", folderId = graphics)
 
         showHome()
+        // Expanded before selection starts: mid-folder-selection the chevron is a
+        // checkbox (V10), so a collapsed folder cannot be opened once selection has begun.
+        expandInDrawer(graphics)
         longPressFolder(graphics)
 
         checkbox(SelectionTestTags.sourceCheckbox(gpuopen)).assertDoesNotExist()
-        tapRow("GPUOpen")
+        tapRow("GPUOpen", folderId = graphics)
 
         assertThat(selection.value).isEqualTo(DrawerSelection.Folders(setOf(graphics)))
         compose.onNodeWithTag(SelectionTestTags.COUNT).assertTextEquals("1 selected")
@@ -202,7 +205,7 @@ class DrawerMultiSelectTest {
         seedFeed(title = "GPUOpen", folderId = graphics)
 
         showHome()
-        longPress("GPUOpen")
+        longPress("GPUOpen", folderId = graphics)
 
         compose.onNodeWithTag(HomeTestTags.folderHeader(graphics)).assertIsNotEnabled()
         compose.onNodeWithTag(HomeTestTags.folderExpand(graphics)).assertIsEnabled()
@@ -395,14 +398,34 @@ class DrawerMultiSelectTest {
         compose.waitForIdle()
     }
 
-    private fun longPress(label: String) {
-        openDrawer()
+    private fun longPress(label: String, folderId: Long = FolderEntity.UNCATEGORIZED_ID) {
+        expandInDrawer(folderId)
         row(label).performSemanticsAction(SemanticsActions.OnLongClick)
         compose.waitForIdle()
     }
 
-    private fun tapRow(label: String) {
+    private fun tapRow(label: String, folderId: Long = FolderEntity.UNCATEGORIZED_ID) {
+        expandInDrawer(folderId)
         row(label).performSemanticsAction(SemanticsActions.OnClick)
+        compose.waitForIdle()
+    }
+
+    /**
+     * Opens the drawer and, if [folderId]'s section is not already open, expands it —
+     * §0.1 means a source row does not exist in the tree until its folder is. Checked
+     * against the ViewModel rather than clicked unconditionally: a second click would
+     * collapse it again (`toggleFolderExpanded`).
+     */
+    private fun expandInDrawer(folderId: Long) {
+        openDrawer()
+        if (folderId !in viewModel.expandedFolders.value) {
+            tapFolderExpand(folderId)
+        }
+    }
+
+    private fun tapFolderExpand(folderId: Long) {
+        compose.onNodeWithTag(HomeTestTags.folderExpand(folderId))
+            .performSemanticsAction(SemanticsActions.OnClick)
         compose.waitForIdle()
     }
 

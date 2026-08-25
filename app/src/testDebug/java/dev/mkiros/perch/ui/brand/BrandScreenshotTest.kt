@@ -31,11 +31,13 @@ import coil.map.Mapper
 import coil.request.Options
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.PerchDatabase
+import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.debug.DebugSeeder
 import dev.mkiros.perch.di.AppContainer
 import dev.mkiros.perch.ui.home.HomeScreen
+import dev.mkiros.perch.ui.home.HomeTestTags
 import dev.mkiros.perch.ui.home.HomeViewModel
 import dev.mkiros.perch.ui.home.SelectionTestTags
 import dev.mkiros.perch.ui.home.TimeFilter
@@ -151,6 +153,10 @@ class BrandScreenshotTest {
         seed()
         showHome(ThemeMode.Dark)
         openDrawer()
+        // §0.1: DebugSeeder's sources land in Uncategorized, shut like every folder.
+        compose.onNodeWithTag(HomeTestTags.folderExpand(FolderEntity.UNCATEGORIZED_ID))
+            .performSemanticsAction(SemanticsActions.OnClick)
+        compose.waitForIdle()
         val source = homeViewModel.uiState.value.sources.first().title
         compose.onAllNodesWithText(source).filterToOne(hasClickAction())
             .performSemanticsAction(SemanticsActions.OnLongClick)
