@@ -31,12 +31,14 @@ import coil.ImageLoader
 import coil.map.Mapper
 import coil.request.Options
 import com.google.common.truth.Truth.assertWithMessage
+import dev.mkiros.perch.data.archive.ArchiveDiscovery
 import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.extract.ArticleExtractor
 import dev.mkiros.perch.data.extract.FullText
+import dev.mkiros.perch.data.extract.PageContentExtractor
 import dev.mkiros.perch.data.net.FeedFetcher
 import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.parse.ArticleBlock
@@ -104,7 +106,7 @@ import org.robolectric.annotation.GraphicsMode
  * ./gradlew :app:testDebugUnitTest -Pperch.live=true --tests '*LiveAcceptance*'
  * ```
  *
- * Thirteen gates, in one method because they are one run: the pull feeds the standardize
+ * Fourteen gates, in one method because they are one run: the pull feeds the standardize
  * pass, which picks the sample the article screenshots render; the sampled *opens* feed the
  * thumbnail and full-text gates; the folders the OPML gate builds are what the folder-order
  * gate reads and what puts more than one category on the home screenshot's rows (W04).
@@ -129,6 +131,11 @@ import org.robolectric.annotation.GraphicsMode
  * (**gate 8**, since W02 made the window rolling). The third is **gate 5c**, new — #17's
  * Hugging Face page, fetched live, held to extracting a body that beats the teaser it
  * replaces.
+ *
+ * **PLAN-7 Z04/#21** adds **gate 10** — the reporter's own blog, reusing gate 1's pull
+ * (`fzakaria.com/feed.xml` is now a permanent source) and asking `BackfillRepository.plan`
+ * to find materially more posts than the feed's ten, with the exact URL issue #21 linked
+ * among them and extracting a real body.
  *
  * Where it deviates from PLAN.md: the file lives in `src/testDebug` rather than
  * `src/test`. Gate 3 needs a Compose rule, and `ui-test-manifest` is a
@@ -254,6 +261,10 @@ class LiveAcceptanceTest {
         val boundary = theWindowIsTheLastTwentyFourHours()
         report("GATE 8 (the last 24 hours)", boundary.summary())
         failures += boundary.failures
+
+        val archive = theReportersArchiveIsReachable()
+        report("GATE 10 (issue #21's archive)", archive.summary)
+        failures += archive.failures
 
         if (standard.samples.isEmpty()) {
             failures += "gate 3: nothing was pulled, so there was nothing to render"
@@ -1677,6 +1688,87 @@ class LiveAcceptanceTest {
         return name to best
     }
 
+    // ---- gate 10: issue #21's archive, live -------------------------------------
+
+    private class ArchiveReport(var summary: String) {
+        val failures = mutableListOf<String>()
+    }
+
+    /**
+     * PLAN-7 Z04/#21: the acceptance criterion in the reporter's own words. `fzakaria.com`
+     * is now a permanent gate-1 source (§0.1's measurement: feed carries 10 entries, the
+     * site 142), so this reuses what gate 1 already pulled rather than fetching the feed a
+     * second time — the only extra network this gate spends is discovery's own bounded
+     * sitemap walk (`BackfillRepository.plan`, capped by `ArchiveDiscovery`'s own
+     * constants) and one page fetch, for the exact URL issue #21 linked.
+     *
+     * Two things have to be true: discovery finds materially more posts than the feed's 10
+     * (the shape of #21, not a hardcoded 142 — a blog gains posts and a fixed count would
+     * rot), and `.../2026/07/27/the-mean-means-nothing` — three days older than the feed's
+     * oldest entry — is among what discovery finds and extracts a real body through the
+     * same [dev.mkiros.perch.data.extract.PageContentExtractor] chain `BackfillRepository`
+     * calls (PLAN-7 §0.2: no second metadata path).
+     *
+     * Asked of [ArchiveDiscovery] directly, not of [BackfillRepository.plan]'s capped
+     * `toFetch`: `MAX_PAGES` bounds one background run's *batch*, a policy choice, not
+     * discovery's own reach, and a sitemap's order is not `<lastmod>` order — capping the
+     * check at 40 would fail on a correct app whenever the reporter's post happens to sort
+     * past it. Discovery's own network cost is identical either way (the same bounded
+     * sitemap walk); only the count checked differs.
+     *
+     * A feed that failed to pull is gate 1's failure to report, not this gate's — it
+     * reports and does not fail, on the gpuopen precedent ([probeExemplar]).
+     */
+    private fun theReportersArchiveIsReachable(): ArchiveReport = runBlocking {
+        val label = "issue #21's fzakaria.com"
+        val feed = database.feedDao().getAll().firstOrNull { it.feedUrl == FZAKARIA_FEED_URL }
+            ?: return@runBlocking ArchiveReport(
+                "$label: feed was not pulled at gate 1 — reported there, not gated here",
+            )
+        val reach = database.entryDao().reach(feed.id)
+        val fetcher = FeedFetcher(container.httpClient)
+        val feedPage = fetcher.fetch(feed.feedUrl)
+            ?: return@runBlocking ArchiveReport("$label: could not refetch its own feed").also {
+                it.failures += "gate 10: $label — ${feed.feedUrl} could not be refetched"
+            }
+        val discovered = runCatching { ArchiveDiscovery(fetcher).discover(feed.siteUrl ?: feed.feedUrl, feedPage) }
+            .getOrNull()
+            ?: return@runBlocking ArchiveReport("$label: ArchiveDiscovery threw").also {
+                it.failures += "gate 10: $label — ArchiveDiscovery.discover threw"
+            }
+        val stored = database.entryDao().guidsForFeed(feed.id).toHashSet()
+        val fresh = discovered.filterNot { it.url in stored }
+
+        val report = ArchiveReport(
+            "$label: feed carried ${reach.entryCount} entries; discovery found " +
+                "${fresh.size} not-yet-stored posts of ${discovered.size} total",
+        )
+        if (fresh.size <= reach.entryCount) {
+            report.failures += "gate 10: $label — discovery found only ${fresh.size} " +
+                "new posts, not materially more than the feed's ${reach.entryCount} (#21)"
+        }
+        if (discovered.none { it.url == REPORTERS_POST_URL }) {
+            report.failures += "gate 10: $label — $REPORTERS_POST_URL, the exact URL from " +
+                "issue #21, was not among the ${discovered.size} posts discovery found"
+            return@runBlocking report
+        }
+
+        val fetched = runCatching { fetcher.fetch(REPORTERS_POST_URL) }.getOrNull()
+        if (fetched == null) {
+            report.failures += "gate 10: $label — $REPORTERS_POST_URL could not be fetched"
+            return@runBlocking report
+        }
+        val page = Jsoup.parse(ByteArrayInputStream(fetched.bytes), null, fetched.finalUrl)
+        val content = PageContentExtractor.extract(page, fetched.finalUrl)
+        val prose = FullText.prose(content.bodyHtml).length
+        report.summary += "; the reporter's post extracted $prose chars of prose"
+        if (prose < RECOVERED_PROSE_CHARS) {
+            report.failures += "gate 10: $label — $REPORTERS_POST_URL extracted only $prose " +
+                "chars of prose (need ≥$RECOVERED_PROSE_CHARS)"
+        }
+        report
+    }
+
     // ---- harness ----------------------------------------------------------------
 
     private fun readingList(): List<String> =
@@ -1791,6 +1883,15 @@ class LiveAcceptanceTest {
          */
         const val BLIND_SPOT_PAGE_URL =
             "https://huggingface.co/blog/MultiverseComputingCAI/efficient-knowledge-distillation"
+
+        /**
+         * PLAN-7 Z04/#21: the reporter's own feed, now a permanent gate-1 source (§0.1's
+         * measurement — 10 entries in the feed, 142 dated posts on the site).
+         */
+        const val FZAKARIA_FEED_URL = "https://fzakaria.com/feed.xml"
+
+        /** PLAN-7 Z04/#21: the exact post the issue linked — gate 10's acceptance criterion. */
+        const val REPORTERS_POST_URL = "https://fzakaria.com/2026/07/27/the-mean-means-nothing"
 
         /** Where a page keeps the teaser a feed would have carried, best first. */
         val TEASER_META = listOf("meta[property=og:description]", "meta[name=description]")

@@ -23,6 +23,7 @@ https://jvns.ca/atom.xml
 https://rachelbythebay.com/w/atom.xml
 https://ciechanow.ski/atom.xml
 https://www.hillelwayne.com
+https://fzakaria.com/feed.xml
 
 # ── Reverse engineering & security ───────────────────────────────────────────
 https://googleprojectzero.blogspot.com/feeds/posts/default

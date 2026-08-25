@@ -51,9 +51,6 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
 - **V06/#11: folder order is alphabetical (`COLLATE NOCASE`), Uncategorized pinned by `(id = 1) ASC`.** It governs
   the **drawer only** since W03 — `FolderDao.observeAll` and `.getAll`, which must agree; `EntryQueries.LIST_ITEMS`
   left the rule and is pure recency; `sortIndex` decides nothing (NOCASE-folding quirk: `FolderDao.kt`'s own KDoc).
-- 2026-08-18 — **W11: the live gate is thirteen gates** — **5c** is #17's Hugging Face page fetched *live* (a fixture
-  cannot notice a Tailwind class rename), held to beating the page's own teaser: 9355 vs 51 chars. Home shot staged
-  freshest-first, not quietest-first (quietest broke once W03 put every category off-screen). 38/38 pull.
 - **V05/#12: "Unread" is gone from every reader-facing string** (identifiers keep it); **pin `HomeTestTags.TITLE`,
   never `onNodeWithText("Feed")`** — the tab has read "Feed" since U09. **W04/#20: a row's meta is now the bare
   source name** (`EntryRowTestTags.META`, category dimmed after a `·`, Uncategorized unlabelled; `DATE` beneath),
@@ -93,3 +90,11 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   closes — the host's only chance to see what was just committed. §0.4's reach sentence
   reads `RelativeTime`'s default (system) zone, so its own test pins `TimeZone.setDefault`
   (V02 pattern). `./gradlew test` (debug+release): 974+692=1666 (+10/+0), 0 failures.
+- 2026-08-25 — **Z04/#21: the reporter's blog, live.** `fzakaria.com/feed.xml` is now a
+  permanent gate-1 source. Gate 10 asks `ArchiveDiscovery` directly, not
+  `BackfillRepository.plan().toFetch` — `MAX_PAGES` bounds one backfill *run*, not
+  discovery's reach, and sitemap order isn't `<lastmod>` order, so the reporter's post
+  sorted past the cap on attempt 1. Measured: feed 10 entries, discovery 143/133 new, post
+  found, 8140 chars extracted. **Unrelated flake:** `quantpedia.com` failed gate 1 with a
+  TLS `CertPathValidatorException` this run — new, not touched, rerun before excluding.
+  `./gradlew test`: 974+692=1666, 0 failures (no new offline test).

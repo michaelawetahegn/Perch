@@ -252,7 +252,7 @@ No version bump, no release; both live in `PLAN-8` with the version-wide review 
         looked at**.
       - Rung: screenshot
 
-- [ ] **Z04 — The reporter's own blog, live, and the post they linked. Issue #21.**
+- [x] **Z04 — The reporter's own blog, live, and the post they linked. Issue #21.**
       The one task in this plan that touches the network. **Bounded: at most three
       foreground runs**; if it still fails after the third, mark this box BLOCKED with the
       measurement — never loop.
