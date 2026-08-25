@@ -42,8 +42,7 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
 - 2026-08-08 — **U09: the bottom bar and the `NavHost` are siblings**; **Feed's `DrawerState`/`LazyListState` are
   hoisted into `PerchNavHost`** (state remembered inside Feed dies on a tab switch). §0's back policy is the pure
   `nextBackStep(BackState)` in `BackChain.kt`, the enum's order *being* the priority.
-- 2026-08-08 — **U09a: the selection `BackHandler` must live inside `ModalDrawerSheet`** — the root one wins
-  otherwise; a batch delete's dialog is **a coroutine behind its tap**, so wait in wall-clock time.
+- 2026-08-08 — **U09a: the selection `BackHandler` must live inside `ModalDrawerSheet`** — the root one wins otherwise; a batch delete's dialog is **a coroutine behind its tap**, so wait in wall-clock time.
 - 2026-08-08 — **U07a: all three lists are Paging 3**, **placeholders off**; the queries live once in **`EntryQueries`**
   because each exists twice — `Flow<List>` *and* `PagingSource`. **`uiState.entries` is gone**: ask the screen.
 - 2026-08-08 — **U10:** Readability-over-jsoup in `data/extract/`, **no new dependency**; fixtures in
@@ -53,8 +52,7 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   `feeds`** — its job is outliving a source that does not exist yet. **`EntryDao.upsertAll` consumes parked rows**,
   so the refresh after a restore cannot undo it; a restore turns a flag **on** and never off, so it is idempotent.
   Codec is `org.json` — **its tests need Robolectric**; on a bare JVM `JSONObject` stubs.
-- 2026-08-09 — **V01/#1: Robolectric builds `PerchApp` for every test** — a store cancels only a scope it *owns*.
-  **Every full-suite flake so far: waiting on Room is not waiting on the screen. Poll in wall-clock time**, not `waitForIdle`.
+- 2026-08-09 — **V01/#1: Robolectric builds `PerchApp` for every test** — a store cancels only a scope it *owns*. **Every full-suite flake so far: waiting on Room is not waiting on the screen. Poll in wall-clock time**, not `waitForIdle`.
 - **V02/#9: a `Clock` carries a zone**; `AppContainer` injects `systemDefaultZone()`, **`DateParser` stays UTC
   deliberately**; a zone test pins `TimeZone.setDefault`. Since W02 the zone decides only what a human *reads*.
 - **V06/#11: folder order is alphabetical (`COLLATE NOCASE`), Uncategorized pinned by `(id = 1) ASC`.** It governs
@@ -72,10 +70,7 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   state — `BackStep.LeaveScope` a rung above `ScrollFeedToTop`. **`selectTab` is a silent no-op from the article
   route**: `popUpTo(start){saveState}` saves it and `restoreState` puts it back — pop first, switch tabs only if
   needed. Scoping **does not touch the time window**. Residual (T29): a scoped list repeats the source on every row.
-- **`research.checkpoint.com` answers 202 empty when live runs come too close together** (Cloudflare; **a `curl`
-  probe spends the allowance the next run needs**) — wait ~10 quiet minutes and rerun. Healthy, not an exclusion.
-- 2026-08-24 — **X04/#22 review, PLAN-5 entire:** clean on all four questions (no stale "opens expanded" doc,
-  `collapsedFolders` grep empty, every X02/X03 test edit additive not weakened); suite 896+631=**1527**, 0 failures.
+- **`research.checkpoint.com` answers 202 empty when live runs come too close together** (Cloudflare) — wait ~10 quiet minutes and rerun. Healthy, not an exclusion.
 - 2026-08-25 — **Y01/#23: `PageMetadataExtractor`**, standards-only, measured over all 23 `fixtures/articles/`
   files: title 17/23 (74%), date 5/23 (22%) — the 6 untitled have no `<head>` at all; gpuopen's `<time>` has
   neither `pubdate` nor `itemprop="datePublished"` so §0.2 correctly declines it. JSON-LD via `org.json` needs
@@ -97,3 +92,8 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   would flag every blog post as "a feed" via its own autodiscovery `<link>`. Duplicate paste
   reuses `EntryDao.upsertAll`'s idempotent-on-`(feedId,guid)` write, no hand-rolled check.
   `./gradlew test` (debug+release): 924+659=1583, 0 failures.
+- 2026-08-25 — **Y04/#23: `SaveLinkViewModel`/`SaveLinkSheet`**, one step shorter than
+  `AddSourceViewModel`/`-Sheet` (no confirm). Text into a *real* `ModalBottomSheet` hits the
+  tap trap above too — `SaveLinkSheetTest` composes `SaveLinkSheetContent` directly, and the
+  screenshot tests seed the pasted row via `container.savedLinks.saveLink()` rather than
+  typing into the sheet. `./gradlew test` (debug+release): 931+659=1590, 0 failures.

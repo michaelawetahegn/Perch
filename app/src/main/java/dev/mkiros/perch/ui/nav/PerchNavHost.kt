@@ -42,6 +42,7 @@ import dev.mkiros.perch.ui.article.zoom.ZoomedImage
 import dev.mkiros.perch.ui.collection.Collection
 import dev.mkiros.perch.ui.collection.CollectionScreen
 import dev.mkiros.perch.ui.collection.CollectionViewModel
+import dev.mkiros.perch.ui.collection.SaveLinkViewModel
 import dev.mkiros.perch.ui.home.DrawerSelection
 import dev.mkiros.perch.ui.home.HomeScope
 import dev.mkiros.perch.ui.home.HomeScreen
@@ -234,6 +235,7 @@ fun PerchNavHost(
                         factory = CollectionViewModel.factory(container, Collection.ToRead),
                     ),
                     onOpenEntry = { entryId -> navController.navigate(Routes.article(entryId)) },
+                    saveLinkViewModel = viewModel(factory = SaveLinkViewModel.factory(container)),
                 )
             }
 

@@ -196,7 +196,7 @@ to tell.
         no-date and no-body; `./gradlew test` green with the count in the commit message.
       - Rung: unit
 
-- [ ] **Y04 — The reader pastes a link and it is on the queue. TDD. Issue #23.**
+- [x] **Y04 — The reader pastes a link and it is on the queue. TDD. Issue #23.**
       §0.4: the affordance lives on **To-Read**.
       - `CollectionScreen.kt:68` / `:226` (empty state) / `:288` (tags) and
         `CollectionViewModel.kt` — an action on the To-Read screen that opens a sheet taking

@@ -50,6 +50,7 @@ class CollectionScreenTest {
     private lateinit var database: PerchDatabase
     private lateinit var container: AppContainer
     private lateinit var viewModel: CollectionViewModel
+    private lateinit var saveLinkViewModel: SaveLinkViewModel
 
     private val now = Instant.parse("2026-08-07T12:00:00Z")
     private val clock = Clock.fixed(now, ZoneOffset.UTC)
@@ -72,6 +73,8 @@ class CollectionScreenTest {
 
     // ---- the empty states ------------------------------------------------------
 
+    // Y04: rewritten, not weakened — To-Read now takes a pasted link as well as a
+    // long-press (§0.4), so the empty state has to say both or it undersells the screen.
     @Test
     fun `an empty To-Read says what the list is for, not that it is empty`() {
         show(Collection.ToRead)
@@ -79,8 +82,8 @@ class CollectionScreenTest {
         compose.onNodeWithTag(CollectionTestTags.EMPTY).assertExists()
         compose.onNodeWithText("Nothing queued yet").assertIsDisplayed()
         compose.onNodeWithText(
-            "Long-press an entry and save it for later. It waits here until you take it " +
-                "off, however long that is.",
+            "Paste a link's address above, or long-press any entry and save it for later. " +
+                "It waits here until you take it off, however long that is.",
         ).assertIsDisplayed()
     }
 
@@ -213,6 +216,26 @@ class CollectionScreenTest {
         assertThat(viewModel.pendingUndo.value).isNull()
     }
 
+    // ---- saving a link (Y04, §0.4) ----------------------------------------------
+
+    /** The flow itself — paste, save, land on the queue — is [SaveLinkSheetTest]'s. */
+    @Test
+    fun `To-Read offers a way to save a link`() {
+        show(Collection.ToRead)
+        compose.onNodeWithTag(CollectionTestTags.SAVE_LINK)
+            .performSemanticsAction(SemanticsActions.OnClick)
+        compose.waitForIdle()
+
+        compose.onNodeWithTag(SaveLinkTestTags.URL_FIELD).assertIsDisplayed()
+    }
+
+    @Test
+    fun `Liked has no way to save a link`() {
+        show(Collection.Liked)
+
+        compose.onNodeWithTag(CollectionTestTags.SAVE_LINK).assertDoesNotExist()
+    }
+
     // ---- harness ---------------------------------------------------------------
 
     private fun titles(): List<String> = compose.rowTitles()
@@ -233,9 +256,14 @@ class CollectionScreenTest {
 
     private fun show(collection: Collection) {
         viewModel = CollectionViewModel(container.entries, container.feeds, clock, collection)
+        saveLinkViewModel = SaveLinkViewModel(container.savedLinks)
         compose.setContent {
             PerchTheme(dynamicColor = false) {
-                CollectionScreen(viewModel = viewModel, onOpenEntry = {})
+                CollectionScreen(
+                    viewModel = viewModel,
+                    onOpenEntry = {},
+                    saveLinkViewModel = saveLinkViewModel,
+                )
             }
         }
         // The list is paged (U07a), so "loaded" is a question for the screen: either rows

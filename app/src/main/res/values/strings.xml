@@ -135,6 +135,14 @@
     <string name="add_source_error_unreachable">That address could not be reached</string>
     <string name="add_source_error_duplicate">You already follow %1$s</string>
 
+    <!-- Save a link (Y04, PLAN-6 §0.4): one article, saved without subscribing to its site. -->
+    <string name="save_link_action">Save a link</string>
+    <string name="save_link_title">Save a link</string>
+    <string name="save_link_field_label">Link</string>
+    <string name="save_link_submit">Save</string>
+    <string name="save_link_error_is_feed">That looks like a feed, not an article — add it as a source from the drawer instead.</string>
+    <string name="save_link_error_unreachable">That link could not be read</string>
+
     <!-- The bottom bar's three destinations (PLAN-2 §0, U09) -->
     <string name="tab_feed">Feed</string>
     <!-- "To-Read", not "Saved": the label says what the list is for, not what the gesture was. -->
@@ -157,7 +165,8 @@
     <string name="list_end">That\'s everything</string>
 
     <string name="collection_empty_to_read_title">Nothing queued yet</string>
-    <string name="collection_empty_to_read_body">Long-press an entry and save it for later. It waits here until you take it off, however long that is.</string>
+    <!-- Y04: To-Read now takes a pasted link as well as a long-press, so the empty state says both. -->
+    <string name="collection_empty_to_read_body">Paste a link\'s address above, or long-press any entry and save it for later. It waits here until you take it off, however long that is.</string>
     <string name="collection_empty_liked_title">Nothing liked yet</string>
     <string name="collection_empty_liked_body">Like an entry to keep it. Liked entries stay for good, even after their source stops listing them.</string>
     <string name="collection_removed_to_read">Removed from To-Read</string>

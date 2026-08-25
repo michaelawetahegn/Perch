@@ -54,6 +54,8 @@ import java.time.ZoneOffset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -87,6 +89,7 @@ class DesignScreenshotTest {
     private lateinit var database: PerchDatabase
     private lateinit var container: AppContainer
     private lateinit var homeViewModel: HomeViewModel
+    private lateinit var server: MockWebServer
 
     private val now = Instant.parse("2026-08-07T12:00:00Z")
     private val clock = Clock.fixed(now, ZoneOffset.UTC)
@@ -105,6 +108,8 @@ class DesignScreenshotTest {
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         database = PerchDatabase.inMemory(context)
+        server = MockWebServer()
+        server.start()
         container = AppContainer(
             database = database,
             httpClient = PerchHttp.client(cacheDir = null),
@@ -115,6 +120,7 @@ class DesignScreenshotTest {
     @After
     fun tearDown() {
         Coil.reset()
+        server.shutdown()
         database.close()
     }
 
@@ -231,6 +237,49 @@ class DesignScreenshotTest {
         compose.waitForIdle()
 
         capture("add-source")
+    }
+
+    /** Y04/#23: the sheet a tap on To-Read's link icon opens. */
+    @Test
+    fun `the save-link sheet`() {
+        seed()
+        showShell(ThemeMode.Dark)
+        compose.onNodeWithTag(NavTestTags.tab(PerchTab.ToRead)).performClick()
+        compose.waitForIdle()
+        compose.onNodeWithTag(CollectionTestTags.SAVE_LINK).performSemanticsAction(SemanticsActions.OnClick)
+        compose.waitForIdle()
+
+        capture("save-link")
+    }
+
+    /**
+     * Y04/#23: a link saved through [dev.mkiros.perch.data.repo.SavedLinkRepository] —
+     * the same call the sheet's submit button makes — landed on the queue with its own
+     * title, on the synthetic saved-links feed rather than any subscribed source.
+     */
+    @Test
+    fun `the To-Read list carrying a pasted article`() {
+        server.enqueue(
+            MockResponse()
+                .setBody(
+                    """
+                    <html><head>
+                      <meta property="og:title" content="The Mean Means Nothing">
+                    </head><body><article><p>${"Real prose, with commas and length. ".repeat(30)}</p></article></body></html>
+                    """.trimIndent(),
+                )
+                .addHeader("Content-Type", "text/html; charset=utf-8"),
+        )
+        runBlocking {
+            container.savedLinks.saveLink(server.url("/the-mean-means-nothing").toString()).getOrThrow()
+        }
+        showShell(ThemeMode.Dark)
+        compose.onNodeWithTag(NavTestTags.tab(PerchTab.ToRead)).performClick()
+        compose.awaitInRealTime("the pasted article to load") {
+            compose.onAllNodesWithTag(CollectionTestTags.ENTRY).fetchSemanticsNodes().isNotEmpty()
+        }
+
+        capture("to-read-pasted-link")
     }
 
     /**

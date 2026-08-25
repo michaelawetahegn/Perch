@@ -11,10 +11,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.LibraryBooks
+import androidx.compose.material.icons.filled.AddLink
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -69,6 +71,10 @@ fun CollectionScreen(
     viewModel: CollectionViewModel,
     onOpenEntry: (Long) -> Unit,
     modifier: Modifier = Modifier,
+    // Only To-Read reads this (§0.4) — Liked never shows the action that opens it, and the
+    // caller still supplies one because a screen composed alone (a test) should not have to
+    // know that in advance.
+    saveLinkViewModel: SaveLinkViewModel? = null,
 ) {
     val entries = viewModel.entries.collectAsLazyPagingItems()
     val pendingUndo by viewModel.pendingUndo.collectAsStateWithLifecycle()
@@ -77,6 +83,7 @@ fun CollectionScreen(
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val context = LocalContext.current
     var actionsForId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var savingLink by rememberSaveable { mutableStateOf(false) }
 
     val undoLabel = stringResource(R.string.action_undo)
     val removedMessage = stringResource(
@@ -106,6 +113,22 @@ fun CollectionScreen(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(viewModel.collection.titleRes())) },
+                actions = {
+                    // §0.4: only To-Read reaches for a single article without following its
+                    // site. Liked never shows this — a link a reader pastes has not been
+                    // read yet, and "Liked" only ever means something they read and kept.
+                    if (viewModel.collection == Collection.ToRead && saveLinkViewModel != null) {
+                        IconButton(
+                            onClick = { savingLink = true },
+                            modifier = Modifier.testTag(CollectionTestTags.SAVE_LINK),
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AddLink,
+                                contentDescription = stringResource(R.string.save_link_action),
+                            )
+                        }
+                    }
+                },
                 scrollBehavior = scrollBehavior,
             )
         },
@@ -167,6 +190,13 @@ fun CollectionScreen(
                 item.link?.let { copyLink(context, it) }
             },
             onDismiss = { actionsForId = null },
+        )
+    }
+
+    if (savingLink && saveLinkViewModel != null) {
+        SaveLinkSheet(
+            viewModel = saveLinkViewModel,
+            onDismiss = { savingLink = false },
         )
     }
 }
@@ -289,4 +319,5 @@ object CollectionTestTags {
     const val LIST = "collection:list"
     const val ENTRY = "collection:entry"
     const val EMPTY = "collection:empty"
+    const val SAVE_LINK = "collection:save-link"
 }
