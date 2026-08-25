@@ -13,9 +13,9 @@ cd "$(dirname "$0")"
 
 # ── knobs ────────────────────────────────────────────────────────────────────
 # The active plan. v0.1 (T01–T32) and v0.2 (U01–U16) are complete and archived in
-# docs/plans/; PLAN-4.md (v0.4, W01–W12 — one task per GitHub issue) is what CLAUDE.md
-# now points sessions at. Change this one line to start a PLAN-4.
-PLAN=${PLAN:-PLAN-5.md}
+# docs/plans/. v0.5 is four sequential slices — PLAN-5 (#22) is done and archived;
+# PLAN-6 (#23) is active. Change this one line to move to the next slice.
+PLAN=${PLAN:-PLAN-6.md}
 PROMPT="Read CLAUDE.md and continue"
 LOG=${LOG:-"loop-$(basename "$PLAN" .md | tr 'A-Z' 'a-z').log"}
 SLEEP_BETWEEN=${SLEEP_BETWEEN:-30}        # pause between normal sessions (s)
