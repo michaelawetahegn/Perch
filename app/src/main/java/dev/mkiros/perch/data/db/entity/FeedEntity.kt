@@ -21,6 +21,10 @@ import androidx.room.PrimaryKey
  *   user tidied their folders. `FolderDao.deleteAndReassign` moves them instead, in one
  *   transaction, and this constraint is what makes forgetting to do so a loud failure
  *   rather than a silent orphan.
+ * @param isSynthetic true for the one seeded row (PLAN-6 §0.3) a pasted link points at
+ *   rather than a real feed — never fetched, never exported, never deleted. Making "no
+ *   feed" a real row is the same doctrine [FolderEntity.UNCATEGORIZED_ID] already states
+ *   for "no folder": one rule instead of two.
  */
 @Entity(
     tableName = "feeds",
@@ -52,4 +56,19 @@ data class FeedEntity(
     // FolderEntity.UNCATEGORIZED_ID, and migration 1 → 2 defaults the column to the same.
     @ColumnInfo(defaultValue = "1")
     val folderId: Long = FolderEntity.UNCATEGORIZED_ID,
-)
+    @ColumnInfo(defaultValue = "0")
+    val isSynthetic: Boolean = false,
+) {
+    companion object {
+        /**
+         * The synthetic feed a pasted link is filed under (PLAN-6 §0.3). Not a real
+         * address — nothing is ever fetched from it — so the `perch:` scheme can never
+         * collide with a URL a reader pastes.
+         */
+        const val SAVED_LINKS_FEED_URL = "perch:saved-links"
+
+        // A plain constant, not R.string: FolderEntity.UNCATEGORIZED_NAME sets the same
+        // precedent for a built-in row's name, and this app has no localization to lose.
+        const val SAVED_LINKS_TITLE = "Saved links"
+    }
+}

@@ -39,8 +39,6 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   own `SettingsStore`. U07's calendar window is dead; the zone now only decides what a human *reads*. **W03: the Feed is
   one stream** — `HomeTestTags.section` and `startsSection` are gone; a test naming `"home:section:N"` spells the dead
   tag out on purpose, so nothing can put a header back unnoticed.
-- **U08: the row's 96dp thumbnail square is always reserved.** Coil offline: a `Mapper` succeeds, an `Interceptor`
-  returning `ErrorResult` fails, one `awaitCancellation()`s stays loading; `stubThumbnails()` for list shots.
 - 2026-08-08 — **U09: the bottom bar and the `NavHost` are siblings**; **Feed's `DrawerState`/`LazyListState` are
   hoisted into `PerchNavHost`** (state remembered inside Feed dies on a tab switch). §0's back policy is the pure
   `nextBackStep(BackState)` in `BackChain.kt`, the enum's order *being* the priority.
@@ -62,19 +60,12 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
 - **V06/#11: folder order is alphabetical (`COLLATE NOCASE`), Uncategorized pinned by `(id = 1) ASC`.** It governs
   the **drawer only** since W03 — `FolderDao.observeAll` and `.getAll`, which must agree; `EntryQueries.LIST_ITEMS`
   left the rule and is pure recency; `sortIndex` decides nothing (NOCASE-folding quirk: `FolderDao.kt`'s own KDoc).
-- **V07/#13: a missing thumbnail is `surfaceVariant` + the mark in `outline`** (`Placeholder(marked = true)`), **only
-  `loading` keeps the bare frame**; `ColorFilter.tint` flattens the mark, so `perchMarkMonochrome(ink, paper)`.
-- **V10/#5: a refused row is `refusesFolder` = "a tick would change nothing"**, so the affordance cannot drift from
-  `toggleFolder`. **`combinedClickable(enabled = false)` keeps its `OnClick` action** — assert `assertIsNotEnabled`.
 - **W12: v0.4.0 shipped** — versionCode 5, `perch-0.4.0.apk`, U02-signed; release task renames the apk itself.
   On device **`run-as` dies on a release build** — verify through the UI, not sqlite3.
 - 2026-08-18 — **W11: the live gate is thirteen gates** — **5c** is #17's Hugging Face page fetched *live* (a fixture
   cannot notice a Tailwind class rename), held to beating the page's own teaser: 9355 vs 51 chars. **The home shot is
   staged freshest-first, not quietest-first** — quietest was right while a small folder bought a section header, and
   after W03 it put every category off-screen. 38/38 pull, 1038 entries, 0 rows out of order, 7 inside 24 h.
-- **V04/#3: the inset contract is one doc comment in `ui/nav/PerchNavHost.kt`** — four clauses, one test each in
-  `WindowInsetsTest`; never `.statusBarsPadding()` a screen. **Robolectric has no bars**, so `WindowInsetsSupport.kt`'s
-  `applyWindowInsets` dispatches its own to every Compose root.
 - **V05/#12: "Unread" is gone from every reader-facing string** (identifiers keep it); **pin `HomeTestTags.TITLE`,
   never `onNodeWithText("Feed")`** — the tab has read "Feed" since U09. **W04/#20: a row's meta is now the bare
   source name** (`EntryRowTestTags.META`, category dimmed after a `·`, Uncategorized unlabelled; `DATE` beneath),
@@ -83,8 +74,6 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   state — `BackStep.LeaveScope` a rung above `ScrollFeedToTop`. **`selectTab` is a silent no-op from the article
   route**: `popUpTo(start){saveState}` saves it and `restoreState` puts it back — pop first, switch tabs only if
   needed. Scoping **does not touch the time window**. Residual (T29): a scoped list repeats the source on every row.
-- **V09/#4: a table joins on its *shape*** — `carriesContentTable` (≥3 rows, ≥2 columns, no nesting, not linky).
-  A page fixture is not a feed body: `zdi-page-*.html`.
 - 2026-08-10 — **V15.** Gate 8 is the time window, **gate 9** V06's order (the drawer's two queries only, since W03),
   **gate 7** the live page's `publishedAt` order (it stopped counting folder sections at W03), and gate 6b fetches
   V09's ZDI *page* by name because its feed ships full bodies. Gate 5b's floor is U15's 75.4% less 10: the sampled set
@@ -97,3 +86,12 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   files: title 17/23 (74%), date 5/23 (22%) — the 6 untitled have no `<head>` at all; gpuopen's `<time>` has
   neither `pubdate` nor `itemprop="datePublished"` so §0.2 correctly declines it. JSON-LD via `org.json` needs
   Robolectric (U14).
+- 2026-08-25 — **Y02/#23: `feeds.isSynthetic` → DB v6**, seeded row `perch:saved-links` (`FeedEntity`
+  companion), both `SEED_SAVED_LINKS` (fresh install) and `MIGRATION_5_6` (upgrade). Seeding it into
+  `PerchDatabase.inMemory()` — used by ~every test — broke 70 tests across 18 files that read `feedDao`'s
+  general queries as "every subscribed source." Fixed at the root instead of patching each assertion:
+  `observeAll`/`getAll`/`getByFolder`/`countAll`/`observeCount` all gained `WHERE isSynthetic = 0`, so refresh,
+  OPML export, profile export and the drawer's source count skip it **for free** — no call-site branch needed
+  beyond `FeedRepository.remove`/`removeAll`, which still refuse it explicitly since delete goes straight to
+  `deleteById`. A caller that wants the row back (Y04's drawer) reaches it via `findByUrl(SAVED_LINKS_FEED_URL)`,
+  deliberately unfiltered. `./gradlew test` (debug+release): 917+652=1569, 0 failures.

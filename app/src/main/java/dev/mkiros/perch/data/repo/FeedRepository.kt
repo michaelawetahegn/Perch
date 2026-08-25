@@ -192,8 +192,17 @@ class FeedRepository(
         return feedId
     }
 
-    /** Unsubscribes. The source's entries go with it, via `ON DELETE CASCADE`. */
-    suspend fun remove(feedId: Long) = feedDao.deleteById(feedId)
+    /**
+     * Unsubscribes. The source's entries go with it, via `ON DELETE CASCADE`.
+     *
+     * Refuses the synthetic saved-links feed (PLAN-6 §0.3), exactly as
+     * [FolderRepository.deleteFolder] refuses Uncategorized — the cascade would otherwise
+     * take every saved article with it, and there is nowhere to move them to.
+     */
+    suspend fun remove(feedId: Long) {
+        if (feedDao.findById(feedId)?.isSynthetic == true) return
+        feedDao.deleteById(feedId)
+    }
 
     /**
      * Unsubscribes a whole batch (U09a). One statement rather than a loop of [remove], so
@@ -201,11 +210,17 @@ class FeedRepository(
      * subscription lists — and so a failure cannot leave half the batch deleted.
      *
      * There is no undo: the entries go with the sources, saved and liked ones included,
-     * which is why the caller confirms with a dialog that names what is about to go.
+     * which is why the caller confirms with a dialog that names what is about to go. The
+     * synthetic saved-links feed is silently dropped from the batch rather than refused
+     * outright — a batch is not wrong for containing it, the same way [FolderRepository]
+     * skips Uncategorized in [FolderRepository.deleteFolders] rather than rejecting the call.
      */
     suspend fun removeAll(feedIds: Collection<Long>) {
         if (feedIds.isEmpty()) return
-        feedDao.deleteByIds(feedIds.toList())
+        val syntheticId = feedDao.findByUrl(FeedEntity.SAVED_LINKS_FEED_URL)?.id
+        val toDelete = feedIds.filterNot { it == syntheticId }
+        if (toDelete.isEmpty()) return
+        feedDao.deleteByIds(toDelete)
     }
 
     /**

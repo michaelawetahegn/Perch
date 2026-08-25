@@ -150,7 +150,7 @@ to tell.
         grep gate returns nothing, with the command in the message; `./gradlew test` green.
       - Rung: unit
 
-- [ ] **Y02 — A saved link has somewhere to live. TDD + migration. Issue #23.**
+- [x] **Y02 — A saved link has somewhere to live. TDD + migration. Issue #23.**
       §0.3, and nothing beyond it — this task adds no UI and saves no link.
       - `feeds.isSynthetic` (`INTEGER NOT NULL DEFAULT 0`) on `FeedEntity`
         (`FeedEntity.kt:36-55`); `PerchDatabase.VERSION` 5 → **6** (`PerchDatabase.kt:45`);

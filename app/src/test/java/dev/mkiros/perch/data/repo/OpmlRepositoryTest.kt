@@ -357,4 +357,18 @@ class OpmlRepositoryTest {
         assertThat(added.etag).isNull()
         assertThat(added.addedAt).isEqualTo(now)
     }
+
+    /**
+     * PLAN-6 §0.3's synthetic saved-links feed is seeded into every database, but it is
+     * `perch:saved-links`, not a URL any other reader could subscribe to — an export that
+     * emitted it would hand another reader an outline their app cannot fetch.
+     */
+    @Test
+    fun `export never emits the synthetic saved-links feed`() = runTest {
+        repeat(3) { feeds.insert(feed(it)) }
+
+        val exported = repo.export()
+
+        assertThat(exported).doesNotContain(FeedEntity.SAVED_LINKS_FEED_URL)
+    }
 }

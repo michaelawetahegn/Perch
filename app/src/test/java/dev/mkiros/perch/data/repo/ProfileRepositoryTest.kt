@@ -193,6 +193,20 @@ class ProfileRepositoryTest {
         phone.close()
     }
 
+    /**
+     * PLAN-6 §0.3's synthetic saved-links feed is seeded into every database, but a profile
+     * describes a reader's real subscriptions — an export that emitted it would ask the
+     * next install to subscribe to `perch:saved-links` as if it were a real address.
+     */
+    @Test
+    fun `export never emits the synthetic saved-links feed`() = runTest {
+        seedLibrary(origin)
+
+        val text = origin.profiles().export()
+
+        assertThat(text).doesNotContain(FeedEntity.SAVED_LINKS_FEED_URL)
+    }
+
     // ---- refusals ------------------------------------------------------------------
 
     @Test

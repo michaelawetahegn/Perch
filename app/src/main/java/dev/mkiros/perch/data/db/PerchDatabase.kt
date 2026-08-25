@@ -42,7 +42,7 @@ abstract class PerchDatabase : RoomDatabase() {
         const val NAME = "perch.db"
 
         /** Bumping this requires a [MIGRATIONS] entry from `VERSION - 1`. */
-        const val VERSION = 5
+        const val VERSION = 6
 
         /**
          * Folders (U03). Creates the table, seeds Uncategorized as id 1, and files every
@@ -149,9 +149,25 @@ abstract class PerchDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Saved links (Y02). One additive column and one seeded row: a pasted link needs a
+         * feed to satisfy `entries.feedId`'s foreign key, and PLAN-6 §0.3 chose a synthetic
+         * source over a nullable column. `INSERT OR IGNORE` against the unique `feedUrl`
+         * index is what makes [seedSavedLinks] safe to also run from [SEED_SAVED_LINKS] on
+         * a fresh install, exactly as [seedUncategorized] already does for folder 1.
+         */
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE `feeds` ADD COLUMN `isSynthetic` INTEGER NOT NULL DEFAULT 0",
+                )
+                seedSavedLinks(db)
+            }
+        }
+
         /** Every migration the app has ever shipped, in order. */
         val MIGRATIONS: Array<Migration> =
-            arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+            arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
 
         /**
          * Puts Uncategorized in place on a fresh install, so that "every source belongs to
@@ -162,26 +178,44 @@ abstract class PerchDatabase : RoomDatabase() {
             override fun onCreate(db: SupportSQLiteDatabase) = seedUncategorized(db)
         }
 
+        /** The fresh-install twin of [MIGRATION_5_6]'s [seedSavedLinks] call. */
+        private val SEED_SAVED_LINKS = object : Callback() {
+            override fun onCreate(db: SupportSQLiteDatabase) = seedSavedLinks(db)
+        }
+
         private fun seedUncategorized(db: SupportSQLiteDatabase) = db.execSQL(
             "INSERT OR IGNORE INTO `folders` (`id`, `name`, `sortIndex`, `createdAt`) " +
                 "VALUES (${FolderEntity.UNCATEGORIZED_ID}, '${FolderEntity.UNCATEGORIZED_NAME}', " +
                 "0, CAST(strftime('%s', 'now') AS INTEGER) * 1000)",
         )
 
+        private fun seedSavedLinks(db: SupportSQLiteDatabase) = db.execSQL(
+            "INSERT OR IGNORE INTO `feeds` (`feedUrl`, `siteUrl`, `title`, `customTitle`, " +
+                "`faviconUrl`, `etag`, `lastModified`, `lastFetchedAt`, `lastSuccessAt`, " +
+                "`lastError`, `consecutiveFailures`, `addedAt`, `sortIndex`, `folderId`, " +
+                "`isSynthetic`) VALUES ('${FeedEntity.SAVED_LINKS_FEED_URL}', NULL, " +
+                "'${FeedEntity.SAVED_LINKS_TITLE}', NULL, NULL, NULL, NULL, NULL, NULL, NULL, " +
+                "0, CAST(strftime('%s', 'now') AS INTEGER) * 1000, 0, " +
+                "${FolderEntity.UNCATEGORIZED_ID}, 1)",
+        )
+
         fun build(context: Context): PerchDatabase =
             Room.databaseBuilder(context.applicationContext, PerchDatabase::class.java, NAME)
                 .addMigrations(*MIGRATIONS)
                 .addCallback(SEED_UNCATEGORIZED)
+                .addCallback(SEED_SAVED_LINKS)
                 .build()
 
         /**
          * The database a test gets. It exists so that no test can accidentally build one
-         * without [SEED_UNCATEGORIZED] — a database with no Uncategorized row rejects the
-         * first feed inserted into it, which is a confusing way to learn about a callback.
+         * without [SEED_UNCATEGORIZED] or [SEED_SAVED_LINKS] — a database missing either
+         * row rejects the first feed inserted into it, or omits the saved-links source,
+         * which are both confusing ways to learn about a callback.
          */
         fun inMemory(context: Context, allowMainThreadQueries: Boolean = true): PerchDatabase =
             Room.inMemoryDatabaseBuilder(context, PerchDatabase::class.java)
                 .addCallback(SEED_UNCATEGORIZED)
+                .addCallback(SEED_SAVED_LINKS)
                 .apply { if (allowMainThreadQueries) allowMainThreadQueries() }
                 .build()
     }

@@ -518,6 +518,48 @@ class FeedRepositoryTest {
         assertThat(entries.countAll()).isEqualTo(1)
     }
 
+    /**
+     * The synthetic saved-links feed (PLAN-6 §0.3) is refused exactly as
+     * `FolderRepository.deleteFolder` refuses Uncategorized — the cascade would otherwise
+     * take every saved article with it, and there is nowhere to move them to.
+     */
+    @Test
+    fun `removing the synthetic saved-links feed is refused`() = runTest {
+        val saved = savedLinksFeedId()
+
+        repo.remove(saved)
+
+        assertThat(feeds.findById(saved)).isNotNull()
+    }
+
+    @Test
+    fun `removing a batch containing the synthetic saved-links feed keeps only it`() = runTest {
+        server.enqueue(ok(rss(item("a1"))))
+        val kept = subscribe("/a.xml")
+        val saved = savedLinksFeedId()
+
+        repo.removeAll(listOf(kept, saved))
+
+        assertThat(feeds.findById(saved)).isNotNull()
+        assertThat(feeds.findById(kept)).isNull()
+    }
+
+    /**
+     * `perch:saved-links` is not a fetchable address; asking it to refresh would record a
+     * failure and light the drawer's `⚠` for a source that was never subscribed to.
+     */
+    @Test
+    fun `a refresh pass never touches the synthetic saved-links feed`() = runTest {
+        savedLinksFeedId()
+
+        val report = repo.refreshAll()
+
+        assertThat(report.outcomes).isEmpty()
+        assertThat(feeds.findByUrl(FeedEntity.SAVED_LINKS_FEED_URL)!!.lastError).isNull()
+    }
+
+    private suspend fun savedLinksFeedId() = feeds.findByUrl(FeedEntity.SAVED_LINKS_FEED_URL)!!.id
+
     @Test
     fun `renaming a source leaves the title the feed gives itself alone`() = runTest {
         server.enqueue(ok(rss(item("a1"))))
