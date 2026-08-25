@@ -117,7 +117,7 @@ place with its read state, likes and to-read queue intact.
         settled it; `./gradlew test` green with the count; any new issue created and linked.
       - Rung: unit
 
-- [ ] **R02 — Live acceptance v5.** Re-run the live gates against the real corpus:
+- [x] **R02 — Live acceptance v5.** Re-run the live gates against the real corpus:
       `./gradlew :app:testDebugUnitTest -Pperch.live=true --tests '*LiveAcceptance*'`.
       - Gate 1 still has **no quota**: every source in `fixtures/feeds.txt` bar
         `EXCLUDED_SOURCES` must pull — including `fzakaria.com`, which `PLAN-7` Z04 added.

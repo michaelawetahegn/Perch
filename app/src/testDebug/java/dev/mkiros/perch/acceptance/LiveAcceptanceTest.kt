@@ -15,6 +15,8 @@ import androidx.compose.ui.test.doubleClick
 import androidx.compose.ui.test.filterToOne
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasScrollToIndexAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
@@ -22,6 +24,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTouchInput
 import androidx.paging.PagingSource
@@ -55,6 +58,7 @@ import dev.mkiros.perch.ui.article.ArticleTestTags
 import dev.mkiros.perch.ui.article.ArticleUiState
 import dev.mkiros.perch.ui.article.ArticleViewModel
 import dev.mkiros.perch.ui.collection.CollectionTestTags
+import dev.mkiros.perch.ui.home.BackfillOfferDialog
 import dev.mkiros.perch.ui.home.EntryRowTestTags
 import dev.mkiros.perch.ui.home.HomeTestTags
 import dev.mkiros.perch.ui.home.SelectionTestTags
@@ -136,6 +140,15 @@ import org.robolectric.annotation.GraphicsMode
  * (`fzakaria.com/feed.xml` is now a permanent source) and asking `BackfillRepository.plan`
  * to find materially more posts than the feed's ten, with the exact URL issue #21 linked
  * among them and extracting a real body.
+ *
+ * **PLAN-8 R02** adds this version's own two questions, live: **gate 11** pastes the
+ * reporter's own post through `SavedLinkRepository.saveLink` and checks it lands on
+ * To-Read with a real title, not the URL fallback (#23); **gate 12** runs
+ * `BackfillRepository.run` for real on fzakaria.com and reads the stored post back through
+ * `EntryDao.observeListItems` — the same query and the same row shape every other entry in
+ * the Feed renders from, which is what "indistinguishable from a feed entry" reduces to.
+ * Gate 12 spends most of fzakaria's remaining archive, so gate 7's offer screenshot (taken
+ * after both) shows R00/#24's two numbers honestly shrunk rather than the opening 133/40.
  *
  * Where it deviates from PLAN.md: the file lives in `src/testDebug` rather than
  * `src/test`. Gate 3 needs a Compose rule, and `ui-test-manifest` is a
@@ -266,10 +279,22 @@ class LiveAcceptanceTest {
         report("GATE 10 (issue #21's archive)", archive.summary)
         failures += archive.failures
 
+        // PLAN-8 R02: this version's own two questions, run live and in that order — the
+        // paste is independent of everything else, and the backfill run below consumes
+        // most of fzakaria's remaining archive, which is exactly what gate 7's offer shot
+        // then shows honestly shrunk (R00/#24's two numbers, live).
+        val paste = pastedLinkLandsOnToRead()
+        report("GATE 11 (issue #23's pasted link)", paste.summary)
+        failures += paste.failures
+
+        val backfilled = backfilledEntryIsIndistinguishable()
+        report("GATE 12 (issue #21/#24's backfilled row)", backfilled.summary)
+        failures += backfilled.failures
+
         if (standard.samples.isEmpty()) {
             failures += "gate 3: nothing was pulled, so there was nothing to render"
         } else {
-            val shots = capture(standard.samples)
+            val shots = capture(standard.samples, paste)
             report("GATE 3 (one publication)", shots.gate3.joinToString("\n"))
             report("GATE 7 (the v0.2 surfaces)", shots.gate7.joinToString("\n"))
             failures += shots.failures
@@ -1255,6 +1280,14 @@ class LiveAcceptanceTest {
 
         /** The real shell — bottom bar, drawer, `NavHost` — over the live database. */
         class Shell(override val name: String, override val mode: ThemeMode) : Scene
+
+        /** PLAN-8 R02: §0.3's offer dialog on its own, R00/#24's two counts named directly. */
+        class Offer(
+            override val name: String,
+            override val mode: ThemeMode,
+            val newPostCount: Int,
+            val pageCount: Int,
+        ) : Scene
     }
 
     private class Captures {
@@ -1272,7 +1305,7 @@ class LiveAcceptanceTest {
      * source is down, so a dead feed degrades the sample instead of failing the gate on
      * something gate 1 already reported.
      */
-    private fun capture(samples: List<Sample>): Captures {
+    private fun capture(samples: List<Sample>, paste: PasteReport): Captures {
         val captures = Captures()
         val scene = mutableStateOf<Scene?>(null)
         compose.setContent {
@@ -1282,6 +1315,12 @@ class LiveAcceptanceTest {
                         when (current) {
                             is Scene.Article -> ArticleScreen(viewModel = current.viewModel, onBack = {})
                             is Scene.Shell -> PerchNavHost(container = container)
+                            is Scene.Offer -> BackfillOfferDialog(
+                                newPostCount = current.newPostCount,
+                                pageCount = current.pageCount,
+                                onAccept = {},
+                                onDecline = {},
+                            )
                         }
                     }
                 }
@@ -1306,13 +1345,20 @@ class LiveAcceptanceTest {
 
         captureCode(scene, samples, captures)
         val zoomed = captureImageViewer(scene, samples, captures)
-        captureLists(scene, captures)
+        captureLists(scene, captures, paste)
         // The scoped list before the drawer, and not the other way round: opening the drawer
         // is a tap on the app bar, but *closing* it is a state change no assertion in this
         // file can see (the sheet composes while closed, NOTES.md/T22), and a tap meant for
         // the list behind an open drawer lands on the scrim.
         captureTheScopedList(captures)
+        // Collapsed before refusing: PLAN-5 X01's resting state is what a reader sees the
+        // instant the drawer opens, before anything is expanded or selected — refusing
+        // reopens the same drawer state (harmless — HomeScreen's own open is not a toggle)
+        // and immediately expands and selects on top of it.
+        captureTheDrawerCollapsed(captures)
         captureTheDrawerRefusing(captures)
+        // Not the shell: a bare AlertDialog over PerchTheme, R00/#24's counts named live.
+        captureBackfillOffer(scene, captures)
         // Last, and deliberately: insets are dispatched to the Compose root itself, and the
         // root outlives a scene change. A cutout applied before the list shots would still
         // be on the window underneath them.
@@ -1412,9 +1458,10 @@ class LiveAcceptanceTest {
      * The redesigned home and the To-Read queue, both through the real shell so the bottom
      * bar is in shot. The window is pinned to All Time and a handful of entries are saved
      * first, because a live pull's newest item can be days old and an empty queue is not
-     * what gate 7 is asking to look at.
+     * what gate 7 is asking to look at. [paste] is gate 11's own saved row — PLAN-8 R02
+     * wants the To-Read shot to demonstrably carry a pasted article, not just any saved one.
      */
-    private fun captureLists(scene: MutableState<Scene?>, captures: Captures) {
+    private fun captureLists(scene: MutableState<Scene?>, captures: Captures, paste: PasteReport) {
         val staging = runBlocking {
             val how = fileForTheShot()
             settings.setTimeFilter(TimeFilter.AllTime)
@@ -1470,7 +1517,25 @@ class LiveAcceptanceTest {
         compose.awaitInRealTime("the queue to load") {
             compose.onAllNodesWithTag(CollectionTestTags.ENTRY).fetchSemanticsNodes().isNotEmpty()
         }
-        captures.gate7 += "  ${capture("u15-to-read-dark").file.name} — To-Read, $SAVED_FOR_THE_SHOT saved"
+        // PLAN-8 R02/#23: the queue has to visibly carry gate 11's pasted article, not just
+        // the staged saves above — that is the acceptance criterion, not a coincidence of
+        // staging order. `SAVED` orders by savedAt DESC and gate 11 pasted before the staged
+        // saves above ran, so the pasted row is the oldest of the nine and sits below the
+        // fold — scroll to it, the way a reader would, rather than assume the first screenful
+        // holds it. `CollectionTestTags.LIST` tags `PullToRefreshBox`, not the `LazyColumn`
+        // inside it, and the box itself carries no scroll semantics — find the actual
+        // scrollable node by its scroll-to-index action instead.
+        if (paste.title != null) {
+            try {
+                compose.onNode(hasScrollToIndexAction())
+                    .performScrollToNode(hasText(paste.title))
+            } catch (e: AssertionError) {
+                captures.failures += "gate 7: To-Read does not show “${paste.title}”, issue " +
+                    "#23's pasted article — ${e.message}"
+            }
+        }
+        captures.gate7 += "  ${capture("u15-to-read-dark").file.name} — To-Read, " +
+            "$SAVED_FOR_THE_SHOT saved plus “${paste.title}” pasted (#23)"
 
         compose.onNodeWithTag(NavTestTags.tab(PerchTab.Liked)).performClick()
         compose.awaitInRealTime("the liked list to load") {
@@ -1482,6 +1547,18 @@ class LiveAcceptanceTest {
         compose.awaitInRealTime("the Feed to come back") {
             compose.onAllNodesWithTag(HomeTestTags.ENTRY).fetchSemanticsNodes().isNotEmpty()
         }
+    }
+
+    /**
+     * PLAN-5 X01: the drawer as a reader actually meets it — opened, folders shut. Taken
+     * before [captureTheDrawerRefusing] touches anything: expanding a folder or starting a
+     * selection is not the resting state, it is what the reader does *next*.
+     */
+    private fun captureTheDrawerCollapsed(captures: Captures) {
+        compose.onNodeWithContentDescription("Open sources").performClick()
+        compose.waitForIdle()
+        captures.gate7 += "  ${capture("v16-drawer-collapsed-dark").file.name} — the drawer's " +
+            "resting state, folders collapsed (PLAN-5 X01)"
     }
 
     /**
@@ -1534,6 +1611,36 @@ class LiveAcceptanceTest {
         captures.gate7 += "  ${capture("v15-drawer-selection-dark").file.name} — drawer " +
             "mid-source-selection on “${source.title}”, “${folder.name}” refused"
         // Left open and left in selection: this is the last shot the shell is used for.
+    }
+
+    /**
+     * PLAN-8 R02/#24: a source offering its archive, live. Re-plans fzakaria.com rather
+     * than reusing gate 10's or gate 12's numbers — by this point in the run gate 12 has
+     * already backfilled up to [dev.mkiros.perch.data.repo.BackfillRepository.MAX_PAGES]
+     * pages, so a fresh [dev.mkiros.perch.data.repo.BackfillRepository.plan] shows what a
+     * reader would actually be offered *next*: R00/#24's two counts, honestly smaller than
+     * the archive's opening 133/40 and — as long as more than a page's worth remains —
+     * still visibly different from one another.
+     */
+    private fun captureBackfillOffer(scene: MutableState<Scene?>, captures: Captures) {
+        val feed = runBlocking {
+            database.feedDao().getAll().firstOrNull { it.feedUrl == FZAKARIA_FEED_URL }
+        }
+        if (feed == null) {
+            captures.failures += "gate 7: fzakaria.com was not pulled at gate 1, so there is " +
+                "no source to offer an archive for"
+            return
+        }
+        val plan = runBlocking { container.backfill.plan(feed.id) }
+        if (plan == null || plan.toFetch.isEmpty()) {
+            captures.failures += "gate 7: fzakaria.com's archive has nothing left to offer " +
+                "after gate 12's run — cannot shoot the offer dialog"
+            return
+        }
+        scene.value = Scene.Offer("v16-backfill-offer-dark", ThemeMode.Dark, plan.newPostCount, plan.toFetch.size)
+        compose.waitForIdle()
+        captures.gate7 += "  ${capture("v16-backfill-offer-dark").file.name} — fzakaria.com " +
+            "offering its archive: ${plan.newPostCount} more posts, ${plan.toFetch.size} pages offered"
     }
 
     /**
@@ -1769,6 +1876,99 @@ class LiveAcceptanceTest {
         report
     }
 
+    private class PasteReport(var summary: String, val title: String? = null) {
+        val failures = mutableListOf<String>()
+    }
+
+    /**
+     * PLAN-8 R02/#23: the other path onto the queue, run against a real page instead of a
+     * fixture — [dev.mkiros.perch.data.repo.SavedLinkRepository.saveLink] end to end, then
+     * read back exactly what a reader would see: a title that came from the page, not
+     * [SavedLinkRepository.saveLink]'s own fallback to the bare URL when a page carries none.
+     * Reuses [REPORTERS_POST_URL] — issue #21's page is a real article with a real title, and
+     * pasting it spends no extra network the corpus does not already justify.
+     */
+    private fun pastedLinkLandsOnToRead(): PasteReport = runBlocking {
+        val label = "issue #23's pasted link"
+        val result = container.savedLinks.saveLink(REPORTERS_POST_URL)
+        val id = result.getOrNull()
+        if (id == null) {
+            return@runBlocking PasteReport(
+                "$label: saveLink($REPORTERS_POST_URL) failed — ${result.exceptionOrNull()?.message}",
+            ).also {
+                it.failures += "gate 11: $label — did not save: ${result.exceptionOrNull()?.message}"
+            }
+        }
+        val saved = database.entryDao().findById(id)
+            ?: return@runBlocking PasteReport("$label: row $id vanished after saveLink").also {
+                it.failures += "gate 11: $label — saved row $id could not be reread"
+            }
+        val report = PasteReport(
+            "$label: “${saved.title}” saved, isSaved=${saved.isSaved}",
+            title = saved.title,
+        )
+        if (!saved.isSaved) {
+            report.failures += "gate 11: $label — the saved row is not flagged isSaved"
+        }
+        if (saved.title == REPORTERS_POST_URL || saved.title.isBlank()) {
+            report.failures += "gate 11: $label — title fell back to the bare URL, not a " +
+                "real one extracted from the page"
+        }
+        report
+    }
+
+    private class BackfillIndistinguishableReport(var summary: String) {
+        val failures = mutableListOf<String>()
+    }
+
+    /**
+     * PLAN-8 R02/#21/#24: a backfilled post is not a second kind of row. Runs
+     * [dev.mkiros.perch.data.repo.BackfillRepository.run] for real — bounded at
+     * [dev.mkiros.perch.data.repo.BackfillRepository.MAX_PAGES], the same cap a reader's
+     * own "Fetch older posts" tap is held to — then reads the reporter's post back the only
+     * way a reader would: through `EntryDao.observeListItems`, the same query and the same
+     * `EntryListItem` shape every other row in the Feed renders from. There is no second
+     * column, no second query and no second composable for a backfilled row — R01 (Q6)
+     * already confirmed `publishedIsEstimated` reaches nothing in `ui/`, so this is the live
+     * confirmation that nothing else distinguishes one either.
+     */
+    private fun backfilledEntryIsIndistinguishable(): BackfillIndistinguishableReport = runBlocking {
+        val label = "issue #21/#24's backfilled row"
+        val feed = database.feedDao().getAll().firstOrNull { it.feedUrl == FZAKARIA_FEED_URL }
+            ?: return@runBlocking BackfillIndistinguishableReport(
+                "$label: feed was not pulled at gate 1 — reported there, not gated here",
+            )
+        val ordinary = database.entryDao().observeByFeed(feed.id).first().firstOrNull()
+        val result = container.backfill.run(feed.id)
+        val report = BackfillIndistinguishableReport(
+            "$label: backfill attempted ${result.attempted}, stored ${result.stored}, " +
+                "skipped ${result.skippedByRobots} (robots), failed ${result.failed}",
+        )
+        val backfilled = database.entryDao().findByGuid(feed.id, REPORTERS_POST_URL)
+        if (backfilled == null) {
+            report.failures += "gate 12: $label — $REPORTERS_POST_URL was not stored by the run"
+            return@runBlocking report
+        }
+        val items = database.entryDao()
+            .observeListItems(feedId = feed.id, folderId = null, includeRead = true, publishedAfter = null)
+            .first()
+        val backfilledItem = items.firstOrNull { it.id == backfilled.id }
+        if (backfilledItem == null) {
+            report.failures += "gate 12: $label — the backfilled row is absent from the same " +
+                "observeListItems query every other row renders from"
+            return@runBlocking report
+        }
+        val ordinaryItem = ordinary?.let { row -> items.firstOrNull { it.id == row.id } }
+        if (ordinaryItem != null && backfilledItem.sourceTitle != ordinaryItem.sourceTitle) {
+            report.failures += "gate 12: $label — backfilled row reads " +
+                "“${backfilledItem.sourceTitle}”, not the same source label as a fed row " +
+                "(“${ordinaryItem.sourceTitle}”)"
+        }
+        report.summary += "; “${backfilledItem.title}” reads through the same list query as " +
+            "any other row, source “${backfilledItem.sourceTitle}”"
+        report
+    }
+
     // ---- harness ----------------------------------------------------------------
 
     private fun readingList(): List<String> =
@@ -1836,6 +2036,11 @@ class LiveAcceptanceTest {
             "https://rachelbythebay.com/w/atom.xml" to
                 "port 443 never answers from this network — connect times out at 15s " +
                 "(2026-08-10). The feed itself is well-formed: fixtures/snapshots holds it",
+            "https://quantpedia.com/feed/" to
+                "the site's own TLS certificate has expired — confirmed independently of " +
+                "the app: `curl -v https://quantpedia.com/feed/` reports \"SSL certificate " +
+                "problem: certificate has expired\" against the system CA store (2026-08-25). " +
+                "Not a Perch-side trust-store gap; nothing to fix here until the site renews it",
         )
 
         /** PLAN.md T32 gate 2. */

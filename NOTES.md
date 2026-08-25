@@ -95,3 +95,16 @@
   v0.4.0. Suite: **1669** (976 debug + 693 release), grew monotonically from the 1524 floor,
   every commit touching `src/main` carried its own test. Q6 (a guessed date renders like a
   known one) is not a one-line fix — filed as **#25** for v0.6.
+- 2026-08-25 — **PLAN-8 R02: live acceptance v5, all 12 gates green.** Two real findings, not
+  flakes. (1) **`quantpedia.com`'s own TLS cert has expired** — confirmed independently with
+  `curl -v` against the system CA store, nothing Perch-side; added to `EXCLUDED_SOURCES`
+  (gate 1 now 38/38). (2) Gate 11/12's own new pasted-link check was wrong: `CollectionTestTags.LIST`
+  tags `PullToRefreshBox`, not the `LazyColumn` inside it, so `performScrollToNode` on that
+  tag never actually scrolls — target `hasScrollToIndexAction()` instead. The pasted article
+  sits last in `SAVED` (`savedAt DESC`, pasted before the shot's other saves), below the
+  fold, so this was a real miss, not a timing flake. `research.checkpoint.com` needs genuine
+  spacing between live runs (202/empty body) — the 10-quiet-minute rule holds; don't shortcut
+  it with a `curl` probe, that spends the allowance the real run needs. Full gate counts:
+  1039 entries pulled, gate 4 75.8%/gate 5 94.3% (both over floor), fzakaria backfill stored
+  40/40, pasted link title real (not URL fallback). `./gradlew test` 1669, 0 failures;
+  `assembleRelease` clean.
