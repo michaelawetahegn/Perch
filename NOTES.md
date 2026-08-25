@@ -53,58 +53,24 @@
   so a drawer row is `hasClickAction() and !hasTestTag(HomeTestTags.ENTRY)`.
 - **V08/#10: the scoped list is state, not a route.** `HomeScope` is **hoisted into `PerchNavHost`** — third such
   state — `BackStep.LeaveScope` a rung above `ScrollFeedToTop`. `selectTab` is a silent no-op from the article route (`popUpTo(start){saveState}`/`restoreState`, pop first); scoping does not touch the time window.
-- 2026-08-25 — **PLAN-6 (#23) done, archived.** `PageMetadataExtractor` (Y01, standards-only; measured over
-  `fixtures/articles/`: title 17/23, date 5/23). `PageContentExtractor` (Y03: fetch→extract→sanitize→image) is the
-  **one** function `ArticleTextRepository` and `SavedLinkRepository` both call — do not clone it. `feeds.isSynthetic`
-  → DB v6 (Y02), seeded `perch:saved-links` row; every general feed query gained `WHERE isSynthetic = 0`, reached
-  explicitly via `findByUrl(SAVED_LINKS_FEED_URL)`. `SavedLinkRepository.saveLink` (Y03) catches a pasted feed by
-  parsing the fetched bytes, not discovery. `SaveLinkViewModel`/`-Sheet` (Y04). Y05 review: grep gate clean, no doc
-  drift, no test weakened.
-- 2026-08-24/25 — **PLAN-7 (#21) done, archived.** `ArchiveDiscovery`/`BackfillRepository`/
-  `BackfillWorker` (`data/archive/`, `data/repo/`): discovery order RFC 5005 `prev-archive`
-  → `robots.txt Sitemap:` → `/sitemap.xml` (sitemap indexes recursed, depth ≤3, ≤50 fetches,
-  gzip by suffix or magic bytes); post-vs-page is a **dated URL path** *or* a shape
-  **learned from the feed's own entry links** (`learnPostShape`), never a table of engines.
-  Reach (§0.4): `EntryDao.reach(feedId)`, derived, no migration. `plan()` recomputes from
-  discovery + `guidsForFeed` every call (cancel/resume/idempotent are one property); `run()`
-  writes through `PageContentExtractor` (Y03's, shared — `ArticleTextRepository`/
-  `SavedLinkRepository`/`BackfillRepository`, exactly three callers), `DEFAULT_DELAY_MILLIS`
-  apart, `MAX_PAGES=40`, worthwhile past `MATERIALLY_MORE_FACTOR=2`×. UI: `BackfillRunner`
-  seam (`WorkManagerBackfillRunner` real, `FakeBackfillRunner` in tests), the offer dialog,
-  progress strip, §0.4's reach sentence. `fzakaria.com/feed.xml` is a permanent live gate-1
-  source (10 feed entries, 143/133 discovered, real body). Grep gate clean throughout, no
-  test weakened. `./gradlew test`: 1666 at slice close.
-- 2026-08-25 — **PLAN-8 R00/#24: the newest forty, and two true numbers.**
-  `BackfillRepository.plan()` now does `fresh.sortedByDescending { it.lastmod ?: Instant.MIN
-  }.take(MAX_PAGES)` — discovery order is sitemap *document* order, not date order (Z04
-  measured this live), so an unsorted `.take` handed back an arbitrary 40. `BackfillOffer`
-  now carries both `newPostCount` (the archive's true count) and `pageCount` (the capped
-  run); `backfill_offer_body_capped` is a second plural, used only when they differ, keyed
-  on `pageCount`. **Trap hit while writing the RED test:** `DateParser.plausible()` floors
-  at 2000-01-01 and clamps anything more than 24h in the future to "now" — a synthetic
-  `lastmod` has to land inside that window or it silently becomes `null`/collides with other
-  future dates instead of testing the sort. `./gradlew test` (debug+release): 976+693=1669
-  (+2/+1), 0 failures.
-- 2026-08-25 — **PLAN-8 R01: v0.5 read whole, all six questions clean or fixed.** Doc drift:
-  README's feature list gained paste-a-link and archive-backfill; SPEC.md §4 updated to
-  schema v6 (was stuck describing v3). No site-specific parsing: grep gate empty, every
-  `PageMetadata.kt`/`ArchiveDiscovery.kt` rule traced to a standard (OG/JSON-LD/Dublin
-  Core/RFC 5005/9309/sitemaps.org) or a shape learned from the feed itself. No orphans:
-  `collapsedFolders` fully gone, `PageContentExtractor` has one definition and exactly three
-  callers. No test weakened anywhere in `v0.4.0..HEAD`; `FeedCorpusTest` byte-identical to
-  v0.4.0. Suite: **1669** (976 debug + 693 release), grew monotonically from the 1524 floor,
-  every commit touching `src/main` carried its own test. Q6 (a guessed date renders like a
-  known one) is not a one-line fix — filed as **#25** for v0.6.
-- 2026-08-25 — **PLAN-8 R02: live acceptance v5, all 12 gates green.** Two real findings, not
-  flakes. (1) **`quantpedia.com`'s own TLS cert has expired** — confirmed independently with
-  `curl -v` against the system CA store, nothing Perch-side; added to `EXCLUDED_SOURCES`
-  (gate 1 now 38/38). (2) Gate 11/12's own new pasted-link check was wrong: `CollectionTestTags.LIST`
-  tags `PullToRefreshBox`, not the `LazyColumn` inside it, so `performScrollToNode` on that
-  tag never actually scrolls — target `hasScrollToIndexAction()` instead. The pasted article
-  sits last in `SAVED` (`savedAt DESC`, pasted before the shot's other saves), below the
-  fold, so this was a real miss, not a timing flake. `research.checkpoint.com` needs genuine
-  spacing between live runs (202/empty body) — the 10-quiet-minute rule holds; don't shortcut
-  it with a `curl` probe, that spends the allowance the real run needs. Full gate counts:
-  1039 entries pulled, gate 4 75.8%/gate 5 94.3% (both over floor), fzakaria backfill stored
-  40/40, pasted link title real (not URL fallback). `./gradlew test` 1669, 0 failures;
-  `assembleRelease` clean.
+- 2026-08-25 — **v0.5.0 shipped (PLAN-6/#23, PLAN-7/#21, PLAN-8), archived.** `PageContentExtractor`
+  (fetch→extract→sanitize→image) is the **one** function `ArticleTextRepository`,
+  `SavedLinkRepository` and `BackfillRepository` all call — do not clone it. `feeds.isSynthetic`
+  → DB v6, seeded `perch:saved-links` row, every general feed query gained `WHERE isSynthetic =
+  0`. `ArchiveDiscovery`/`BackfillRepository` (`data/archive/`, `data/repo/`): discovery order
+  RFC 5005 `prev-archive` → `robots.txt Sitemap:` → `/sitemap.xml`; post-vs-page is a dated URL
+  path *or* a shape learned from the feed's own entry links, never a table of engines. `plan()`
+  sorts by `lastmod` descending (unknown last) before `.take(MAX_PAGES=40)` — discovery order is
+  sitemap *document* order, not date order, so an unsorted `.take` hands back an arbitrary 40 on
+  a large archive (measured live on `fzakaria.com`, 143/133 discovered). `BackfillOffer` carries
+  both `newPostCount` (true) and `pageCount` (capped) so the offer never claims a small archive
+  is the whole one. `quantpedia.com` excluded from live gate 1 — its own TLS cert has expired,
+  confirmed independently with `curl -v`, nothing Perch-side. Q6 (a guessed date renders like a
+  known one) is real work, not a one-line fix — filed as **#25** for v0.6. `./gradlew test`:
+  **1669** (976 debug + 693 release), 0 failures, grew monotonically from the 1524 v0.4.0 floor.
+- 2026-08-25 — **v0.5.0 released.** `perchVersionCode` 5→6, `perchVersionName` 0.4.0→0.5.0.
+  v0.4.0→v0.5.0 in-place upgrade verified through the emulator UI (Feed/Liked/To-Read all
+  intact across the DB v6 migration) — **the human's real phone is a separate device this
+  session cannot reach; that upgrade is still theirs to run.** README's screenshot strip
+  refreshed from live captures, `screenshots/drawer.png` in particular (showed pre-PLAN-5
+  expanded folders, now the collapsed resting state).

@@ -156,7 +156,7 @@ place with its read state, likes and to-read queue intact.
         were **opened and looked at**; the default no-network `./gradlew test` still green.
       - Rung: screenshot
 
-- [ ] **R03 — Release v0.5.0.** Bump `perchVersionCode` 5 → **6** and `perchVersionName`
+- [x] **R03 — Release v0.5.0.** Bump `perchVersionCode` 5 → **6** and `perchVersionName`
       `0.4.0` → **`0.5.0`** at `app/build.gradle.kts:12-13`, **the one place they live**.
       - `./gradlew assembleRelease` (runs `lintVitalRelease`). Signing comes from
         `~/.perch/signing.properties` (U02) — **absent it the build silently debug-signs**,
@@ -183,3 +183,18 @@ place with its read state, likes and to-read queue intact.
         clean and pushed; `grep -c '^- \[ \]' PLAN-8.md` returns 0; `gh issue list --state
         open` holds only what is genuinely still open, each with a comment saying why.
       - Rung: build
+      - Outcome (2026-08-25): shipped. `perchVersionCode` 5→6, `perchVersionName` 0.4.0→0.5.0,
+        the one place they live. `assembleRelease` BUILD SUCCESSFUL, `lintVitalRelease` clean.
+        Verified on the file: `aapt2 dump badging perch-0.5.0.apk` reads `versionCode='6'
+        versionName='0.5.0'`; `apksigner verify --print-certs` prints U02's
+        `61367c0499de5c49c824f4d7ba7b4e692d33960cc57c0622772227a8b7fce489`. In-place upgrade
+        verified through the emulator UI: a v0.4.0 install seeded with one read+liked entry and
+        one to-read entry, upgraded (not reinstalled) to the v0.5.0 APK, all three states intact
+        after the DB v6 migration ran — Feed still hid the read entry, Liked and To-Read both
+        still held it. README's screenshot strip refreshed from fresh captures, plus
+        `screenshots/drawer.png` (was the pre-PLAN-5 expanded-folders shot) replaced with the
+        new collapsed resting state and added to the strip. Release notes written by hand
+        through `docs/RELEASE-NOTES.md`'s template from `scripts/release-notes.sh v0.4.0`'s
+        draft — three New bullets (archive backfill #21/#24, paste-a-link #23, drawer opens
+        collapsed #22), one Known issue (#25, filed for v0.6). `./gradlew test`: 1669, 0
+        failures.

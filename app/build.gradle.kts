@@ -9,8 +9,8 @@ plugins {
 
 // The single source of truth for the app's version. Bump here and nowhere else;
 // Settings' About line reads BuildConfig.VERSION_NAME, which comes from this.
-val perchVersionCode = 5
-val perchVersionName = "0.4.0"
+val perchVersionCode = 6
+val perchVersionName = "0.5.0"
 
 // Release signing lives outside the repo, at ~/.perch/signing.properties (U02).
 // Losing that keystore makes every future install a data wipe rather than an

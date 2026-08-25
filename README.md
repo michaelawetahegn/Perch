@@ -7,12 +7,13 @@
 </p>
 
 <p align="center">
-  <img src="screenshots/home-dark.png" width="15.5%" alt="The Feed, one chronological stream, dark theme">
-  <img src="screenshots/article.png" width="15.5%" alt="Article reader view, the source name in the byline a link into that source">
-  <img src="screenshots/scoped-source-dark.png" width="15.5%" alt="The Feed scoped to a single source, reached from an article's byline">
-  <img src="screenshots/code-dark.png" width="15.5%" alt="Syntax-highlighted code block with a pinned line-number gutter">
-  <img src="screenshots/table-dark.png" width="15.5%" alt="A tabular security advisory rendered with rules and a header row">
-  <img src="screenshots/to-read-dark.png" width="15.5%" alt="The To-Read queue">
+  <img src="screenshots/home-dark.png" width="13.5%" alt="The Feed, one chronological stream, dark theme">
+  <img src="screenshots/drawer.png" width="13.5%" alt="The drawer, folders collapsed by default">
+  <img src="screenshots/article.png" width="13.5%" alt="Article reader view, the source name in the byline a link into that source">
+  <img src="screenshots/scoped-source-dark.png" width="13.5%" alt="The Feed scoped to a single source, its archive reached back past what the feed carries">
+  <img src="screenshots/code-dark.png" width="13.5%" alt="Syntax-highlighted code block with a pinned line-number gutter">
+  <img src="screenshots/table-dark.png" width="13.5%" alt="A tabular security advisory rendered with rules and a header row">
+  <img src="screenshots/to-read-dark.png" width="13.5%" alt="The To-Read queue">
 </p>
 
 ## What Perch is
