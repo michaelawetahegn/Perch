@@ -34,19 +34,28 @@ is expected to end in a commit and a push; that is the only way progress exists 
 So: go to the cold start below, do the single next unchecked task, verify it, commit, push,
 close its issue, stop.
 
-## The active plan is `PLAN-4.md`
+## The active plan is `PLAN-5.md`
 
-Finished plans live in `docs/plans/` — v0.1 (T01–T32), v0.2 (U01–U16) and v0.3 (V01–V16)
-are **complete, frozen, and history only**; never reopen a box in any of them. The **active** plan is the one at
+Finished plans live in `docs/plans/` — v0.1 (T01–T32), v0.2 (U01–U16), v0.3 (V01–V16) and
+v0.4 (W01–W12) are **complete, frozen, and history only**; never reopen a box in any of them. The **active** plan is the one at
 the repository root, and all new work goes in it. Wherever these standing orders say
 "PLAN.md", read the active plan.
 
 **Each plan's §0 is authoritative for its own version** and deliberately overrides older
 text in SPEC.md, DESIGN.md and earlier plans. Where they conflict, the newest §0 wins and
 the task updates the older doc in the same commit — do not "fix" §0 to match the older text.
-`docs/plans/PLAN-3-v0.3.md` §0 still binds for everything `PLAN-4.md` §0 does not restate.
+`docs/plans/PLAN-4-v0.4.md` §0 still binds for everything `PLAN-5.md` §0 does not restate.
 
-**Every `PLAN-4.md` task is a GitHub issue.** Read it (`gh issue view N`) before starting —
+**v0.5 is being built as four sequential plans, not one.** `PLAN-5.md` (#22, the drawer),
+`PLAN-6.md` (#23, pasting a link), `PLAN-7.md` (#21, reaching a blog's archive) and
+`PLAN-8.md` (the version-wide review, live acceptance and the release). Only one is active
+at a time and the others are not yet started — **do not read ahead into them, and do not
+bump a version or cut a release in the first three.** A hard constraint the human set for
+the whole version: **no site-specific parsing** — the parser must be generalised and
+extensible, so that supporting one site means similar sites parse too. Each plan's §0
+restates it with the grep gate that enforces it.
+
+**Every `PLAN-5.md` task is a GitHub issue.** Read it (`gh issue view N`) before starting —
 the issue body carries diagnoses, traps and acceptance criteria the plan does not repeat.
 The task is not done until the issue is closed with a comment naming the commit and how it
 was verified, and the commit is **pushed** (`git push`) so the human can watch from the
@@ -58,8 +67,8 @@ not guess a fix: comment the finding on the issue, log it in NOTES.md, mark the 
 
 ## Cold start (keep it under ~3k tokens)
 
-1. Read `PLAN-4.md`, `NOTES.md`, and `git log --oneline -15`. Nothing else yet.
-2. Find the **single next unchecked `[ ]` task** in PLAN-4.md. That is your entire job
+1. Read `PLAN-5.md`, `NOTES.md`, and `git log --oneline -15`. Nothing else yet.
+2. Find the **single next unchecked `[ ]` task** in PLAN-5.md. That is your entire job
    this session. Read its GitHub issue.
 3. Read only the files that task touches. **Never read the whole repo.** Consult
    `SPEC.md` / `DESIGN.md` only for the sections the task needs.
@@ -92,7 +101,7 @@ Do not skip ahead, do not do two tasks, do not refactor code the task doesn't to
   Commit even for a BLOCKED task (the PLAN/NOTES edit is the commit).
 - **Never weaken a test to make it pass.** Especially `FeedCorpusTest` (T09) — it is
   the standing contract. If it legitimately must change, say why in the commit.
-- **v0.3.0 is installed on the human's real phone.** Every schema change ships a real Room
+- **v0.4.0 is installed on the human's real phone.** Every schema change ships a real Room
   `Migration` plus its `app/schemas/N.json`. `fallbackToDestructiveMigration()` never
   comes back — it would silently erase someone's read state, likes, and to-read queue.
 - **Versioning: MINOR for features, PATCH for fixes.** While Perch is 0.x, a release
