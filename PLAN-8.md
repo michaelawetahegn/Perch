@@ -60,6 +60,16 @@ place with its read state, likes and to-read queue intact.
       5. **Is the suite still growing, and did any fix land without a test?** The v0.4.0 floor
          was **1524 tests**. Report the count and check each commit that touched `src/main`
          carried tests in the same commit.
+      6. **Does a date the app guessed look exactly like a date it was told?**
+         `publishedIsEstimated` has been stored since v0.1 and is read by **nothing** in
+         `ui/` — an estimated date renders identically to a real one. v0.5 makes that matter:
+         page metadata yields a date for only 5 of 23 corpus pages (`PLAN-6` Y01), so a
+         pasted link usually falls back to `fetchedAt` and the row reads **"now"** for an
+         article written years ago — visible in `to-read-pasted-link.png`. `PLAN-7` §0.3a
+         already forbids this for a *backfill*; it does not address the single paste.
+         Decide whether the reader should be able to tell the two apart, and say so.
+         **This is a feature, so it is an issue for the next version, not a fix in this
+         session** — unless the answer is that it is a one-line format change.
       Fix what is small and mechanical **in this session**. Anything larger becomes a new
       GitHub issue for the next plan, named here — **do not start a feature in a review.**
       - Done: the five questions answered in the commit message, each with the command that
