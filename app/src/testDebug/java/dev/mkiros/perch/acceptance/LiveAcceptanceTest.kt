@@ -1501,6 +1501,11 @@ class LiveAcceptanceTest {
 
         compose.onNodeWithContentDescription("Open sources").performClick()
         compose.waitForIdle()
+        // §0.1: the folder opens shut, and a source row does not exist in the tree until
+        // its folder does (X02) — expand it before the row can be long-pressed at all.
+        compose.onNodeWithTag(HomeTestTags.folderExpand(folder.id))
+            .performSemanticsAction(SemanticsActions.OnClick)
+        compose.waitForIdle()
         drawerRow(source.title).performSemanticsAction(SemanticsActions.OnLongClick)
         compose.waitForIdle()
 

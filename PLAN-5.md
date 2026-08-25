@@ -136,7 +136,7 @@ scoped to *this* plan's own diff.
         expandInDrawer` shows the helper used, not copy-pasted per site.
       - Rung: unit
 
-- [ ] **X03 — The shots and the live gate open a folder before reading a source. Issue #22.**
+- [x] **X03 — The shots and the live gate open a folder before reading a source. Issue #22.**
       Two screenshot tests and one live gate reach drawer source rows and are not covered by
       X02's helper because they live outside those files.
       - `app/src/testDebug/java/dev/mkiros/perch/ui/screenshot/DesignScreenshotTest.kt:164`

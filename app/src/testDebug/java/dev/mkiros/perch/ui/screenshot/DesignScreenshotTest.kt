@@ -162,6 +162,12 @@ class DesignScreenshotTest {
         capture("time-range-open")
     }
 
+    /**
+     * §0.1: every folder opens shut, so the drawer's honest resting state is headers
+     * only. That is not the shot worth keeping — a reader meets the drawer by opening a
+     * folder, so this expands one (Systems) and leaves the other (Security) shut, which
+     * is the only frame that shows both states at once.
+     */
     @Test
     fun `the source drawer over the list`() {
         seed()
@@ -169,6 +175,7 @@ class DesignScreenshotTest {
         showHome(ThemeMode.Dark)
         compose.onNodeWithContentDescription("Open sources").performClick()
         compose.waitForIdle()
+        expandInDrawer(folderIdOf("Systems"))
 
         capture("drawer")
     }
@@ -337,6 +344,11 @@ class DesignScreenshotTest {
                 }
             }
         }
+    }
+
+    /** The id of a folder created by [sortIntoFolders], by its name. */
+    private fun folderIdOf(name: String): Long = runBlocking {
+        database.folderDao().findByName(name)!!.id
     }
 
     /** An entry with a body, from the source whose feed URL contains [host]. */
