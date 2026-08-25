@@ -111,6 +111,40 @@ class ArchiveDiscoveryTest {
     }
 
     @Test
+    fun `learns a posts-slug shape from the feed and matches sitemap URLs with the same shape`() = runTest {
+        val fetcher = FakeFetcher(
+            pages = mapOf(SITE + "sitemap.xml" to xml(POSTS_SLUG_SITEMAP)),
+        )
+        val discovery = ArchiveDiscovery(fetcher)
+        val feed = xml(feedWithEntryLinks("https://example.com/posts/why-i-left/", "https://example.com/posts/on-rust/"))
+
+        val posts = discovery.discover(SITE, feed = feed)
+
+        assertThat(posts.map { it.url }).containsExactly(
+            "https://example.com/posts/why-i-left/",
+            "https://example.com/posts/on-rust/",
+            "https://example.com/posts/a-third-post/",
+        )
+    }
+
+    @Test
+    fun `learns a bare-slug shape from the feed and still rejects a differently-shaped tag URL`() = runTest {
+        val fetcher = FakeFetcher(
+            pages = mapOf(SITE + "sitemap.xml" to xml(BARE_SLUG_SITEMAP)),
+        )
+        val discovery = ArchiveDiscovery(fetcher)
+        val feed = xml(feedWithEntryLinks("https://example.com/on-rust/", "https://example.com/why-i-left/"))
+
+        val posts = discovery.discover(SITE, feed = feed)
+
+        assertThat(posts.map { it.url }).containsExactly(
+            "https://example.com/on-rust/",
+            "https://example.com/why-i-left/",
+            "https://example.com/a-third-post/",
+        )
+    }
+
+    @Test
     fun `follows RFC 5005 prev-archive from the feed and never touches robots or sitemaps`() = runTest {
         val page2 = "https://example.com/feed?page=2"
         val page3 = "https://example.com/feed?page=3"
@@ -187,6 +221,35 @@ class ArchiveDiscoveryTest {
             <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
               <url><loc>$url</loc></url>
             </urlset>
+        """.trimIndent()
+
+        val POSTS_SLUG_SITEMAP = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+              <url><loc>https://example.com/posts/why-i-left/</loc></url>
+              <url><loc>https://example.com/posts/on-rust/</loc></url>
+              <url><loc>https://example.com/posts/a-third-post/</loc></url>
+              <url><loc>https://example.com/tags/rust/</loc></url>
+              <url><loc>https://example.com/about/</loc></url>
+            </urlset>
+        """.trimIndent()
+
+        val BARE_SLUG_SITEMAP = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+              <url><loc>https://example.com/on-rust/</loc></url>
+              <url><loc>https://example.com/why-i-left/</loc></url>
+              <url><loc>https://example.com/a-third-post/</loc></url>
+              <url><loc>https://example.com/tags/rust/</loc></url>
+            </urlset>
+        """.trimIndent()
+
+        fun feedWithEntryLinks(vararg urls: String) = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <feed xmlns="http://www.w3.org/2005/Atom">
+              <title>A feed</title>
+              ${urls.joinToString("\n") { u -> """<entry><title>Post</title><id>$u</id><link href="$u"/><updated>2026-08-01T00:00:00Z</updated></entry>""" }}
+            </feed>
         """.trimIndent()
 
         fun feedWithPrevArchive(archiveUrl: String) = """

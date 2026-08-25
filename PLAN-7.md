@@ -195,7 +195,7 @@ No version bump, no release; both live in `PLAN-8` with the version-wide review 
         count in the commit message.
       - Rung: unit
 
-- [ ] **Z02a — A post is recognised by the shape the site itself publishes. TDD. Issue #21.**
+- [x] **Z02a — A post is recognised by the shape the site itself publishes. TDD. Issue #21.**
       `ArchiveDiscovery.isLikelyPost` (Z01) accepts **only** a dated path segment
       (`/2026/07/27/…`). Every URL in `ArchiveDiscoveryTest` is dated, so the gap is
       invisible: a blog whose permalinks are `/posts/why-i-left/`, `/p/on-rust` or a bare

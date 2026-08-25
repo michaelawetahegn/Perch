@@ -29,27 +29,22 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
 - 2026-08-07 — **U03: test databases come from `PerchDatabase.inMemory(context)`** (only it seeds Uncategorized).
   **U04: a fourth reader-owned flag needs two edits** — `EntryDao.upsertAll` (never Room `@Upsert`, it resolves on
   the primary key, ours on `(feedId, guid)`) and `deleteReadOlderThan`.
-- 2026-08-18 — **W07/#17: a page that extracts to null is read again with every `class`/`id` erased** — structure
-  alone decides (defect was `namesChrome()` matching an unanchored substring: Tailwind's `max-lg:overflow-hidden`
-  read as `hidden`). A page that fails goes in `ArticleFixtures.pending`, never `all` (still-failing test: W10).
 - 2026-08-18 — **W02/#15: the window is a *rolling* one** (24 h / 7 / 30 / 365 days back from `clock.instant()`),
   label **"Past 24 Hours"**, **defaults to Today** — a UI test seeding anything older pins `TimeFilter.AllTime` via its
   own `SettingsStore`. U07's calendar window is dead; the zone now only decides what a human *reads*. **W03: the Feed is
   one stream** — `HomeTestTags.section` and `startsSection` are gone; a test naming `"home:section:N"` spells the dead
   tag out on purpose, so nothing can put a header back unnoticed.
-- 2026-08-08 — **U09: the bottom bar and the `NavHost` are siblings**; **Feed's `DrawerState`/`LazyListState` are
+- 2026-08-08 — **U09: the bottom bar and `NavHost` are siblings**; **Feed's `DrawerState`/`LazyListState` are
   hoisted into `PerchNavHost`** (state remembered inside Feed dies on a tab switch); back policy is the pure
-  `nextBackStep(BackState)` in `BackChain.kt`. **U09a:** the selection `BackHandler` must live *inside*
-  `ModalDrawerSheet` — the root one wins otherwise; a batch delete's dialog is a coroutine behind its tap.
+  `nextBackStep(BackState)` in `BackChain.kt`. **U09a:** the selection `BackHandler` must live *inside* `ModalDrawerSheet` — the root one wins otherwise.
 - 2026-08-08 — **U07a: all three lists are Paging 3**, **placeholders off**; the queries live once in **`EntryQueries`**
   because each exists twice — `Flow<List>` *and* `PagingSource`. **`uiState.entries` is gone**: ask the screen.
 - 2026-08-08 — **U10:** Readability-over-jsoup in `data/extract/`, **no new dependency**; fixtures in
   `fixtures/articles/`. **`ArticleLowering` deletes truncation markers as chrome**, so `FullText` looks for
-  "Continue reading" in the *unlowered* text; **an extraction only ever replaces a body it beats.**
+  "Continue reading" in the *unlowered* text; an extraction only ever replaces a body it beats.
 - 2026-08-08 — **U14 (profile).** `pending_entry_state`, keyed `(feedUrl, guid)`, **no FK to `feeds`** — its job is
-  outliving a source that does not exist yet. **`EntryDao.upsertAll` consumes parked rows**, so the refresh after a
-  restore cannot undo it; a restore turns a flag **on** and never off, so it is idempotent. Codec is `org.json` —
-  **its tests need Robolectric**; on a bare JVM `JSONObject` stubs. (DB is now **version 6** — Y02 below.)
+  outliving a source that does not exist yet. `EntryDao.upsertAll` consumes parked rows, so a restore's flag turns
+  **on** and never off (idempotent). Codec is `org.json` — its tests need Robolectric. (DB is now **version 6** — Y02.)
 - 2026-08-09 — **V01/#1: Robolectric builds `PerchApp` for every test** — a store cancels only a scope it *owns*. **Every full-suite flake so far: waiting on Room is not waiting on the screen. Poll in wall-clock time**, not `waitForIdle`.
 - **V02/#9: a `Clock` carries a zone**; `AppContainer` injects `systemDefaultZone()`, **`DateParser` stays UTC
   deliberately**; a zone test pins `TimeZone.setDefault`. Since W02 the zone decides only what a human *reads*.
@@ -57,15 +52,14 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   the **drawer only** since W03 — `FolderDao.observeAll` and `.getAll`, which must agree; `EntryQueries.LIST_ITEMS`
   left the rule and is pure recency; `sortIndex` decides nothing (NOCASE-folding quirk: `FolderDao.kt`'s own KDoc).
 - 2026-08-18 — **W11: the live gate is thirteen gates** — **5c** is #17's Hugging Face page fetched *live* (a fixture
-  cannot notice a Tailwind class rename), held to beating the page's own teaser: 9355 vs 51 chars. **The home shot is
-  staged freshest-first, not quietest-first** (quietest broke once W03 put every category off-screen). 38/38 pull.
+  cannot notice a Tailwind class rename), held to beating the page's own teaser: 9355 vs 51 chars. Home shot staged
+  freshest-first, not quietest-first (quietest broke once W03 put every category off-screen). 38/38 pull.
 - **V05/#12: "Unread" is gone from every reader-facing string** (identifiers keep it); **pin `HomeTestTags.TITLE`,
   never `onNodeWithText("Feed")`** — the tab has read "Feed" since U09. **W04/#20: a row's meta is now the bare
   source name** (`EntryRowTestTags.META`, category dimmed after a `·`, Uncategorized unlabelled; `DATE` beneath),
   so a drawer row is `hasClickAction() and !hasTestTag(HomeTestTags.ENTRY)`.
 - **V08/#10: the scoped list is state, not a route.** `HomeScope` is **hoisted into `PerchNavHost`** — third such
-  state — `BackStep.LeaveScope` a rung above `ScrollFeedToTop`. **`selectTab` is a silent no-op from the article
-  route** (`popUpTo(start){saveState}`/`restoreState`, pop first). Scoping does not touch the time window.
+  state — `BackStep.LeaveScope` a rung above `ScrollFeedToTop`. `selectTab` is a silent no-op from the article route (`popUpTo(start){saveState}`/`restoreState`, pop first); scoping does not touch the time window.
 - **`research.checkpoint.com` answers 202 empty when live runs come too close together** (Cloudflare) — wait ~10 quiet minutes and rerun. Healthy, not an exclusion.
 - 2026-08-25 — **PLAN-6 (#23) done, archived.** `PageMetadataExtractor` (Y01, standards-only; measured over
   `fixtures/articles/`: title 17/23, date 5/23). `PageContentExtractor` (Y03: fetch→extract→sanitize→image) is the
@@ -95,3 +89,12 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   instead. `PerchWorkerFactory` gained a `backfill` lambda **before** `feeds` so
   `PerchWorkerFactory { repo }` keeps binding to `feeds`. Grep gate clean. `./gradlew test`
   (debug+release): 962+690=1652 (+24/+24), 0 failures.
+- 2026-08-24 — **Z02a/#21: `ArchiveDiscovery.isLikelyPost` also matches a shape learned
+  from the feed.** `learnPostShape` reduces each entry link's path to segment count plus
+  which leading segments every entry agrees on (literal) vs disagrees on (wildcard,
+  `null`); a sitemap URL is a post when it's dated **or** matches that shape. No feed, no
+  linked entries, or entries disagreeing on segment count → `null` shape → dated-path-only,
+  unchanged. Covers Hugo `/posts/<slug>/`, Ghost/Substack `/p/<slug>`, bare `/<slug>/` —
+  none hardcoded, all learned per-site. `./gradlew :app:testDebugUnitTest --tests
+  '*ArchiveDiscoveryTest*'`: 9/9 (+2: posts-slug shape, bare-slug shape). Grep gate clean.
+  `./gradlew test` (debug+release): 964+692=1656 (+2/+2), 0 failures.

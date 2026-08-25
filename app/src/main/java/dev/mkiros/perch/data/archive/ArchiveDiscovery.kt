@@ -41,11 +41,12 @@ internal fun hostRoot(url: String): String? = runCatching {
  *    sitemaps.org protocol (bounded — see [MAX_SITEMAP_DEPTH] / [MAX_SITEMAPS]).
  *
  * A sitemap lists every URL a site cares to publish — tags, pages, the homepage — not
- * just posts. The one structural signal used here to tell a post from the rest is a
- * **dated URL path** (`/2026/07/27/…`, `/2026/07/…`): a permalink convention shared by
- * Jekyll, Hugo, WordPress and plenty of hand-rolled generators, not a fact about any one
- * of them. Nothing here checks a hostname, a path prefix, or a template fingerprint — the
- * grep gate at PLAN-7 §0.2 is what enforces that.
+ * just posts. Telling a post from the rest uses two structural signals, never a hostname,
+ * a path prefix, or a template fingerprint (the grep gate at PLAN-7 §0.2 enforces that):
+ * a **dated URL path** (`/2026/07/27/…`, `/2026/07/…`, a Jekyll/Hugo/WordPress convention),
+ * and a **shape learned from the site's own feed** (PLAN-7 Z02a) for the generators that
+ * never date the permalink at all — Hugo's `/posts/<slug>/`, Ghost/Substack's `/p/<slug>`,
+ * a bare `/<slug>/`.
  *
  * Stores nothing and touches no database; Z02 decides what to do with what this returns.
  */
@@ -64,10 +65,11 @@ class ArchiveDiscovery(
 
         val root = hostRoot(siteUrl) ?: return emptyList()
         val sitemapUrls = sitemapsFromRobots(root).ifEmpty { listOf("$root/sitemap.xml") }
+        val shape = learnPostShape(feed)
 
         val found = LinkedHashMap<String, Instant?>()
         val seen = mutableSetOf<String>()
-        sitemapUrls.forEach { collectSitemap(it, found, seen, depth = 0) }
+        sitemapUrls.forEach { collectSitemap(it, found, seen, depth = 0, shape) }
         return found.toPosts()
     }
 
@@ -130,6 +132,7 @@ class ArchiveDiscovery(
         found: MutableMap<String, Instant?>,
         seen: MutableSet<String>,
         depth: Int,
+        shape: PathShape?,
     ) {
         if (depth > MAX_SITEMAP_DEPTH || seen.size >= MAX_SITEMAPS || url in seen) return
         seen += url
@@ -142,11 +145,11 @@ class ArchiveDiscovery(
         when (root.localName().lowercase()) {
             "urlset" -> root.childElementsNamed("url").forEach { urlEl ->
                 val loc = resolveUrl(page.finalUrl, urlEl.childText("loc")) ?: return@forEach
-                if (isLikelyPost(loc)) found.putIfAbsent(loc, dates.parse(urlEl.childText("lastmod")))
+                if (isLikelyPost(loc, shape)) found.putIfAbsent(loc, dates.parse(urlEl.childText("lastmod")))
             }
             "sitemapindex" -> root.childElementsNamed("sitemap").forEach { smEl ->
                 val loc = resolveUrl(page.finalUrl, smEl.childText("loc")) ?: return@forEach
-                collectSitemap(loc, found, seen, depth + 1)
+                collectSitemap(loc, found, seen, depth + 1, shape)
             }
         }
     }
@@ -161,13 +164,48 @@ class ArchiveDiscovery(
     }
 
     /**
-     * The one structural signal this task uses to tell a post from a tag/page/index URL:
-     * a dated path segment. Deliberately not a path *prefix* (`/blog/`, `/posts/`) — those
-     * are a fact about one engine's choices, not a cross-site convention.
+     * A post is either dated, or shaped like one — never named by a table of engines.
+     * [shape] (if any) was **learned from this site's own feed** ([learnPostShape]), not
+     * hardcoded: a dated URL path is one cross-generator convention, and the feed's own
+     * entry links are the site's own sample of what a post URL looks like *here*, for the
+     * generators (Hugo's `/posts/<slug>/`, Ghost/Substack's `/p/<slug>`, a bare
+     * `/<slug>/`) that never date the permalink at all.
      */
-    private fun isLikelyPost(url: String): Boolean {
+    private fun isLikelyPost(url: String, shape: PathShape?): Boolean {
         val path = runCatching { URI(url).path }.getOrNull() ?: return false
-        return DATED_PATH.containsMatchIn(path)
+        if (DATED_PATH.containsMatchIn(path)) return true
+        return shape != null && shape.matches(path)
+    }
+
+    /**
+     * A path shape learned from [feed]'s own entry links: segment count, plus which
+     * leading segments are literal because every entry agrees on them (`/posts/<slug>/` →
+     * `["posts", *]`) versus which vary and are therefore wildcards (`/2026/07/27/<slug>`
+     * → `[*, *, *, *]`). Null when there is no feed, no entry has a link, or the entries'
+     * links disagree on segment count — callers then fall back to [DATED_PATH] alone
+     * rather than guess.
+     */
+    private fun learnPostShape(feed: FetchedPage?): PathShape? {
+        val page = feed ?: return null
+        val paths = entriesOf(page).mapNotNull { it.link }
+            .mapNotNull { runCatching { URI(it).path }.getOrNull() }
+            .map { it.trim('/').split('/').filter { segment -> segment.isNotEmpty() } }
+            .filter { it.isNotEmpty() }
+        val size = paths.firstOrNull()?.size ?: return null
+        if (paths.any { it.size != size }) return null
+        val segments = (0 until size).map { i ->
+            paths.map { it[i] }.toSet().singleOrNull()
+        }
+        return PathShape(segments)
+    }
+
+    /** Segment count plus, per position, either the literal every sampled URL shares or `null` for a wildcard. */
+    private data class PathShape(val segments: List<String?>) {
+        fun matches(path: String): Boolean {
+            val actual = path.trim('/').split('/').filter { it.isNotEmpty() }
+            if (actual.size != segments.size) return false
+            return segments.indices.all { i -> segments[i] == null || segments[i] == actual[i] }
+        }
     }
 
     // -- shared -------------------------------------------------------------------------
