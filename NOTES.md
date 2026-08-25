@@ -10,9 +10,8 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   **v0.5: no hostname literal under `data/`** (`grep -rnoE '"[a-z0-9.-]+\.(com|org|net|io|dev|me|ski|ca|xyz|blog)"`) — parse by **standards** (OG, JSON-LD, Dublin Core, sitemaps.org, RFC 5005/9309), never a table of known sites, so one blog's support makes similar ones work; fixtures exempt. **A rule lifting one fixture and moving no other is aimed at a site.**
   **U01: the repo is public** (MIT) — a harvested fixture may differ from the served page by exactly one thing,
   a third-party key rewritten `REDACTED-THIRD-PARTY-KEY` (`fixtures/homepages/`, the HF article page).
-- **This `gh` is old:** bare `gh issue view N` dies on a Projects-classic GraphQL field (use `--json`), no `gh label list`,
-  `gh issue close` has no `-r`. **V14: `scripts/release-notes.sh <last-tag>`** drafts a release page from the issues closed
-  since it, through the `docs/RELEASE-NOTES.md` template.
+- **This `gh` is old:** bare `gh issue view N` dies on a Projects-classic GraphQL field (use `--json`), no `gh label
+  list`, `gh issue close` has no `-r`. **V14: `scripts/release-notes.sh <last-tag>`** drafts a release page.
 - 2026-08-07 — **Standing UI-test traps.** Compose UI tests live in **`app/src/testDebug/`** (`ui-test-manifest` is
   `debugImplementation`). An injected tap/long-press **never reaches a node inside a drawer sheet, bottom sheet or
   dropdown** — use `performSemanticsAction(OnClick/OnLongClick)`. `PullToRefreshBox` ignores a swipe unless its child
@@ -31,27 +30,26 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   **U04: a fourth reader-owned flag needs two edits** — `EntryDao.upsertAll` (never Room `@Upsert`, it resolves on
   the primary key, ours on `(feedId, guid)`) and `deleteReadOlderThan`.
 - 2026-08-18 — **W07/#17: a page that extracts to null is read again with every `class`/`id` erased** — structure
-  alone decides, and a page that already worked never reaches it (the defect was `namesChrome()` matching an
-  unanchored substring: Tailwind's `max-lg:overflow-hidden` read as `hidden`). Corpus cost **zero**, HF 0 → 9355. A
-  page that fails goes in `ArticleFixtures.pending`, never `all`, held to still failing by the blind-spot test (W10).
+  alone decides (defect was `namesChrome()` matching an unanchored substring: Tailwind's `max-lg:overflow-hidden`
+  read as `hidden`). A page that fails goes in `ArticleFixtures.pending`, never `all` (still-failing test: W10).
 - 2026-08-18 — **W02/#15: the window is a *rolling* one** (24 h / 7 / 30 / 365 days back from `clock.instant()`),
   label **"Past 24 Hours"**, **defaults to Today** — a UI test seeding anything older pins `TimeFilter.AllTime` via its
   own `SettingsStore`. U07's calendar window is dead; the zone now only decides what a human *reads*. **W03: the Feed is
   one stream** — `HomeTestTags.section` and `startsSection` are gone; a test naming `"home:section:N"` spells the dead
   tag out on purpose, so nothing can put a header back unnoticed.
 - 2026-08-08 — **U09: the bottom bar and the `NavHost` are siblings**; **Feed's `DrawerState`/`LazyListState` are
-  hoisted into `PerchNavHost`** (state remembered inside Feed dies on a tab switch). §0's back policy is the pure
-  `nextBackStep(BackState)` in `BackChain.kt`, the enum's order *being* the priority.
-- 2026-08-08 — **U09a: the selection `BackHandler` must live inside `ModalDrawerSheet`** — the root one wins otherwise; a batch delete's dialog is **a coroutine behind its tap**, so wait in wall-clock time.
+  hoisted into `PerchNavHost`** (state remembered inside Feed dies on a tab switch); back policy is the pure
+  `nextBackStep(BackState)` in `BackChain.kt`. **U09a:** the selection `BackHandler` must live *inside*
+  `ModalDrawerSheet` — the root one wins otherwise; a batch delete's dialog is a coroutine behind its tap.
 - 2026-08-08 — **U07a: all three lists are Paging 3**, **placeholders off**; the queries live once in **`EntryQueries`**
   because each exists twice — `Flow<List>` *and* `PagingSource`. **`uiState.entries` is gone**: ask the screen.
 - 2026-08-08 — **U10:** Readability-over-jsoup in `data/extract/`, **no new dependency**; fixtures in
   `fixtures/articles/`. **`ArticleLowering` deletes truncation markers as chrome**, so `FullText` looks for
   "Continue reading" in the *unlowered* text; **an extraction only ever replaces a body it beats.**
-- 2026-08-08 — **U14 (profile).** DB is **version 5**: `pending_entry_state`, keyed `(feedUrl, guid)`, **no FK to
-  `feeds`** — its job is outliving a source that does not exist yet. **`EntryDao.upsertAll` consumes parked rows**,
-  so the refresh after a restore cannot undo it; a restore turns a flag **on** and never off, so it is idempotent.
-  Codec is `org.json` — **its tests need Robolectric**; on a bare JVM `JSONObject` stubs.
+- 2026-08-08 — **U14 (profile).** `pending_entry_state`, keyed `(feedUrl, guid)`, **no FK to `feeds`** — its job is
+  outliving a source that does not exist yet. **`EntryDao.upsertAll` consumes parked rows**, so the refresh after a
+  restore cannot undo it; a restore turns a flag **on** and never off, so it is idempotent. Codec is `org.json` —
+  **its tests need Robolectric**; on a bare JVM `JSONObject` stubs. (DB is now **version 6** — Y02 below.)
 - 2026-08-09 — **V01/#1: Robolectric builds `PerchApp` for every test** — a store cancels only a scope it *owns*. **Every full-suite flake so far: waiting on Room is not waiting on the screen. Poll in wall-clock time**, not `waitForIdle`.
 - **V02/#9: a `Clock` carries a zone**; `AppContainer` injects `systemDefaultZone()`, **`DateParser` stays UTC
   deliberately**; a zone test pins `TimeZone.setDefault`. Since W02 the zone decides only what a human *reads*.
@@ -60,16 +58,14 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   left the rule and is pure recency; `sortIndex` decides nothing (NOCASE-folding quirk: `FolderDao.kt`'s own KDoc).
 - 2026-08-18 — **W11: the live gate is thirteen gates** — **5c** is #17's Hugging Face page fetched *live* (a fixture
   cannot notice a Tailwind class rename), held to beating the page's own teaser: 9355 vs 51 chars. **The home shot is
-  staged freshest-first, not quietest-first** — quietest was right while a small folder bought a section header, and
-  after W03 it put every category off-screen. 38/38 pull, 1038 entries, 0 rows out of order, 7 inside 24 h.
+  staged freshest-first, not quietest-first** (quietest broke once W03 put every category off-screen). 38/38 pull.
 - **V05/#12: "Unread" is gone from every reader-facing string** (identifiers keep it); **pin `HomeTestTags.TITLE`,
   never `onNodeWithText("Feed")`** — the tab has read "Feed" since U09. **W04/#20: a row's meta is now the bare
   source name** (`EntryRowTestTags.META`, category dimmed after a `·`, Uncategorized unlabelled; `DATE` beneath),
   so a drawer row is `hasClickAction() and !hasTestTag(HomeTestTags.ENTRY)`.
 - **V08/#10: the scoped list is state, not a route.** `HomeScope` is **hoisted into `PerchNavHost`** — third such
   state — `BackStep.LeaveScope` a rung above `ScrollFeedToTop`. **`selectTab` is a silent no-op from the article
-  route**: `popUpTo(start){saveState}` saves it and `restoreState` puts it back — pop first, switch tabs only if
-  needed. Scoping **does not touch the time window**. Residual (T29): a scoped list repeats the source on every row.
+  route** (`popUpTo(start){saveState}`/`restoreState`, pop first). Scoping does not touch the time window.
 - **`research.checkpoint.com` answers 202 empty when live runs come too close together** (Cloudflare) — wait ~10 quiet minutes and rerun. Healthy, not an exclusion.
 - 2026-08-25 — **Y01/#23: `PageMetadataExtractor`**, standards-only, measured over all 23 `fixtures/articles/`
   files: title 17/23 (74%), date 5/23 (22%) — the 6 untitled have no `<head>` at all; gpuopen's `<time>` has
@@ -97,3 +93,7 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   tap trap above too — `SaveLinkSheetTest` composes `SaveLinkSheetContent` directly, and the
   screenshot tests seed the pasted row via `container.savedLinks.saveLink()` rather than
   typing into the sheet. `./gradlew test` (debug+release): 931+659=1590, 0 failures.
+- 2026-08-25 — **Y05/#23: PLAN-6 review.** Grep gate clean; `PageMetadata.kt` line-by-line fires on
+  structure/standards only, never a site. No doc claimed DB v5 (stale mention fixed above) or subscribed-only
+  reach. `ArticleTextRepository`/`SavedLinkRepository` both call `PageContentExtractor.extract` — one function.
+  `CollectionScreenTest.kt:76` rewritten with its reason (Y04), not weakened. Tests unchanged, 0 failures. #23 closed.

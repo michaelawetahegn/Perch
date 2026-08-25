@@ -220,7 +220,7 @@ to tell.
         **opened and looked at**.
       - Rung: screenshot
 
-- [ ] **Y05 — Review of this slice. Everything PLAN-6 changed, read as a whole.**
+- [x] **Y05 — Review of this slice. Everything PLAN-6 changed, read as a whole.**
       Scoped to this plan; `PLAN-8` reads `v0.4.0..HEAD` entire. Read this plan's diff and
       answer, in the commit message and in NOTES.md:
       1. **Is anything in this slice true of one website?** Re-run §0.1's grep gate over
