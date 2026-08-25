@@ -33,6 +33,44 @@ place with its read state, likes and to-read queue intact.
 
 ## The tasks
 
+- [ ] **R00 — The forty pages a capped backfill fetches are the newest forty, and the offer says two numbers because there are two. TDD. Issue #24.**
+      `PLAN-7` Z04's live run measured what no fixture could: `fzakaria.com` discovers **143**
+      posts, **133** not yet stored, against `MAX_PAGES = 40`. Every fixture archive we have is
+      *smaller* than that cap, so both of these read as correct in every existing test. Z05's
+      slice review did not ask either question. Read issue #24 before starting — it carries the
+      measurement and the reasoning.
+      1. **`BackfillRepository.plan()` takes the first 40 in discovery order**
+         (`fresh.take(MAX_PAGES)`, `BackfillRepository.kt:82`), and discovery order is *sitemap
+         document order*. Z04 proved on the real site that this is not date order: the
+         reporter's own 2026-07-27 post sorted **past** position 40, and that gate failed until
+         it stopped asking the capped plan. A reader who accepts the offer on a large archive
+         therefore receives an arbitrary 40 of 133 — possibly without the post they came for.
+         Sort `fresh` by `ArchivePost.lastmod` descending before `.take(MAX_PAGES)`, unknown
+         `lastmod` last (a sitemap entry may omit it), stable among equals so a
+         cancel-and-resume run does not reshuffle. `MAX_PAGES` stays 40 — this task changes
+         *which* 40, not how many.
+      2. **The offer states one number twice.** `HomeViewModel.kt:390,403` pass
+         `plan.toFetch.size` as `pageCount`, and `R.plurals.backfill_offer_body` spends it on
+         both halves: *"Its archive holds N more posts than the feed gave us. Perch will fetch N
+         pages."* On `fzakaria.com` that reads "holds 40 more posts" when it holds 133. The
+         first half is `plan.newPostCount` — which `BackfillPlan` already carries and nothing
+         reads — and the second is `plan.toFetch.size`. Give `BackfillOffer` both and make the
+         plural true when they differ. Copy in `strings.xml`, no hardcoded text.
+      - Do **not** raise `MAX_PAGES` to make the numbers agree. The cap is `PLAN-7` §0.3's
+        politeness budget; the honest sentence is the fix, and the drawer's "Fetch older posts"
+        action already lets a reader run it again for the next 40.
+      - TDD: RED first, and **the RED must be larger than the cap** — a plan built from more
+        than `MAX_PAGES` candidates with shuffled `lastmod`s, asserting the newest 40 come back
+        newest-first and that a no-`lastmod` candidate sorts last; plus a UI case where
+        `newPostCount` exceeds `toFetch.size`, asserting both numbers reach the dialog. Every
+        existing test must pass unchanged.
+      - This lands **before** R01 deliberately, so the version-wide review reads it.
+      - Done: `./gradlew test` green with the new cases named in the commit message; `PLAN-7`
+        §0.2's grep gate still finds no hostname literal under `data/`; the offer screenshot
+        retaken with the two counts differing, **opened and looked at**; issue #24 closed with a
+        comment naming the commit.
+      - Rung: screenshot
+
 - [ ] **R01 — The review pass. The whole of v0.5, read at once.**
       Read `git diff v0.4.0..HEAD` — **the whole of it**, not one slice's worth — and
       answer, in the commit message and in NOTES.md where it outlives the plan:
