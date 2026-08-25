@@ -94,6 +94,27 @@ Perch *offers*; the reader accepts.
   running a backfill twice costs fetches and changes nothing. `guid` = the final URL, the
   same convention `PLAN-6` Y03 set for pasted links.
 
+### 3a. A backfilled post without a date must never claim to be new
+
+Measured in `PLAN-6` Y01: page metadata yields a date for only **5 of 23** corpus fixtures,
+because many blogs publish no `article:published_time`, no JSON-LD `datePublished` and no
+dated URL path. That is fine for a single pasted link. It is **not** fine for a backfill:
+`publishedAt = fetchedAt` on 132 archived posts would date the whole archive "now" and bury
+the reader's actual feed under years of old writing pretending to be today's.
+
+So, for backfill only, the date chain gains a rung and loses its default:
+
+1. `PageMetadata`'s own chain (§0.2 of `PLAN-6`) — unchanged, it wins.
+2. **The sitemap's `<lastmod>` for that URL**, which Z01 already collects and which is a
+   published part of the sitemaps.org protocol. Carry it through discovery into the write.
+3. If both decline, the entry is stored with `publishedIsEstimated = true` and a date that
+   **sorts it as old, never as new** — it must not appear above a genuinely recent entry.
+   A backfill is history; an undated piece of history is still history.
+
+**Never** stamp a backfilled entry with `fetchedAt` as though it were a publication date.
+Test it directly: a backfilled entry with no discoverable date does not appear above a
+feed entry published today.
+
 ### 4. "All time" must stop over-promising
 
 Even with backfill, a reader deserves to know what they are looking at. A source records
@@ -148,6 +169,10 @@ No version bump, no release; both live in `PLAN-8` with the version-wide review 
       - Entries are written under the **real** feed's `feedId`, with
         `publishedIsEstimated = true` where the date was inferred. They are **not** marked
         saved and **not** marked read — they are ordinary history.
+      - **§0.3a is a Done-condition, not advice**: carry the sitemap's `<lastmod>` from Z01's
+        discovery into the write as the second date rung, and never stamp a backfilled entry
+        with `fetchedAt` as if it were a publication date. The named test: a backfilled entry
+        with no discoverable date does not sort above an entry published today.
       - Bounded, serialised, polite, interruptible, resumable, idempotent — every clause of
         §0.3 gets a test, including: a second run over the same site stores nothing new; a
         cancelled run leaves what it had already stored; `robots.txt` `Disallow` is obeyed;
