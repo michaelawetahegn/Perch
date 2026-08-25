@@ -172,7 +172,7 @@ to tell.
         green; `git status` shows `app/schemas/6.json` added.
       - Rung: unit
 
-- [ ] **Y03 — A pasted link becomes a readable article on To-Read. TDD. Issue #23.**
+- [x] **Y03 — A pasted link becomes a readable article on To-Read. TDD. Issue #23.**
       The repository path, still no UI.
       - New `suspend fun saveLink(url: String): Result<Long>` — normalize with the existing
         `normalizePastedUrl` (`PastedUrl.kt:17`), fetch with `FeedFetcher.fetch(url)`

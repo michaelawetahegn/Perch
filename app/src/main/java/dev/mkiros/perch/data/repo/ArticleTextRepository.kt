@@ -2,8 +2,7 @@ package dev.mkiros.perch.data.repo
 
 import dev.mkiros.perch.data.db.EntryDao
 import dev.mkiros.perch.data.db.entity.EntryEntity
-import dev.mkiros.perch.data.extract.ArticleExtractor
-import dev.mkiros.perch.data.parse.HtmlSanitizer
+import dev.mkiros.perch.data.extract.PageContentExtractor
 import dev.mkiros.perch.data.parse.LeadImage
 import dev.mkiros.perch.data.parse.PageFetcher
 import java.time.Clock
@@ -48,9 +47,8 @@ class ArticleTextRepository(
         val document = withContext(Dispatchers.Default) { parse(page.bytes, page.finalUrl) }
             ?: return null
 
-        val extracted = ArticleExtractor.extract(document.outerHtml(), page.finalUrl)
-        val safeHtml = HtmlSanitizer.sanitize(extracted, page.finalUrl)
-            ?.takeIf { isFullerThan(it, entry.contentHtml) }
+        val content = PageContentExtractor.extract(document, page.finalUrl)
+        val safeHtml = content.bodyHtml?.takeIf { isFullerThan(it, entry.contentHtml) }
 
         // §0's last two thumbnail rungs, and the only place they are allowed to run — the
         // page is already open, so this costs nothing. Decided *independently* of the body,
@@ -64,7 +62,7 @@ class ArticleTextRepository(
         // site-wide social card `og:image` so often is.
         val imageUrl = entry.imageUrl
             ?: safeHtml?.let { LeadImage.fromBody(it, page.finalUrl) }
-            ?: document.ogImage()
+            ?: content.ogImageUrl
         if (safeHtml == null && imageUrl == entry.imageUrl) return null
 
         val updated = entry.copy(
@@ -89,8 +87,4 @@ class ArticleTextRepository(
      */
     private fun parse(bytes: ByteArray, baseUrl: String): Document? =
         runCatching { Jsoup.parse(bytes.inputStream(), null, baseUrl) }.getOrNull()
-
-    private fun Document.ogImage(): String? =
-        select("meta[property=og:image], meta[name=og:image], meta[name=twitter:image]")
-            .firstNotNullOfOrNull { it.absUrl("content").takeIf { url -> url.isNotBlank() } }
 }

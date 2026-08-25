@@ -11,6 +11,7 @@ import dev.mkiros.perch.data.repo.FeedRepository
 import dev.mkiros.perch.data.repo.FolderRepository
 import dev.mkiros.perch.data.repo.OpmlRepository
 import dev.mkiros.perch.data.repo.ProfileRepository
+import dev.mkiros.perch.data.repo.SavedLinkRepository
 import dev.mkiros.perch.data.settings.SettingsStore
 import okhttp3.OkHttpClient
 import java.io.Closeable
@@ -82,6 +83,16 @@ class AppContainer(
     /** U10: the article screen's way of getting text a feed did not ship. */
     val articleText: ArticleTextRepository by lazy {
         ArticleTextRepository(entryDao = database.entryDao(), fetcher = fetcher, clock = clock)
+    }
+
+    /** Y03: a pasted link, saved without ever subscribing to its site (PLAN-6 §0.3/§0.4). */
+    val savedLinks: SavedLinkRepository by lazy {
+        SavedLinkRepository(
+            feedDao = database.feedDao(),
+            entryDao = database.entryDao(),
+            fetcher = fetcher,
+            clock = clock,
+        )
     }
 
     val folders: FolderRepository by lazy {

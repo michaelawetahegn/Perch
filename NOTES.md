@@ -60,8 +60,6 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
 - **V06/#11: folder order is alphabetical (`COLLATE NOCASE`), Uncategorized pinned by `(id = 1) ASC`.** It governs
   the **drawer only** since W03 — `FolderDao.observeAll` and `.getAll`, which must agree; `EntryQueries.LIST_ITEMS`
   left the rule and is pure recency; `sortIndex` decides nothing (NOCASE-folding quirk: `FolderDao.kt`'s own KDoc).
-- **W12: v0.4.0 shipped** — versionCode 5, `perch-0.4.0.apk`, U02-signed; release task renames the apk itself.
-  On device **`run-as` dies on a release build** — verify through the UI, not sqlite3.
 - 2026-08-18 — **W11: the live gate is thirteen gates** — **5c** is #17's Hugging Face page fetched *live* (a fixture
   cannot notice a Tailwind class rename), held to beating the page's own teaser: 9355 vs 51 chars. **The home shot is
   staged freshest-first, not quietest-first** — quietest was right while a small folder bought a section header, and
@@ -74,12 +72,8 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   state — `BackStep.LeaveScope` a rung above `ScrollFeedToTop`. **`selectTab` is a silent no-op from the article
   route**: `popUpTo(start){saveState}` saves it and `restoreState` puts it back — pop first, switch tabs only if
   needed. Scoping **does not touch the time window**. Residual (T29): a scoped list repeats the source on every row.
-- 2026-08-10 — **V15.** Gate 8 is the time window, **gate 9** V06's order (the drawer's two queries only, since W03),
-  **gate 7** the live page's `publishedAt` order (it stopped counting folder sections at W03), and gate 6b fetches
-  V09's ZDI *page* by name because its feed ships full bodies. Gate 5b's floor is U15's 75.4% less 10: the sampled set
-  is ~70 entries, so one entry is 1.4 of them. **`research.checkpoint.com` answers 202 empty when live runs come too
-  close together** (Cloudflare; **a `curl` probe spends the allowance the next run needs**) — wait ~10 quiet minutes
-  and rerun. Healthy, not an exclusion.
+- **`research.checkpoint.com` answers 202 empty when live runs come too close together** (Cloudflare; **a `curl`
+  probe spends the allowance the next run needs**) — wait ~10 quiet minutes and rerun. Healthy, not an exclusion.
 - 2026-08-24 — **X04/#22 review, PLAN-5 entire:** clean on all four questions (no stale "opens expanded" doc,
   `collapsedFolders` grep empty, every X02/X03 test edit additive not weakened); suite 896+631=**1527**, 0 failures.
 - 2026-08-25 — **Y01/#23: `PageMetadataExtractor`**, standards-only, measured over all 23 `fixtures/articles/`
@@ -95,3 +89,11 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   beyond `FeedRepository.remove`/`removeAll`, which still refuse it explicitly since delete goes straight to
   `deleteById`. A caller that wants the row back (Y04's drawer) reaches it via `findByUrl(SAVED_LINKS_FEED_URL)`,
   deliberately unfiltered. `./gradlew test` (debug+release): 917+652=1569, 0 failures.
+- 2026-08-25 — **Y03/#23: `SavedLinkRepository.saveLink(url): Result<Long>`**, `SaveLinkFailure`
+  (`IsFeed`/`Unreachable`) copying `SourceResolution`'s shape. Lifted `ArticleTextRepository`'s
+  fetch→extract→sanitize→image chain into `data/extract/PageContent.kt`
+  (`PageContentExtractor`, reuses Y01's `PageMetadataExtractor`) so both read a page the same
+  way. A pasted feed is caught by parsing the **fetched bytes**, not discovery — discovery
+  would flag every blog post as "a feed" via its own autodiscovery `<link>`. Duplicate paste
+  reuses `EntryDao.upsertAll`'s idempotent-on-`(feedId,guid)` write, no hand-rolled check.
+  `./gradlew test` (debug+release): 924+659=1583, 0 failures.
