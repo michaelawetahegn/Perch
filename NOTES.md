@@ -98,3 +98,22 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   found, 8140 chars extracted. **Unrelated flake:** `quantpedia.com` failed gate 1 with a
   TLS `CertPathValidatorException` this run — new, not touched, rerun before excluding.
   `./gradlew test`: 974+692=1666, 0 failures (no new offline test).
+- 2026-08-25 — **Z05/#21: PLAN-7 review, closing the slice.** Four questions:
+  1. Read `ArchiveDiscovery.kt` line by line — every heuristic traces to a named standard
+     (RFC 5005 `prev-archive`, RFC 9309 `robots.txt Sitemap:`, sitemaps.org `urlset`/
+     `sitemapindex`/gzip) or a cross-generator convention stated in its own KDoc (`DATED_PATH`;
+     `learnPostShape` derives its shape from *that site's own feed*, never a table of
+     engines). Grep gate re-run over every package this plan touched (`data/`, `ui/home/`,
+     `work/`): `grep -rnoE '"[a-z0-9.-]+\.(com|org|net|io|dev|me|ski|ca|xyz|blog)"'` →
+     nothing in either.
+  2. `grep -rln "PageContentExtractor.extract"` → exactly three callers,
+     `ArticleTextRepository`, `SavedLinkRepository`, `BackfillRepository` — one shared
+     function, no second metadata/extraction path.
+  3. `grep -i "all time\|feed publishes\|only what a feed"` over README/SPEC/DESIGN/NOTES/
+     CLAUDE.md → no doc asserts Perch is bounded to what a feed publishes. README's "What
+     it does" also never documents backfill or Y03's paste-a-link — consistent with Y05
+     leaving the same gap; both are deferred to `PLAN-8`'s whole-version doc pass, not
+     doc drift to fix here.
+  4. `git diff 27a8dda..HEAD -- '*Test.kt'` has no removed assertion, no `@Ignore`/
+     `@Disabled` line. Suite grew every task: 1590 (Y05) → 1656 (Z01–Z02a) → 1666
+     (Z03–Z04), unchanged this session. `./gradlew test`: 974+692=1666, 0 failures.

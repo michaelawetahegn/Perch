@@ -276,7 +276,7 @@ No version bump, no release; both live in `PLAN-8` with the version-wide review 
         them; the default no-network `./gradlew test` still green.
       - Rung: build
 
-- [ ] **Z05 — Review of this slice. Everything PLAN-7 changed, read as a whole.**
+- [x] **Z05 — Review of this slice. Everything PLAN-7 changed, read as a whole.**
       Scoped to this plan; `PLAN-8` reads `v0.4.0..HEAD` entire. Read this plan's diff and
       answer, in the commit message and in NOTES.md:
       1. **Is anything in this slice true of one website?** Re-run §0.2's grep gate over every
