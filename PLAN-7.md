@@ -131,7 +131,7 @@ No version bump, no release; both live in `PLAN-8` with the version-wide review 
 
 ## The tasks
 
-- [ ] **Z01 — A site's archive is discoverable, by standards alone. TDD. Issue #21.**
+- [x] **Z01 — A site's archive is discoverable, by standards alone. TDD. Issue #21.**
       `gh issue view 21 --json body` first (bare `gh issue view` dies — NOTES.md).
       New pure module — `data/archive/ArchiveDiscovery.kt` — that turns a site URL into a
       list of candidate post URLs with optional `lastmod` dates. **No network in this

@@ -67,33 +67,16 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   state — `BackStep.LeaveScope` a rung above `ScrollFeedToTop`. **`selectTab` is a silent no-op from the article
   route** (`popUpTo(start){saveState}`/`restoreState`, pop first). Scoping does not touch the time window.
 - **`research.checkpoint.com` answers 202 empty when live runs come too close together** (Cloudflare) — wait ~10 quiet minutes and rerun. Healthy, not an exclusion.
-- 2026-08-25 — **Y01/#23: `PageMetadataExtractor`**, standards-only, measured over all 23 `fixtures/articles/`
-  files: title 17/23 (74%), date 5/23 (22%) — the 6 untitled have no `<head>` at all; gpuopen's `<time>` has
-  neither `pubdate` nor `itemprop="datePublished"` so §0.2 correctly declines it. JSON-LD via `org.json` needs
-  Robolectric (U14).
-- 2026-08-25 — **Y02/#23: `feeds.isSynthetic` → DB v6**, seeded row `perch:saved-links` (`FeedEntity`
-  companion), both `SEED_SAVED_LINKS` (fresh install) and `MIGRATION_5_6` (upgrade). Seeding it into
-  `PerchDatabase.inMemory()` — used by ~every test — broke 70 tests across 18 files that read `feedDao`'s
-  general queries as "every subscribed source." Fixed at the root instead of patching each assertion:
-  `observeAll`/`getAll`/`getByFolder`/`countAll`/`observeCount` all gained `WHERE isSynthetic = 0`, so refresh,
-  OPML export, profile export and the drawer's source count skip it **for free** — no call-site branch needed
-  beyond `FeedRepository.remove`/`removeAll`, which still refuse it explicitly since delete goes straight to
-  `deleteById`. A caller that wants the row back (Y04's drawer) reaches it via `findByUrl(SAVED_LINKS_FEED_URL)`,
-  deliberately unfiltered. `./gradlew test` (debug+release): 917+652=1569, 0 failures.
-- 2026-08-25 — **Y03/#23: `SavedLinkRepository.saveLink(url): Result<Long>`**, `SaveLinkFailure`
-  (`IsFeed`/`Unreachable`) copying `SourceResolution`'s shape. Lifted `ArticleTextRepository`'s
-  fetch→extract→sanitize→image chain into `data/extract/PageContent.kt`
-  (`PageContentExtractor`, reuses Y01's `PageMetadataExtractor`) so both read a page the same
-  way. A pasted feed is caught by parsing the **fetched bytes**, not discovery — discovery
-  would flag every blog post as "a feed" via its own autodiscovery `<link>`. Duplicate paste
-  reuses `EntryDao.upsertAll`'s idempotent-on-`(feedId,guid)` write, no hand-rolled check.
-  `./gradlew test` (debug+release): 924+659=1583, 0 failures.
-- 2026-08-25 — **Y04/#23: `SaveLinkViewModel`/`SaveLinkSheet`**, one step shorter than
-  `AddSourceViewModel`/`-Sheet` (no confirm). Text into a *real* `ModalBottomSheet` hits the
-  tap trap above too — `SaveLinkSheetTest` composes `SaveLinkSheetContent` directly, and the
-  screenshot tests seed the pasted row via `container.savedLinks.saveLink()` rather than
-  typing into the sheet. `./gradlew test` (debug+release): 931+659=1590, 0 failures.
-- 2026-08-25 — **Y05/#23: PLAN-6 review.** Grep gate clean; `PageMetadata.kt` line-by-line fires on
-  structure/standards only, never a site. No doc claimed DB v5 (stale mention fixed above) or subscribed-only
-  reach. `ArticleTextRepository`/`SavedLinkRepository` both call `PageContentExtractor.extract` — one function.
-  `CollectionScreenTest.kt:76` rewritten with its reason (Y04), not weakened. Tests unchanged, 0 failures. #23 closed.
+- 2026-08-25 — **PLAN-6 (#23) done, archived.** `PageMetadataExtractor` (Y01, standards-only; measured over
+  `fixtures/articles/`: title 17/23, date 5/23). `PageContentExtractor` (Y03: fetch→extract→sanitize→image) is the
+  **one** function `ArticleTextRepository` and `SavedLinkRepository` both call — do not clone it. `feeds.isSynthetic`
+  → DB v6 (Y02), seeded `perch:saved-links` row; every general feed query gained `WHERE isSynthetic = 0`, reached
+  explicitly via `findByUrl(SAVED_LINKS_FEED_URL)`. `SavedLinkRepository.saveLink` (Y03) catches a pasted feed by
+  parsing the fetched bytes, not discovery. `SaveLinkViewModel`/`-Sheet` (Y04). Y05 review: grep gate clean, no doc
+  drift, no test weakened.
+- 2026-08-24 — **Z01/#21: `ArchiveDiscovery`** (`data/archive/`) — RFC 5005 `prev-archive` from the feed, then
+  `robots.txt` `Sitemap:`, then `/sitemap.xml`, recursing sitemap indexes (depth ≤3, ≤50 fetches, both named
+  constants). The one post-vs-page signal is a **dated URL path** (`/YYYY/M(/D)?/`) — a permalink convention shared
+  across engines, not a fact about one site; `<lastmod>`/feed-membership were considered but not needed to pass the
+  shape tests, so left for Z02 if it turns out to need them. Gzip sitemaps handled by `.gz` suffix or magic bytes.
+  Grep gate (`data/extract/`, `data/archive/`) clean. `./gradlew test` (debug+release): 938+666=1604, 0 failures.
