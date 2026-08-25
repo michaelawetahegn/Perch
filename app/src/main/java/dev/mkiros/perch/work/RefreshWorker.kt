@@ -5,6 +5,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.ListenableWorker
 import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
+import dev.mkiros.perch.data.repo.BackfillRepository
 import dev.mkiros.perch.data.repo.FeedRepository
 import kotlinx.coroutines.CancellationException
 
@@ -51,13 +52,16 @@ class RefreshWorker(
 }
 
 /**
- * Hands [RefreshWorker] the one dependency it cannot get from a [Context].
+ * Hands each worker the one dependency it cannot get from a [Context].
  *
- * The repository is supplied as a lambda rather than an instance because WorkManager
+ * Both repositories are supplied as lambdas rather than instances because WorkManager
  * builds this factory during app startup, before the database is worth opening — a
  * process woken purely to deliver a broadcast should not pay for Room.
  */
-class PerchWorkerFactory(private val feeds: () -> FeedRepository) : WorkerFactory() {
+class PerchWorkerFactory(
+    private val backfill: () -> BackfillRepository = { error("BackfillWorker needs a BackfillRepository") },
+    private val feeds: () -> FeedRepository,
+) : WorkerFactory() {
 
     override fun createWorker(
         appContext: Context,
@@ -65,6 +69,7 @@ class PerchWorkerFactory(private val feeds: () -> FeedRepository) : WorkerFactor
         workerParameters: WorkerParameters,
     ): ListenableWorker? = when (workerClassName) {
         RefreshWorker::class.java.name -> RefreshWorker(appContext, workerParameters, feeds())
+        BackfillWorker::class.java.name -> BackfillWorker(appContext, workerParameters, backfill())
         else -> null // Anything else falls through to WorkManager's default factory.
     }
 }

@@ -19,6 +19,19 @@ import java.util.zip.GZIPInputStream
 data class ArchivePost(val url: String, val lastmod: Instant? = null)
 
 /**
+ * `scheme://host[:port]` for [url], or null if it has neither. Shared with
+ * [dev.mkiros.perch.data.repo.BackfillRepository] (PLAN-7 Z02), which needs the same root
+ * to fetch `robots.txt` a second time for its `Disallow` rules — [ArchiveDiscovery] only
+ * reads that file's `Sitemap:` lines and does not keep the rest.
+ */
+internal fun hostRoot(url: String): String? = runCatching {
+    val uri = URI(url)
+    val host = uri.host ?: return null
+    val scheme = uri.scheme ?: return null
+    if (uri.port == -1) "$scheme://$host" else "$scheme://$host:${uri.port}"
+}.getOrNull()
+
+/**
  * Finds a site's older posts by published standards alone (PLAN-7 §0.2) — never by
  * knowing anything about the site. In preference order:
  *
@@ -162,13 +175,6 @@ class ArchiveDiscovery(
     private fun rootElement(page: FetchedPage) =
         runCatching { parseFeedXml(String(page.bytes, Charsets.UTF_8), page.finalUrl) }
             .getOrNull()?.children()?.firstOrNull()
-
-    private fun hostRoot(url: String): String? = runCatching {
-        val uri = URI(url)
-        val host = uri.host ?: return null
-        val scheme = uri.scheme ?: return null
-        if (uri.port == -1) "$scheme://$host" else "$scheme://$host:${uri.port}"
-    }.getOrNull()
 
     private fun Map<String, Instant?>.toPosts() = map { (url, lastmod) -> ArchivePost(url, lastmod) }
 

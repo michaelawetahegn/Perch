@@ -43,7 +43,7 @@ class PerchApp : Application(), Configuration.Provider {
 
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
-            .setWorkerFactory(PerchWorkerFactory { container.feeds })
+            .setWorkerFactory(PerchWorkerFactory(feeds = { container.feeds }, backfill = { container.backfill }))
             .build()
 
     override fun onCreate() {

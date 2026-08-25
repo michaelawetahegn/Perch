@@ -6,6 +6,7 @@ import dev.mkiros.perch.data.net.ConnectivityMonitor
 import dev.mkiros.perch.data.net.FeedFetcher
 import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.repo.ArticleTextRepository
+import dev.mkiros.perch.data.repo.BackfillRepository
 import dev.mkiros.perch.data.repo.EntryRepository
 import dev.mkiros.perch.data.repo.FeedRepository
 import dev.mkiros.perch.data.repo.FolderRepository
@@ -83,6 +84,11 @@ class AppContainer(
     /** U10: the article screen's way of getting text a feed did not ship. */
     val articleText: ArticleTextRepository by lazy {
         ArticleTextRepository(entryDao = database.entryDao(), fetcher = fetcher, clock = clock)
+    }
+
+    /** Z02: fills a subscribed source's history in behind its feed (PLAN-7 §0.3, issue #21). */
+    val backfill: BackfillRepository by lazy {
+        BackfillRepository(feedDao = database.feedDao(), entryDao = database.entryDao(), fetcher = fetcher, clock = clock)
     }
 
     /** Y03: a pasted link, saved without ever subscribing to its site (PLAN-6 §0.3/§0.4). */

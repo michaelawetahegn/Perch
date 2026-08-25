@@ -80,3 +80,18 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   across engines, not a fact about one site; `<lastmod>`/feed-membership were considered but not needed to pass the
   shape tests, so left for Z02 if it turns out to need them. Gzip sitemaps handled by `.gz` suffix or magic bytes.
   Grep gate (`data/extract/`, `data/archive/`) clean. `./gradlew test` (debug+release): 938+666=1604, 0 failures.
+- 2026-08-24 — **Z02/#21: `FeedReach`/`BackfillRepository`/`BackfillWorker`.** Reach (§0.4):
+  `EntryDao.reach(feedId)` is `COUNT`/`MIN(publishedAt)` over `entries` — **derived, no
+  migration**, honest before a backfill (the feed's own rows) and after (the archive's).
+  `BackfillRepository.plan()` always recomputes from `ArchiveDiscovery` + `guidsForFeed`, so
+  cancel/resume/idempotent are one property ("not already stored"); `run()` writes through
+  `PageContentExtractor` (Y03's, not cloned), `DEFAULT_DELAY_MILLIS` apart, capped at
+  `MAX_PAGES=40`, worthwhile only past `MATERIALLY_MORE_FACTOR=2`× the feed's own reach.
+  `RobotsRules` (`*` group only) is a **second** `robots.txt` fetch, kept decoupled from
+  `ArchiveDiscovery` rather than threading Disallow through Z01's return type. §0.3a: page
+  metadata wins, then an RFC-5005/sitemap date, then `Instant.EPOCH` + `publishedIsEstimated`.
+  **Trap:** a sitemap URL always has a dated path (`isLikelyPost` requires one), so
+  `PageMetadata.urlDate()` always fires — the "no page date" test needed RFC 5005 fixtures
+  instead. `PerchWorkerFactory` gained a `backfill` lambda **before** `feeds` so
+  `PerchWorkerFactory { repo }` keeps binding to `feeds`. Grep gate clean. `./gradlew test`
+  (debug+release): 962+690=1652 (+24/+24), 0 failures.

@@ -140,6 +140,21 @@ abstract class EntryDao {
     @Query("SELECT COUNT(*) FROM entries")
     abstract suspend fun countAll(): Int
 
+    /** PLAN-7 §0.4: how far [feedId]'s stored history reaches — see [FeedReach]. */
+    @Query(
+        "SELECT COUNT(*) AS entryCount, MIN(publishedAt) AS oldestPublishedAt " +
+            "FROM entries WHERE feedId = :feedId",
+    )
+    abstract suspend fun reach(feedId: Long): FeedReach
+
+    /**
+     * Every guid already stored for [feedId] — what [dev.mkiros.perch.data.repo.BackfillRepository]
+     * checks a candidate URL against before fetching it (`(feedId, guid)`, guid = final URL,
+     * PLAN-7 §0.3), without a lookup per candidate.
+     */
+    @Query("SELECT guid FROM entries WHERE feedId = :feedId")
+    abstract suspend fun guidsForFeed(feedId: Long): List<String>
+
     // ---- read state -----------------------------------------------------------
 
     /** The unified inbox badge. */

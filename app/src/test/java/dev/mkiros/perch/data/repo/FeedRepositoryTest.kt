@@ -585,6 +585,28 @@ class FeedRepositoryTest {
         assertThat(feeds.findById(id)!!.customTitle).isNull()
     }
 
+    // ---- reach (PLAN-7 §0.4, Z02) ------------------------------------------------
+
+    @Test
+    fun `a fresh source's reach is its feed's own oldest entry and count`() = runTest {
+        server.enqueue(ok(rss(item("a1"), item("a2"))))
+        val id = subscribe()
+
+        val reach = repo.reach(id)
+
+        assertThat(reach.entryCount).isEqualTo(2)
+    }
+
+    @Test
+    fun `a source with nothing stored yet has no reach to speak of`() = runTest {
+        val id = addFeed()
+
+        val reach = repo.reach(id)
+
+        assertThat(reach.entryCount).isEqualTo(0)
+        assertThat(reach.oldestPublishedAt).isNull()
+    }
+
     // ---- helpers ---------------------------------------------------------------
 
     /** Paste-to-subscribed, the way the add-source sheet does it: resolve, then commit. */

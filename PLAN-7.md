@@ -155,7 +155,7 @@ No version bump, no release; both live in `PLAN-8` with the version-wide review 
         pasted; `./gradlew test` green with the count in the commit message.
       - Rung: unit
 
-- [ ] **Z02 — A feed's reach is known, and a source can be filled in behind it. TDD. Issue #21.**
+- [x] **Z02 — A feed's reach is known, and a source can be filled in behind it. TDD. Issue #21.**
       §0.3 and §0.4. The repository and worker path; still no UI.
       - **Reach first** (§0.4): after a fetch, a source knows its feed's oldest entry and how
         many entries the feed carried. Prefer deriving it from rows already stored over adding
