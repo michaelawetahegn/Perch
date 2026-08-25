@@ -40,7 +40,7 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   one stream** — `HomeTestTags.section` and `startsSection` are gone; a test naming `"home:section:N"` spells the dead
   tag out on purpose, so nothing can put a header back unnoticed.
 - **U08: the row's 96dp thumbnail square is always reserved.** Coil offline: a `Mapper` succeeds, an `Interceptor`
-  returning `ErrorResult` fails, one that `awaitCancellation()`s stays loading; `stubThumbnails()` for list shots.
+  returning `ErrorResult` fails, one `awaitCancellation()`s stays loading; `stubThumbnails()` for list shots.
 - 2026-08-08 — **U09: the bottom bar and the `NavHost` are siblings**; **Feed's `DrawerState`/`LazyListState` are
   hoisted into `PerchNavHost`** (state remembered inside Feed dies on a tab switch). §0's back policy is the pure
   `nextBackStep(BackState)` in `BackChain.kt`, the enum's order *being* the priority.
@@ -51,8 +51,6 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
 - 2026-08-08 — **U10:** Readability-over-jsoup in `data/extract/`, **no new dependency**; fixtures in
   `fixtures/articles/`. **`ArticleLowering` deletes truncation markers as chrome**, so `FullText` looks for
   "Continue reading" in the *unlowered* text; **an extraction only ever replaces a body it beats.**
-- **U12: the viewer is an overlay, not a destination** — a sibling of the article's `Scaffold` in one `Box`, so the
-  reading position survives; `ZoomedImage` is hoisted to `PerchNavHost`. An open overlay eats `performTouchInput`.
 - 2026-08-08 — **U14 (profile).** DB is **version 5**: `pending_entry_state`, keyed `(feedUrl, guid)`, **no FK to
   `feeds`** — its job is outliving a source that does not exist yet. **`EntryDao.upsertAll` consumes parked rows**,
   so the refresh after a restore cannot undo it; a restore turns a flag **on** and never off, so it is idempotent.
@@ -87,9 +85,6 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   needed. Scoping **does not touch the time window**. Residual (T29): a scoped list repeats the source on every row.
 - **V09/#4: a table joins on its *shape*** — `carriesContentTable` (≥3 rows, ≥2 columns, no nesting, not linky).
   A page fixture is not a feed body: `zdi-page-*.html`.
-- **V11/#7.** Anything spanning a scrolling child — the gutter's rule, a table's edge fade — measures 0 against
-  the article's unbounded height: the rule needs the Row at **`height(IntrinsicSize.Min)`**, the fade is a
-  draw-only `matchParentSize` **sibling** of the scroll (inside it it lands off-screen at the content's far end).
 - 2026-08-10 — **V15.** Gate 8 is the time window, **gate 9** V06's order (the drawer's two queries only, since W03),
   **gate 7** the live page's `publishedAt` order (it stopped counting folder sections at W03), and gate 6b fetches
   V09's ZDI *page* by name because its feed ships full bodies. Gate 5b's floor is U15's 75.4% less 10: the sampled set
@@ -98,3 +93,7 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   and rerun. Healthy, not an exclusion.
 - 2026-08-24 — **X04/#22 review, PLAN-5 entire:** clean on all four questions (no stale "opens expanded" doc,
   `collapsedFolders` grep empty, every X02/X03 test edit additive not weakened); suite 896+631=**1527**, 0 failures.
+- 2026-08-25 — **Y01/#23: `PageMetadataExtractor`**, standards-only, measured over all 23 `fixtures/articles/`
+  files: title 17/23 (74%), date 5/23 (22%) — the 6 untitled have no `<head>` at all; gpuopen's `<time>` has
+  neither `pubdate` nor `itemprop="datePublished"` so §0.2 correctly declines it. JSON-LD via `org.json` needs
+  Robolectric (U14).

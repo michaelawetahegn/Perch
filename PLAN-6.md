@@ -128,7 +128,7 @@ to tell.
 
 ## The tasks
 
-- [ ] **Y01 — A page yields its title and its date, by standards alone. TDD. Issue #23.**
+- [x] **Y01 — A page yields its title and its date, by standards alone. TDD. Issue #23.**
       `gh issue view 23 --json body` first (bare `gh issue view` dies — NOTES.md).
       New `data/extract/PageMetadata.kt`, pure, per §0.2. **Read §0.1 before writing a line:
       no rule in this file may be true of one publisher.**
