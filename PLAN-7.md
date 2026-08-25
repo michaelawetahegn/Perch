@@ -60,6 +60,16 @@ branch, and no "if it looks like Jekyll".
 - **`<link rel="alternate">`** — already how Perch discovers feeds from a homepage
   (`data/parse/FeedDiscovery.kt`); reuse it, do not restate it.
 
+**Telling a post from a tag page is part of this rule, not an exception to it.** A sitemap
+lists everything a site publishes. Z01 separated posts from the rest by a dated path
+segment, which is a real cross-generator convention but only covers the generators that
+date their permalinks — `/posts/<slug>/`, `/p/<slug>` and a bare `/<slug>/` are just as
+common and match nothing. The fix is **not** a list of known prefixes; that is a table of
+engines wearing a different hat. It is to learn the shape from **the site's own feed**,
+whose entry links are the one authoritative sample of what a post URL looks like there,
+and to keep the dated-path rule as the fallback for when no feed is in hand. Z02a.
+
+
 Titles and dates for backfilled posts come from **`PLAN-6`'s `data/extract/PageMetadata.kt`**,
 which is already standards-only and already held to the 23-fixture corpus. **Do not add a
 second metadata path here.** If a backfilled page parses badly, fix `PageMetadata` and the
@@ -183,6 +193,40 @@ No version bump, no release; both live in `PLAN-8` with the version-wide review 
         in this task** — Z04 does that, once, deliberately.
       - Done: every §0.3 clause named as a passing test; `./gradlew test` green with the
         count in the commit message.
+      - Rung: unit
+
+- [ ] **Z02a — A post is recognised by the shape the site itself publishes. TDD. Issue #21.**
+      `ArchiveDiscovery.isLikelyPost` (Z01) accepts **only** a dated path segment
+      (`/2026/07/27/…`). Every URL in `ArchiveDiscoveryTest` is dated, so the gap is
+      invisible: a blog whose permalinks are `/posts/why-i-left/`, `/p/on-rust` or a bare
+      `/on-rust/` — Hugo's default, Ghost, Substack, most hand-rolled generators — matches
+      nothing, and `discover()` returns an empty list while reporting no error.
+      That is §0.2's constraint failing in the *generalisation* direction rather than the
+      site-specific one, and Z04's live gate cannot catch it because the blog it checks is
+      one of the dated ones. **Do not fix this by adding `/posts/` and `/p/` to a list of
+      known prefixes** — that is a table of engines wearing a different hat, and the next
+      generator defeats it.
+      Learn the shape from **the site's own feed**, which every source already has and
+      which is the one authoritative sample of "what a post URL looks like here":
+      1. Take the entry links of the feed the caller passed in. Reduce each to a path
+         shape — segment count, plus which leading segments are literals shared by all of
+         them (`/posts/<slug>/` → `["posts", *]`; `/2026/07/27/<slug>` → `[*, *, *, *]`).
+      2. A sitemap URL is a candidate when it matches that learned shape **or** carries a
+         dated segment (Z01's rule, kept — it is what works when no feed was passed).
+      3. When the feed's own links disagree on shape, or no feed was passed, fall back to
+         Z01's dated-path rule alone rather than guessing.
+      Over-inclusion is acceptable and under-inclusion is not: the backfill is opt-in and
+      Z03 shows the reader the count before anything is fetched, so a few tag pages in the
+      candidate list cost a fetch, while a missed post costs the whole feature.
+      - TDD: RED first. Add to `ArchiveDiscoveryTest` a sitemap of `/posts/<slug>/` URLs
+        with a feed whose entries share that shape, and assert the posts come back and
+        `/tags/rust/` and `/about/` do not. Add the same for a bare-slug site. Keep every
+        existing dated-path test passing unchanged — this rule **adds** reach, it must not
+        remove any.
+      - Done: `./gradlew :app:testDebugUnitTest --tests '*ArchiveDiscoveryTest*'` green with
+        the new cases named in the commit message; the §0.2 grep gate still finds no
+        hostname literal under `data/`; and the KDoc on `isLikelyPost` states that the
+        shape is learned from the site, never from a table of engines.
       - Rung: unit
 
 - [ ] **Z03 — Perch offers the archive, says what it will cost, and shows it working. TDD. Issue #21.**
