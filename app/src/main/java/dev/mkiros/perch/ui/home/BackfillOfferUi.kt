@@ -23,10 +23,13 @@ import dev.mkiros.perch.ui.theme.Dimens
 
 /**
  * PLAN-7 §0.3's offer: how many pages Perch would fetch, named before anything is fetched,
- * so the reader agrees to a stated cost rather than to a vague "get more history".
+ * so the reader agrees to a stated cost rather than to a vague "get more history". Issue
+ * #24: [newPostCount] and [pageCount] are two different numbers whenever the archive holds
+ * more than the cap — both reach the dialog, not just the capped [pageCount].
  */
 @Composable
 fun BackfillOfferDialog(
+    newPostCount: Int,
     pageCount: Int,
     onAccept: () -> Unit,
     onDecline: () -> Unit,
@@ -35,8 +38,13 @@ fun BackfillOfferDialog(
         onDismissRequest = onDecline,
         title = { Text(stringResource(R.string.backfill_offer_title)) },
         text = {
+            val body = if (newPostCount == pageCount) {
+                pluralStringResource(R.plurals.backfill_offer_body, pageCount, pageCount)
+            } else {
+                pluralStringResource(R.plurals.backfill_offer_body_capped, pageCount, newPostCount, pageCount)
+            }
             Text(
-                text = pluralStringResource(R.plurals.backfill_offer_body, pageCount, pageCount),
+                text = body,
                 modifier = Modifier.testTag(BackfillTestTags.OFFER_BODY),
             )
         },

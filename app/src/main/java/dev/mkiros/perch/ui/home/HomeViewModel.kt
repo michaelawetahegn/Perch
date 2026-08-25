@@ -215,9 +215,11 @@ data class SourceDeletePrompt(
 /**
  * PLAN-7 §0.3's offer — a [BackfillRepository.plan] came back worthwhile right after a
  * source was added, or the reader asked for one again from the drawer's selection bar.
- * [pageCount] is what the reader is told **before** anything is fetched.
+ * [newPostCount] and [pageCount] are two different numbers whenever the archive holds more
+ * than [BackfillRepository.MAX_PAGES] (issue #24) — the reader is told both **before**
+ * anything is fetched, not just the capped figure.
  */
-data class BackfillOffer(val feedId: Long, val pageCount: Int)
+data class BackfillOffer(val feedId: Long, val newPostCount: Int, val pageCount: Int)
 
 /**
  * Home's state: the reading list, the source drawer, the filter that ties them together,
@@ -387,7 +389,7 @@ class HomeViewModel(
         val backfill = backfill ?: return
         viewModelScope.launch {
             val plan = backfill.plan(feedId) ?: return@launch
-            if (plan.isWorthwhile) _backfillOffer.value = BackfillOffer(feedId, plan.toFetch.size)
+            if (plan.isWorthwhile) _backfillOffer.value = BackfillOffer(feedId, plan.newPostCount, plan.toFetch.size)
         }
     }
 
@@ -400,7 +402,7 @@ class HomeViewModel(
         val backfill = backfill ?: return
         viewModelScope.launch {
             val plan = backfill.plan(feedId) ?: return@launch
-            if (plan.toFetch.isNotEmpty()) _backfillOffer.value = BackfillOffer(feedId, plan.toFetch.size)
+            if (plan.toFetch.isNotEmpty()) _backfillOffer.value = BackfillOffer(feedId, plan.newPostCount, plan.toFetch.size)
         }
     }
 

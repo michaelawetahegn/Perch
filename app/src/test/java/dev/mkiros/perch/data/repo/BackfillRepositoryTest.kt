@@ -103,6 +103,29 @@ class BackfillRepositoryTest {
     }
 
     @Test
+    fun `plan takes the newest MAX_PAGES by lastmod, undated candidates sorted last`() = runTest {
+        val feedId = addFeed(entryCount = 0, oldest = null)
+        // 38 dated candidates, one day apart (all safely in the past — DateParser's floor
+        // is 2000 and it clamps a future date), shuffled into sitemap document order so a
+        // bare `.take` would not recover date order on its own.
+        val dated = (1..38).map { i ->
+            "https://example.com/2020/01/$i/post-$i" to Instant.parse("2010-01-01T00:00:00Z").plusSeconds(i * 86_400L).toString()
+        }.shuffled(kotlin.random.Random(7))
+        // 5 candidates with a dated URL path but no `<lastmod>` in the sitemap (allowed —
+        // a sitemap entry may omit it), kept in their own document order — with 38 dated
+        // ones the cap (40) only has room for the first two of these once the dated ones
+        // sort ahead.
+        val undated = (1..5).map { i -> "https://example.com/2020/06/$i/undated-post-$i" to null }
+        fetcher.pages[SITE + "sitemap.xml"] = sitemapOf(dated + undated)
+
+        val plan = repo().plan(feedId)!!
+
+        val expectedDatedOrder = dated.sortedByDescending { (_, lastmod) -> lastmod }.map { it.first }
+        assertThat(plan.newPostCount).isEqualTo(43)
+        assertThat(plan.toFetch.map { it.url }).isEqualTo(expectedDatedOrder + listOf(undated[0].first, undated[1].first))
+    }
+
+    @Test
     fun `run fetches and stores every planned post under the real feed's id, unread and unsaved`() = runTest {
         val feedId = addFeed(entryCount = 0, oldest = null, siteUrl = SITE.trimEnd('/'))
         fetcher.pages[SITE + "sitemap.xml"] = sitemapOf(POST_1, POST_2)
@@ -373,6 +396,18 @@ class BackfillRepositoryTest {
             <?xml version="1.0" encoding="UTF-8"?>
             <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
               ${urls.joinToString("\n") { u -> "<url><loc>$u</loc>${lastmod?.let { "<lastmod>$it</lastmod>" }.orEmpty()}</url>" }}
+            </urlset>
+            """.trimIndent().toByteArray(),
+            "application/xml",
+            SITE,
+        )
+
+        /** A sitemap where each URL carries its own `lastmod` (or none), in document order. */
+        fun sitemapOf(entries: List<Pair<String, String?>>) = FetchedPage(
+            """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+              ${entries.joinToString("\n") { (u, lastmod) -> "<url><loc>$u</loc>${lastmod?.let { "<lastmod>$it</lastmod>" }.orEmpty()}</url>" }}
             </urlset>
             """.trimIndent().toByteArray(),
             "application/xml",

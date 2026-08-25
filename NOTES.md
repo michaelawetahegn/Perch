@@ -65,55 +65,28 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   explicitly via `findByUrl(SAVED_LINKS_FEED_URL)`. `SavedLinkRepository.saveLink` (Y03) catches a pasted feed by
   parsing the fetched bytes, not discovery. `SaveLinkViewModel`/`-Sheet` (Y04). Y05 review: grep gate clean, no doc
   drift, no test weakened.
-- 2026-08-24 — **Z01–Z02a/#21: `ArchiveDiscovery`/`BackfillRepository`/`BackfillWorker`**
-  (`data/archive/`, `data/repo/`). Discovery order: RFC 5005 `prev-archive` from the feed →
-  `robots.txt Sitemap:` → `/sitemap.xml`, recursing sitemap indexes (depth ≤3, ≤50 fetches,
-  gzip by `.gz` suffix or magic bytes). Post-vs-page is a **dated URL path** *or* a shape
-  **learned from the feed's own entry links** (`learnPostShape`: segment count + which
-  leading segments every entry agrees on) — covers Hugo `/posts/<slug>/`, Ghost/Substack
-  `/p/<slug>`, bare `/<slug>/`; never a table of engines. Reach (§0.4): `EntryDao.reach
-  (feedId)` is `COUNT`/`MIN(publishedAt)`, derived, no migration. `BackfillRepository.plan()`
-  recomputes from discovery + `guidsForFeed` every call, so cancel/resume/idempotent are one
-  property; `run()` writes through `PageContentExtractor` (Y03's, not cloned),
-  `DEFAULT_DELAY_MILLIS` apart, `MAX_PAGES=40`, worthwhile past `MATERIALLY_MORE_FACTOR=2`×.
-  `RobotsRules` is a second, decoupled `robots.txt` fetch. §0.3a's date chain: page metadata
-  → RFC-5005/sitemap `<lastmod>` → `Instant.EPOCH` + `publishedIsEstimated`.
-  `PerchWorkerFactory` gained a `backfill` lambda **before** `feeds`. Grep gate clean.
-  `./gradlew test` (debug+release): 964+692=1656, 0 failures.
-- 2026-08-24 — **Z03/#21: the offer, its progress, and §0.4's reach sentence** — UI only,
-  no `data/` change. `BackfillRunner` (`ui/home/`) is the seam over WorkManager, mirroring
-  `RefreshScheduler`'s shape — `WorkManagerBackfillRunner` (`work/`) is the real one, a
-  `FakeBackfillRunner` drives tests with no WorkManager at all. `HomeViewModel.sourceAdded`
-  offers only when `BackfillRepository.plan().isWorthwhile`; the drawer's selection bar's
-  new **Fetch older posts** action (`requestBackfill`) re-offers regardless, for a reader
-  who declined. `AddSourceSheet` gained `onAdded(feedId)`, read once before it resets and
-  closes — the host's only chance to see what was just committed. §0.4's reach sentence
-  reads `RelativeTime`'s default (system) zone, so its own test pins `TimeZone.setDefault`
-  (V02 pattern). `./gradlew test` (debug+release): 974+692=1666 (+10/+0), 0 failures.
-- 2026-08-25 — **Z04/#21: the reporter's blog, live.** `fzakaria.com/feed.xml` is now a
-  permanent gate-1 source. Gate 10 asks `ArchiveDiscovery` directly, not
-  `BackfillRepository.plan().toFetch` — `MAX_PAGES` bounds one backfill *run*, not
-  discovery's reach, and sitemap order isn't `<lastmod>` order, so the reporter's post
-  sorted past the cap on attempt 1. Measured: feed 10 entries, discovery 143/133 new, post
-  found, 8140 chars extracted. **Unrelated flake:** `quantpedia.com` failed gate 1 with a
-  TLS `CertPathValidatorException` this run — new, not touched, rerun before excluding.
-  `./gradlew test`: 974+692=1666, 0 failures (no new offline test).
-- 2026-08-25 — **Z05/#21: PLAN-7 review, closing the slice.** Four questions:
-  1. Read `ArchiveDiscovery.kt` line by line — every heuristic traces to a named standard
-     (RFC 5005 `prev-archive`, RFC 9309 `robots.txt Sitemap:`, sitemaps.org `urlset`/
-     `sitemapindex`/gzip) or a cross-generator convention stated in its own KDoc (`DATED_PATH`;
-     `learnPostShape` derives its shape from *that site's own feed*, never a table of
-     engines). Grep gate re-run over every package this plan touched (`data/`, `ui/home/`,
-     `work/`): `grep -rnoE '"[a-z0-9.-]+\.(com|org|net|io|dev|me|ski|ca|xyz|blog)"'` →
-     nothing in either.
-  2. `grep -rln "PageContentExtractor.extract"` → exactly three callers,
-     `ArticleTextRepository`, `SavedLinkRepository`, `BackfillRepository` — one shared
-     function, no second metadata/extraction path.
-  3. `grep -i "all time\|feed publishes\|only what a feed"` over README/SPEC/DESIGN/NOTES/
-     CLAUDE.md → no doc asserts Perch is bounded to what a feed publishes. README's "What
-     it does" also never documents backfill or Y03's paste-a-link — consistent with Y05
-     leaving the same gap; both are deferred to `PLAN-8`'s whole-version doc pass, not
-     doc drift to fix here.
-  4. `git diff 27a8dda..HEAD -- '*Test.kt'` has no removed assertion, no `@Ignore`/
-     `@Disabled` line. Suite grew every task: 1590 (Y05) → 1656 (Z01–Z02a) → 1666
-     (Z03–Z04), unchanged this session. `./gradlew test`: 974+692=1666, 0 failures.
+- 2026-08-24/25 — **PLAN-7 (#21) done, archived.** `ArchiveDiscovery`/`BackfillRepository`/
+  `BackfillWorker` (`data/archive/`, `data/repo/`): discovery order RFC 5005 `prev-archive`
+  → `robots.txt Sitemap:` → `/sitemap.xml` (sitemap indexes recursed, depth ≤3, ≤50 fetches,
+  gzip by suffix or magic bytes); post-vs-page is a **dated URL path** *or* a shape
+  **learned from the feed's own entry links** (`learnPostShape`), never a table of engines.
+  Reach (§0.4): `EntryDao.reach(feedId)`, derived, no migration. `plan()` recomputes from
+  discovery + `guidsForFeed` every call (cancel/resume/idempotent are one property); `run()`
+  writes through `PageContentExtractor` (Y03's, shared — `ArticleTextRepository`/
+  `SavedLinkRepository`/`BackfillRepository`, exactly three callers), `DEFAULT_DELAY_MILLIS`
+  apart, `MAX_PAGES=40`, worthwhile past `MATERIALLY_MORE_FACTOR=2`×. UI: `BackfillRunner`
+  seam (`WorkManagerBackfillRunner` real, `FakeBackfillRunner` in tests), the offer dialog,
+  progress strip, §0.4's reach sentence. `fzakaria.com/feed.xml` is a permanent live gate-1
+  source (10 feed entries, 143/133 discovered, real body). Grep gate clean throughout, no
+  test weakened. `./gradlew test`: 1666 at slice close.
+- 2026-08-25 — **PLAN-8 R00/#24: the newest forty, and two true numbers.**
+  `BackfillRepository.plan()` now does `fresh.sortedByDescending { it.lastmod ?: Instant.MIN
+  }.take(MAX_PAGES)` — discovery order is sitemap *document* order, not date order (Z04
+  measured this live), so an unsorted `.take` handed back an arbitrary 40. `BackfillOffer`
+  now carries both `newPostCount` (the archive's true count) and `pageCount` (the capped
+  run); `backfill_offer_body_capped` is a second plural, used only when they differ, keyed
+  on `pageCount`. **Trap hit while writing the RED test:** `DateParser.plausible()` floors
+  at 2000-01-01 and clamps anything more than 24h in the future to "now" — a synthetic
+  `lastmod` has to land inside that window or it silently becomes `null`/collides with other
+  future dates instead of testing the sort. `./gradlew test` (debug+release): 976+693=1669
+  (+2/+1), 0 failures.

@@ -438,6 +438,7 @@ fun HomeScreen(
 
         backfillOffer?.let { offer ->
             BackfillOfferDialog(
+                newPostCount = offer.newPostCount,
                 pageCount = offer.pageCount,
                 onAccept = viewModel::acceptBackfillOffer,
                 onDecline = viewModel::declineBackfillOffer,

@@ -79,7 +79,11 @@ class BackfillRepository(
 
         return BackfillPlan(
             feedId = feedId,
-            toFetch = fresh.take(MAX_PAGES),
+            // Newest first, unknown lastmod sorted last (Instant.MIN is smaller than any real
+            // timestamp) — discovery order is sitemap *document* order, not date order, and a
+            // capped `.take` over it would hand back an arbitrary 40 rather than the newest 40.
+            // sortedByDescending is stable, so a cancel-and-resume run does not reshuffle ties.
+            toFetch = fresh.sortedByDescending { it.lastmod ?: Instant.MIN }.take(MAX_PAGES),
             newPostCount = fresh.size,
             isWorthwhile = fresh.isNotEmpty() && fresh.size >= reach.entryCount * MATERIALLY_MORE_FACTOR,
         )

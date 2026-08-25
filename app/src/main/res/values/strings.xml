@@ -143,6 +143,13 @@
         <item quantity="one">Its archive holds %1$d more post than the feed gave us. Perch will fetch %1$d page.</item>
         <item quantity="other">Its archive holds %1$d more posts than the feed gave us. Perch will fetch %1$d pages.</item>
     </plurals>
+    <!-- Issue #24: when the archive holds more than the capped run will fetch, the two
+         halves are two different numbers — %1$d is the archive's true count, %2$d is what
+         this run will actually fetch. Quantity is keyed on %2$d, the page count. -->
+    <plurals name="backfill_offer_body_capped">
+        <item quantity="one">Its archive holds %1$d more posts than the feed gave us. Perch will fetch the newest post.</item>
+        <item quantity="other">Its archive holds %1$d more posts than the feed gave us. Perch will fetch the newest %2$d pages.</item>
+    </plurals>
     <string name="backfill_offer_start">Fetch</string>
     <!-- The progress strip while a backfill runs: "Fetching older posts… 3/12". -->
     <string name="backfill_progress">Fetching older posts… %1$d/%2$d</string>

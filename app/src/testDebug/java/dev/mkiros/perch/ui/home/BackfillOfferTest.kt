@@ -148,6 +148,28 @@ class BackfillOfferTest {
         compose.onNodeWithTag(BackfillTestTags.OFFER_DIALOG).assertDoesNotExist()
     }
 
+    @Test
+    fun `when the archive holds more than the cap, the offer states both numbers`() {
+        val fetcher = FakeFetcher()
+        val many = (1..(BackfillRepository.MAX_PAGES + 5)).map { "https://example.com/2020/01/$it/post-$it" }
+        fetcher.pages[SITE + "sitemap.xml"] = sitemapOf(*many.toTypedArray())
+        val feedId = seedFeed(entryCount = 1)
+
+        showHome(fetcher)
+        viewModel.sourceAdded(feedId)
+        awaitViewModel { viewModel.backfillOffer.value != null }
+
+        assertThat(viewModel.backfillOffer.value?.newPostCount).isEqualTo(many.size)
+        assertThat(viewModel.backfillOffer.value?.pageCount).isEqualTo(BackfillRepository.MAX_PAGES)
+        val expected = ApplicationProvider.getApplicationContext<Context>().resources.getQuantityString(
+            dev.mkiros.perch.R.plurals.backfill_offer_body_capped,
+            BackfillRepository.MAX_PAGES,
+            many.size,
+            BackfillRepository.MAX_PAGES,
+        )
+        compose.onNodeWithTag(BackfillTestTags.OFFER_BODY).assertTextEquals(expected)
+    }
+
     // ---- accepting, progress, cancelling ----------------------------------------------
 
     @Test
@@ -237,8 +259,11 @@ class BackfillOfferTest {
     @Test
     @GraphicsMode(GraphicsMode.Mode.NATIVE)
     fun `screenshot the backfill offer`() {
+        // Issue #24: more candidates than MAX_PAGES, so the two counts the dialog states
+        // actually differ — the shot this task's Done-condition asks be retaken and looked at.
         val fetcher = FakeFetcher()
-        fetcher.pages[SITE + "sitemap.xml"] = sitemapOf(POST_1, POST_2, POST_3)
+        val many = (1..(BackfillRepository.MAX_PAGES + 5)).map { "https://example.com/2020/01/$it/post-$it" }
+        fetcher.pages[SITE + "sitemap.xml"] = sitemapOf(*many.toTypedArray())
         val feedId = seedFeed(entryCount = 1, title = "A blog")
 
         showHome(fetcher)

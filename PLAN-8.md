@@ -33,7 +33,7 @@ place with its read state, likes and to-read queue intact.
 
 ## The tasks
 
-- [ ] **R00 — The forty pages a capped backfill fetches are the newest forty, and the offer says two numbers because there are two. TDD. Issue #24.**
+- [x] **R00 — The forty pages a capped backfill fetches are the newest forty, and the offer says two numbers because there are two. TDD. Issue #24.**
       `PLAN-7` Z04's live run measured what no fixture could: `fzakaria.com` discovers **143**
       posts, **133** not yet stored, against `MAX_PAGES = 40`. Every fixture archive we have is
       *smaller* than that cap, so both of these read as correct in every existing test. Z05's
