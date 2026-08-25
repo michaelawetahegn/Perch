@@ -57,6 +57,10 @@ fun AddSourceSheet(
     viewModel: AddSourceViewModel,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Z03/#21: the feed just committed, read once before the sheet resets its own state
+     *  and closes — the host's only chance to see what was added, so it can offer a
+     *  backfill (PLAN-7 §0.3) behind the sheet's own close animation. */
+    onAdded: (Long) -> Unit = {},
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val folders by viewModel.folders.collectAsStateWithLifecycle()
@@ -64,7 +68,9 @@ fun AddSourceSheet(
     var creatingFolder by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(state.addedFeedId) {
-        if (state.addedFeedId != null) {
+        val addedFeedId = state.addedFeedId
+        if (addedFeedId != null) {
+            onAdded(addedFeedId)
             viewModel.reset()
             onDismiss()
         }

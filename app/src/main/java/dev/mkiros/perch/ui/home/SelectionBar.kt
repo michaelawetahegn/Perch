@@ -13,6 +13,7 @@ import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.DriveFileRenameOutline
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -40,6 +41,10 @@ import dev.mkiros.perch.ui.theme.Dimens
  * used to live behind the long press that now starts a selection — a batch rename means
  * nothing, but a reader who long-pressed one source to rename it must still be one tap
  * away from doing so.
+ *
+ * Backfill (PLAN-7 §0.3, Z03) is the same shape as rename: one source only, because the
+ * offer names one archive's page count and a batch of them has no single number to state.
+ * It is how a reader who declined the offer after adding a source changes their mind later.
  */
 @Composable
 fun SelectionBar(
@@ -47,6 +52,7 @@ fun SelectionBar(
     onLeave: () -> Unit,
     onRename: () -> Unit,
     onMove: () -> Unit,
+    onBackfill: () -> Unit,
     onDelete: () -> Unit,
 ) {
     val single = selection.count == 1
@@ -93,6 +99,12 @@ fun SelectionBar(
                 label = stringResource(R.string.selection_move),
                 testTag = SelectionTestTags.MOVE,
                 onClick = onMove,
+            )
+            BarAction(
+                icon = Icons.Default.History,
+                label = stringResource(R.string.selection_backfill),
+                testTag = SelectionTestTags.BACKFILL,
+                onClick = onBackfill,
             )
         }
         BarAction(
@@ -205,6 +217,7 @@ object SelectionTestTags {
     const val CLOSE = "selection:close"
     const val RENAME = "selection:rename"
     const val MOVE = "selection:move"
+    const val BACKFILL = "selection:backfill"
     const val DELETE = "selection:delete"
     const val DELETE_CONFIRM = "selection:delete:confirm"
     const val DELETE_CANCEL = "selection:delete:cancel"

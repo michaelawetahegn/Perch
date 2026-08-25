@@ -229,7 +229,7 @@ No version bump, no release; both live in `PLAN-8` with the version-wide review 
         shape is learned from the site, never from a table of engines.
       - Rung: unit
 
-- [ ] **Z03 — Perch offers the archive, says what it will cost, and shows it working. TDD. Issue #21.**
+- [x] **Z03 — Perch offers the archive, says what it will cost, and shows it working. TDD. Issue #21.**
       §0.3's offer and §0.4's honesty, in the UI.
       - The offer after adding a source whose archive holds materially more than its feed —
         naming **how many pages** will be fetched before the reader agrees. Also reachable

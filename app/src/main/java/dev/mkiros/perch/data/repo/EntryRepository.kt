@@ -5,6 +5,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import dev.mkiros.perch.data.db.EntryDao
 import dev.mkiros.perch.data.db.EntryListItem
+import dev.mkiros.perch.data.db.FeedReach
 import dev.mkiros.perch.data.db.entity.EntryEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -192,6 +193,9 @@ class EntryRepository(
      */
     suspend fun countSavedOrLikedIn(feedIds: Collection<Long>): Int =
         if (feedIds.isEmpty()) 0 else entryDao.countSavedOrLikedIn(feedIds.toList())
+
+    /** PLAN-7 §0.4: how far [feedId]'s stored history reaches — see [FeedReach]. */
+    suspend fun reach(feedId: Long): FeedReach = entryDao.reach(feedId)
 
     /**
      * Marks everything unread as read, scoped exactly as [observeEntries] is — to one

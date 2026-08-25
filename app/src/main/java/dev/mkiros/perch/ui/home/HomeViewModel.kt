@@ -5,12 +5,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import android.content.Context
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import dev.mkiros.perch.data.db.EntryListItem
+import dev.mkiros.perch.data.db.FeedReach
 import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.net.ConnectivityMonitor
+import dev.mkiros.perch.data.repo.BackfillRepository
 import dev.mkiros.perch.data.repo.EntryRepository
 import dev.mkiros.perch.data.repo.FeedRepository
 import dev.mkiros.perch.data.repo.FolderDeleteUndo
@@ -18,6 +21,7 @@ import dev.mkiros.perch.data.repo.FolderRepository
 import dev.mkiros.perch.data.repo.MarkAllReadUndo
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.work.WorkManagerBackfillRunner
 import java.time.Clock
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -28,6 +32,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -208,6 +213,13 @@ data class SourceDeletePrompt(
 }
 
 /**
+ * PLAN-7 §0.3's offer — a [BackfillRepository.plan] came back worthwhile right after a
+ * source was added, or the reader asked for one again from the drawer's selection bar.
+ * [pageCount] is what the reader is told **before** anything is fetched.
+ */
+data class BackfillOffer(val feedId: Long, val pageCount: Int)
+
+/**
  * Home's state: the reading list, the source drawer, the filter that ties them together,
  * and the refresh/error/offline surfacing around all three (T26).
  */
@@ -218,6 +230,10 @@ class HomeViewModel(
     private val clock: Clock,
     connectivity: ConnectivityMonitor = ConnectivityMonitor.AlwaysOnline,
     private val settings: SettingsStore = SettingsStore.inMemory(),
+    /** Z03/#21: null for every test not about backfill — [sourceAdded] and
+     *  [requestBackfill] are then simply no-ops. */
+    private val backfill: BackfillRepository? = null,
+    private val backfillRunner: BackfillRunner = BackfillRunner.NoOp,
 ) : ViewModel() {
 
     /** Total unread, for the drawer's "All sources" row and the bar's subtitle. */
@@ -326,6 +342,91 @@ class HomeViewModel(
     /** The armed source delete, or null. Non-null is what puts the dialog on screen. */
     private val _sourceDeletePrompt = MutableStateFlow<SourceDeletePrompt?>(null)
     val sourceDeletePrompt: StateFlow<SourceDeletePrompt?> = _sourceDeletePrompt.asStateFlow()
+
+    // ---- backfill (Z03/#21, PLAN-7 §0.3/§0.4) ------------------------------------
+
+    /** Non-null is what puts [BackfillOffer]'s dialog on screen. */
+    private val _backfillOffer = MutableStateFlow<BackfillOffer?>(null)
+    val backfillOffer: StateFlow<BackfillOffer?> = _backfillOffer.asStateFlow()
+
+    /** Which source's run the progress strip is watching, or null for none. */
+    private val _runningBackfillId = MutableStateFlow<Long?>(null)
+
+    /**
+     * The watched run's progress, or null while nothing is running. `flatMapLatest` so
+     * switching which source is watched tears down the old subscription rather than
+     * layering a second one over it.
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val backfillProgress: StateFlow<BackfillProgress?> = _runningBackfillId
+        .flatMapLatest { feedId -> feedId?.let(backfillRunner::observe) ?: flowOf(null) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), null)
+
+    /** §0.4: how far the scoped source's stored history reaches; null outside a source scope. */
+    private val _sourceReach = MutableStateFlow<FeedReach?>(null)
+    val sourceReach: StateFlow<FeedReach?> = _sourceReach.asStateFlow()
+
+    init {
+        // Recomputed on a scope change and every time the watched run's progress moves —
+        // the second is what keeps the reach sentence honest once a backfill actually
+        // lands rows, rather than only on the reader's next visit to the source.
+        viewModelScope.launch {
+            combine(scope, backfillProgress) { s, _ -> s }.collect { s ->
+                _sourceReach.value = (s as? HomeScope.Source)?.let { entries.reach(it.id) }
+            }
+        }
+    }
+
+    /**
+     * PLAN-7 §0.3: offered once, right after a source is added, and only when its archive
+     * plainly holds materially more than the feed just gave us — [BackfillRepository.plan]
+     * is where "materially more" (§0.3's `isWorthwhile`) is decided; this never repeats the
+     * check.
+     */
+    fun sourceAdded(feedId: Long) {
+        val backfill = backfill ?: return
+        viewModelScope.launch {
+            val plan = backfill.plan(feedId) ?: return@launch
+            if (plan.isWorthwhile) _backfillOffer.value = BackfillOffer(feedId, plan.toFetch.size)
+        }
+    }
+
+    /**
+     * The same offer, reachable again from the drawer's selection bar (§0.3: "so a reader
+     * who declined can change their mind") — asked for on purpose, so it shows whenever
+     * there is anything left to fetch, not only when it would have been offered unprompted.
+     */
+    fun requestBackfill(feedId: Long) {
+        val backfill = backfill ?: return
+        viewModelScope.launch {
+            val plan = backfill.plan(feedId) ?: return@launch
+            if (plan.toFetch.isNotEmpty()) _backfillOffer.value = BackfillOffer(feedId, plan.toFetch.size)
+        }
+    }
+
+    fun declineBackfillOffer() {
+        _backfillOffer.value = null
+    }
+
+    /** Starts the offered run as work ([dev.mkiros.perch.work.BackfillWorker], Z02), so it
+     *  survives the reader leaving the screen. */
+    fun acceptBackfillOffer() {
+        val offer = _backfillOffer.value ?: return
+        _backfillOffer.value = null
+        _runningBackfillId.value = offer.feedId
+        backfillRunner.enqueue(offer.feedId)
+    }
+
+    /** §0.3: interruptible — whatever the run already stored stays. */
+    fun cancelRunningBackfill() {
+        val feedId = _runningBackfillId.value ?: return
+        backfillRunner.cancel(feedId)
+    }
+
+    /** Hides the progress strip; the run itself is WorkManager's and keeps going regardless. */
+    fun dismissBackfillProgress() {
+        _runningBackfillId.value = null
+    }
 
     /** The reader dismissed the "everything is failing" banner; cleared by the next refresh. */
     private val globalErrorDismissed = MutableStateFlow(false)
@@ -646,7 +747,9 @@ class HomeViewModel(
         /** Five seconds outlives a rotation, so the query is not torn down and rebuilt. */
         private const val STOP_TIMEOUT_MS = 5_000L
 
-        fun factory(container: AppContainer) = viewModelFactory {
+        /** @param context whatever composed the screen; only its application context is
+         *    retained, and only to reach WorkManager (mirrors `SettingsViewModel.factory`). */
+        fun factory(container: AppContainer, context: Context) = viewModelFactory {
             initializer {
                 HomeViewModel(
                     entries = container.entries,
@@ -655,6 +758,8 @@ class HomeViewModel(
                     clock = container.clock,
                     connectivity = container.connectivity,
                     settings = container.settings,
+                    backfill = container.backfill,
+                    backfillRunner = WorkManagerBackfillRunner(context.applicationContext),
                 )
             }
         }

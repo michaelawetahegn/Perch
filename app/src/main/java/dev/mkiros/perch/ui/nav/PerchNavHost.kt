@@ -217,8 +217,9 @@ fun PerchNavHost(
             },
         ) {
             composable(Routes.FEED) {
+                val context = LocalContext.current
                 HomeScreen(
-                    viewModel = viewModel(factory = HomeViewModel.factory(container)),
+                    viewModel = viewModel(factory = HomeViewModel.factory(container, context)),
                     addSourceViewModel = viewModel(factory = AddSourceViewModel.factory(container)),
                     onOpenEntry = { entryId -> navController.navigate(Routes.article(entryId)) },
                     onOpenSettings = { navController.navigate(Routes.SETTINGS) },

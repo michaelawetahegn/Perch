@@ -153,6 +153,9 @@ fun HomeScreen(
     val expandedFolders by viewModel.expandedFolders.collectAsStateWithLifecycle()
     val folderUndo by viewModel.pendingFolderUndo.collectAsStateWithLifecycle()
     val deletePrompt by viewModel.sourceDeletePrompt.collectAsStateWithLifecycle()
+    val backfillOffer by viewModel.backfillOffer.collectAsStateWithLifecycle()
+    val backfillProgress by viewModel.backfillProgress.collectAsStateWithLifecycle()
+    val sourceReach by viewModel.sourceReach.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -220,6 +223,13 @@ fun HomeScreen(
 
     fun moveSelection() {
         if (selection.value is DrawerSelection.Sources) movingId = theOne()
+        leaveSelection()
+    }
+
+    /** Z03/#21: the offer, reachable again for a reader who declined it after adding the
+     *  source (§0.3). */
+    fun backfillSelection() {
+        if (selection.value is DrawerSelection.Sources) viewModel.requestBackfill(theOne())
         leaveSelection()
     }
 
@@ -310,6 +320,7 @@ fun HomeScreen(
                 onLeaveSelection = ::leaveSelection,
                 onRenameSelection = ::renameSelection,
                 onMoveSelection = ::moveSelection,
+                onBackfillSelection = ::backfillSelection,
                 onDeleteSelection = ::deleteSelection,
                 onAddSource = ::addSource,
                 onNewFolder = { creatingFolder = true },
@@ -365,10 +376,26 @@ fun HomeScreen(
                         onDismiss = viewModel::dismissBanner,
                     )
                 }
+                backfillProgress?.let { progress ->
+                    BackfillProgressStrip(
+                        progress = progress,
+                        onCancel = viewModel::cancelRunningBackfill,
+                        onDismiss = viewModel::dismissBackfillProgress,
+                    )
+                }
                 TimeRangeControl(
                     active = uiState.timeFilter,
                     onSelect = viewModel::selectTimeFilter,
                 )
+                // §0.4: the honest reach, so All Time stops implying all history — only
+                // where the confusion #21 was about lives, one source with nothing older.
+                val reachDate = sourceReach?.oldestPublishedAt
+                if (uiState.timeFilter == TimeFilter.AllTime &&
+                    uiState.scope is HomeScope.Source &&
+                    reachDate != null
+                ) {
+                    ReachSentence(oldestPublishedAt = reachDate, nowMillis = uiState.nowMillis)
+                }
                 PullToRefreshBox(
                     isRefreshing = isRefreshing,
                     onRefresh = viewModel::refresh,
@@ -405,6 +432,15 @@ fun HomeScreen(
             AddSourceSheet(
                 viewModel = addSourceViewModel,
                 onDismiss = { addingSource = false },
+                onAdded = viewModel::sourceAdded,
+            )
+        }
+
+        backfillOffer?.let { offer ->
+            BackfillOfferDialog(
+                pageCount = offer.pageCount,
+                onAccept = viewModel::acceptBackfillOffer,
+                onDecline = viewModel::declineBackfillOffer,
             )
         }
 
@@ -675,7 +711,8 @@ private fun BannerStrip(
  * affordance only; the message and the retry are T26's banner. A source with nothing
  * unread stays listed showing 0 rather than disappearing, because the drawer is the
  * subscription list, not a second inbox; the same is true of a folder. Long-pressing a
- * source offers rename, move and remove — see [SourceRow].
+ * source offers rename, move, a backfill offer (PLAN-7 §0.3, Z03) and remove — see
+ * [SourceRow].
  *
  * The whole sheet scrolls: forty-two sources do not fit on a phone.
  */
@@ -694,6 +731,7 @@ private fun SourceDrawer(
     onLeaveSelection: () -> Unit,
     onRenameSelection: () -> Unit,
     onMoveSelection: () -> Unit,
+    onBackfillSelection: () -> Unit,
     onDeleteSelection: () -> Unit,
     onAddSource: () -> Unit,
     onNewFolder: () -> Unit,
@@ -717,6 +755,7 @@ private fun SourceDrawer(
                     onLeave = onLeaveSelection,
                     onRename = onRenameSelection,
                     onMove = onMoveSelection,
+                    onBackfill = onBackfillSelection,
                     onDelete = onDeleteSelection,
                 )
             } else {

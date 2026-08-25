@@ -89,6 +89,8 @@
     <string name="selection_close">Leave selection</string>
     <string name="selection_rename">Rename</string>
     <string name="selection_move">Move to folder</string>
+    <!-- PLAN-7 §0.3/Z03: reachable again for a source whose backfill offer was declined. -->
+    <string name="selection_backfill">Fetch older posts</string>
     <string name="selection_delete">Delete</string>
     <!-- Deleting sources cascades to their entries, so the dialog names what goes. -->
     <plurals name="sources_delete_title">
@@ -134,6 +136,20 @@
     <string name="add_source_error_no_feed">No feed found at that address</string>
     <string name="add_source_error_unreachable">That address could not be reached</string>
     <string name="add_source_error_duplicate">You already follow %1$s</string>
+
+    <!-- Backfill (PLAN-7 §0.3/§0.4, Z03, issue #21): reaching past a feed's own reach. -->
+    <string name="backfill_offer_title">Fetch this source\'s older posts?</string>
+    <plurals name="backfill_offer_body">
+        <item quantity="one">Its archive holds %1$d more post than the feed gave us. Perch will fetch %1$d page.</item>
+        <item quantity="other">Its archive holds %1$d more posts than the feed gave us. Perch will fetch %1$d pages.</item>
+    </plurals>
+    <string name="backfill_offer_start">Fetch</string>
+    <!-- The progress strip while a backfill runs: "Fetching older posts… 3/12". -->
+    <string name="backfill_progress">Fetching older posts… %1$d/%2$d</string>
+    <string name="backfill_progress_done">Finished fetching older posts</string>
+    <string name="backfill_progress_stop">Stop fetching</string>
+    <!-- §0.4: All Time's honest reach, for one scoped source. %1$s is a formatted date. -->
+    <string name="backfill_reach_sentence">Reaches back to %1$s</string>
 
     <!-- Save a link (Y04, PLAN-6 §0.4): one article, saved without subscribing to its site. -->
     <string name="save_link_action">Save a link</string>

@@ -68,33 +68,28 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   explicitly via `findByUrl(SAVED_LINKS_FEED_URL)`. `SavedLinkRepository.saveLink` (Y03) catches a pasted feed by
   parsing the fetched bytes, not discovery. `SaveLinkViewModel`/`-Sheet` (Y04). Y05 review: grep gate clean, no doc
   drift, no test weakened.
-- 2026-08-24 — **Z01/#21: `ArchiveDiscovery`** (`data/archive/`) — RFC 5005 `prev-archive` from the feed, then
-  `robots.txt` `Sitemap:`, then `/sitemap.xml`, recursing sitemap indexes (depth ≤3, ≤50 fetches, both named
-  constants). The one post-vs-page signal is a **dated URL path** (`/YYYY/M(/D)?/`) — a permalink convention shared
-  across engines, not a fact about one site; `<lastmod>`/feed-membership were considered but not needed to pass the
-  shape tests, so left for Z02 if it turns out to need them. Gzip sitemaps handled by `.gz` suffix or magic bytes.
-  Grep gate (`data/extract/`, `data/archive/`) clean. `./gradlew test` (debug+release): 938+666=1604, 0 failures.
-- 2026-08-24 — **Z02/#21: `FeedReach`/`BackfillRepository`/`BackfillWorker`.** Reach (§0.4):
-  `EntryDao.reach(feedId)` is `COUNT`/`MIN(publishedAt)` over `entries` — **derived, no
-  migration**, honest before a backfill (the feed's own rows) and after (the archive's).
-  `BackfillRepository.plan()` always recomputes from `ArchiveDiscovery` + `guidsForFeed`, so
-  cancel/resume/idempotent are one property ("not already stored"); `run()` writes through
-  `PageContentExtractor` (Y03's, not cloned), `DEFAULT_DELAY_MILLIS` apart, capped at
-  `MAX_PAGES=40`, worthwhile only past `MATERIALLY_MORE_FACTOR=2`× the feed's own reach.
-  `RobotsRules` (`*` group only) is a **second** `robots.txt` fetch, kept decoupled from
-  `ArchiveDiscovery` rather than threading Disallow through Z01's return type. §0.3a: page
-  metadata wins, then an RFC-5005/sitemap date, then `Instant.EPOCH` + `publishedIsEstimated`.
-  **Trap:** a sitemap URL always has a dated path (`isLikelyPost` requires one), so
-  `PageMetadata.urlDate()` always fires — the "no page date" test needed RFC 5005 fixtures
-  instead. `PerchWorkerFactory` gained a `backfill` lambda **before** `feeds` so
-  `PerchWorkerFactory { repo }` keeps binding to `feeds`. Grep gate clean. `./gradlew test`
-  (debug+release): 962+690=1652 (+24/+24), 0 failures.
-- 2026-08-24 — **Z02a/#21: `ArchiveDiscovery.isLikelyPost` also matches a shape learned
-  from the feed.** `learnPostShape` reduces each entry link's path to segment count plus
-  which leading segments every entry agrees on (literal) vs disagrees on (wildcard,
-  `null`); a sitemap URL is a post when it's dated **or** matches that shape. No feed, no
-  linked entries, or entries disagreeing on segment count → `null` shape → dated-path-only,
-  unchanged. Covers Hugo `/posts/<slug>/`, Ghost/Substack `/p/<slug>`, bare `/<slug>/` —
-  none hardcoded, all learned per-site. `./gradlew :app:testDebugUnitTest --tests
-  '*ArchiveDiscoveryTest*'`: 9/9 (+2: posts-slug shape, bare-slug shape). Grep gate clean.
-  `./gradlew test` (debug+release): 964+692=1656 (+2/+2), 0 failures.
+- 2026-08-24 — **Z01–Z02a/#21: `ArchiveDiscovery`/`BackfillRepository`/`BackfillWorker`**
+  (`data/archive/`, `data/repo/`). Discovery order: RFC 5005 `prev-archive` from the feed →
+  `robots.txt Sitemap:` → `/sitemap.xml`, recursing sitemap indexes (depth ≤3, ≤50 fetches,
+  gzip by `.gz` suffix or magic bytes). Post-vs-page is a **dated URL path** *or* a shape
+  **learned from the feed's own entry links** (`learnPostShape`: segment count + which
+  leading segments every entry agrees on) — covers Hugo `/posts/<slug>/`, Ghost/Substack
+  `/p/<slug>`, bare `/<slug>/`; never a table of engines. Reach (§0.4): `EntryDao.reach
+  (feedId)` is `COUNT`/`MIN(publishedAt)`, derived, no migration. `BackfillRepository.plan()`
+  recomputes from discovery + `guidsForFeed` every call, so cancel/resume/idempotent are one
+  property; `run()` writes through `PageContentExtractor` (Y03's, not cloned),
+  `DEFAULT_DELAY_MILLIS` apart, `MAX_PAGES=40`, worthwhile past `MATERIALLY_MORE_FACTOR=2`×.
+  `RobotsRules` is a second, decoupled `robots.txt` fetch. §0.3a's date chain: page metadata
+  → RFC-5005/sitemap `<lastmod>` → `Instant.EPOCH` + `publishedIsEstimated`.
+  `PerchWorkerFactory` gained a `backfill` lambda **before** `feeds`. Grep gate clean.
+  `./gradlew test` (debug+release): 964+692=1656, 0 failures.
+- 2026-08-24 — **Z03/#21: the offer, its progress, and §0.4's reach sentence** — UI only,
+  no `data/` change. `BackfillRunner` (`ui/home/`) is the seam over WorkManager, mirroring
+  `RefreshScheduler`'s shape — `WorkManagerBackfillRunner` (`work/`) is the real one, a
+  `FakeBackfillRunner` drives tests with no WorkManager at all. `HomeViewModel.sourceAdded`
+  offers only when `BackfillRepository.plan().isWorthwhile`; the drawer's selection bar's
+  new **Fetch older posts** action (`requestBackfill`) re-offers regardless, for a reader
+  who declined. `AddSourceSheet` gained `onAdded(feedId)`, read once before it resets and
+  closes — the host's only chance to see what was just committed. §0.4's reach sentence
+  reads `RelativeTime`'s default (system) zone, so its own test pins `TimeZone.setDefault`
+  (V02 pattern). `./gradlew test` (debug+release): 974+692=1666 (+10/+0), 0 failures.
