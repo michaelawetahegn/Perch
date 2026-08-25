@@ -71,7 +71,7 @@ place with its read state, likes and to-read queue intact.
         comment naming the commit.
       - Rung: screenshot
 
-- [ ] **R01 — The review pass. The whole of v0.5, read at once.**
+- [x] **R01 — The review pass. The whole of v0.5, read at once.**
       Read `git diff v0.4.0..HEAD` — **the whole of it**, not one slice's worth — and
       answer, in the commit message and in NOTES.md where it outlives the plan:
       1. **Does any doc still describe v0.4?** README.md (its feature list and its six
@@ -110,6 +110,9 @@ place with its read state, likes and to-read queue intact.
          session** — unless the answer is that it is a one-line format change.
       Fix what is small and mechanical **in this session**. Anything larger becomes a new
       GitHub issue for the next plan, named here — **do not start a feature in a review.**
+      Question 6 is not a one-line change (verified: it splits into a blocked SQL projection
+      for the list row, an aggregate-date problem for the reach sentence, and a real UX
+      decision for the byline) — filed as **#25** for v0.6.
       - Done: the five questions answered in the commit message, each with the command that
         settled it; `./gradlew test` green with the count; any new issue created and linked.
       - Rung: unit

@@ -175,13 +175,33 @@ data class EntryEntity(
   val isStarred: Boolean = false,   // "Liked"; permanent
   val starredAt: Long? = null,
   val fetchedAt: Long,
+  val bodyIsExcerpt: Boolean = false,  // v4/U10; contentHtml came from a feed excerpt, not the full article
+  val fullTextAt: Long? = null,        // v4/U10; when Perch fetched the article off its own page
+)
+
+@Entity(tableName = "pending_entry_state", primaryKeys = ["feedUrl", "guid"])
+data class PendingEntryStateEntity(     // v5/U14; reader state a profile restore carried for an
+  val feedUrl: String,                  // entry that hasn't arrived yet — no FK, keyed on what the
+  val guid: String,                     // feed itself says the article is, consumed by EntryDao.upsertAll
+  val isRead: Boolean,
+  val readAt: Long?,
+  val isSaved: Boolean,
+  val savedAt: Long?,
+  val isStarred: Boolean,
+  val starredAt: Long?,
 )
 ```
 
+`feeds` also carries `val isSynthetic: Boolean = false` (v6/PLAN-6 Y02) — true only for the one seeded
+row (`FeedEntity.SAVED_LINKS_FEED_URL`, `"perch:saved-links"`) that a pasted link points at; every
+general feed query gained `WHERE isSynthetic = 0`, reached explicitly by URL elsewhere.
+
 Room schema exported to `app/schemas/`. **Destructive migration was removed at T31** —
 v0.1 is installed for daily use, so every schema change ships a real `Migration` plus its
-`app/schemas/N.json`. Version 1 is v0.1's baseline; version 2 adds folders (U03); version 3 adds read-later and
-the liked/saved timestamps (U04).
+`app/schemas/N.json`. Version 1 is v0.1's baseline; version 2 adds folders (U03); version 3 adds
+read-later and the liked/saved timestamps (U04); version 4 adds `bodyIsExcerpt`/`fullTextAt` for
+full-text extraction (U10); version 5 adds `pending_entry_state` for profile restore (U14); version 6
+adds `feeds.isSynthetic` and seeds the saved-links feed for pasted links (PLAN-6 Y02). Current version: 6.
 
 ## 5. Parsing contract (the standing tests defend this)
 

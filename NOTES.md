@@ -1,11 +1,7 @@
 # NOTES.md
 
-## Environment facts (measured at bootstrap, 2026-08-07)
-
-Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical device, WHPX **enabled**. **The
-`.wslconfig` 7 GB cap only applies after `wsl --shutdown`** — MemTotal ~6.9 GB means live, ~9.9 GB means a freeze.
-
 ## Log
+**The `.wslconfig` 7 GB cap only applies after `wsl --shutdown`** (2026-08-07) — MemTotal ~6.9 GB means live, ~9.9 GB means a freeze. Full environment picture is in CLAUDE.md.
 - **Standing grep gates:** no `Color(0x` / `N.dp` / `N.sp` outside `ui/theme/` — screens address roles, never tones;
   **v0.5: no hostname literal under `data/`** (`grep -rnoE '"[a-z0-9.-]+\.(com|org|net|io|dev|me|ski|ca|xyz|blog)"`) — parse by **standards** (OG, JSON-LD, Dublin Core, sitemaps.org, RFC 5005/9309), never a table of known sites, so one blog's support makes similar ones work; fixtures exempt. **A rule lifting one fixture and moving no other is aimed at a site.**
   **U01: the repo is public** (MIT) — a harvested fixture may differ from the served page by exactly one thing,
@@ -57,7 +53,6 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   so a drawer row is `hasClickAction() and !hasTestTag(HomeTestTags.ENTRY)`.
 - **V08/#10: the scoped list is state, not a route.** `HomeScope` is **hoisted into `PerchNavHost`** — third such
   state — `BackStep.LeaveScope` a rung above `ScrollFeedToTop`. `selectTab` is a silent no-op from the article route (`popUpTo(start){saveState}`/`restoreState`, pop first); scoping does not touch the time window.
-- **`research.checkpoint.com` answers 202 empty when live runs come too close together** (Cloudflare) — wait ~10 quiet minutes and rerun. Healthy, not an exclusion.
 - 2026-08-25 — **PLAN-6 (#23) done, archived.** `PageMetadataExtractor` (Y01, standards-only; measured over
   `fixtures/articles/`: title 17/23, date 5/23). `PageContentExtractor` (Y03: fetch→extract→sanitize→image) is the
   **one** function `ArticleTextRepository` and `SavedLinkRepository` both call — do not clone it. `feeds.isSynthetic`
@@ -90,3 +85,13 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   `lastmod` has to land inside that window or it silently becomes `null`/collides with other
   future dates instead of testing the sort. `./gradlew test` (debug+release): 976+693=1669
   (+2/+1), 0 failures.
+- 2026-08-25 — **PLAN-8 R01: v0.5 read whole, all six questions clean or fixed.** Doc drift:
+  README's feature list gained paste-a-link and archive-backfill; SPEC.md §4 updated to
+  schema v6 (was stuck describing v3). No site-specific parsing: grep gate empty, every
+  `PageMetadata.kt`/`ArchiveDiscovery.kt` rule traced to a standard (OG/JSON-LD/Dublin
+  Core/RFC 5005/9309/sitemaps.org) or a shape learned from the feed itself. No orphans:
+  `collapsedFolders` fully gone, `PageContentExtractor` has one definition and exactly three
+  callers. No test weakened anywhere in `v0.4.0..HEAD`; `FeedCorpusTest` byte-identical to
+  v0.4.0. Suite: **1669** (976 debug + 693 release), grew monotonically from the 1524 floor,
+  every commit touching `src/main` carried its own test. Q6 (a guessed date renders like a
+  known one) is not a one-line fix — filed as **#25** for v0.6.

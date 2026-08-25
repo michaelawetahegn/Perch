@@ -46,6 +46,15 @@ is sanitized against an allowlist on the way *into* the database.
 Readability-style extraction over it, through the same sanitizer as everything else — on open,
 never on refresh, never replacing text with less text. *Load full article* forces it.
 
+**A link, on its own.** Paste an article's URL straight onto To-Read — no source, no feed —
+and Perch fetches the page, extracts a title and body the same way full text does, and drops
+it on the queue as a real, readable entry.
+
+**A source's back catalogue.** When a feed only shows its newest handful, Perch can discover
+the rest — an RFC 5005 archive link, a sitemap, or both — parse by standards alone, and offer
+to fetch what the feed itself doesn't carry. No site is special-cased: the same discovery works
+on anything that publishes the standards it looks for.
+
 **Keeping.** Three independent flags per entry — read, **liked** and **saved for later** —
 each with its own destination in the bottom bar, each surviving a refresh and a reinstall.
 Saved and Liked ignore the time window. Share an article from its toolbar or from a row's
