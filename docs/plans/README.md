@@ -20,8 +20,8 @@ loops must never run at once: they would fight over commits (`RALPH.md` §4).
 | [`PLAN-4-v0.4.md`](PLAN-4-v0.4.md) | v0.4.0 | W01–W12 | The reader's-own-words pass: rolling time windows, one mixed feed, sharing, a wider extractor, and a review pass before every release. |
 | [`PLAN-5-v0.5-slice1.md`](PLAN-5-v0.5-slice1.md) | v0.5.0 | X01–X04 | Slice 1 — the source drawer opens quiet: every category starts collapsed. |
 | [`PLAN-6-v0.5-slice2.md`](PLAN-6-v0.5-slice2.md) | v0.5.0 | Y01–Y05 | Slice 2 — a link you paste is a thing you can read: standards-only page metadata, a synthetic source, and To-Read as the paste target. |
-| [`PLAN-7.md`](../../PLAN-7.md) | v0.5.0 | Z01–Z05 | Slice 3 — a blog's past, not just its present: sitemap/RFC 5005 archive discovery and an opt-in backfill. |
-| [`PLAN-8.md`](../../PLAN-8.md) | v0.5.0 | R01–R03 | Slice 4 — the version read as a whole, live acceptance, and the release. |
+| [`PLAN-7-v0.5-slice3.md`](PLAN-7-v0.5-slice3.md) | v0.5.0 | Z01–Z05 | Slice 3 — a blog's past, not just its present: sitemap/RFC 5005 archive discovery and an opt-in backfill. |
+| [`PLAN-8.md`](../../PLAN-8.md) | v0.5.0 | R00–R03 | Slice 4 — a capped backfill fetches the newest posts and states the archive's true size (#24), then the version read as a whole, live acceptance, and the release. |
 
 [`bootstrap-prompt.md`](bootstrap-prompt.md) is the original prompt that produced
 `SPEC.md`, `DESIGN.md`, `PLAN-1` and `loop.sh` in a single session, before any code
