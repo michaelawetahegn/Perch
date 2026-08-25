@@ -132,9 +132,23 @@ place with its read state, likes and to-read queue intact.
       - **`research.checkpoint.com` answers 202 with an empty body when live runs come too
         close together** (NOTES.md, V15) — wait ~10 quiet minutes and rerun **without**
         probing with `curl` first, because the probe spends the allowance the rerun needs.
+      - **The gate code for this box is already written and sitting uncommitted in the
+        working tree** — a previous session (2026-08-25 00:59) added gates 11 and 12 to
+        `LiveAcceptanceTest.kt` (+195 lines), then ended its turn waiting on a background
+        run and committed nothing. **Read that diff first (`git diff`) and keep it; do not
+        rewrite it.** What is left is running it, reading the counts, and committing.
+      - **Run it in the FOREGROUND and wait, however long it takes.** Do not background it,
+        do not arm a monitor, do not end your turn intending to be woken — this is a headless
+        `claude -p` session and **nothing will wake it**; when your turn ends the loop
+        reclaims the JVMs and kills the run, which is exactly how the 00:59 session lost a
+        12-minute live run and committed nothing. One blocking `Bash` call with a generous
+        timeout (the live suite needs ~15–25 min; the session budget is 2 h):
+        `JAVA_HOME=$HOME/.jdks/temurin-17 PATH=$JAVA_HOME/bin:$PATH ./gradlew
+        :app:testDebugUnitTest -Pperch.live=true --tests '*LiveAcceptance*'`
       - **Bounded: at most three foreground runs.** If a source still fails after the third,
         exclude it with the measurement that settled it, or mark this box BLOCKED — never
-        loop. Never end the session with the run in flight.
+        loop. If a run genuinely cannot finish inside the session, commit the gate code on a
+        `- [BLOCKED: …]` box rather than ending with nothing.
       - Screenshots: the drawer in its new collapsed resting state, To-Read carrying a pasted
         article, and a source offering its archive. Then `./gradlew test assembleRelease` —
         **not `clean`**, which would delete `build/perch-screenshots/`, this box's evidence.
