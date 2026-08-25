@@ -28,8 +28,8 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   wipe** — the cert (SHA-256 `61367c04…fce489`) *is* the update identity and cannot be rotated. Both `chmod 600`,
   outside the repo, **not backed up yet**; absent it, release silently debug-signs. `assembleRelease` runs `lintVitalRelease`.
 - 2026-08-07 — **U03: test databases come from `PerchDatabase.inMemory(context)`** (only it seeds Uncategorized).
-  **U04: a fourth reader-owned flag needs two edits** — `EntryDao.upsertAll` (never Room `@Upsert`: it resolves on the
-  primary key, ours on `(feedId, guid)`) and `deleteReadOlderThan`.
+  **U04: a fourth reader-owned flag needs two edits** — `EntryDao.upsertAll` (never Room `@Upsert`, it resolves on
+  the primary key, ours on `(feedId, guid)`) and `deleteReadOlderThan`.
 - 2026-08-18 — **W07/#17: a page that extracts to null is read again with every `class`/`id` erased** — structure
   alone decides, and a page that already worked never reaches it (the defect was `namesChrome()` matching an
   unanchored substring: Tailwind's `max-lg:overflow-hidden` read as `hidden`). Corpus cost **zero**, HF 0 → 9355. A
@@ -63,15 +63,13 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   deliberately**; a zone test pins `TimeZone.setDefault`. Since W02 the zone decides only what a human *reads*.
 - **V06/#11: folder order is alphabetical (`COLLATE NOCASE`), Uncategorized pinned by `(id = 1) ASC`.** It governs
   the **drawer only** since W03 — `FolderDao.observeAll` and `.getAll`, which must agree; `EntryQueries.LIST_ITEMS`
-  left the rule and is pure recency. `sortIndex` stays a column but decides nothing. **`COLLATE NOCASE` folds
-  ASCII only**: `Émacs` sorts last by UTF-8 byte — pinned by a test, not a bug to "fix".
+  left the rule and is pure recency; `sortIndex` decides nothing (NOCASE-folding quirk: `FolderDao.kt`'s own KDoc).
 - **V07/#13: a missing thumbnail is `surfaceVariant` + the mark in `outline`** (`Placeholder(marked = true)`), **only
   `loading` keeps the bare frame**; `ColorFilter.tint` flattens the mark, so `perchMarkMonochrome(ink, paper)`.
 - **V10/#5: a refused row is `refusesFolder` = "a tick would change nothing"**, so the affordance cannot drift from
   `toggleFolder`. **`combinedClickable(enabled = false)` keeps its `OnClick` action** — assert `assertIsNotEnabled`.
-- **W12: v0.4.0 shipped** — versionCode 5, `app/build/outputs/apk/release/perch-0.4.0.apk`, U02-signed; the release
-  task **renames `app-release.apk` itself** — nothing in Gradle does it, and `output-metadata.json` still names the
-  unrenamed file. On device **`run-as` dies on a release build** — verify through the UI, not sqlite3.
+- **W12: v0.4.0 shipped** — versionCode 5, `perch-0.4.0.apk`, U02-signed; release task renames the apk itself.
+  On device **`run-as` dies on a release build** — verify through the UI, not sqlite3.
 - 2026-08-18 — **W11: the live gate is thirteen gates** — **5c** is #17's Hugging Face page fetched *live* (a fixture
   cannot notice a Tailwind class rename), held to beating the page's own teaser: 9355 vs 51 chars. **The home shot is
   staged freshest-first, not quietest-first** — quietest was right while a small folder bought a section header, and
@@ -98,3 +96,5 @@ Windows 10 Pro 19045.6466, WSL 2.7.11, i7-4790K, 15.9 GB host RAM; no physical d
   is ~70 entries, so one entry is 1.4 of them. **`research.checkpoint.com` answers 202 empty when live runs come too
   close together** (Cloudflare; **a `curl` probe spends the allowance the next run needs**) — wait ~10 quiet minutes
   and rerun. Healthy, not an exclusion.
+- 2026-08-24 — **X04/#22 review, PLAN-5 entire:** clean on all four questions (no stale "opens expanded" doc,
+  `collapsedFolders` grep empty, every X02/X03 test edit additive not weakened); suite 896+631=**1527**, 0 failures.

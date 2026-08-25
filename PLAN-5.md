@@ -159,7 +159,7 @@ scoped to *this* plan's own diff.
         `./gradlew test` green; gate 7's edit quoted in the commit message.
       - Rung: screenshot
 
-- [ ] **X04 — Review of this slice. Everything PLAN-5 changed, read as a whole.**
+- [x] **X04 — Review of this slice. Everything PLAN-5 changed, read as a whole.**
       Scoped to this plan, not the version — `PLAN-8` reads `v0.4.0..HEAD` entire. Read
       `git diff` for this plan's commits only and answer, in the commit message and in
       NOTES.md where it outlives the plan:
