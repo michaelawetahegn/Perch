@@ -227,12 +227,30 @@ class HomeViewModel(
     private val scope = MutableStateFlow<HomeScope>(HomeScope.All)
 
     /**
-     * Which folder sections are shut. Collapsed rather than expanded ids so that a folder
-     * created while the drawer is open comes up open, and so the default — everything
-     * visible — is the empty set.
+     * Which folder sections are open. §0.2: every folder starts shut, so the target default
+     * for this set is empty, not seeded — a reader who opens the drawer sees headers and
+     * nothing else. §0.3: a folder the reader creates still comes up expanded, but that is
+     * no longer a side effect of an empty set (the old collapsed-ids polarity, where nothing
+     * being collapsed meant everything open) — it is explicit: creating a folder is to add
+     * its id here.
+     *
+     * X01 note: this task only inverts the polarity, so the empty-default and the explicit
+     * add-on-create both wait for X02. Until then this set is seeded with every folder id as
+     * folders arrive (below), which keeps *today's* behaviour — everything expanded —
+     * identical under the new polarity.
      */
-    private val _collapsedFolders = MutableStateFlow<Set<Long>>(emptySet())
-    val collapsedFolders: StateFlow<Set<Long>> = _collapsedFolders.asStateFlow()
+    private val _expandedFolders = MutableStateFlow<Set<Long>>(emptySet())
+    val expandedFolders: StateFlow<Set<Long>> = _expandedFolders.asStateFlow()
+
+    init {
+        // X01 seeding, deleted by X02: union every folder id as folders arrive so "all
+        // expanded" reads identically to the old empty-collapsed-set default.
+        viewModelScope.launch {
+            folders.observeFolders().collect { list ->
+                _expandedFolders.update { it + list.map(FolderEntity::id) }
+            }
+        }
+    }
 
     /** Settings' "show read entries" (T27). Flipping it re-queries; it never filters here. */
     private val showReadEntries: Flow<Boolean> =
@@ -437,8 +455,8 @@ class HomeViewModel(
 
     /** Shows or hides one folder's sources in the drawer. Presentation only. */
     fun toggleFolderExpanded(folderId: Long) {
-        _collapsedFolders.update { collapsed ->
-            if (folderId in collapsed) collapsed - folderId else collapsed + folderId
+        _expandedFolders.update { expanded ->
+            if (folderId in expanded) expanded - folderId else expanded + folderId
         }
     }
 

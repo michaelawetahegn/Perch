@@ -150,7 +150,7 @@ fun HomeScreen(
     val entries = viewModel.pagedEntries.collectAsLazyPagingItems()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val pendingUndo by viewModel.pendingUndo.collectAsStateWithLifecycle()
-    val collapsedFolders by viewModel.collapsedFolders.collectAsStateWithLifecycle()
+    val expandedFolders by viewModel.expandedFolders.collectAsStateWithLifecycle()
     val folderUndo by viewModel.pendingFolderUndo.collectAsStateWithLifecycle()
     val deletePrompt by viewModel.sourceDeletePrompt.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -299,7 +299,7 @@ fun HomeScreen(
             SourceDrawer(
                 state = uiState,
                 totalUnread = totalUnread,
-                collapsedFolders = collapsedFolders,
+                expandedFolders = expandedFolders,
                 selection = selection.value,
                 onSelectSource = ::select,
                 onSelectFolder = ::selectFolder,
@@ -683,7 +683,7 @@ private fun BannerStrip(
 private fun SourceDrawer(
     state: HomeUiState,
     totalUnread: Int,
-    collapsedFolders: Set<Long>,
+    expandedFolders: Set<Long>,
     selection: DrawerSelection,
     onSelectSource: (Long?) -> Unit,
     onSelectFolder: (Long) -> Unit,
@@ -751,7 +751,7 @@ private fun SourceDrawer(
                 FolderHeaderRow(
                     folder = folder,
                     selected = state.selectedFolderId == folder.id,
-                    expanded = folder.id !in collapsedFolders,
+                    expanded = folder.id in expandedFolders,
                     selection = selection,
                     onSelect = {
                         if (selecting) onToggleFolderTick(folder.id) else onSelectFolder(folder.id)
@@ -760,7 +760,7 @@ private fun SourceDrawer(
                     onToggle = { onToggleFolder(folder.id) },
                     onActions = { onFolderActions(folder.id) },
                 )
-                if (folder.id !in collapsedFolders) {
+                if (folder.id in expandedFolders) {
                     folder.sources.forEach { source ->
                         SourceRow(
                             source = source,

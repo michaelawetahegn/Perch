@@ -58,7 +58,7 @@ scoped to *this* plan's own diff.
 
 ## The tasks
 
-- [ ] **X01 — The drawer's expansion is expressed as what is open, with behaviour unchanged. TDD. Issue #22.**
+- [x] **X01 — The drawer's expansion is expressed as what is open, with behaviour unchanged. TDD. Issue #22.**
       `gh issue view 22 --json body` first — this `gh` is old and a bare `gh issue view 22`
       dies on a Projects GraphQL field (NOTES.md).
       **Pure refactor: at the end of this task the drawer still opens with every folder

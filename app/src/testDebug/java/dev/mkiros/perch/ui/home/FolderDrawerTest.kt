@@ -201,6 +201,29 @@ class FolderDrawerTest {
         assertThat(folderNames()).containsExactly(FolderEntity.UNCATEGORIZED_NAME, "Graphics")
     }
 
+    /**
+     * §0.3: the old collapsed-ids polarity kept this true as a side effect of the empty
+     * set — nothing collapsed meant everything open, including a folder that did not exist
+     * yet when the drawer opened. The invariant survives the inversion to expanded-ids
+     * (X01); nothing pinned it until now.
+     */
+    @Test
+    fun `a folder created while the drawer is open comes up expanded`() {
+        showHome()
+        openDrawer()
+        compose.onNodeWithText("New folder").performSemanticsAction(SemanticsActions.OnClick)
+        compose.onNodeWithTag(FolderActionTestTags.NAME_FIELD)
+            .performTextReplacement("Graphics")
+        tap(FolderActionTestTags.NAME_CONFIRM)
+        awaitState { state -> state.folders.any { it.name == "Graphics" } }
+        val graphics = folders().first { it.name == "Graphics" }.id
+
+        seedFeed(title = "GPUOpen", folderId = graphics)
+        awaitDb { feedTitles().contains("GPUOpen") }
+
+        compose.onNodeWithText("GPUOpen").assertIsDisplayed()
+    }
+
     @Test
     fun `renaming a folder from its overflow renames the row, not the sources in it`() {
         val graphics = seedFolder("Graphics")
