@@ -408,8 +408,10 @@ class HomeScreenTest {
         awaitState { it.selectedTitle == null }
 
         compose.onNodeWithTag(HomeTestTags.TITLE).assertTextEquals("Feed")
-        // Close the drawer the long press left open, then look at the list itself.
-        selectInDrawer("All sources", expectedTitle = null)
+        // S03/#30: this used to select "All sources" first — the reader's own workaround
+        // — and so passed while the bug was live, because the bar reverts to "Feed" the
+        // moment the source is gone even though the query stays pointed at its id. The
+        // list has to be right *here*, with nothing touched in between.
         awaitDisplayed("Only in two")
         compose.onNodeWithText("Only in one").assertDoesNotExist()
     }

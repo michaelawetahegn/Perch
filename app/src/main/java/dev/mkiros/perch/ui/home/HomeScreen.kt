@@ -195,6 +195,27 @@ fun HomeScreen(
         scope.launch { drawerState.close() }
     }
 
+    /**
+     * S03/#30: widens the Feed back to everything when what it is narrowed to is about
+     * to stop existing.
+     *
+     * The scope is a bare id, so deleting the source or folder it names leaves
+     * `LIST_ITEMS` joining on a row that is gone and the list comes back empty — while
+     * the bar reads "Feed", because [HomeUiState.scope] is *resolved* against the
+     * sources that still exist and the raw scope the query runs under is not. That
+     * duality is deliberate (T24) and stays; what was missing is a writer on the delete
+     * path. The nav shell owns the scope (V08), so it is widened here rather than in the
+     * view-model, which must never become a second owner.
+     */
+    fun widenScopeIfRemoved(sourceIds: Set<Long> = emptySet(), folderIds: Set<Long> = emptySet()) {
+        val stranded = when (val current = homeScope.value) {
+            is HomeScope.Source -> current.id in sourceIds
+            is HomeScope.Folder -> current.id in folderIds
+            HomeScope.All -> false
+        }
+        if (stranded) homeScope.value = HomeScope.All
+    }
+
     fun addSource() {
         scope.launch { drawerState.close() }
         addingSource = true
@@ -243,6 +264,7 @@ fun HomeScreen(
         when (val ticked = selection.value) {
             is DrawerSelection.Folders -> {
                 leaveSelection()
+                widenScopeIfRemoved(folderIds = ticked.ids)
                 viewModel.deleteFolders(ticked.ids)
             }
             is DrawerSelection.Sources -> viewModel.promptRemoveSources(ticked.ids)
@@ -480,6 +502,7 @@ fun HomeScreen(
                 savedOrLikedCount = prompt.savedOrLikedCount,
                 onConfirm = {
                     leaveSelection()
+                    widenScopeIfRemoved(sourceIds = prompt.feedIds)
                     viewModel.confirmRemoveSources()
                 },
                 onDismiss = viewModel::cancelRemoveSources,
@@ -518,6 +541,7 @@ fun HomeScreen(
                 folderName = folder.name,
                 onConfirm = {
                     deletingFolderId = null
+                    widenScopeIfRemoved(folderIds = setOf(folder.id))
                     viewModel.deleteFolder(folder.id)
                 },
                 onDismiss = { deletingFolderId = null },

@@ -19,6 +19,11 @@
   guarding **both** `onDismissRequest` and `rememberModalBottomSheetState(confirmValueChange = …)`; guarding one leaves
   an invisible sheet still composed. The rule itself lives on the state (`SaveLinkUiState.canDismiss`) so a VM test can
   assert it — the container is undrivable from a test.
+  **S03/#30: `HomeScope` is a bare id, so every delete path must widen it** — `HomeScreen.widenScopeIfRemoved`
+  runs before `confirmRemoveSources`, `deleteFolders` and `deleteFolder`. The shell owns the scope (V08); the VM's
+  *resolved* scope (`HomeViewModel.kt:463-471`) feeds the bar's title only, never the query, which is why the bar
+  said "Feed" over an empty list. A test that taps "All sources" before looking at the rows tests the reader's
+  workaround, not the bug.
 - 2026-08-07 — **Live acceptance** (`acceptance/LiveAcceptanceTest`, `testDebug`): `./gradlew :app:testDebugUnitTest
   -Pperch.live=true --tests '*LiveAcceptance*'`. **V12/#8: gate 1 has no quota** — every source in `feeds.txt` bar
   `EXCLUDED_SOURCES` must pull (38/38 today), so a break arrives as a URL, and an exclusion carries the measurement

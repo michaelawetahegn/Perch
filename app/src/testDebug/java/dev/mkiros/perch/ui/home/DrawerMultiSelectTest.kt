@@ -72,6 +72,7 @@ class DrawerMultiSelectTest {
     private lateinit var viewModel: HomeViewModel
     private lateinit var drawerState: DrawerState
     private lateinit var selection: MutableState<DrawerSelection>
+    private lateinit var homeScope: MutableState<HomeScope>
 
     private val now = Instant.parse("2026-08-08T12:00:00Z")
     private val clock = Clock.fixed(now, ZoneOffset.UTC)
@@ -298,6 +299,30 @@ class DrawerMultiSelectTest {
         assertThat(folderIdOf("Zero Day Initiative")).isEqualTo(security)
     }
 
+    /**
+     * S03/#30's folder twin. The scope is a bare id, so deleting the folder the Feed is
+     * narrowed to leaves the list querying a folder that is gone — the same empty Feed
+     * the reader reported for sources, reached from the other half of the drawer.
+     */
+    @Test
+    fun `deleting the folder being filtered on widens the feed back to every source`() {
+        val graphics = seedFolder("Graphics")
+        val gpuopen = seedFeed(title = "GPUOpen", folderId = graphics)
+        val other = seedFeed(title = "Zero Day Initiative")
+        seedEntry(feedId = gpuopen, title = "Only in Graphics")
+        seedEntry(feedId = other, title = "Outside every folder")
+
+        showHome()
+        tapFolder(graphics)
+        awaitDb { viewModel.uiState.value.selectedTitle == "Graphics" }
+        longPressFolder(graphics)
+        tap(SelectionTestTags.DELETE)
+        awaitDb { folderNames() == listOf(FolderEntity.UNCATEGORIZED_NAME) }
+
+        assertThat(homeScope.value).isEqualTo(HomeScope.All)
+        awaitDisplayed("Outside every folder")
+    }
+
     // ---- deleting sources: not reversible, so a dialog -------------------------------
 
     @Test
@@ -480,6 +505,21 @@ class DrawerMultiSelectTest {
 
     private fun folderIdOf(title: String) = feeds().first { it.title == title }.folderId
 
+    /**
+     * Waits for [text] to be on screen and *unobscured*, in wall-clock time. Distinct
+     * from [awaitDb]: the database can already be right while the list behind the open
+     * drawer has not been re-queried yet.
+     */
+    private fun awaitDisplayed(text: String) {
+        val deadline = System.currentTimeMillis() + TIMEOUT_MS
+        while (System.currentTimeMillis() < deadline) {
+            compose.waitForIdle()
+            runCatching { compose.onNodeWithText(text).assertIsDisplayed() }.onSuccess { return }
+            Thread.sleep(POLL_MS)
+        }
+        compose.onNodeWithText(text).assertIsDisplayed()
+    }
+
     /** Waits for a *later* database emission in wall-clock time (NOTES.md, T22). */
     private fun awaitDb(predicate: () -> Boolean) {
         val deadline = System.currentTimeMillis() + TIMEOUT_MS
@@ -507,6 +547,9 @@ class DrawerMultiSelectTest {
             selection = rememberSaveable(stateSaver = DrawerSelection.Saver) {
                 mutableStateOf<DrawerSelection>(DrawerSelection.None)
             }
+            homeScope = rememberSaveable(stateSaver = HomeScope.Saver) {
+                mutableStateOf<HomeScope>(HomeScope.All)
+            }
             PerchTheme(dynamicColor = false) {
                 HomeScreen(
                     viewModel = viewModel,
@@ -515,6 +558,7 @@ class DrawerMultiSelectTest {
                     onOpenSettings = {},
                     drawerState = drawerState,
                     selection = selection,
+                    homeScope = homeScope,
                 )
             }
         }

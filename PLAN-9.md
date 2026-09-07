@@ -290,7 +290,7 @@ a route, for reasons that apply identically here. Hoist the search state beside 
         leaves the reason on screen; `./gradlew test` green and growing; issue #33 closed.
       - Rung: unit
 
-- [ ] **S03 — Deleting the source you are reading leaves you on a Feed with articles in it. TDD. Issue #30.**
+- [x] **S03 — Deleting the source you are reading leaves you on a Feed with articles in it. TDD. Issue #30.**
       `gh issue view 30 --json body` — the reader's words: "it shows 0 elements… If I open the
       left-hand menu again and choose Feed, all of a sudden the articles populate."
       §0.5 carries the root cause: the hoisted `homeScope` (`PerchNavHost.kt:157-159`) is never
