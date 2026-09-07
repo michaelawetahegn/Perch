@@ -54,6 +54,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.mkiros.perch.R
 import dev.mkiros.perch.data.parse.ArticleBlock
@@ -346,8 +347,8 @@ private fun Article(
 }
 
 /**
- * `SOURCE · AUTHOR · 3 AUG 2026`, with the source segment a way into that source's list
- * (V08, issue #10).
+ * Two lines of subheading: the source, and `AUTHOR · 3 AUG 2026` beneath it — the source
+ * segment a way into that source's list (V08, issue #10).
  *
  * Only the source is interactive: the author is not a destination Perch has and a date is
  * not a link at all, so the line is composed of segments rather than made tappable whole.
@@ -356,14 +357,24 @@ private fun Article(
  * underline rather than in a coloured hyperlink, which is the loudest way for a reading
  * surface to stop looking like a publication.
  *
- * The row is [Dimens.touchTarget] tall whether or not the source is there, so an entry
+ * It stacks rather than running along one line (S05, issue #32) because a `Row` of three
+ * independently-measured segments has no good overflow: when a long source and a long
+ * author exceed the measure, only the last segment wraps, it folds under the first, and
+ * the source ends up vertically centred against the two-line block beside it. Stacked,
+ * the length of either part changes nothing about the shape. `EntryRow` reached the same
+ * arrangement for the same reason (W04) — source above, date beneath.
+ *
+ * The block is [Dimens.touchTarget] tall whether or not the source is there, so an entry
  * whose feed row has gone does not shift the article up under the headline.
  */
 @Composable
 private fun Byline(state: ArticleUiState.Loaded, onOpenSource: (Long) -> Unit) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.heightIn(min = Dimens.touchTarget).padding(bottom = Dimens.sm),
+    Column(
+        // The old single line sat inside a [Dimens.touchTarget] box, so a good half of
+        // the gap under it was the hit area's own slack. Stacked, the second line ends
+        // at the block's edge and that slack has to be asked for, or the byline crowds
+        // the standfirst it introduces.
+        modifier = Modifier.heightIn(min = Dimens.touchTarget).padding(bottom = Dimens.lg),
     ) {
         val rest = state.byline
         state.source?.let { source ->
@@ -372,6 +383,10 @@ private fun Byline(state: ArticleUiState.Loaded, onOpenSource: (Long) -> Unit) {
                 style = ArticleType.byline,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textDecoration = ArticleType.link,
+                // One line: the source is the tappable segment, and a name that wrapped
+                // would put half a control on a line of its own.
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
                     .clip(MaterialTheme.shapes.extraSmall)
                     .clickable(
@@ -382,22 +397,17 @@ private fun Byline(state: ArticleUiState.Loaded, onOpenSource: (Long) -> Unit) {
                     .wrapContentHeight()
                     .testTag(ArticleTestTags.SOURCE),
             )
-            if (rest.isNotEmpty()) {
-                Text(
-                    text = ArticleViewModel.SEPARATOR,
-                    style = ArticleType.byline,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
         }
         if (rest.isNotEmpty()) {
             Text(
                 text = rest,
                 style = ArticleType.byline,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                // Lets a long author name wrap rather than run off the measure; the
-                // source keeps its intrinsic width because it is the tappable one.
-                modifier = Modifier.weight(1f, fill = false).testTag(ArticleTestTags.BYLINE),
+                // Two co-authors and a date can legitimately need a second line; past
+                // that the byline has stopped being a subheading and is ellipsized.
+                maxLines = BYLINE_MAX_LINES,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.testTag(ArticleTestTags.BYLINE),
             )
         }
     }
@@ -476,3 +486,6 @@ object ArticleTestTags {
 
 /** The summary is a stand-in for the body, so it reads a shade quieter than one. */
 private const val EMPTY_BODY_ALPHA = 0.92f
+
+/** How far the second byline line may run before it is ellipsized (S05, issue #32). */
+private const val BYLINE_MAX_LINES = 2

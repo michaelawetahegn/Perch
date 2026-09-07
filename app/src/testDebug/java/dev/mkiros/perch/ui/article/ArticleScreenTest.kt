@@ -159,6 +159,35 @@ class ArticleScreenTest {
             .assertTextEquals("CHRIS WELLONS · 3 AUG 2026")
     }
 
+    // ---- S05 (issue #32): the byline is a subheading of two lines --------------------
+
+    /**
+     * The reader's screenshot: a long source and a long author overran the measure, and
+     * because the line was a `Row` of independently-measured segments only the *last* one
+     * wrapped — it folded under the source and the source sat vertically centred against
+     * the two-line block beside it. Nothing was cut off, so the only thing wrong with it
+     * was the shape.
+     *
+     * The shape is what this pins: source above, the rest beneath it, both starting at
+     * the same margin, whatever the two of them measure.
+     */
+    @Test
+    fun `a long byline stacks the source above the rest instead of wrapping around it`() {
+        val feedId = seedFeed(title = "Global Investigative Journalism Network")
+        val entryId = seedEntry(
+            feedId = feedId,
+            title = "Investigating Inside Conflict Zones in Africa",
+            author = "Benon Herbert Oluka and Rowan Philp",
+        )
+
+        showArticle(entryId)
+
+        val source = compose.onNodeWithTag(ArticleTestTags.SOURCE).fetchSemanticsNode()
+        val rest = compose.onNodeWithTag(ArticleTestTags.BYLINE).fetchSemanticsNode()
+        assertThat(source.boundsInRoot.bottom).isAtMost(rest.boundsInRoot.top)
+        assertThat(source.boundsInRoot.left).isWithin(0.5f).of(rest.boundsInRoot.left)
+    }
+
     @Test
     fun `opening an entry marks it read`() {
         val feedId = seedFeed(title = "Null Program")

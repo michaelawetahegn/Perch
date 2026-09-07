@@ -27,6 +27,8 @@ import coil.map.Mapper
 import coil.request.Options
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.PerchDatabase
+import dev.mkiros.perch.data.db.entity.EntryEntity
+import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.debug.DebugSeeder
 import dev.mkiros.perch.data.settings.SettingsStore
@@ -227,6 +229,20 @@ class DesignScreenshotTest {
         capture("article")
     }
 
+    /**
+     * S05 (issue #32). The seeded shot above cannot show this: `nullprogram.com` has a
+     * short name and no separate author, so its byline has never come near the measure.
+     * This one is the reader's own case — a five-word source and two co-authors — and it
+     * is the only frame that says whether the stacked byline still reads as one
+     * subheading rather than as two unrelated lines.
+     */
+    @Test
+    fun `an article whose byline is too long for one line`() {
+        showArticle(seedLongBylineEntry())
+
+        capture("article-long-byline")
+    }
+
     @Test
     fun `the add-source sheet`() {
         seed()
@@ -398,6 +414,47 @@ class DesignScreenshotTest {
     /** The id of a folder created by [sortIntoFolders], by its name. */
     private fun folderIdOf(name: String): Long = runBlocking {
         database.folderDao().findByName(name)!!.id
+    }
+
+    /**
+     * A source and an author long enough to overrun the byline, seeded straight in: the
+     * shot is of a layout, not of a fetch, and no fixture in the corpus is this verbose.
+     */
+    private fun seedLongBylineEntry(): Long = runBlocking {
+        val feedId = database.feedDao().insert(
+            FeedEntity(
+                feedUrl = "https://example.org/gijn/feed.xml",
+                siteUrl = "https://example.org/gijn",
+                title = "Global Investigative Journalism Network",
+                customTitle = null,
+                faviconUrl = null,
+                etag = null,
+                lastModified = null,
+                lastFetchedAt = null,
+                lastSuccessAt = null,
+                lastError = null,
+                addedAt = now.toEpochMilli(),
+            ),
+        )
+        database.entryDao().insert(
+            EntryEntity(
+                feedId = feedId,
+                guid = "long-byline",
+                title = "Investigating Inside Conflict Zones in Africa",
+                link = "https://example.org/gijn/conflict-zones",
+                author = "Benon Herbert Oluka and Rowan Philp",
+                publishedAt = now.minusSeconds(2 * 24 * 60 * 60).toEpochMilli(),
+                publishedIsEstimated = false,
+                summary = "Reporters who cover war zones on the continent on what it takes.",
+                contentHtml = "<p>${"Reporting from a conflict zone begins long before the " +
+                    "reporter arrives. "}</p><h2>Before the border</h2><p>${"Fixers, " +
+                    "insurance, and a plan for getting out again. "}</p>",
+                imageUrl = null,
+                isRead = false,
+                readAt = null,
+                fetchedAt = now.toEpochMilli(),
+            ),
+        )
     }
 
     /** An entry with a body, from the source whose feed URL contains [host]. */

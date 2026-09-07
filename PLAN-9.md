@@ -332,7 +332,7 @@ a route, for reasons that apply identically here. Hoist the search state beside 
         confirm-removes-and-widens; `./gradlew test` green and growing; issue #29 closed.
       - Rung: unit
 
-- [ ] **S05 — The byline wraps like a subheading, not like a paragraph. TDD + screenshot. Issue #32.**
+- [x] **S05 — The byline wraps like a subheading, not like a paragraph. TDD + screenshot. Issue #32.**
       `gh issue view 32 --json body` — the reader's words and the screenshot: "where it goes to
       the next line, it looks wrong".
       §0.6 carries the decided layout — **`Byline` (`ArticleScreen.kt:362-404`) becomes a
