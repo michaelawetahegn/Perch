@@ -379,6 +379,15 @@ fun HomeScreen(
                         HomeOverflow(
                             onRefresh = viewModel::refresh,
                             onMarkAllRead = viewModel::markAllRead,
+                            // S04/#29. The *resolved* scope (`HomeViewModel.kt:463-471`),
+                            // not the raw one: it is already the scope filtered down to a
+                            // source that exists and is not synthetic, because it is
+                            // resolved against `uiState.sources` and `FeedDao` never hands
+                            // the saved-links row out. So a null here is exactly the two
+                            // cases the item must be absent for, and the check is one.
+                            onRemoveSource = (uiState.scope as? HomeScope.Source)?.let { s ->
+                                { viewModel.promptRemoveSources(setOf(s.id)) }
+                            },
                         )
                     },
                     scrollBehavior = scrollBehavior,
@@ -609,9 +618,17 @@ fun HomeScreen(
  * The app bar's overflow (DESIGN.md §5). Refresh is here as well as under the pull
  * gesture because a list short enough not to scroll still has to be refreshable, and
  * because it is where a reader looks for it. "Show read entries" joins these two in T27.
+ * S04/#29 adds a third item that comes and goes with the scope.
+ *
+ * @param onRemoveSource null unless the Feed is narrowed to a source that can actually be
+ *   unsubscribed from, in which case the item is not drawn at all.
  */
 @Composable
-private fun HomeOverflow(onRefresh: () -> Unit, onMarkAllRead: () -> Unit) {
+private fun HomeOverflow(
+    onRefresh: () -> Unit,
+    onMarkAllRead: () -> Unit,
+    onRemoveSource: (() -> Unit)?,
+) {
     var expanded by remember { mutableStateOf(false) }
 
     IconButton(onClick = { expanded = true }) {
@@ -638,6 +655,20 @@ private fun HomeOverflow(onRefresh: () -> Unit, onMarkAllRead: () -> Unit) {
             },
             modifier = Modifier.testTag(HomeTestTags.REFRESH),
         )
+        // S04/#29: the shortcut out of the source you are reading, so unsubscribing does
+        // not mean drawer → long-press → Delete. Absent rather than disabled when there
+        // is no source to name — the drawer's precedent for a row it will not delete is
+        // that a rule reads as a rule, never as a control that does nothing.
+        if (onRemoveSource != null) {
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.action_remove_source)) },
+                onClick = {
+                    expanded = false
+                    onRemoveSource()
+                },
+                modifier = Modifier.testTag(HomeTestTags.REMOVE_SOURCE),
+            )
+        }
     }
 }
 
@@ -1124,6 +1155,12 @@ object HomeTestTags {
 
     const val MARK_ALL_READ = "home:overflow:mark-all-read"
     const val REFRESH = "home:overflow:refresh"
+
+    /**
+     * S04/#29's shortcut, which only exists while the Feed is narrowed to one source —
+     * so a test asserting its absence is asserting a rule, not a missing node.
+     */
+    const val REMOVE_SOURCE = "home:overflow:remove-source"
     const val BANNER = "home:banner"
     const val BANNER_RETRY = "home:banner:retry"
     const val BANNER_DISMISS = "home:banner:dismiss"

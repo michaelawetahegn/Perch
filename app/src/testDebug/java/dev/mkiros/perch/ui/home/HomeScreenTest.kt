@@ -2,6 +2,8 @@ package dev.mkiros.perch.ui.home
 
 import android.content.Context
 import androidx.activity.ComponentActivity
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
@@ -416,6 +418,74 @@ class HomeScreenTest {
         compose.onNodeWithText("Only in one").assertDoesNotExist()
     }
 
+    // ---- S04/#29: removing the source you are reading, from the overflow ---------------
+
+    /**
+     * The reader's ask: "in the context menu that's in the top right ... an option for
+     * removing that source". It is offered only while the Feed is narrowed to one source,
+     * because on the whole Feed there is no "that source" to name.
+     */
+    @Test
+    fun `the overflow offers to remove the source being read`() {
+        seedFeed(title = "Source One")
+
+        showHome()
+        selectInDrawer("Source One")
+        openOverflow()
+
+        compose.onNodeWithTag(HomeTestTags.REMOVE_SOURCE).assertIsDisplayed()
+    }
+
+    @Test
+    fun `the overflow offers no removal on the unnarrowed feed`() {
+        seedFeed(title = "Source One")
+
+        showHome()
+        openOverflow()
+
+        compose.onNodeWithTag(HomeTestTags.REMOVE_SOURCE).assertDoesNotExist()
+    }
+
+    /**
+     * The saved-links source cannot be unsubscribed from — `FeedRepository.remove` refuses
+     * it — so the item is absent rather than present-and-inert, the same rule the drawer
+     * follows for a row it will not delete.
+     */
+    @Test
+    fun `the overflow offers no removal for the saved-links source`() {
+        showHome(scope = HomeScope.Source(savedLinksFeedId()))
+        openOverflow()
+
+        compose.onNodeWithTag(HomeTestTags.REMOVE_SOURCE).assertDoesNotExist()
+    }
+
+    @Test
+    fun `removing from the overflow asks first, then unsubscribes and widens the feed`() {
+        val one = seedFeed(title = "Source One")
+        val two = seedFeed(title = "Source Two")
+        seedEntry(feedId = one, title = "Only in one")
+        seedEntry(feedId = two, title = "Only in two")
+
+        showHome()
+        selectInDrawer("Source One")
+        openOverflow()
+        tap(HomeTestTags.REMOVE_SOURCE)
+        awaitState { _ -> viewModel.sourceDeletePrompt.value != null }
+        compose.onNodeWithTag(SelectionTestTags.DELETE_CONFIRM).assertIsDisplayed()
+        assertThat(feedTitles()).containsExactly("Source One", "Source Two")
+
+        tap(SelectionTestTags.DELETE_CONFIRM)
+        awaitState { it.selectedTitle == null }
+
+        assertThat(feedTitles()).containsExactly("Source Two")
+        // S03/#30's widening, reached from the overflow rather than from the drawer: the
+        // scope named the source that just stopped existing, so the list has to be the
+        // whole Feed here, with nothing tapped in between.
+        compose.onNodeWithTag(HomeTestTags.TITLE).assertTextEquals("Feed")
+        awaitDisplayed("Only in two")
+        compose.onNodeWithText("Only in one").assertDoesNotExist()
+    }
+
     @Test
     fun `renaming a source relabels the drawer without touching the feed's own title`() {
         val one = seedFeed(title = "nullprogram.com")
@@ -552,6 +622,17 @@ class HomeScreenTest {
      * the database has said how many saved or liked entries the batch holds, so the tap
      * and the dialog are a coroutine apart.
      */
+    /** The app bar's overflow, opened the way a reader opens it. */
+    private fun openOverflow() {
+        compose.onNodeWithContentDescription("More options").performClick()
+        compose.waitForIdle()
+    }
+
+    /** The one seeded synthetic source (PLAN-6 §0.3), which the drawer never lists. */
+    private fun savedLinksFeedId(): Long = runBlocking {
+        database.feedDao().findByUrl(FeedEntity.SAVED_LINKS_FEED_URL)!!.id
+    }
+
     private fun tapDelete() {
         tap(SelectionTestTags.DELETE)
         awaitState { _ -> viewModel.sourceDeletePrompt.value != null }
@@ -611,7 +692,7 @@ class HomeScreenTest {
     }
 
 
-    private fun showHome(onOpenEntry: (Long) -> Unit = {}) {
+    private fun showHome(onOpenEntry: (Long) -> Unit = {}, scope: HomeScope = HomeScope.All) {
         viewModel = HomeViewModel(
             entries = container.entries,
             feeds = container.feeds,
@@ -627,6 +708,9 @@ class HomeScreenTest {
                     addSourceViewModel = addSourceViewModel,
                     onOpenEntry = onOpenEntry,
                     onOpenSettings = {},
+                    // The shell owns the scope (V08), so a test that needs the Feed
+                    // already narrowed hoists it in rather than reaching for a setter.
+                    homeScope = remember { mutableStateOf(scope) },
                 )
             }
         }

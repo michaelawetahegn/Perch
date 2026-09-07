@@ -22,6 +22,9 @@
     <!-- Home: refresh, mark-all-read and its undo (DESIGN.md §5, §7) -->
     <string name="action_more">More options</string>
     <string name="action_refresh">Refresh</string>
+    <!-- S04/#29: the overflow's shortcut out of the source being read. Only on screen
+         while the Feed is narrowed to one, so it can say "this source". -->
+    <string name="action_remove_source">Remove this source</string>
     <string name="action_mark_all_read">Mark all read</string>
     <string name="action_undo">Undo</string>
     <string name="action_retry">Retry</string>

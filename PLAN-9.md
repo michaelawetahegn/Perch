@@ -314,7 +314,7 @@ a route, for reasons that apply identically here. Hoist the search state beside 
         message; the folder twin covered; `./gradlew test` green and growing; issue #30 closed.
       - Rung: unit
 
-- [ ] **S04 — Remove this source from the list you are reading. TDD. Issue #29.**
+- [x] **S04 — Remove this source from the list you are reading. TDD. Issue #29.**
       `gh issue view 29 --json body` — the reader's words: an option in "the context menu that's
       in the top right", a confirmation, then back to the feed.
       **Depends on S03** — confirming from the overflow lands in the same `confirmRemoveSources`

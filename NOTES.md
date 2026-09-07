@@ -19,6 +19,9 @@
   guarding **both** `onDismissRequest` and `rememberModalBottomSheetState(confirmValueChange = …)`; guarding one leaves
   an invisible sheet still composed. The rule itself lives on the state (`SaveLinkUiState.canDismiss`) so a VM test can
   assert it — the container is undrivable from a test.
+  **S04/#29: the app bar's overflow hides its remove item off `uiState.scope`, the *resolved* one** —
+  resolved against `uiState.sources`, which `FeedDao` filters `isSynthetic = 0`, so "not scoped to a
+  source" and "scoped to saved-links" are one null and not two checks.
   **S03/#30: `HomeScope` is a bare id, so every delete path must widen it** — `HomeScreen.widenScopeIfRemoved`
   runs before `confirmRemoveSources`, `deleteFolders` and `deleteFolder`. The shell owns the scope (V08); the VM's
   *resolved* scope (`HomeViewModel.kt:463-471`) feeds the bar's title only, never the query, which is why the bar
