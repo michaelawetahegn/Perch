@@ -13,9 +13,9 @@ cd "$(dirname "$0")"
 
 # ── knobs ────────────────────────────────────────────────────────────────────
 # The active plan. v0.1 (T01–T32) and v0.2 (U01–U16) are complete and archived in
-# docs/plans/. v0.5 is four sequential slices — PLAN-5/6/7 (#22, #23, #21) are done and archived;
-# PLAN-8 (the release) is active. Change this one line to move to the next slice.
-PLAN=${PLAN:-PLAN-8.md}
+# docs/plans/. v0.5 shipped as four slices (PLAN-5/6/7/8) and is archived; PLAN-9 is v0.6 —
+# the reader's batch: search, delete-source, saved-link leakage, and visible date provenance.
+PLAN=${PLAN:-PLAN-9.md}
 PROMPT="Read CLAUDE.md and continue"
 LOG=${LOG:-"loop-$(basename "$PLAN" .md | tr 'A-Z' 'a-z').log"}
 SLEEP_BETWEEN=${SLEEP_BETWEEN:-30}        # pause between normal sessions (s)

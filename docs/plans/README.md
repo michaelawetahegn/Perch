@@ -8,9 +8,10 @@ why a session that starts with no chat history knows what to do.
 Finished plans live here. The **active** plan stays at the repository root, because
 `loop.sh` and `CLAUDE.md` point at it and a session's cold start reads it.
 
-**v0.5 is four sequential plans rather than one**, run as four separate loops in order —
-`PLAN-5` → `PLAN-6` → `PLAN-7` → `PLAN-8`. Only the release slice bumps the version. Two
-loops must never run at once: they would fight over commits (`RALPH.md` §4).
+**v0.5 was four sequential plans rather than one**, run as four separate loops in order —
+`PLAN-5` → `PLAN-6` → `PLAN-7` → `PLAN-8`, with only the release slice bumping the version.
+v0.6 is back to one plan, `PLAN-9`. Two loops must never run at once: they would fight over
+commits (`RALPH.md` §4).
 
 | Plan | Version | Tasks | What it was |
 |---|---|---|---|
@@ -21,7 +22,8 @@ loops must never run at once: they would fight over commits (`RALPH.md` §4).
 | [`PLAN-5-v0.5-slice1.md`](PLAN-5-v0.5-slice1.md) | v0.5.0 | X01–X04 | Slice 1 — the source drawer opens quiet: every category starts collapsed. |
 | [`PLAN-6-v0.5-slice2.md`](PLAN-6-v0.5-slice2.md) | v0.5.0 | Y01–Y05 | Slice 2 — a link you paste is a thing you can read: standards-only page metadata, a synthetic source, and To-Read as the paste target. |
 | [`PLAN-7-v0.5-slice3.md`](PLAN-7-v0.5-slice3.md) | v0.5.0 | Z01–Z05 | Slice 3 — a blog's past, not just its present: sitemap/RFC 5005 archive discovery and an opt-in backfill. |
-| [`PLAN-8.md`](../../PLAN-8.md) | v0.5.0 | R00–R03 | Slice 4 — a capped backfill fetches the newest posts and states the archive's true size (#24), then the version read as a whole, live acceptance, and the release. |
+| [`PLAN-8-v0.5-slice4.md`](PLAN-8-v0.5-slice4.md) | v0.5.0 | R00–R03 | Slice 4 — a capped backfill fetches the newest posts and states the archive's true size (#24), then the version read as a whole, live acceptance, and the release. |
+| [`PLAN-9.md`](../../PLAN-9.md) | v0.6.0 | S01–S13 | The reader's batch: search across everything stored (#28), deleting a source from where you are reading it (#29, #30), a pasted link that stays out of the Feed (#31), a byline that wraps (#32), a link sheet that waits (#33), and a guessed date that says so (#25). |
 
 [`bootstrap-prompt.md`](bootstrap-prompt.md) is the original prompt that produced
 `SPEC.md`, `DESIGN.md`, `PLAN-1` and `loop.sh` in a single session, before any code
