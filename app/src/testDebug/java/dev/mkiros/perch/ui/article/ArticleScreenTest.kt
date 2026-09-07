@@ -159,6 +159,40 @@ class ArticleScreenTest {
             .assertTextEquals("CHRIS WELLONS · 3 AUG 2026")
     }
 
+    // ---- S06 (issue #25): a guessed date reads as a guess ---------------------------
+
+    /**
+     * The date in the byline is the same claim the row makes, so it is marked the same
+     * way (PLAN-9 §0.7). A pasted link usually has no date of its own — the byline saying
+     * `3 AUG 2026` flatly is Perch reporting the moment it fetched the page as though the
+     * author had written it then.
+     */
+    @Test
+    fun `a byline whose date was guessed marks it with a tilde`() {
+        val feedId = seedFeed(title = "Null Program")
+        val entryId = seedEntry(
+            feedId = feedId,
+            title = "An Async Runtime in C",
+            author = "Chris Wellons",
+            publishedIsEstimated = true,
+        )
+
+        showArticle(entryId)
+
+        compose.onNodeWithTag(ArticleTestTags.BYLINE)
+            .assertTextEquals("CHRIS WELLONS · ~3 AUG 2026")
+    }
+
+    @Test
+    fun `a byline whose date came from the article carries no tilde`() {
+        val feedId = seedFeed(title = "Null Program")
+        val entryId = seedEntry(feedId = feedId, title = "An Async Runtime in C")
+
+        showArticle(entryId)
+
+        compose.onNodeWithTag(ArticleTestTags.BYLINE).assertTextEquals("3 AUG 2026")
+    }
+
     // ---- S05 (issue #32): the byline is a subheading of two lines --------------------
 
     /**
@@ -469,6 +503,7 @@ class ArticleScreenTest {
         summary: String? = "A short summary.",
         contentHtml: String? = "<p>The body of the post.</p>",
         link: String? = "https://example.com/post",
+        publishedIsEstimated: Boolean = false,
     ): Long = runBlocking {
         database.entryDao().insert(
             EntryEntity(
@@ -478,7 +513,7 @@ class ArticleScreenTest {
                 link = link,
                 author = author,
                 publishedAt = now.minusSeconds(4 * DAY).toEpochMilli(),
-                publishedIsEstimated = false,
+                publishedIsEstimated = publishedIsEstimated,
                 summary = summary,
                 contentHtml = contentHtml,
                 imageUrl = null,

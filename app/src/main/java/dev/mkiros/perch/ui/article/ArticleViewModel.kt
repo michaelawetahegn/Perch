@@ -12,6 +12,7 @@ import dev.mkiros.perch.data.repo.ArticleTextRepository
 import dev.mkiros.perch.data.repo.EntryRepository
 import dev.mkiros.perch.data.repo.FeedRepository
 import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.ui.home.RelativeTime
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -107,6 +108,7 @@ class ArticleViewModel(
                 source = sourceName,
                 author = entry.author,
                 publishedAt = entry.publishedAt,
+                publishedIsEstimated = entry.publishedIsEstimated,
             )
             _state.value = loaded(entry)
             entries.setRead(entryId, isRead = true)
@@ -256,9 +258,21 @@ class ArticleViewModel(
      *
      * [source] is still passed in, and still never appears in the result: a one-author
      * blog puts its own name in both fields, and saying it twice looks broken.
+     *
+     * A guessed date wears the same `~` the row does (S06, #25) — the marker comes from
+     * [RelativeTime.GUESS] rather than a second literal, because a byline and the row
+     * that led to it must not disagree about what a guess looks like. The date itself is
+     * still formatted here: the byline always prints an absolute date, never the relative
+     * scale a row coarsens to.
      */
-    private fun byline(source: String?, author: String?, publishedAt: Long): String {
-        val date = DATE.format(Instant.ofEpochMilli(publishedAt).atZone(zone))
+    private fun byline(
+        source: String?,
+        author: String?,
+        publishedAt: Long,
+        publishedIsEstimated: Boolean,
+    ): String {
+        val absolute = DATE.format(Instant.ofEpochMilli(publishedAt).atZone(zone))
+        val date = if (publishedIsEstimated) "${RelativeTime.GUESS}$absolute" else absolute
         val parts = listOfNotNull(author.takeUnless { it.equals(source, ignoreCase = true) }, date)
         return parts.filter { it.isNotBlank() }.joinToString(SEPARATOR).uppercase(Locale.getDefault())
     }

@@ -586,6 +586,36 @@ class EntryRepositoryTest {
         assertThat(repo.countSavedOrLikedIn(emptyList())).isEqualTo(0)
     }
 
+    // ---- a guessed date travels with the row (#25, S06) --------------------------
+
+    /**
+     * PLAN-9 §0.7. `publishedIsEstimated` has been stored since v0.1 and read by nothing
+     * in `ui/`, because the row shape never carried it: an invented date rendered exactly
+     * like a date the article published for itself. One column in `EntryQueries.ROW` is
+     * what lets every renderer tell the two apart.
+     */
+    @Test
+    fun `a row says whether its date was guessed`() = runTest {
+        val feed = feeds.insert(feed("https://a.example/feed"))
+        insertEntry(feed, "known", publishedAt = 2_000L, publishedIsEstimated = false)
+        insertEntry(feed, "guessed", publishedAt = 1_000L, publishedIsEstimated = true)
+
+        val rows = repo.observeEntries(includeRead = true).first()
+
+        assertThat(rows.map { it.publishedIsEstimated }).containsExactly(false, true).inOrder()
+    }
+
+    /** The flag reaches To-Read too — the surface a pasted link lands on (#31, #25). */
+    @Test
+    fun `a pasted link whose page published no date is marked as a guess on To-Read`() =
+        runTest {
+            val synthetic = feeds.findByUrl(FeedEntity.SAVED_LINKS_FEED_URL)!!.id
+            val id = insertEntry(synthetic, "pasted", publishedIsEstimated = true)
+            repo.setSaved(id, isSaved = true)
+
+            assertThat(repo.observeSaved().first().single().publishedIsEstimated).isTrue()
+        }
+
     // ---- a pasted link belongs to To-Read only (#31) ----------------------------
 
     /**
@@ -676,6 +706,7 @@ class EntryRepositoryTest {
         feedId: Long,
         guid: String,
         publishedAt: Long = 1_700_000_000_000L,
+        publishedIsEstimated: Boolean = false,
     ): Long = entries.insert(
         EntryEntity(
             feedId = feedId,
@@ -684,7 +715,7 @@ class EntryRepositoryTest {
             link = "https://example.com/$guid",
             author = null,
             publishedAt = publishedAt,
-            publishedIsEstimated = false,
+            publishedIsEstimated = publishedIsEstimated,
             summary = null,
             contentHtml = null,
             imageUrl = null,

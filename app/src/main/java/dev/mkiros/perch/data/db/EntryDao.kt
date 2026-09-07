@@ -39,10 +39,15 @@ internal object EntryQueries {
     /**
      * The row shape every list draws (DESIGN.md §5), joined to its source and folder so a
      * row never has to look either of them up.
+     *
+     * `publishedIsEstimated` travels with the date it qualifies (S06, #25). It is one
+     * column in the one shared constant, so all six methods below project it and no list
+     * can render a guessed date as though Perch knew it.
      */
     private const val ROW = """
         SELECT e.id AS id, e.feedId AS feedId, e.title AS title, e.summary AS summary,
-               e.imageUrl AS imageUrl, e.publishedAt AS publishedAt, e.isRead AS isRead,
+               e.imageUrl AS imageUrl, e.publishedAt AS publishedAt,
+               e.publishedIsEstimated AS publishedIsEstimated, e.isRead AS isRead,
                COALESCE(NULLIF(TRIM(f.customTitle), ''), f.title) AS sourceTitle,
                fo.id AS folderId, fo.name AS folderName,
                e.isSaved AS isSaved, e.isStarred AS isStarred, e.link AS link

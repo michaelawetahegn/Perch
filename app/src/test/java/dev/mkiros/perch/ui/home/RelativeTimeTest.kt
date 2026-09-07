@@ -77,7 +77,40 @@ class RelativeTimeTest {
         assertThat(format(now - 400 * DAY)).isEqualTo("3 Jul 2025")
     }
 
+    // ---- a guess reads as a guess (#25, PLAN-9 §0.7) --------------------------------
+
+    /**
+     * The marker is a leading tilde, on whichever shape the scale happens to produce.
+     * A glyph rather than a word is what keeps this consistent with the note above: it
+     * needs no translation, so marking a guess does not drag dates into `strings.xml`.
+     */
+    @Test
+    fun `a guessed date wears a tilde on the relative scale`() {
+        assertThat(estimated(now - 30 * MINUTE)).isEqualTo("~30min")
+        assertThat(estimated(now - 5 * HOUR)).isEqualTo("~5h")
+        assertThat(estimated(now - 3 * DAY)).isEqualTo("~3d")
+    }
+
+    @Test
+    fun `a guessed date wears a tilde on the absolute scale too`() {
+        assertThat(estimated(now - 8 * DAY)).isEqualTo("~30 Jul")
+        assertThat(estimated(now - 400 * DAY)).isEqualTo("~3 Jul 2025")
+    }
+
+    @Test
+    fun `an article fetched moments ago and dated by us reads as a guessed now`() {
+        assertThat(estimated(now)).isEqualTo("~now")
+    }
+
+    @Test
+    fun `a date the article published for itself is unmarked`() {
+        assertThat(format(now - 3 * DAY)).isEqualTo("3d")
+    }
+
     private fun format(publishedAt: Long) = RelativeTime.format(publishedAt, now, utc)
+
+    private fun estimated(publishedAt: Long) =
+        RelativeTime.format(publishedAt, now, utc, isEstimated = true)
 
     private companion object {
         const val SECOND = 1_000L

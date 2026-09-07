@@ -132,7 +132,11 @@ fun EntryRow(
                 modifier = Modifier.testTag(EntryRowTestTags.META),
             )
             Text(
-                text = RelativeTime.format(item.publishedAt, now),
+                text = RelativeTime.format(
+                    item.publishedAt,
+                    now,
+                    isEstimated = item.publishedIsEstimated,
+                ),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.outline,
                 maxLines = 1,

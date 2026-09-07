@@ -352,7 +352,7 @@ a route, for reasons that apply identically here. Hoist the search state beside 
         and growing; issue #32 closed.
       - Rung: screenshot
 
-- [ ] **S06 — A guessed date reads as a guess, in the row and in the byline. TDD. Issue #25.**
+- [x] **S06 — A guessed date reads as a guess, in the row and in the byline. TDD. Issue #25.**
       `gh issue view 25 --json body` — but read §0.7 first: **it decides what #25 left open**,
       and it corrects the issue body's blast-radius estimate.
       - `RelativeTime.format` (`RelativeTime.kt:31`) gains `isEstimated: Boolean = false` and

@@ -342,6 +342,29 @@ class EntryRowTest {
         )
     }
 
+    // ---- a guessed date reads as a guess (#25, PLAN-9 §0.7) -------------------------
+
+    /**
+     * A pasted link whose page published no date of its own is stamped with the moment
+     * Perch fetched it, so its row used to read `now` for an article that may be years
+     * old (issue #25, visible in `to-read-pasted-link.png`). The tilde is the whole
+     * difference between a date and a guess, and it is on the row, not only in the
+     * article.
+     */
+    @Test
+    fun `a row whose date was guessed prints it with a tilde`() {
+        show(item(publishedAt = NOW - 5 * HOUR, publishedIsEstimated = true))
+
+        date().assertIsDisplayed().assertTextEquals("~5h")
+    }
+
+    @Test
+    fun `a row whose date came from the article itself prints it plainly`() {
+        show(item(publishedAt = NOW - 5 * HOUR, publishedIsEstimated = false))
+
+        date().assertIsDisplayed().assertTextEquals("5h")
+    }
+
     private fun meta() = compose.onNodeWithTag(EntryRowTestTags.META, useUnmergedTree = true)
 
     private fun date() = compose.onNodeWithTag(EntryRowTestTags.DATE, useUnmergedTree = true)
@@ -378,6 +401,7 @@ class EntryRowTest {
         sourceTitle: String = "Simon Willison",
         imageUrl: String? = null,
         publishedAt: Long = NOW - 5 * HOUR,
+        publishedIsEstimated: Boolean = false,
         isRead: Boolean = false,
         folderId: Long = FolderEntity.UNCATEGORIZED_ID,
         folderName: String = FolderEntity.UNCATEGORIZED_NAME,
@@ -388,6 +412,7 @@ class EntryRowTest {
         summary = "A summary the redesigned row deliberately no longer shows.",
         imageUrl = imageUrl,
         publishedAt = publishedAt,
+        publishedIsEstimated = publishedIsEstimated,
         isRead = isRead,
         sourceTitle = sourceTitle,
         folderId = folderId,

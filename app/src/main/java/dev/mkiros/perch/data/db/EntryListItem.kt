@@ -13,6 +13,11 @@ package dev.mkiros.perch.data.db
  *   by it, so it no longer decides where a row goes; it stays on the row because the row
  *   prints the folder as a category label (W04) and the join costs nothing extra.
  * @param folderName that label's text, joined for the same reason [sourceTitle] is.
+ * @param publishedIsEstimated true when [publishedAt] is Perch's guess — a feed item
+ *   with no date, or a pasted link whose page published none, stamped with the moment of
+ *   the fetch — rather than the article's own. The row prints it with a `~` (S06, #25).
+ *   Deliberately **without a default**: a row that silently claims a guessed date is
+ *   known is the bug this fixes, so every construction site has to say which it means.
  * @param isSaved on the *Read later* queue (U04). Carried on the row because U09's
  *   long-press sheet has to offer *Save for later* or *Remove from Read later* — a sheet
  *   that has to go and ask the database which one it means opens showing the wrong verb.
@@ -28,6 +33,7 @@ data class EntryListItem(
     val summary: String?,
     val imageUrl: String?,
     val publishedAt: Long,
+    val publishedIsEstimated: Boolean,
     val isRead: Boolean,
     val sourceTitle: String,
     val folderId: Long,
