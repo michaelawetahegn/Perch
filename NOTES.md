@@ -56,8 +56,11 @@
 - 2026-08-25 — **v0.5.0 shipped (PLAN-6/#23, PLAN-7/#21, PLAN-8), archived.** `PageContentExtractor`
   (fetch→extract→sanitize→image) is the **one** function `ArticleTextRepository`,
   `SavedLinkRepository` and `BackfillRepository` all call — do not clone it. `feeds.isSynthetic`
-  → DB v6, seeded `perch:saved-links` row, every general feed query gained `WHERE isSynthetic =
-  0`. `ArchiveDiscovery`/`BackfillRepository` (`data/archive/`, `data/repo/`): discovery order
+  → DB v6, seeded `perch:saved-links` row. **S01/#31 corrects this line: only `FeedDao` ever
+  said `isSynthetic = 0`** — `EntryQueries` never did, which is why a pasted link showed up in
+  the Feed for a whole version. It does now (`LIST_ITEMS`, both unread badges, `unreadIds`,
+  `FolderDao.observeUnreadCountsByFolder`); `SAVED`, `LIKED`, `statesToExport` and search must
+  **not** — a saved link is a stored article, just not feed traffic. `ArchiveDiscovery`/`BackfillRepository` (`data/archive/`, `data/repo/`): discovery order
   RFC 5005 `prev-archive` → `robots.txt Sitemap:` → `/sitemap.xml`; post-vs-page is a dated URL
   path *or* a shape learned from the feed's own entry links, never a table of engines. `plan()`
   sorts by `lastmod` descending (unknown last) before `.take(MAX_PAGES=40)` — discovery order is

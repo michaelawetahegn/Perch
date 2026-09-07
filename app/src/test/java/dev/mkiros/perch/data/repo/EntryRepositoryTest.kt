@@ -586,6 +586,65 @@ class EntryRepositoryTest {
         assertThat(repo.countSavedOrLikedIn(emptyList())).isEqualTo(0)
     }
 
+    // ---- a pasted link belongs to To-Read only (#31) ----------------------------
+
+    /**
+     * PLAN-9 §0.3. A link pasted into To-Read is stored as an entry on the seeded
+     * synthetic feed (PLAN-6 §0.3), which is filed under Uncategorized like any other
+     * source — so every query that joins `entries` to `feeds` used to hand it back as an
+     * ordinary Feed row. `FeedDao` says `isSynthetic = 0`; `EntryQueries` never did.
+     *
+     * The rule these five assert: a saved link is a *stored article* (it is on To-Read, it
+     * can be liked, it will be searchable) but it is not *feed traffic* — it never appears
+     * in the stream, never counts toward a badge, and is never swept by mark-all-read.
+     */
+    @Test
+    fun `a pasted link is on To-Read and not in the Feed`() = runTest {
+        val id = pasteLink()
+
+        assertThat(repo.observeSaved().first().map { it.id }).containsExactly(id)
+        assertThat(titles(includeRead = true)).isEmpty()
+    }
+
+    @Test
+    fun `a pasted link does not inflate the inbox badge`() = runTest {
+        val subscribed = feeds.insert(feed("https://a.example/feed"))
+        insertEntry(subscribed, "a1")
+
+        pasteLink()
+
+        assertThat(repo.observeTotalUnreadCount().first()).isEqualTo(1)
+    }
+
+    @Test
+    fun `a pasted link contributes no drawer badge, for its source or its folder`() =
+        runTest {
+            pasteLink()
+
+            assertThat(repo.observeUnreadCountsByFeed().first()).isEmpty()
+            assertThat(folders.observeUnreadCountsByFolder().first()).isEmpty()
+        }
+
+    @Test
+    fun `marking everything read leaves a pasted link alone`() = runTest {
+        val id = pasteLink()
+
+        assertThat(unreadIds()).doesNotContain(id)
+
+        repo.markAllRead(feedId = null)
+
+        assertThat(entries.findById(id)?.isRead).isFalse()
+    }
+
+    @Test
+    fun `a pasted link can still be liked, and shows on Liked`() = runTest {
+        val id = pasteLink()
+
+        repo.setLiked(id, isLiked = true)
+
+        assertThat(repo.observeLiked().first().map { it.id }).containsExactly(id)
+    }
+
     // ---- fixtures --------------------------------------------------------------
 
     /** Runs [block] against a repository whose clock reads [millis], for ordering tests. */
@@ -596,6 +655,17 @@ class EntryRepositoryTest {
                 clock = Clock.fixed(Instant.ofEpochMilli(millis), ZoneOffset.UTC),
             ),
         )
+
+    /**
+     * A link pasted into To-Read: an entry on the seeded synthetic feed, marked saved,
+     * exactly as [dev.mkiros.perch.data.repo.SavedLinkRepository] leaves it.
+     */
+    private suspend fun pasteLink(): Long {
+        val synthetic = feeds.findByUrl(FeedEntity.SAVED_LINKS_FEED_URL)!!.id
+        val id = insertEntry(synthetic, "pasted")
+        repo.setSaved(id, isSaved = true)
+        return id
+    }
 
     private suspend fun titles(includeRead: Boolean): List<String> =
         repo.observeEntries(includeRead = includeRead).first().map { it.title }

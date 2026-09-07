@@ -253,7 +253,7 @@ a route, for reasons that apply identically here. Hoist the search state beside 
 
 ## The tasks
 
-- [ ] **S01 — A pasted link is on To-Read and nowhere else. TDD. Issue #31.**
+- [x] **S01 — A pasted link is on To-Read and nowhere else. TDD. Issue #31.**
       `gh issue view 31 --json body` — the reader's words: it "also adds the article into your
       feed… there's no reason to keep it in the feed".
       §0.3 carries the root cause and **the exact table of which queries gain

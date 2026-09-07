@@ -21,6 +21,18 @@ import kotlinx.coroutines.flow.Flow
  * text in one constant is what stops the two copies drifting apart, which would be the
  * quiet kind of bug: the paged list and the flow list would answer the same question
  * differently and only one of them is on screen.
+ *
+ * **[LIST_ITEMS] says `f.isSynthetic = 0`; [SAVED] and [LIKED] deliberately do not**
+ * (PLAN-9 §0.3, #31). A link pasted into To-Read is an entry on the seeded saved-links
+ * feed (PLAN-6 §0.3), filed under Uncategorized like any other source, so before v0.6
+ * both of `ROW`'s joins succeeded and the Feed showed it as ordinary traffic — a reader
+ * whose window was "Past week" saw a month-old article they had merely filed. The rule:
+ * a saved link is a *stored article* — it is on To-Read, it can be liked, it is
+ * searchable — but it is not *feed traffic*, so it never appears in the stream and never
+ * counts toward a badge. The predicate goes beside the join, never on the join itself:
+ * `entries.feedId` stays non-null (PLAN-6 rejected loosening it) and no fourth
+ * reader-owned flag is added to `entries`, because `feeds.isSynthetic` already means
+ * exactly this.
  */
 internal object EntryQueries {
 
@@ -47,10 +59,13 @@ internal object EntryQueries {
      * exactly [SAVED]'s and [LIKED]'s, recency and then id to break a tie. The folder
      * still travels on the row, but as a *label* the row prints rather than as a
      * position: which folder an article is in no longer decides where it appears.
+     *
+     * `f.isSynthetic = 0` keeps pasted links out of the stream — see this object's KDoc.
      */
     const val LIST_ITEMS = """
         $ROW
-        WHERE (:includeRead OR e.isRead = 0) AND (:feedId IS NULL OR e.feedId = :feedId)
+        WHERE f.isSynthetic = 0
+          AND (:includeRead OR e.isRead = 0) AND (:feedId IS NULL OR e.feedId = :feedId)
           AND (:folderId IS NULL OR f.folderId = :folderId)
           AND (:publishedAfter IS NULL OR e.publishedAt >= :publishedAfter)
         ORDER BY e.publishedAt DESC, e.id DESC
@@ -157,8 +172,13 @@ abstract class EntryDao {
 
     // ---- read state -----------------------------------------------------------
 
-    /** The unified inbox badge. */
-    @Query("SELECT COUNT(*) FROM entries WHERE isRead = 0")
+    /** The unified inbox badge — scoped like [observeListItems], synthetic feed excluded. */
+    @Query(
+        """
+        SELECT COUNT(*) FROM entries e JOIN feeds f ON f.id = e.feedId
+        WHERE e.isRead = 0 AND f.isSynthetic = 0
+        """,
+    )
     abstract fun observeUnreadCount(): Flow<Int>
 
     /**
@@ -166,11 +186,16 @@ abstract class EntryDao {
      *
      * `GROUP BY` has no row to emit for a source whose entries are all read, so a fully
      * read feed is **absent** from the map, not mapped to 0. Read it as `counts[id] ?: 0`.
+     *
+     * It joins `feeds` only to say `isSynthetic = 0` — the drawer has no row for the
+     * saved-links source, so a count keyed to it could never be drawn anyway.
      */
     @Query(
         """
-        SELECT feedId, COUNT(*) AS unreadCount FROM entries
-        WHERE isRead = 0 GROUP BY feedId
+        SELECT e.feedId AS feedId, COUNT(*) AS unreadCount
+        FROM entries e JOIN feeds f ON f.id = e.feedId
+        WHERE e.isRead = 0 AND f.isSynthetic = 0
+        GROUP BY e.feedId
         """,
     )
     abstract fun observeUnreadCountsByFeed():
@@ -183,11 +208,15 @@ abstract class EntryDao {
      * mark-all-read is "everything the reader is looking at", so a drawer scoped to a
      * folder that flipped the whole inbox would be marking articles the reader cannot see
      * as read, and a range set to Today that flipped a year of them would be worse.
+     *
+     * Which is why it also says `f.isSynthetic = 0`: mark-all-read must not quietly read
+     * a to-read queue the Feed never showed.
      */
     @Query(
         """
         SELECT e.id FROM entries e JOIN feeds f ON f.id = e.feedId
-        WHERE e.isRead = 0 AND (:feedId IS NULL OR e.feedId = :feedId)
+        WHERE e.isRead = 0 AND f.isSynthetic = 0
+          AND (:feedId IS NULL OR e.feedId = :feedId)
           AND (:folderId IS NULL OR f.folderId = :folderId)
           AND (:publishedAfter IS NULL OR e.publishedAt >= :publishedAfter)
         ORDER BY e.id

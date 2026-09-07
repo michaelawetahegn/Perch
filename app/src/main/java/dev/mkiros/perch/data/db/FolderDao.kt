@@ -108,12 +108,16 @@ abstract class FolderDao {
      * `GROUP BY`, so a folder whose every entry is read is **absent** from the map rather
      * than mapped to 0. Read it as `counts[id] ?: 0`. Summing per-feed counts in Kotlin
      * instead would load every row to produce one integer per folder.
+     *
+     * `feeds.isSynthetic = 0` for the same reason as its twin (PLAN-9 §0.3, #31): the
+     * saved-links row is filed under Uncategorized, so without it a pasted link would
+     * inflate that folder's badge while appearing nowhere in the list behind it.
      */
     @Query(
         """
         SELECT feeds.folderId AS folderId, COUNT(*) AS unreadCount
         FROM entries JOIN feeds ON entries.feedId = feeds.id
-        WHERE entries.isRead = 0
+        WHERE entries.isRead = 0 AND feeds.isSynthetic = 0
         GROUP BY feeds.folderId
         """,
     )
