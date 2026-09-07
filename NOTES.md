@@ -14,6 +14,11 @@
   scrolls — since V03 **every empty state is a `LazyColumn` with one `fillParentMaxSize` item**. Screenshots: go
   through `Screenshots` (its KDoc says why **never `captureToImage()`** — CLAUDE.md is wrong).
   **W05/#16: `shareIntent(title, link)` is pure**, and a *chooser* — assert `EXTRA_INTENT`, not the outer action.
+  **S02/#33: a `ModalBottomSheet` has two exits, not one** — the scrim reaches `onDismissRequest`, a swipe (and the
+  settle after the IME collapses) does not: it hides the sheet through `SheetState` first. Refusing a dismissal means
+  guarding **both** `onDismissRequest` and `rememberModalBottomSheetState(confirmValueChange = …)`; guarding one leaves
+  an invisible sheet still composed. The rule itself lives on the state (`SaveLinkUiState.canDismiss`) so a VM test can
+  assert it — the container is undrivable from a test.
 - 2026-08-07 — **Live acceptance** (`acceptance/LiveAcceptanceTest`, `testDebug`): `./gradlew :app:testDebugUnitTest
   -Pperch.live=true --tests '*LiveAcceptance*'`. **V12/#8: gate 1 has no quota** — every source in `feeds.txt` bar
   `EXCLUDED_SOURCES` must pull (38/38 today), so a break arrives as a URL, and an exclusion carries the measurement

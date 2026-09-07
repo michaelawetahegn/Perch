@@ -270,7 +270,7 @@ a route, for reasons that apply identically here. Hoist the search state beside 
         issue #31 closed with a comment naming the commit.
       - Rung: unit
 
-- [ ] **S02 — The link sheet stays open until the link is in. TDD. Issue #33.**
+- [x] **S02 — The link sheet stays open until the link is in. TDD. Issue #33.**
       `gh issue view 33 --json body` — the reader's words: "no loading, no confirmation… it
       should have errored out in the dialog before closing it".
       §0.4 carries the root cause and the decided behaviour. The spinner and the error copy

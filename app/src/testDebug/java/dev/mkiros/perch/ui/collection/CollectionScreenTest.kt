@@ -8,6 +8,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
@@ -234,6 +235,23 @@ class CollectionScreenTest {
         show(Collection.Liked)
 
         compose.onNodeWithTag(CollectionTestTags.SAVE_LINK).assertDoesNotExist()
+    }
+
+    @Test
+    fun `a saved link is announced by name once the sheet has closed`() {
+        val feedId = seedFeed()
+        val entryId = seedEntry(feedId, "An Async Runtime in C", savedAt = now)
+        show(Collection.ToRead)
+
+        // S02/#33: what SaveLinkSheet's onSaved hands back the moment a save lands. The
+        // reader's complaint was silence — "no loading, no confirmation, or anything" —
+        // so the list the sheet closed onto names what it just got.
+        viewModel.announceSavedLink(entryId)
+
+        compose.awaitInRealTime("the snackbar to name the saved link") {
+            compose.onAllNodesWithText("Saved \u201CAn Async Runtime in C\u201D")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
     }
 
     // ---- harness ---------------------------------------------------------------

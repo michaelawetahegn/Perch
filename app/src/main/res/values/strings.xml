@@ -165,6 +165,8 @@
     <string name="save_link_submit">Save</string>
     <string name="save_link_error_is_feed">That looks like a feed, not an article — add it as a source from the drawer instead.</string>
     <string name="save_link_error_unreachable">That link could not be read</string>
+    <!-- S02/#33: a save ended in silence; To-Read now names what it just got. %1$s is the article's title. -->
+    <string name="save_link_saved">Saved “%1$s”</string>
 
     <!-- The bottom bar's three destinations (PLAN-2 §0, U09) -->
     <string name="tab_feed">Feed</string>

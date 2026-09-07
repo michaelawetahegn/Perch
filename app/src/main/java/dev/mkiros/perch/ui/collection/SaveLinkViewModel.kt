@@ -35,6 +35,15 @@ data class SaveLinkUiState(
 ) {
     /** Blank is not an address, and a second tap mid-flight is not a second save. */
     val canSubmit: Boolean get() = url.isNotBlank() && !isBusy
+
+    /**
+     * S02/#33: a sheet that is fetching a link is not the reader's to close. A scrim tap,
+     * a swipe, or the sheet settling Hidden when the IME collapses on `ImeAction.Go` all
+     * arrive as a dismissal, and closing on any of them wipes the spinner and the failure
+     * that has not landed yet — which is exactly the "no loading, no confirmation" the
+     * issue reports. The sheet reads this through [SaveLinkViewModel.onDismissRequest].
+     */
+    val canDismiss: Boolean get() = !isBusy
 }
 
 /**
@@ -75,6 +84,17 @@ class SaveLinkViewModel(
                 )
             }
         }
+    }
+
+    /**
+     * The sheet was asked to close. Answers whether it may, and clears itself only then —
+     * so a dismissal that arrives mid-save changes nothing and the failure still has a
+     * sheet to be read in. Every dismissal path the container has goes through here.
+     */
+    fun onDismissRequest(): Boolean {
+        if (!_state.value.canDismiss) return false
+        reset()
+        return true
     }
 
     /** Clears the sheet for its next opening. */

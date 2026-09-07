@@ -14,6 +14,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -36,6 +37,13 @@ import dev.mkiros.perch.ui.theme.Dimens
  *
  * The sheet closes itself once a link has been saved; the reader never dismisses a sheet
  * that has already done its work.
+ *
+ * S02/#33: nor does the reader dismiss one that is still doing it. Fetching a page takes a
+ * round trip, and every way out of a sheet — the scrim, a swipe, and the settle to Hidden
+ * that follows the IME collapsing on `ImeAction.Go` — used to close it mid-flight and
+ * [SaveLinkViewModel.reset] the spinner and the not-yet-arrived failure away. Both routes
+ * now ask [SaveLinkViewModel.onDismissRequest] first, so a save either finishes and closes
+ * the sheet or leaves its reason on screen.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,12 +51,22 @@ fun SaveLinkSheet(
     viewModel: SaveLinkViewModel,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
+    /** S02/#33: the entry just saved, so the list behind can say what it got. */
+    onSaved: (Long) -> Unit = {},
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val sheetState = rememberModalBottomSheetState()
+    // A swipe never reaches onDismissRequest — it settles the sheet Hidden first — so the
+    // rule has to be refused here too, or a mid-save swipe leaves an invisible sheet up.
+    val sheetState = rememberModalBottomSheetState(
+        confirmValueChange = { value -> value != SheetValue.Hidden || state.canDismiss },
+    )
 
     LaunchedEffect(state.savedEntryId) {
-        if (state.savedEntryId != null) {
+        val savedEntryId = state.savedEntryId
+        if (savedEntryId != null) {
+            // Read before reset(), the same as AddSourceSheet's onAdded: the host's one
+            // chance to name what landed, behind the sheet's own close animation.
+            onSaved(savedEntryId)
             viewModel.reset()
             onDismiss()
         }
@@ -56,8 +74,7 @@ fun SaveLinkSheet(
 
     ModalBottomSheet(
         onDismissRequest = {
-            viewModel.reset()
-            onDismiss()
+            if (viewModel.onDismissRequest()) onDismiss()
         },
         sheetState = sheetState,
         modifier = modifier,

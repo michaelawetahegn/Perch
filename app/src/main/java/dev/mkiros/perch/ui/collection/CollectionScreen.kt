@@ -78,6 +78,7 @@ fun CollectionScreen(
 ) {
     val entries = viewModel.entries.collectAsLazyPagingItems()
     val pendingUndo by viewModel.pendingUndo.collectAsStateWithLifecycle()
+    val savedLinkTitle by viewModel.savedLinkTitle.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -106,6 +107,19 @@ fun CollectionScreen(
             SnackbarResult.ActionPerformed -> viewModel.undo()
             SnackbarResult.Dismissed -> viewModel.clearPendingUndo()
         }
+    }
+
+    // S02/#33: the sheet has closed on a save, so the list it closed onto says what it got
+    // — the confirmation the issue asked for. Formatted through the context because a
+    // snackbar is raised from a coroutine, where `stringResource` cannot be read.
+    LaunchedEffect(savedLinkTitle) {
+        val title = savedLinkTitle ?: return@LaunchedEffect
+        snackbarHostState.showSnackbar(
+            message = context.getString(R.string.save_link_saved, title),
+            withDismissAction = false,
+            duration = SnackbarDuration.Short,
+        )
+        viewModel.clearSavedLinkTitle()
     }
 
     Scaffold(
@@ -197,6 +211,7 @@ fun CollectionScreen(
         SaveLinkSheet(
             viewModel = saveLinkViewModel,
             onDismiss = { savingLink = false },
+            onSaved = viewModel::announceSavedLink,
         )
     }
 }

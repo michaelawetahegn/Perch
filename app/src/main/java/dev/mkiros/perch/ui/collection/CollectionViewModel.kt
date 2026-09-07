@@ -166,6 +166,30 @@ class CollectionViewModel(
         _pendingUndo.value = null
     }
 
+    private val _savedLinkTitle = MutableStateFlow<String?>(null)
+
+    /**
+     * S02/#33: the title of the link the save-link sheet just filed, for one snackbar.
+     *
+     * The reader's complaint was that a save ended in silence — the sheet closed and they
+     * "have to wait until the list populates". The row does arrive on its own (the queue is
+     * a database query), but arriving is not the same as being told, so To-Read says what it
+     * got. The title is resolved here rather than carried out of the sheet because the sheet
+     * only ever knew the row's id.
+     */
+    val savedLinkTitle: StateFlow<String?> = _savedLinkTitle.asStateFlow()
+
+    fun announceSavedLink(entryId: Long) {
+        viewModelScope.launch {
+            _savedLinkTitle.value = repository.find(entryId)?.title
+        }
+    }
+
+    /** The snackbar has had its say. */
+    fun clearSavedLinkTitle() {
+        _savedLinkTitle.value = null
+    }
+
     companion object {
         fun factory(container: AppContainer, collection: Collection) = viewModelFactory {
             initializer {

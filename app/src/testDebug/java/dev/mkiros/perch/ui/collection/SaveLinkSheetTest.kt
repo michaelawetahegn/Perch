@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -86,6 +87,23 @@ class SaveLinkSheetTest {
 
         compose.onNodeWithTag(SaveLinkTestTags.ERROR).assertIsDisplayed()
         assertThat(entryCount()).isEqualTo(0)
+    }
+
+    @Test
+    fun `a failure leaves its reason on screen with the address still there to fix`() {
+        showSheet()
+        val bad = "http://127.0.0.1:1/post"
+        paste(bad)
+        submit()
+        awaitState { it.error != null }
+
+        // S02/#33: "it should have errored out in the dialog before closing it" — so the
+        // reason is readable, the address is still in the field, and the button is live
+        // again for a second try. Nothing about this state closes the sheet.
+        compose.onNodeWithTag(SaveLinkTestTags.ERROR).assertIsDisplayed()
+        compose.onNodeWithTag(SaveLinkTestTags.SUBMIT).assertIsEnabled()
+        assertThat(viewModel.state.value.url).isEqualTo(bad)
+        assertThat(viewModel.state.value.canDismiss).isTrue()
     }
 
     @Test
