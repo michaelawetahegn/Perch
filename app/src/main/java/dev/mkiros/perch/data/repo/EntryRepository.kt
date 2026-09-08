@@ -6,9 +6,11 @@ import androidx.paging.PagingData
 import dev.mkiros.perch.data.db.EntryDao
 import dev.mkiros.perch.data.db.EntryListItem
 import dev.mkiros.perch.data.db.FeedReach
+import dev.mkiros.perch.data.db.FtsQuery
 import dev.mkiros.perch.data.db.entity.EntryEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOf
 import java.time.Clock
 
 /**
@@ -100,6 +102,55 @@ class EntryRepository(
         Pager(PerchPaging.config) {
             entryDao.pagedListItems(feedId, folderId, includeRead, publishedAfter)
         }.flow
+
+    // ---- search (S09, #28) ------------------------------------------------------
+
+    /**
+     * Every stored article matching what the reader typed, newest first.
+     *
+     * [raw] is the reader's own text, straight from the field, because this is the seam
+     * where it stops being text and becomes a query: [FtsQuery] sanitises it once, here,
+     * so no caller can forget and no screen has to know that FTS has a syntax at all. A
+     * question that reduces to nothing — empty, whitespace, punctuation, emoji — is not a
+     * search that found nothing, it is the absence of a search, and both answer with an
+     * empty list without touching the database.
+     *
+     * The scope is the surface the search was opened from (PLAN-9 §0.8) and nothing else:
+     * search ignores the time window and the read filter deliberately, which
+     * [dev.mkiros.perch.data.db.EntryQueries.SEARCH] explains.
+     *
+     * As with [observeEntries], **nothing on a screen should call this one** — it
+     * materialises every match. Screens read [pagedSearch].
+     *
+     * @param feedId the source the search was opened from; null is every source.
+     * @param folderId the folder it was opened from; null is every folder.
+     * @param savedOnly true when it was opened from To-Read; [likedOnly] for Liked.
+     */
+    fun searchEntries(
+        raw: String,
+        feedId: Long? = null,
+        folderId: Long? = null,
+        savedOnly: Boolean = false,
+        likedOnly: Boolean = false,
+    ): Flow<List<EntryListItem>> {
+        val query = FtsQuery.from(raw) ?: return flowOf(emptyList())
+        return entryDao.searchListItems(query, feedId, folderId, savedOnly, likedOnly)
+            .distinctUntilChanged()
+    }
+
+    /** The same search, a page at a time (U07a) — what the search screen collects. */
+    fun pagedSearch(
+        raw: String,
+        feedId: Long? = null,
+        folderId: Long? = null,
+        savedOnly: Boolean = false,
+        likedOnly: Boolean = false,
+    ): Flow<PagingData<EntryListItem>> {
+        val query = FtsQuery.from(raw) ?: return flowOf(PagingData.empty())
+        return Pager(PerchPaging.config) {
+            entryDao.pagedSearch(query, feedId, folderId, savedOnly, likedOnly)
+        }.flow
+    }
 
     /** The unread inbox — [observeEntries] as home reads it by default. */
     fun observeUnreadEntries(feedId: Long? = null): Flow<List<EntryListItem>> =

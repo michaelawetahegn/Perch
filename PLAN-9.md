@@ -414,7 +414,7 @@ a route, for reasons that apply identically here. Hoist the search state beside 
         `./gradlew test` green and growing.
       - Rung: unit
 
-- [ ] **S09 — Asking the index a reader's question. TDD. Issue #28 (2 of 3).**
+- [x] **S09 — Asking the index a reader's question. TDD. Issue #28 (2 of 3).**
       Depends on S08. §0.8 carries the decisions.
       - `EntryQueries.SEARCH` built on `ROW` (`EntryDao.kt:31-40`) joined to `entries_fts` on
         `rowid = e.id` with `entries_fts MATCH :query`, plus the scope predicates. **It must

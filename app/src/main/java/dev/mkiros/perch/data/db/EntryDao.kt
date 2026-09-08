@@ -89,6 +89,40 @@ internal object EntryQueries {
         WHERE e.isStarred = 1
         ORDER BY e.starredAt DESC, e.id DESC
     """
+
+    /**
+     * Search (S09, #28): the same row shape, narrowed to the articles S08's index matches.
+     *
+     * `:query` is an FTS4 `MATCH` expression and never the reader's raw text — see
+     * [FtsQuery] for what would otherwise happen. The join is on `rowid`, which is
+     * `entries.id` by construction (`EntryFtsEntity`), so a hit is a row of this list
+     * without a second lookup.
+     *
+     * Three deliberate absences, each of which would look like a missing article:
+     * - **no `f.isSynthetic = 0`**, unlike [LIST_ITEMS]. #31 kept a pasted link out of the
+     *   *stream*; it is still a stored article and this is where the reader comes looking
+     *   for it (this object's KDoc, PLAN-9 §0.3).
+     * - **no `:includeRead`**. You search for something you have read.
+     * - **no `:publishedAfter`**. You search for something you read months ago, and a Feed
+     *   left on "Past 24 Hours" would hide exactly the article being hunted (PLAN-9 §0.8).
+     *
+     * What it does inherit is *where the reader was standing*: a source, a folder, To-Read
+     * or Liked. The two flags are `= 0 OR` rather than a nullable id because "not scoped to
+     * the queue" is the absence of a filter, not a filter on false.
+     *
+     * Order is recency, like every other list here. FTS4 has no `bm25`, and ranking with
+     * `matchinfo` is a feature of its own rather than a detail of this one (PLAN-9 §0.8).
+     */
+    const val SEARCH = """
+        $ROW
+        JOIN entries_fts ON entries_fts.rowid = e.id
+        WHERE entries_fts MATCH :query
+          AND (:feedId IS NULL OR e.feedId = :feedId)
+          AND (:folderId IS NULL OR f.folderId = :folderId)
+          AND (:savedOnly = 0 OR e.isSaved = 1)
+          AND (:likedOnly = 0 OR e.isStarred = 1)
+        ORDER BY e.publishedAt DESC, e.id DESC
+    """
 }
 
 /**
@@ -151,6 +185,38 @@ abstract class EntryDao {
         folderId: Long?,
         includeRead: Boolean,
         publishedAfter: Long?,
+    ): PagingSource<Int, EntryListItem>
+
+    /**
+     * Search results, whole (S09, #28) — the counterpart to [pagedSearch], and what the
+     * tests and any caller wanting a count read.
+     *
+     * @param query an FTS4 `MATCH` expression from [FtsQuery.from], never raw reader text.
+     * @param feedId the source the search was opened from; null is every source.
+     * @param folderId the folder it was opened from; null is every folder.
+     * @param savedOnly true when it was opened from To-Read.
+     * @param likedOnly true when it was opened from Liked.
+     *
+     * What it deliberately does *not* take — a read filter, a time window — and why, is in
+     * [EntryQueries.SEARCH].
+     */
+    @Query(EntryQueries.SEARCH)
+    abstract fun searchListItems(
+        query: String,
+        feedId: Long?,
+        folderId: Long?,
+        savedOnly: Boolean,
+        likedOnly: Boolean,
+    ): Flow<List<EntryListItem>>
+
+    /** The same search, a page at a time (U07a) — what the search screen reads. */
+    @Query(EntryQueries.SEARCH)
+    abstract fun pagedSearch(
+        query: String,
+        feedId: Long?,
+        folderId: Long?,
+        savedOnly: Boolean,
+        likedOnly: Boolean,
     ): PagingSource<Int, EntryListItem>
 
     @Query("SELECT * FROM entries WHERE id = :id")
