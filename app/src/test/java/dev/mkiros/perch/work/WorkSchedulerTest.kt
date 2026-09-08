@@ -10,6 +10,7 @@ import androidx.work.WorkManager
 import androidx.work.testing.SynchronousExecutor
 import androidx.work.testing.WorkManagerTestInitHelper
 import com.google.common.truth.Truth.assertThat
+import dev.mkiros.perch.support.awaitInRealTime
 import java.time.Duration
 import org.junit.Before
 import org.junit.Test
@@ -72,7 +73,7 @@ class WorkSchedulerTest {
 
         // The cancel lands on WorkManager's own task executor, which the configured
         // SynchronousExecutor does not cover, so read the state back in wall-clock time.
-        assertThat(awaitCancelled()).isTrue()
+        awaitCancelled()
     }
 
     @Test
@@ -107,13 +108,8 @@ class WorkSchedulerTest {
     private fun scheduled(): List<WorkInfo> =
         workManager.getWorkInfosForUniqueWork(WorkScheduler.UNIQUE_NAME).get()
 
-    /** Polls for up to five seconds; returns the final verdict either way so a stall fails. */
-    private fun awaitCancelled(): Boolean {
-        val deadline = System.nanoTime() + Duration.ofSeconds(5).toNanos()
-        while (System.nanoTime() < deadline) {
-            if (scheduled().none { !it.state.isFinished }) return true
-            Thread.sleep(25)
+    private fun awaitCancelled() =
+        awaitInRealTime("every scheduled refresh to reach a finished state") {
+            scheduled().none { !it.state.isFinished }
         }
-        return scheduled().none { !it.state.isFinished }
-    }
 }

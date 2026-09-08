@@ -649,24 +649,11 @@ class HomeScreenTest {
         database.entryDao().observeAll().first().map { it.title }
     }
 
-    /**
-     * Waits for a *later* database emission, in wall-clock time.
-     *
-     * [androidx.compose.ui.test.junit4.ComposeTestRule.waitUntil] only advances Compose's
-     * virtual clock, and re-querying Room hops onto its query executor — a genuine
-     * background thread under Robolectric — so a virtual-time spin can idle out the whole
-     * timeout without that thread ever getting scheduled. The first emission is not
-     * affected (composing the screen costs real time); every emission after it is.
-     */
-    private fun awaitState(predicate: (HomeUiState) -> Boolean) {
-        val deadline = System.currentTimeMillis() + TIMEOUT_MS
-        while (System.currentTimeMillis() < deadline) {
-            compose.waitForIdle()
-            if (predicate(viewModel.uiState.value)) return
-            Thread.sleep(POLL_MS)
+    /** Waits for a *later* database emission, in wall-clock time. */
+    private fun awaitState(predicate: (HomeUiState) -> Boolean) =
+        compose.awaitInRealTime("a home state matching the test's predicate") {
+            predicate(viewModel.uiState.value)
         }
-        throw AssertionError("timed out; last state was ${viewModel.uiState.value}")
-    }
 
     /**
      * Waits for [text] to be on screen and *unobscured*, in wall-clock time.
@@ -677,15 +664,10 @@ class HomeScreenTest {
      * dialog is exactly that case — the filter was already null, so there is no state
      * change left to wait on.
      */
-    private fun awaitDisplayed(text: String) {
-        val deadline = System.currentTimeMillis() + TIMEOUT_MS
-        while (System.currentTimeMillis() < deadline) {
-            compose.waitForIdle()
-            runCatching { compose.onNodeWithText(text).assertIsDisplayed() }.onSuccess { return }
-            Thread.sleep(POLL_MS)
+    private fun awaitDisplayed(text: String) =
+        compose.awaitInRealTime("\"$text\" to be displayed") {
+            runCatching { compose.onNodeWithText(text).assertIsDisplayed() }.isSuccess
         }
-        compose.onNodeWithText(text).assertIsDisplayed()
-    }
 
     private fun idOf(title: String): Long = runBlocking {
         database.entryDao().observeAll().first().first { it.title == title }.id
@@ -716,7 +698,7 @@ class HomeScreenTest {
         }
         // Room delivers its first emission off the main thread, so the skeleton is on
         // screen for a beat; wait for the state the assertions are actually about.
-        compose.waitUntil(TIMEOUT_MS) { !viewModel.uiState.value.isLoading }
+        awaitState { !it.isLoading }
         compose.waitForIdle()
     }
 
@@ -781,7 +763,5 @@ class HomeScreenTest {
     private companion object {
         const val HOUR = 3_600L
         const val DAY = 24 * HOUR
-        const val TIMEOUT_MS = 5_000L
-        const val POLL_MS = 10L
     }
 }

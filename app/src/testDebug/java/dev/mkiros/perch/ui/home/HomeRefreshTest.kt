@@ -26,6 +26,7 @@ import dev.mkiros.perch.data.net.ConnectivityMonitor
 import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.source.AddSourceViewModel
 import dev.mkiros.perch.ui.theme.PerchTheme
 import dev.mkiros.perch.ui.rowTitles
@@ -396,25 +397,11 @@ class HomeRefreshTest {
         database.entryDao().observeAll().first().filterNot { it.isRead }.map { it.title }
     }
 
-    /** See `HomeScreenTest.awaitState` for why this polls in wall-clock time. */
     private fun awaitState(predicate: (HomeUiState) -> Boolean) =
         awaitCondition { predicate(viewModel.uiState.value) }
 
-    private fun awaitCondition(predicate: () -> Boolean) {
-        val deadline = System.currentTimeMillis() + TIMEOUT_MS
-        while (System.currentTimeMillis() < deadline) {
-            compose.waitForIdle()
-            if (predicate()) {
-                // The predicate reads view-model state, which the composition has not
-                // necessarily caught up with yet — the emission that satisfied it only
-                // *schedules* a recomposition. Flush that before anyone looks at a node.
-                compose.waitForIdle()
-                return
-            }
-            Thread.sleep(POLL_MS)
-        }
-        throw AssertionError("timed out; last state was ${viewModel.uiState.value}")
-    }
+    private fun awaitCondition(predicate: () -> Boolean) =
+        compose.awaitInRealTime("the screen to satisfy the test's predicate", predicate = predicate)
 
     private fun showHome(connectivity: ConnectivityMonitor = ConnectivityMonitor.AlwaysOnline) {
         viewModel = HomeViewModel(
@@ -436,7 +423,7 @@ class HomeRefreshTest {
                 )
             }
         }
-        compose.waitUntil(TIMEOUT_MS) { !viewModel.uiState.value.isLoading }
+        awaitState { !it.isLoading }
         compose.waitForIdle()
     }
 
@@ -519,7 +506,5 @@ class HomeRefreshTest {
         val FRESH = listOf("Fresh from one", "Fresh from two")
         const val ALL_CAUGHT_UP = "You're all caught up"
         const val DAY = 24 * 3_600L
-        const val TIMEOUT_MS = 10_000L
-        const val POLL_MS = 10L
     }
 }

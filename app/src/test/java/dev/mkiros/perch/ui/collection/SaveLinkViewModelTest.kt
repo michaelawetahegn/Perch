@@ -7,6 +7,7 @@ import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.net.FeedFetcher
 import dev.mkiros.perch.data.repo.SaveLinkFailure
 import dev.mkiros.perch.data.repo.SavedLinkRepository
+import dev.mkiros.perch.support.awaitInRealTime
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
@@ -165,18 +166,12 @@ class SaveLinkViewModelTest {
 
     // ---- harness ---------------------------------------------------------------
 
-    private fun awaitState(predicate: (SaveLinkUiState) -> Boolean) {
-        val deadline = System.currentTimeMillis() + TIMEOUT_MS
-        while (System.currentTimeMillis() < deadline) {
-            if (predicate(viewModel.state.value)) return
-            Thread.sleep(POLL_MS)
+    private fun awaitState(predicate: (SaveLinkUiState) -> Boolean) =
+        awaitInRealTime("a save-link state matching the test's predicate") {
+            predicate(viewModel.state.value)
         }
-        throw AssertionError("timed out; last state was ${viewModel.state.value}")
-    }
 
     private companion object {
-        const val TIMEOUT_MS = 10_000L
-        const val POLL_MS = 10L
         const val READABLE_PATH = "/article"
     }
 }

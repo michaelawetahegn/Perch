@@ -7,6 +7,8 @@ import android.view.View
 import androidx.compose.ui.platform.ViewRootForTest
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.junit4.ComposeTestRule
+import dev.mkiros.perch.support.AWAIT_TIMEOUT_MS
+import dev.mkiros.perch.support.awaitInRealTime as awaitWallClock
 import java.io.File
 
 /**
@@ -110,23 +112,21 @@ object Screenshots {
 }
 
 /**
- * Waits in *wall-clock* time. Compose's own `waitUntil` only advances the **virtual**
- * clock, so its timeout can expire without Room's query executor — a real background
- * thread here — ever being scheduled.
+ * The Compose flavour of [dev.mkiros.perch.support.awaitInRealTime]: the same wall-clock
+ * poll, with the composition flushed before every attempt and once more after the one that
+ * succeeds — a predicate reading view-model state can hold before the recomposition it
+ * scheduled has drawn.
+ *
+ * Why wall clock at all, and why `waitUntil` cannot do this, is on the function it calls.
  */
 fun ComposeTestRule.awaitInRealTime(
     what: String,
-    timeoutMs: Long = 20_000L,
+    timeoutMs: Long = AWAIT_TIMEOUT_MS,
     predicate: () -> Boolean,
 ) {
-    val deadline = System.currentTimeMillis() + timeoutMs
-    while (System.currentTimeMillis() < deadline) {
+    awaitWallClock(what, timeoutMs) {
         waitForIdle()
-        if (predicate()) {
-            waitForIdle()
-            return
-        }
-        Thread.sleep(10L)
+        predicate()
     }
-    throw AssertionError("timed out waiting for $what")
+    waitForIdle()
 }

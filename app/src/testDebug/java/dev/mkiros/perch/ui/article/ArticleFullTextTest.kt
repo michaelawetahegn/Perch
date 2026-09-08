@@ -24,6 +24,7 @@ import dev.mkiros.perch.data.repo.EntryRepository
 import dev.mkiros.perch.data.repo.FeedRepository
 import dev.mkiros.perch.data.net.FeedFetcher
 import dev.mkiros.perch.data.net.PerchHttp
+import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.theme.PerchTheme
 import java.io.File
 import java.time.Clock
@@ -214,15 +215,8 @@ class ArticleFullTextTest {
         compose.waitForIdle()
     }
 
-    private fun await(predicate: () -> Boolean) {
-        val deadline = System.currentTimeMillis() + TIMEOUT_MS
-        while (System.currentTimeMillis() < deadline) {
-            compose.waitForIdle()
-            if (predicate()) return
-            Thread.sleep(POLL_MS)
-        }
-        throw AssertionError("timed out waiting for the database")
-    }
+    private fun await(predicate: () -> Boolean) =
+        compose.awaitInRealTime("the database to satisfy the test's predicate", predicate = predicate)
 
     /**
      * The row landing in Room and the screen showing it are two different events, and
@@ -233,18 +227,10 @@ class ArticleFullTextTest {
      * `waitForIdle` cannot cover it; the emission arrives on a real dispatcher, so the wait
      * has to be in wall-clock time.
      */
-    private fun awaitText(text: String) {
-        val deadline = System.currentTimeMillis() + TIMEOUT_MS
-        while (System.currentTimeMillis() < deadline) {
-            compose.waitForIdle()
-            val found = compose.onAllNodesWithText(text, substring = true)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-            if (found) return
-            Thread.sleep(POLL_MS)
+    private fun awaitText(text: String) =
+        compose.awaitInRealTime("\"$text\" on screen") {
+            compose.onAllNodesWithText(text, substring = true).fetchSemanticsNodes().isNotEmpty()
         }
-        compose.onNodeWithText(text, substring = true).assertExists()
-    }
 
     private fun stored(entryId: Long): EntryEntity =
         runBlocking { database.entryDao().findById(entryId)!! }
@@ -289,7 +275,5 @@ class ArticleFullTextTest {
 
     private companion object {
         const val DAY = 24 * 3_600L
-        const val TIMEOUT_MS = 10_000L
-        const val POLL_MS = 10L
     }
 }

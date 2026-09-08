@@ -6,6 +6,7 @@ import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.support.awaitInRealTime
 import java.io.IOException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -192,19 +193,15 @@ class SettingsViewModelTest {
     private fun awaitMessage(
         predicate: (SettingsMessage) -> Boolean = { true },
     ): SettingsMessage {
-        val deadline = System.currentTimeMillis() + TIMEOUT_MS
-        while (System.currentTimeMillis() < deadline) {
-            val message = viewModel.message.value
-            if (message != null && predicate(message)) return message
-            Thread.sleep(POLL_MS)
+        var matched: SettingsMessage? = null
+        awaitInRealTime("a message matching the test's predicate") {
+            matched = viewModel.message.value?.takeIf(predicate)
+            matched != null
         }
-        throw AssertionError("timed out; last message was ${viewModel.message.value}")
+        return matched!!
     }
 
     private companion object {
-        const val TIMEOUT_MS = 10_000L
-        const val POLL_MS = 10L
-
         val RSS = """
             <?xml version="1.0"?>
             <rss version="2.0"><channel><title>Source</title>

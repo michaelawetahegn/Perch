@@ -34,6 +34,7 @@ import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.source.AddSourceViewModel
 import dev.mkiros.perch.ui.theme.PerchTheme
 import java.time.Clock
@@ -510,26 +511,14 @@ class DrawerMultiSelectTest {
      * from [awaitDb]: the database can already be right while the list behind the open
      * drawer has not been re-queried yet.
      */
-    private fun awaitDisplayed(text: String) {
-        val deadline = System.currentTimeMillis() + TIMEOUT_MS
-        while (System.currentTimeMillis() < deadline) {
-            compose.waitForIdle()
-            runCatching { compose.onNodeWithText(text).assertIsDisplayed() }.onSuccess { return }
-            Thread.sleep(POLL_MS)
+    private fun awaitDisplayed(text: String) =
+        compose.awaitInRealTime("\"$text\" to be displayed") {
+            runCatching { compose.onNodeWithText(text).assertIsDisplayed() }.isSuccess
         }
-        compose.onNodeWithText(text).assertIsDisplayed()
-    }
 
     /** Waits for a *later* database emission in wall-clock time (NOTES.md, T22). */
-    private fun awaitDb(predicate: () -> Boolean) {
-        val deadline = System.currentTimeMillis() + TIMEOUT_MS
-        while (System.currentTimeMillis() < deadline) {
-            compose.waitForIdle()
-            if (predicate()) return
-            Thread.sleep(POLL_MS)
-        }
-        throw AssertionError("timed out waiting on the database")
-    }
+    private fun awaitDb(predicate: () -> Boolean) =
+        compose.awaitInRealTime("the database to satisfy the test's predicate", predicate = predicate)
 
     private fun showHome() {
         viewModel = HomeViewModel(
@@ -562,7 +551,7 @@ class DrawerMultiSelectTest {
                 )
             }
         }
-        compose.waitUntil(TIMEOUT_MS) { !viewModel.uiState.value.isLoading }
+        awaitDb { !viewModel.uiState.value.isLoading }
         compose.waitForIdle()
     }
 
@@ -623,7 +612,5 @@ class DrawerMultiSelectTest {
 
     private companion object {
         const val DAY = 24 * 3_600L
-        const val TIMEOUT_MS = 5_000L
-        const val POLL_MS = 10L
     }
 }

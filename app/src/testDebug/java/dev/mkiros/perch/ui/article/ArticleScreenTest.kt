@@ -24,6 +24,7 @@ import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.repo.ArticleTextRepository
 import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.theme.Dimens
 import dev.mkiros.perch.ui.theme.PerchTheme
 import java.time.Clock
@@ -458,21 +459,8 @@ class ArticleScreenTest {
         compose.waitForIdle()
     }
 
-    /**
-     * Waits in *wall-clock* time, the way `HomeScreenTest.awaitState` does and for the
-     * same reason: `compose.waitUntil` only advances Compose's virtual clock, so its
-     * whole timeout can burn in microseconds without Room's query executor — a genuine
-     * background thread — ever being scheduled. Loading an entry is one such query.
-     */
-    private fun await(predicate: () -> Boolean) {
-        val deadline = System.currentTimeMillis() + TIMEOUT_MS
-        while (System.currentTimeMillis() < deadline) {
-            compose.waitForIdle()
-            if (predicate()) return
-            Thread.sleep(POLL_MS)
-        }
-        throw AssertionError("timed out waiting for the database")
-    }
+    private fun await(predicate: () -> Boolean) =
+        compose.awaitInRealTime("the database to satisfy the test's predicate", predicate = predicate)
 
     private fun entry(entryId: Long): EntryEntity = runBlocking {
         database.entryDao().observeAll().first().first { it.id == entryId }
@@ -526,7 +514,5 @@ class ArticleScreenTest {
 
     private companion object {
         const val DAY = 24 * 3_600L
-        const val TIMEOUT_MS = 5_000L
-        const val POLL_MS = 10L
     }
 }

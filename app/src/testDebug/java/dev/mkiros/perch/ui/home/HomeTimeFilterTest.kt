@@ -21,6 +21,7 @@ import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.source.AddSourceViewModel
 import dev.mkiros.perch.ui.theme.PerchTheme
 import java.time.Clock
@@ -188,7 +189,7 @@ class HomeTimeFilterTest {
         val seen = mutableListOf<HomeUiState>()
         val job = MainScope().launch { relaunched.uiState.collect { seen += it } }
         try {
-            await({ "the relaunched view model never loaded" }) {
+            compose.awaitInRealTime("the relaunched view model to load") {
                 seen.lastOrNull()?.isLoading == false
             }
             assertThat(seen.last().timeFilter).isEqualTo(TimeFilter.PastMonth)
@@ -317,20 +318,9 @@ class HomeTimeFilterTest {
 
     /** See `HomeScreenTest.awaitState`: Room's emissions need wall-clock time. */
     private fun awaitState(predicate: (HomeUiState) -> Boolean) =
-        await({ "timed out; last state was ${viewModel.uiState.value}" }) {
+        compose.awaitInRealTime("a home state matching the test's predicate") {
             predicate(viewModel.uiState.value)
         }
-
-    /** Polls [predicate] in wall-clock time, running the looper between attempts. */
-    private fun await(message: () -> String, predicate: () -> Boolean) {
-        val deadline = System.currentTimeMillis() + TIMEOUT_MS
-        while (System.currentTimeMillis() < deadline) {
-            compose.waitForIdle()
-            if (predicate()) return
-            Thread.sleep(POLL_MS)
-        }
-        throw AssertionError(message())
-    }
 
     private fun topOf(text: String): Float =
         compose.onNodeWithText(text).fetchSemanticsNode().positionInRoot.y
@@ -362,7 +352,7 @@ class HomeTimeFilterTest {
                 )
             }
         }
-        compose.waitUntil(TIMEOUT_MS) { !viewModel.uiState.value.isLoading }
+        awaitState { !it.isLoading }
         compose.waitForIdle()
     }
 
@@ -422,7 +412,5 @@ class HomeTimeFilterTest {
 
     private companion object {
         val CHICAGO: ZoneId = ZoneId.of("America/Chicago")
-        const val TIMEOUT_MS = 5_000L
-        const val POLL_MS = 20L
     }
 }

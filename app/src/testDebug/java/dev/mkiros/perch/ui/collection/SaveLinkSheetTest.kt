@@ -17,6 +17,7 @@ import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.theme.PerchTheme
 import kotlinx.coroutines.runBlocking
 import okhttp3.mockwebserver.MockResponse
@@ -159,15 +160,10 @@ class SaveLinkSheetTest {
         compose.waitForIdle()
     }
 
-    private fun awaitState(predicate: (SaveLinkUiState) -> Boolean) {
-        val deadline = System.currentTimeMillis() + TIMEOUT_MS
-        while (System.currentTimeMillis() < deadline) {
-            compose.waitForIdle()
-            if (predicate(viewModel.state.value)) return
-            Thread.sleep(POLL_MS)
+    private fun awaitState(predicate: (SaveLinkUiState) -> Boolean) =
+        compose.awaitInRealTime("a save-link state matching the test's predicate") {
+            predicate(viewModel.state.value)
         }
-        throw AssertionError("timed out; last state was ${viewModel.state.value}")
-    }
 
     private fun entryCount(): Int = runBlocking { database.entryDao().countAll() }
 
@@ -180,9 +176,4 @@ class SaveLinkSheetTest {
             """.trimIndent(),
         )
         .addHeader("Content-Type", "text/html; charset=utf-8")
-
-    private companion object {
-        const val TIMEOUT_MS = 10_000L
-        const val POLL_MS = 10L
-    }
 }

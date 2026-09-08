@@ -12,6 +12,7 @@ import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.db.entity.FolderEntity
+import dev.mkiros.perch.support.awaitInRealTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -169,14 +170,12 @@ class EntryPagingTest {
         assertThat(reloaded.data.first().title).isEqualTo("Entry 600")
     }
 
-    /** Polls the tracker until the write reaches it; the assertion after it says so if not. */
-    private fun awaitInvalidation(source: PagingSource<*, *>) {
-        val deadline = System.currentTimeMillis() + 10_000L
-        while (System.currentTimeMillis() < deadline && !source.invalid) {
+    /** Pumps the tracker until the write reaches it and retires the source. */
+    private fun awaitInvalidation(source: PagingSource<*, *>) =
+        awaitInRealTime("the write to invalidate the paging source") {
             db.invalidationTracker.refreshVersionsSync()
-            Thread.sleep(20L)
+            source.invalid
         }
-    }
 
     // ---- one stream across a page boundary ---------------------------------------
 

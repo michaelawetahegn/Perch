@@ -25,6 +25,7 @@ import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.settings.PerchSettings
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.theme.PerchTheme
 import dev.mkiros.perch.ui.theme.ThemeMode
 import dev.mkiros.perch.work.RefreshInterval
@@ -267,35 +268,15 @@ class SettingsScreenTest {
         return requireNotNull(started) { "no activity was started for a result" }.intent
     }
 
-    /**
-     * Polls in wall-clock time. `compose.waitUntil` advances only the *virtual* clock, so
-     * it would time out without ever letting a DataStore write land.
-     */
-    private fun awaitSettings(predicate: (PerchSettings) -> Boolean) {
-        val deadline = System.currentTimeMillis() + TIMEOUT_MS
-        var last = PerchSettings()
-        while (System.currentTimeMillis() < deadline) {
-            compose.waitForIdle()
-            last = runBlocking { container.settings.settings.first() }
-            if (predicate(last)) {
-                // One more idle pass: the predicate passing means the store emitted, not
-                // that the composition has drawn what the store emitted.
-                compose.waitForIdle()
-                return
-            }
-            Thread.sleep(POLL_MS)
+    /** A DataStore write lands on its own thread, so this waits in wall-clock time. */
+    private fun awaitSettings(predicate: (PerchSettings) -> Boolean) =
+        compose.awaitInRealTime("stored settings matching the test's predicate") {
+            predicate(runBlocking { container.settings.settings.first() })
         }
-        throw AssertionError("timed out; last settings were $last")
-    }
 
     private fun label(resId: Int): String = context.getString(resId)
 
     /** Rec. 709 relative luminance, enough to tell a dark scheme from a light one. */
     private fun luminance(color: androidx.compose.ui.graphics.Color): Float =
         0.2126f * color.red + 0.7152f * color.green + 0.0722f * color.blue
-
-    private companion object {
-        const val TIMEOUT_MS = 5_000L
-        const val POLL_MS = 25L
-    }
 }

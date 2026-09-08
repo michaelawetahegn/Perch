@@ -24,6 +24,7 @@ import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.source.AddSourceViewModel
 import dev.mkiros.perch.ui.theme.PerchTheme
 import java.time.Clock
@@ -393,15 +394,10 @@ class FolderDrawerTest {
     private fun folderIdOf(title: String) = feeds().first { it.title == title }.folderId
 
     /** Waits for a *later* database emission in wall-clock time (NOTES.md, T22). */
-    private fun awaitState(predicate: (HomeUiState) -> Boolean) {
-        val deadline = System.currentTimeMillis() + TIMEOUT_MS
-        while (System.currentTimeMillis() < deadline) {
-            compose.waitForIdle()
-            if (predicate(viewModel.uiState.value)) return
-            Thread.sleep(POLL_MS)
+    private fun awaitState(predicate: (HomeUiState) -> Boolean) =
+        compose.awaitInRealTime("a home state matching the test's predicate") {
+            predicate(viewModel.uiState.value)
         }
-        throw AssertionError("timed out; last state was ${viewModel.uiState.value}")
-    }
 
     /** The same wait, for a fact that lives in the database rather than in the state. */
     private fun awaitDb(predicate: () -> Boolean) = awaitState { predicate() }
@@ -425,7 +421,7 @@ class FolderDrawerTest {
                 )
             }
         }
-        compose.waitUntil(TIMEOUT_MS) { !viewModel.uiState.value.isLoading }
+        awaitState { !it.isLoading }
         compose.waitForIdle()
     }
 
@@ -481,7 +477,5 @@ class FolderDrawerTest {
 
     private companion object {
         const val DAY = 24 * 3_600L
-        const val TIMEOUT_MS = 5_000L
-        const val POLL_MS = 10L
     }
 }

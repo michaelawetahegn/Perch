@@ -34,6 +34,7 @@ import dev.mkiros.perch.data.repo.BackfillRepository
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.di.AppContainer
 import dev.mkiros.perch.ui.screenshot.Screenshots
+import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.source.AddSourceViewModel
 import dev.mkiros.perch.ui.theme.PerchTheme
 import java.time.Clock
@@ -326,15 +327,11 @@ class BackfillOfferTest {
 
     // ---- harness -------------------------------------------------------------------------
 
-    private fun awaitViewModel(predicate: () -> Boolean) {
-        val deadline = System.currentTimeMillis() + TIMEOUT_MS
-        while (System.currentTimeMillis() < deadline) {
-            compose.waitForIdle()
-            if (predicate()) return
-            Thread.sleep(POLL_MS)
-        }
-        throw AssertionError("timed out waiting on the view-model")
-    }
+    private fun awaitViewModel(predicate: () -> Boolean) =
+        compose.awaitInRealTime(
+            "the view model to satisfy the test's predicate",
+            predicate = predicate,
+        )
 
     private fun openDrawer() {
         if (drawerState.isClosed) {
@@ -406,7 +403,7 @@ class BackfillOfferTest {
                 )
             }
         }
-        compose.waitUntil(TIMEOUT_MS) { !viewModel.uiState.value.isLoading }
+        awaitViewModel { !viewModel.uiState.value.isLoading }
         compose.waitForIdle()
     }
 
@@ -494,8 +491,6 @@ class BackfillOfferTest {
         const val POST_1 = "https://example.com/2020/01/01/post-one"
         const val POST_2 = "https://example.com/2020/02/02/post-two"
         const val POST_3 = "https://example.com/2020/03/03/post-three"
-        const val TIMEOUT_MS = 5_000L
-        const val POLL_MS = 10L
         const val SCREENSHOT_DIR = "build/perch-screenshots"
 
         fun sitemapOf(vararg urls: String) = FetchedPage(

@@ -355,22 +355,14 @@ class PerchNavHostTest {
     private fun currentRoute(): String? = navController.currentDestination?.route
 
     /**
-     * Waits for [text] in wall-clock time.
-     *
      * Arriving at the article route is synchronous; the article is not — `ArticleViewModel`
      * reads the entry on Room's executor, so the first composition after `navigate` draws
-     * an empty screen. `compose.waitUntil` cannot be used to wait for it: it advances only
-     * the *virtual* clock, so it spins without ever letting that executor run.
+     * an empty screen.
      */
-    private fun awaitText(text: String) {
-        val deadline = System.currentTimeMillis() + TIMEOUT_MS
-        while (System.currentTimeMillis() < deadline) {
-            compose.waitForIdle()
-            if (compose.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()) return
-            Thread.sleep(POLL_MS)
+    private fun awaitText(text: String) =
+        compose.awaitInRealTime("\"$text\" on screen") {
+            compose.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()
         }
-        throw AssertionError("timed out waiting for \"$text\"")
-    }
 
     /** Returns the new entry's id. */
     private fun seedOneEntry(title: String): Long = runBlocking {
@@ -437,9 +429,4 @@ class PerchNavHostTest {
     /** Room's first emission is off the main thread, so the list is empty for a beat. */
     private fun awaitFeedLoaded() =
         compose.awaitInRealTime("the feed to load") { isDisplayed("Entry 00") }
-
-    private companion object {
-        const val TIMEOUT_MS = 5_000L
-        const val POLL_MS = 25L
-    }
 }

@@ -331,7 +331,7 @@ No task in this plan takes a device screenshot.
         countSavedOrLikedIn` sums `chunked(MAX_IDS_PER_STATEMENT)`, `setRead`'s shape
         exactly. Summing is exact because `feedId` partitions the rows.
 
-- [ ] **D08 — One wall-clock poll loop. Issue #41.**
+- [x] **D08 — One wall-clock poll loop. Issue #41.**
       `gh issue view 41 --json body`. `ScreenshotSupport.kt:117`
       `ComposeTestRule.awaitInRealTime(what, timeoutMs = 20_000, predicate)` is the survivor.
       Replace the 14 hand-rolled copies: `HomeScreenTest.kt:661,680`, `HomeRefreshTest.kt:403`,
@@ -351,6 +351,16 @@ No task in this plan takes a device screenshot.
         finds only `Await.kt` and `ScreenshotSupport.kt`; test count unchanged; `./gradlew test`
         green; issue #41 closed.
       - Rung: unit
+      - **Done, 2026-09-08.** 18 poll loops, not 14 — `SettingsViewModelTest.awaitMessage` was a
+        fourth JVM copy the survey missed. All of them now delegate to
+        `app/src/test/.../support/Await.kt`; `ScreenshotSupport`'s Compose twin delegates too, so
+        it no longer reads a clock at all. The five `compose.waitUntil(TIMEOUT_MS)` calls that
+        kept a `TIMEOUT_MS` companion alive went with them — a *virtual*-clock wait for a Room
+        load is the very bug the wall-clock loop exists for. Shared default 20 s; nothing needed
+        longer. The grep's remaining hits are **not** poll loops and were never in scope:
+        `FeedParserTest:224,240` time a parse, `LiveAcceptanceTest:1945` ages an entry,
+        `EntryRepositoryTest:42` is a KDoc sentence. `./gradlew test`: **1882** (1098 debug + 784
+        release), 0 failures; `@Test` count 1004, unchanged against `HEAD`. −276/+97 lines.
 
 - [ ] **D09 — One way to build a feed and an entry in a test. Issue #42.**
       `gh issue view 42 --json body`. `FeedEntity(` in 31 test files, `EntryEntity(` in 26.
