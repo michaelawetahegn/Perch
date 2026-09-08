@@ -99,6 +99,26 @@ internal fun hostOf(url: String?): String? {
 }
 
 /**
+ * `scheme://host[:port]` for [url], or null if it has neither. The root a site's
+ * conventional paths hang off: [FeedDiscovery]'s `/feed`, `/rss.xml`… guesses, and the
+ * `robots.txt` that [dev.mkiros.perch.data.archive.ArchiveDiscovery] reads for `Sitemap:`
+ * lines and [dev.mkiros.perch.data.repo.BackfillRepository] reads again for `Disallow`.
+ */
+internal fun hostRoot(url: String): String? = runCatching {
+    val uri = URI(url)
+    val host = uri.host ?: return null
+    val scheme = uri.scheme ?: return null
+    if (uri.port == -1) "$scheme://$host" else "$scheme://$host:${uri.port}"
+}.getOrNull()
+
+/**
+ * `/blog/a-post` from `https://example.com/blog/a-post?x=1`, or null when [url] does not
+ * parse. Every caller decides for itself what an unparseable URL means, so this one only
+ * reports it — a robots rule matches nothing, a lead image keeps its empty stem.
+ */
+internal fun pathOf(url: String): String? = runCatching { URI(url).path }.getOrNull()
+
+/**
  * Last rung of the GUID chain: a digest of whatever identifies the entry in the
  * document. Deterministic, so refetching the same feed re-derives the same identity and
  * the upsert in T15 recognises the entry instead of duplicating it.

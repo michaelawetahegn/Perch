@@ -1,6 +1,6 @@
 package dev.mkiros.perch.data.archive
 
-import java.net.URI
+import dev.mkiros.perch.data.parse.pathOf
 
 /**
  * A `robots.txt`'s `Disallow:` rules for the `*` group (RFC 9309), used by
@@ -17,7 +17,7 @@ class RobotsRules(private val disallowedPaths: List<String>) {
 
     /** True if [url]'s path starts with a disallowed prefix — RFC 9309 §2.2.2's match rule. */
     fun disallows(url: String): Boolean {
-        val path = runCatching { URI(url).path }.getOrNull() ?: return false
+        val path = pathOf(url) ?: return false
         return disallowedPaths.any { it.isNotEmpty() && path.startsWith(it) }
     }
 

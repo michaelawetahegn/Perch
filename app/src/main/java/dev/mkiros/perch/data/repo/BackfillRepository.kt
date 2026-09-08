@@ -3,7 +3,6 @@ package dev.mkiros.perch.data.repo
 import dev.mkiros.perch.data.archive.ArchiveDiscovery
 import dev.mkiros.perch.data.archive.ArchivePost
 import dev.mkiros.perch.data.archive.RobotsRules
-import dev.mkiros.perch.data.archive.hostRoot
 import dev.mkiros.perch.data.db.EntryDao
 import dev.mkiros.perch.data.db.FeedDao
 import dev.mkiros.perch.data.db.entity.EntryEntity
@@ -12,6 +11,7 @@ import dev.mkiros.perch.data.extract.PageContentExtractor
 import dev.mkiros.perch.data.parse.HtmlSanitizer
 import dev.mkiros.perch.data.parse.LeadImage
 import dev.mkiros.perch.data.parse.PageFetcher
+import dev.mkiros.perch.data.parse.hostRoot
 import java.time.Clock
 import java.time.Instant
 import kotlinx.coroutines.CancellationException

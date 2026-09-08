@@ -8,28 +8,16 @@ import dev.mkiros.perch.data.parse.ParseResult
 import dev.mkiros.perch.data.parse.attrNamed
 import dev.mkiros.perch.data.parse.childElementsNamed
 import dev.mkiros.perch.data.parse.childText
+import dev.mkiros.perch.data.parse.hostRoot
 import dev.mkiros.perch.data.parse.localName
 import dev.mkiros.perch.data.parse.parseFeedXml
+import dev.mkiros.perch.data.parse.pathOf
 import dev.mkiros.perch.data.parse.resolveUrl
-import java.net.URI
 import java.time.Instant
 import java.util.zip.GZIPInputStream
 
 /** One older post [ArchiveDiscovery] found, with whatever date it could attach to it. */
 data class ArchivePost(val url: String, val lastmod: Instant? = null)
-
-/**
- * `scheme://host[:port]` for [url], or null if it has neither. Shared with
- * [dev.mkiros.perch.data.repo.BackfillRepository] (PLAN-7 Z02), which needs the same root
- * to fetch `robots.txt` a second time for its `Disallow` rules — [ArchiveDiscovery] only
- * reads that file's `Sitemap:` lines and does not keep the rest.
- */
-internal fun hostRoot(url: String): String? = runCatching {
-    val uri = URI(url)
-    val host = uri.host ?: return null
-    val scheme = uri.scheme ?: return null
-    if (uri.port == -1) "$scheme://$host" else "$scheme://$host:${uri.port}"
-}.getOrNull()
 
 /**
  * Finds a site's older posts by published standards alone (PLAN-7 §0.2) — never by
@@ -172,7 +160,7 @@ class ArchiveDiscovery(
      * `/<slug>/`) that never date the permalink at all.
      */
     private fun isLikelyPost(url: String, shape: PathShape?): Boolean {
-        val path = runCatching { URI(url).path }.getOrNull() ?: return false
+        val path = pathOf(url) ?: return false
         if (DATED_PATH.containsMatchIn(path)) return true
         return shape != null && shape.matches(path)
     }
@@ -188,7 +176,7 @@ class ArchiveDiscovery(
     private fun learnPostShape(feed: FetchedPage?): PathShape? {
         val page = feed ?: return null
         val paths = entriesOf(page).mapNotNull { it.link }
-            .mapNotNull { runCatching { URI(it).path }.getOrNull() }
+            .mapNotNull { pathOf(it) }
             .map { it.trim('/').split('/').filter { segment -> segment.isNotEmpty() } }
             .filter { it.isNotEmpty() }
         val size = paths.firstOrNull()?.size ?: return null

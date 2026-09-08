@@ -1,6 +1,5 @@
 package dev.mkiros.perch.data.parse
 
-import java.net.URI
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
@@ -92,7 +91,7 @@ internal object LeadImage {
      * always beacons, so an article legitimately named `pixels-and-color.jpg` survives.
      */
     private fun isContent(url: String): Boolean {
-        val path = runCatching { URI(url).path }.getOrNull().orEmpty()
+        val path = pathOf(url).orEmpty()
         if (FEED_BEACON_PATH.containsMatchIn(path)) return false
         val stem = path.substringAfterLast('/').substringBeforeLast('.')
         return !TRACKER_STEM.matches(stem)

@@ -485,7 +485,7 @@ No task in this plan takes a device screenshot.
         closed.
       - Rung: unit
 
-- [ ] **D15 — `hostRoot` once, `pathOf` once. Issue #48.**
+- [x] **D15 — `hostRoot` once, `pathOf` once. Issue #48.**
       `gh issue view 48 --json body`. `ArchiveDiscovery.kt:27-32` and `FeedDiscovery.kt:83-88`
       are byte-identical; `RobotsRules.kt:20`, `ArchiveDiscovery.kt:175,191`, `LeadImage.kt:335`
       each write `runCatching { URI(url).path }.getOrNull()`. Both land in `FeedXml.kt` beside

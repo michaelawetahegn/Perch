@@ -1,7 +1,6 @@
 package dev.mkiros.perch.data.parse
 
 import java.io.ByteArrayInputStream
-import java.net.URI
 import org.jsoup.Jsoup
 
 /** A page someone fetched for us: what came back, and where it came back from. */
@@ -79,13 +78,6 @@ class FeedDiscovery(
             fetcher.fetch(root + guess)?.let { feedUrlOf(it) }
         }
     }
-
-    private fun hostRoot(url: String): String? = runCatching {
-        val uri = URI(url)
-        val host = uri.host ?: return null
-        val scheme = uri.scheme ?: return null
-        if (uri.port == -1) "$scheme://$host" else "$scheme://$host:${uri.port}"
-    }.getOrNull()
 
     private companion object {
         /** SPEC.md §5's preference order: atom, then rss, then rdf. */
