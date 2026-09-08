@@ -369,7 +369,7 @@ a route, for reasons that apply identically here. Hoist the search state beside 
         in the commit message; `./gradlew test` green and growing.
       - Rung: unit
 
-- [ ] **S07 — The reach sentence prefers a date it actually knows. TDD. Issue #25.**
+- [x] **S07 — The reach sentence prefers a date it actually knows. TDD. Issue #25.**
       The third of #25's three places, and the only one needing a data-model change (§0.7):
       `MIN(publishedAt)` (`EntryDao.kt:144-148` → `FeedReach.kt:15` → `HomeViewModel.kt:368-369`
       → `HomeScreen.kt:392-397` → `BackfillOfferUi.ReachSentence:124-136`) aggregates over rows

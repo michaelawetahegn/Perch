@@ -616,6 +616,52 @@ class EntryRepositoryTest {
             assertThat(repo.observeSaved().first().single().publishedIsEstimated).isTrue()
         }
 
+    // ---- the reach sentence prefers a date it knows (#25, S07) -------------------
+
+    /**
+     * PLAN-9 §0.7. `MIN(publishedAt)` aggregates across rows that are individually
+     * guessed or not, so no per-row flag survives it: a source whose oldest stored row
+     * carries a fetch-stamped guess would claim to reach back to the day Perch first
+     * saw it. A second aggregate over the known dates alone is what the sentence reads.
+     */
+    @Test
+    fun `reach carries the oldest date the articles published for themselves`() = runTest {
+        val feed = feeds.insert(feed("https://a.example/feed"))
+        insertEntry(feed, "old", publishedAt = 1_000L)
+        insertEntry(feed, "new", publishedAt = 2_000L)
+
+        val reach = repo.reach(feed)
+
+        assertThat(reach.oldestPublishedAt).isEqualTo(1_000L)
+        assertThat(reach.oldestKnownPublishedAt).isEqualTo(1_000L)
+    }
+
+    @Test
+    fun `a source where every date was guessed has no known date to reach back to`() = runTest {
+        val feed = feeds.insert(feed("https://a.example/feed"))
+        insertEntry(feed, "old", publishedAt = 1_000L, publishedIsEstimated = true)
+        insertEntry(feed, "new", publishedAt = 2_000L, publishedIsEstimated = true)
+
+        val reach = repo.reach(feed)
+
+        assertThat(reach.oldestPublishedAt).isEqualTo(1_000L)
+        assertThat(reach.oldestKnownPublishedAt).isNull()
+    }
+
+    /** The mixed case is the whole point: an older guess must not outrank a known date. */
+    @Test
+    fun `an older guess does not become the date a source reaches back to`() = runTest {
+        val feed = feeds.insert(feed("https://a.example/feed"))
+        insertEntry(feed, "guessed", publishedAt = 1_000L, publishedIsEstimated = true)
+        insertEntry(feed, "known", publishedAt = 2_000L)
+        insertEntry(feed, "later", publishedAt = 3_000L)
+
+        val reach = repo.reach(feed)
+
+        assertThat(reach.oldestPublishedAt).isEqualTo(1_000L)
+        assertThat(reach.oldestKnownPublishedAt).isEqualTo(2_000L)
+    }
+
     // ---- a pasted link belongs to To-Read only (#31) ----------------------------
 
     /**

@@ -244,6 +244,40 @@ class BackfillOfferTest {
         compose.onNodeWithTag(BackfillTestTags.REACH_SENTENCE).assertTextEquals("Reaches back to 31 Mar 2020")
     }
 
+    /**
+     * S07/#25. The oldest row Perch holds may be one whose date Perch invented, and a
+     * sentence built on `MIN(publishedAt)` would then state the day of the fetch as if
+     * the source had published it. It states the oldest date the source published for
+     * itself instead — the guess is older here, and must not win.
+     */
+    @Test
+    fun `the reach sentence states the oldest date the source published for itself`() {
+        val fetcher = FakeFetcher()
+        val feedId = seedFeed(title = "GPUOpen")
+        seedEntry(feedId, "Undated one", Instant.parse("2019-01-05T00:00:00Z"), isEstimated = true)
+        seedEntry(feedId, "Old one", Instant.parse("2020-03-31T00:00:00Z"))
+
+        showHome(fetcher)
+        tapRow("GPUOpen")
+        awaitViewModel { viewModel.sourceReach.value != null }
+
+        compose.onNodeWithTag(BackfillTestTags.REACH_SENTENCE).assertTextEquals("Reaches back to 31 Mar 2020")
+    }
+
+    /** With no known date anywhere, the sentence still says something — as a guess. */
+    @Test
+    fun `a source whose every date was guessed reaches back to a guess`() {
+        val fetcher = FakeFetcher()
+        val feedId = seedFeed(title = "GPUOpen")
+        seedEntry(feedId, "Undated one", Instant.parse("2020-03-31T00:00:00Z"), isEstimated = true)
+
+        showHome(fetcher)
+        tapRow("GPUOpen")
+        awaitViewModel { viewModel.sourceReach.value != null }
+
+        compose.onNodeWithTag(BackfillTestTags.REACH_SENTENCE).assertTextEquals("Reaches back to ~31 Mar 2020")
+    }
+
     @Test
     fun `the reach sentence is absent from the unified inbox`() {
         val fetcher = FakeFetcher()
@@ -396,7 +430,12 @@ class BackfillOfferTest {
         feedId
     }
 
-    private fun seedEntry(feedId: Long, title: String, published: Instant): Long = runBlocking {
+    private fun seedEntry(
+        feedId: Long,
+        title: String,
+        published: Instant,
+        isEstimated: Boolean = false,
+    ): Long = runBlocking {
         database.entryDao().insert(
             EntryEntity(
                 feedId = feedId,
@@ -405,7 +444,7 @@ class BackfillOfferTest {
                 link = "https://example.com/$title",
                 author = null,
                 publishedAt = published.toEpochMilli(),
-                publishedIsEstimated = false,
+                publishedIsEstimated = isEstimated,
                 summary = null,
                 contentHtml = null,
                 imageUrl = null,

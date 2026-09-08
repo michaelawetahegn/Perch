@@ -160,9 +160,18 @@ abstract class EntryDao {
     @Query("SELECT COUNT(*) FROM entries")
     abstract suspend fun countAll(): Int
 
-    /** PLAN-7 §0.4: how far [feedId]'s stored history reaches — see [FeedReach]. */
+    /**
+     * PLAN-7 §0.4: how far [feedId]'s stored history reaches — see [FeedReach].
+     *
+     * The second aggregate is `CASE WHEN` rather than SQL's `FILTER` clause on purpose
+     * (PLAN-9 §0.7): `FILTER` needs SQLite 3.30+, and which SQLite an Android device
+     * bundles varies with its API level, so a query that parses here could fail on a
+     * reader's phone. `MIN` skips nulls, which is exactly the aggregate wanted.
+     */
     @Query(
-        "SELECT COUNT(*) AS entryCount, MIN(publishedAt) AS oldestPublishedAt " +
+        "SELECT COUNT(*) AS entryCount, MIN(publishedAt) AS oldestPublishedAt, " +
+            "MIN(CASE WHEN publishedIsEstimated = 0 THEN publishedAt END) " +
+            "AS oldestKnownPublishedAt " +
             "FROM entries WHERE feedId = :feedId",
     )
     abstract suspend fun reach(feedId: Long): FeedReach

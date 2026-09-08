@@ -425,7 +425,11 @@ fun HomeScreen(
                     uiState.scope is HomeScope.Source &&
                     reachDate != null
                 ) {
-                    ReachSentence(oldestPublishedAt = reachDate, nowMillis = uiState.nowMillis)
+                    ReachSentence(
+                        oldestPublishedAt = reachDate,
+                        oldestKnownPublishedAt = sourceReach?.oldestKnownPublishedAt,
+                        nowMillis = uiState.nowMillis,
+                    )
                 }
                 PullToRefreshBox(
                     isRefreshing = isRefreshing,

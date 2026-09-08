@@ -119,13 +119,24 @@ fun BackfillProgressStrip(
  * §0.4: the source's honest reach, so "All Time" stops implying "all history" — shown only
  * scoped to one source with [TimeFilter.AllTime] active, the one place the confusion #21
  * was really about lives.
+ *
+ * S07/#25: honest also means it does not pass a guess off as a date. It states
+ * [oldestKnownPublishedAt] — the oldest date the source published for itself — whenever
+ * there is one, so a single undated item stamped with the moment Perch fetched it cannot
+ * drag the sentence back to a day nothing was written. Only a source with no known date
+ * anywhere falls back to [oldestPublishedAt], and then it says so with
+ * [RelativeTime.GUESS].
  */
 @Composable
-fun ReachSentence(oldestPublishedAt: Long, nowMillis: Long) {
+fun ReachSentence(oldestPublishedAt: Long, oldestKnownPublishedAt: Long?, nowMillis: Long) {
     Text(
         text = stringResource(
             R.string.backfill_reach_sentence,
-            RelativeTime.format(oldestPublishedAt, nowMillis),
+            RelativeTime.format(
+                publishedAt = oldestKnownPublishedAt ?: oldestPublishedAt,
+                now = nowMillis,
+                isEstimated = oldestKnownPublishedAt == null,
+            ),
         ),
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
