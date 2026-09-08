@@ -549,7 +549,7 @@ No task in this plan takes a device screenshot.
         commit; issue #52 closed.
       - Rung: unit
 
-- [ ] **D20 — `normalizePastedUrl` lives in `data`. Issue #53.**
+- [x] **D20 — `normalizePastedUrl` lives in `data`. Issue #53.**
       `gh issue view 53 --json body`. `git mv` `ui/source/PastedUrl.kt` → `data/parse/PastedUrl.kt`
       and its test `test/.../ui/source/PastedUrlTest.kt` → `test/.../data/parse/`; fix the five
       imports (`SavedLinkRepository.kt:14`, `AddSourceViewModel.kt`, and whatever

@@ -106,7 +106,7 @@ app/src/main/java/dev/mkiros/perch/
 │  ├─ parse/ FeedParser.kt  RssParser.kt  AtomParser.kt  RdfParser.kt  FeedXml.kt
 │  │         ParsedFeed.kt  ParsedEntry.kt  ParseResult.kt  DateParser.kt
 │  │         FeedDiscovery.kt  HtmlSanitizer.kt  ArticleBlock.kt
-│  │         ArticleLowering.kt  LeadImage.kt
+│  │         ArticleLowering.kt  LeadImage.kt  PastedUrl.kt
 │  ├─ extract/ ArticleExtractor.kt  FullText.kt  PageContent.kt  PageMetadata.kt
 │  ├─ archive/ ArchiveDiscovery.kt  RobotsRules.kt        (v0.5 backfill)
 │  ├─ opml/ Opml.kt
@@ -125,7 +125,7 @@ app/src/main/java/dev/mkiros/perch/
    │         EntryActions.kt  FolderActions.kt  SourceActions.kt  SelectionBar.kt
    │         PagedList.kt  RelativeTime.kt  TimeFilter.kt
    │         BackfillOfferUi.kt  BackfillRunner.kt
-   ├─ source/ AddSourceSheet.kt  AddSourceViewModel.kt  PastedUrl.kt
+   ├─ source/ AddSourceSheet.kt  AddSourceViewModel.kt
    ├─ article/ ArticleScreen.kt  ArticleViewModel.kt  ArticleBody.kt  RichText.kt
    │           code/{CodeHighlighter,CodeLanguage}.kt
    │           zoom/{ImageViewer,ZoomGeometry,ZoomState}.kt

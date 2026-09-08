@@ -1,4 +1,4 @@
-package dev.mkiros.perch.ui.source
+package dev.mkiros.perch.data.parse
 
 /** Anything shaped like `scheme:` at the front of an address. */
 private val SCHEME = Regex("^[a-zA-Z][a-zA-Z0-9+.\\-]*:")

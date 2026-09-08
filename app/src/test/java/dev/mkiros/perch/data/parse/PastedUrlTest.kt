@@ -1,4 +1,4 @@
-package dev.mkiros.perch.ui.source
+package dev.mkiros.perch.data.parse
 
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -6,9 +6,10 @@ import org.junit.Test
 /**
  * What a reader is allowed to paste into the add-source field.
  *
- * The repository deliberately does not normalise: it treats what it is given as an
- * address and reports `example.com` as unreachable. The sheet is where a human's paste
- * becomes a URL, so that is here.
+ * [dev.mkiros.perch.data.repo.FeedRepository] deliberately does not normalise: it treats
+ * what it is given as an address and reports `example.com` as unreachable. Turning a paste
+ * into a URL happens here, once, for both callers — the add-source sheet and
+ * [dev.mkiros.perch.data.repo.SavedLinkRepository].
  */
 class PastedUrlTest {
 

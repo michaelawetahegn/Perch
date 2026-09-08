@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.mkiros.perch.data.db.entity.FolderEntity
+import dev.mkiros.perch.data.parse.normalizePastedUrl
 import dev.mkiros.perch.data.repo.FeedRepository
 import dev.mkiros.perch.data.repo.FolderRepository
 import dev.mkiros.perch.data.repo.SourceResolution

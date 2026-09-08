@@ -9,7 +9,7 @@ import dev.mkiros.perch.data.net.FeedFetcher
 import dev.mkiros.perch.data.net.FetchResult
 import dev.mkiros.perch.data.parse.FeedParser
 import dev.mkiros.perch.data.parse.ParseResult
-import dev.mkiros.perch.ui.source.normalizePastedUrl
+import dev.mkiros.perch.data.parse.normalizePastedUrl
 import java.time.Clock
 
 /**
