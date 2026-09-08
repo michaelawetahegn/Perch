@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -18,7 +17,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -44,13 +42,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.paging.LoadState
-import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.itemKey
 import dev.mkiros.perch.R
-import dev.mkiros.perch.data.db.EntryListItem
-import dev.mkiros.perch.ui.home.EntryRow
-import dev.mkiros.perch.ui.home.pagedFooter
+import dev.mkiros.perch.ui.home.PagedEntryList
 import dev.mkiros.perch.ui.theme.Dimens
 
 /**
@@ -212,52 +206,16 @@ fun SearchSurface(
                     body = stringResource(R.string.search_no_results_body),
                     tag = SearchTestTags.EMPTY,
                 )
-                else -> Results(
-                    results = results,
+                else -> PagedEntryList(
+                    entries = results,
                     nowMillis = viewModel.nowMillis,
+                    rowTag = SearchTestTags.RESULT,
                     onOpenEntry = onOpenEntry,
+                    modifier = Modifier.testTag(SearchTestTags.LIST),
+                    animate = false,
                 )
             }
         }
-    }
-}
-
-/**
- * The hits, the same row the other three lists draw (U07a's shape).
- *
- * No long-press sheet here, deliberately: a search result is somewhere the reader is
- * passing through on the way to one article, and the sheet's actions are all reachable on
- * the article itself or on the list the search came from.
- */
-@Composable
-private fun Results(
-    results: LazyPagingItems<EntryListItem>,
-    nowMillis: Long,
-    onOpenEntry: (Long) -> Unit,
-) {
-    val listState = rememberLazyListState()
-    LazyColumn(
-        state = listState,
-        modifier = Modifier.fillMaxSize().testTag(SearchTestTags.LIST),
-    ) {
-        items(count = results.itemCount, key = results.itemKey { it.id }) { index ->
-            val item = results[index] ?: return@items
-            Column {
-                EntryRow(
-                    item = item,
-                    now = nowMillis,
-                    onClick = { onOpenEntry(item.id) },
-                    modifier = Modifier.testTag(SearchTestTags.RESULT),
-                )
-                if (index + 1 < results.itemCount) {
-                    HorizontalDivider(
-                        modifier = Modifier.padding(start = Dimens.dividerInset),
-                        color = MaterialTheme.colorScheme.outlineVariant,
-                    )
-                }
-            }
-        }
-        pagedFooter(results)
     }
 }
 

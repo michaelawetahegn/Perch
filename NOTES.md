@@ -88,9 +88,10 @@
   the move is invisible to an installed reader; `SettingsStoreTest` pins that with a base64
   preferences file **captured from commit 8e9a5b8**, before the package existed — only ever
   regenerate it from a build that actually wrote it.
-- 2026-09-08 — **`WorkSchedulerTest > choosing manual cancels…` is flaky in the full suite** (3 of 5 runs by D15;
-  green on its own every time). It waits on WorkManager's *own* task executor, which `SynchronousExecutor` does not cover, so a
-  loaded host outruns the 20 s `awaitInRealTime`. Re-run it; if it hardens, fix the executor.
+- 2026-09-08 — **Two full-suite-only flakes; both are green alone and on a re-run, so re-run before diagnosing.**
+  `WorkSchedulerTest > choosing manual cancels…` (3 of 5 runs by D15) waits on WorkManager's *own* task executor,
+  which `SynchronousExecutor` does not cover, so a loaded host outruns the 20 s `awaitInRealTime`.
+  `SettingsViewModelTest` (D23, 1 of 2 runs) failed inside `Dispatchers.setMain`/`resetMain`. If either hardens, fix it.
 - 2026-09-07 — **S12, live acceptance v6 (15 gates, ~90 s, not the 15–25 min the plan budgeted).**
   Gates 13/14/15 take their keywords **out of the corpus that just arrived** — see the file's own
   KDoc. A gate keyword must be ASCII-lettered and space-delimited or it tests typography, not

@@ -90,11 +90,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
-import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.itemKey
 import dev.mkiros.perch.R
-import dev.mkiros.perch.data.db.EntryListItem
 import dev.mkiros.perch.model.BackfillProgress
 import dev.mkiros.perch.model.TimeFilter
 import dev.mkiros.perch.ui.brand.PerchMark
@@ -471,12 +468,14 @@ fun HomeScreen(
                             onAddSource = ::addSource,
                             onWiden = viewModel::widenTimeFilter,
                         )
-                        else -> EntryList(
+                        else -> PagedEntryList(
                             entries = entries,
                             nowMillis = uiState.nowMillis,
-                            listState = listState,
+                            rowTag = HomeTestTags.ENTRY,
                             onOpenEntry = onOpenEntry,
-                            onLongPressEntry = { entryActionsForId = it },
+                            modifier = Modifier.testTag(HomeTestTags.ENTRY_LIST),
+                            listState = listState,
+                            onLongPress = { entryActionsForId = it },
                         )
                     }
                 }
@@ -1232,61 +1231,6 @@ object HomeTestTags {
 
     /** The empty bucket's way out, which only the bucket case has. */
     const val EMPTY_WIDEN = "home:empty:widen"
-}
-
-/**
- * The list proper, paged (U07a), and one chronological stream (W03).
- *
- * `LazyColumn` was already composing only what is on screen; what it was not doing was
- * *loading* only that. The rows now arrive a page at a time, and the reader is meant never
- * to find out: the only visible difference is a small footer while the next page is in
- * flight, and a marker where the list genuinely ends.
- *
- * There are no folder headers to place any more, so the only neighbour question left is
- * where the last rule goes — and that is asked with `peek` rather than by indexing,
- * because reading a row through `get` tells Paging the reader has reached it, and asking
- * "is there a row after this one" is not the reader reaching anything.
- *
- * [rememberLazyListState] is saveable, so the scroll offset survives opening an article
- * and coming back; the reader returns to the row they left, not to the top.
- */
-@Composable
-private fun EntryList(
-    entries: LazyPagingItems<EntryListItem>,
-    nowMillis: Long,
-    listState: LazyListState,
-    onOpenEntry: (Long) -> Unit,
-    onLongPressEntry: (Long) -> Unit,
-) {
-    LazyColumn(
-        state = listState,
-        modifier = Modifier.fillMaxSize().testTag(HomeTestTags.ENTRY_LIST),
-    ) {
-        items(
-            count = entries.itemCount,
-            key = entries.itemKey { it.id },
-        ) { index ->
-            val item = entries[index] ?: return@items
-            Column(modifier = Modifier.animateItem()) {
-                EntryRow(
-                    item = item,
-                    now = nowMillis,
-                    onClick = { onOpenEntry(item.id) },
-                    onLongClick = { onLongPressEntry(item.id) },
-                    modifier = Modifier.testTag(HomeTestTags.ENTRY),
-                )
-                // A rule between every pair and none under the last row, which is what
-                // the To-Read and Liked lists already do.
-                if (index + 1 < entries.itemCount) {
-                    HorizontalDivider(
-                        modifier = Modifier.padding(start = Dimens.dividerInset),
-                        color = MaterialTheme.colorScheme.outlineVariant,
-                    )
-                }
-            }
-        }
-        pagedFooter(entries)
-    }
 }
 
 /**

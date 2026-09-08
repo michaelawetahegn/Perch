@@ -598,7 +598,7 @@ No task in this plan takes a device screenshot.
         parameter. `./gradlew test`: **BUILD SUCCESSFUL in 4m 56s**, 1930 tests
         (1124 debug + 806 release), 0 failures.
 
-- [ ] **D23 — One paged entry list. Issue #56.**
+- [x] **D23 — One paged entry list. Issue #56.**
       `gh issue view 56 --json body`. `HomeScreen.kt:1251-1288`, `CollectionScreen.kt:246-278`,
       `SearchSurface.kt:232-262` → `PagedEntryList(entries, listState, tag, onClick, onLongClick?,
       animate: Boolean, …)` in `ui/home/PagedList.kt` beside `pagedFooter` (§0.6). The three
@@ -609,6 +609,16 @@ No task in this plan takes a device screenshot.
       - Done: `grep -rn 'pagedFooter(' app/src/main` shows one call site; `./gradlew test`
         green; issue #56 closed.
       - Rung: unit
+      - **Done 2026-09-08.** `PagedEntryList(entries, nowMillis, rowTag, onOpenEntry, modifier,
+        listState = rememberLazyListState(), onLongPress = null, animate = true)` in
+        `ui/home/PagedList.kt`; the three private `EntryList`/`Results` copies are gone. The
+        list's own tag rides on `modifier` because only Home and Search want one — Collection
+        never had it. `EntryRow.onLongClick` was already nullable, so search passes nothing
+        rather than an empty lambda. Net **−75 lines** (83 added, 158 removed).
+        `grep -rn 'pagedFooter(' app/src/main`: **one call site**, `PagedList.kt:88`.
+        `./gradlew test`: **BUILD SUCCESSFUL in 3m 25s**, 1930 tests (1124 debug + 806
+        release), 0 failures. (Run 1 hit the `SettingsViewModelTest` full-suite flake now in
+        NOTES.md; green alone and on the re-run.)
 
 - [ ] **D24 — One empty state. Issue #57.**
       `gh issue view 57 --json body`. `HomeScreen.kt:1420-1522`, `CollectionScreen.kt:289-346`,
