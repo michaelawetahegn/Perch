@@ -168,6 +168,37 @@ class HomeRefreshTest {
         assertThat(viewModel.isRefreshing.value).isFalse()
     }
 
+    /**
+     * D14/#47: the overflow's *Refresh*, which is the same fetch the pull gesture asks for
+     * and the only one a reader who cannot reach the gesture has. Asserted at the wire for
+     * the same reason the pull is — that the menu item reached a fetch, and one per source.
+     */
+    @Test
+    fun `refreshing from the overflow menu polls every source exactly once`() {
+        val one = seedRemoteFeed(path = "/one.xml", title = "Source One", entryTitle = "Fresh from one")
+        seedRemoteFeed(path = "/two.xml", title = "Source Two", entryTitle = "Fresh from two")
+        seedEntry(feedId = one, title = "Cached in one")
+
+        showHome()
+        refreshFromOverflow()
+
+        assertThat(requestedPaths()).containsExactly("/one.xml", "/two.xml")
+        awaitCondition { listedTitles().containsAll(FRESH) }
+    }
+
+    /** The menu item obeys the scope on screen, exactly as the gesture does. */
+    @Test
+    fun `refreshing from the overflow menu while filtered polls only the source on screen`() {
+        seedRemoteFeed(path = "/one.xml", title = "Source One", entryTitle = "Fresh from one")
+        seedRemoteFeed(path = "/two.xml", title = "Source Two", entryTitle = "Fresh from two")
+
+        showHome()
+        selectInDrawer("Source Two")
+        refreshFromOverflow()
+
+        assertThat(requestedPaths()).containsExactly("/two.xml")
+    }
+
     // ---- a source that is failing (DESIGN.md §7) ------------------------------------
 
     @Test
@@ -327,6 +358,16 @@ class HomeRefreshTest {
      */
     private fun pullToRefresh() {
         compose.onNodeWithTag(HomeTestTags.LIST).performTouchInput { swipeDown() }
+        awaitCondition { !viewModel.isRefreshing.value && server.requestCount > 0 }
+        compose.waitForIdle()
+    }
+
+    /** The overflow's *Refresh*: a dropdown item, so an injected tap never reaches it. */
+    private fun refreshFromOverflow() {
+        compose.onNodeWithContentDescription("More options").performClick()
+        compose.waitForIdle()
+        compose.onNodeWithTag(HomeTestTags.REFRESH)
+            .performSemanticsAction(SemanticsActions.OnClick)
         awaitCondition { !viewModel.isRefreshing.value && server.requestCount > 0 }
         compose.waitForIdle()
     }

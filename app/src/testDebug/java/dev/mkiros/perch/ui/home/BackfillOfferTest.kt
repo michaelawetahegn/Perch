@@ -198,6 +198,55 @@ class BackfillOfferTest {
         assertThat(runner.cancelled).containsExactly(feedId)
     }
 
+    /**
+     * D14/#47. Declining is the offer's other exit and the one a reader takes most often;
+     * it must cost nothing — no run enqueued, and no trace that would make the dialog come
+     * back on its own (the drawer's *Fetch older posts* is how it is asked for again).
+     */
+    @Test
+    fun `declining the offer closes it and fetches nothing`() {
+        val fetcher = MapPageFetcher()
+        fetcher.pages[SITE + "sitemap.xml"] = sitemapOf(POST_1, POST_2, POST_3)
+        val feedId = seedFeed(entryCount = 1)
+
+        showHome(fetcher)
+        viewModel.sourceAdded(feedId)
+        awaitViewModel { viewModel.backfillOffer.value != null }
+
+        tap(BackfillTestTags.OFFER_DECLINE)
+
+        compose.onNodeWithTag(BackfillTestTags.OFFER_DIALOG).assertDoesNotExist()
+        assertThat(viewModel.backfillOffer.value).isNull()
+        assertThat(runner.enqueued).isEmpty()
+        compose.onNodeWithTag(BackfillTestTags.PROGRESS_STRIP).assertDoesNotExist()
+    }
+
+    /**
+     * D14/#47. Once the run has finished the strip's `×` is a *dismiss*, not a stop: there
+     * is nothing left to cancel, and the reader saying "yes, I saw it" must not read as
+     * them taking the run back.
+     */
+    @Test
+    fun `dismissing the finished strip clears it without cancelling anything`() {
+        val fetcher = MapPageFetcher()
+        fetcher.pages[SITE + "sitemap.xml"] = sitemapOf(POST_1, POST_2, POST_3)
+        val feedId = seedFeed(entryCount = 1)
+
+        showHome(fetcher)
+        viewModel.sourceAdded(feedId)
+        awaitViewModel { viewModel.backfillOffer.value != null }
+        tap(BackfillTestTags.OFFER_ACCEPT)
+        runner.push(feedId, BackfillProgress(3, 3, BackfillRunState.SUCCEEDED))
+        compose.waitForIdle()
+
+        // A finished run offers the dismiss, not the stop — they are different buttons.
+        compose.onNodeWithTag(BackfillTestTags.PROGRESS_STOP).assertDoesNotExist()
+        tap(BackfillTestTags.PROGRESS_DISMISS)
+
+        compose.onNodeWithTag(BackfillTestTags.PROGRESS_STRIP).assertDoesNotExist()
+        assertThat(runner.cancelled).isEmpty()
+    }
+
     // ---- reachable again from the drawer -----------------------------------------------
 
     @Test

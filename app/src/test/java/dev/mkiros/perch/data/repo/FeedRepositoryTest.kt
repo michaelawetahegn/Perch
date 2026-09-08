@@ -6,6 +6,7 @@ import dev.mkiros.perch.data.db.EntryDao
 import dev.mkiros.perch.data.db.FeedDao
 import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.FeedEntity
+import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.net.FeedFetcher
 import java.io.File
 import java.util.concurrent.CountDownLatch
@@ -247,6 +248,40 @@ class FeedRepositoryTest {
         repo.refresh(id)
 
         assertThat(feeds.findById(id)!!.feedUrl).isEqualTo(server.url("/moved.xml").toString())
+    }
+
+    // ---- refreshing one folder (U06) -------------------------------------------
+
+    /**
+     * D14/#47: a pull-to-refresh with the drawer scoped to a folder refreshes that scope,
+     * and the point of the scope is what it leaves alone — a folder of three sources must
+     * not cost a request to the twenty filed elsewhere.
+     */
+    @Test
+    fun `refreshing a folder polls its own sources and no others`() = runTest {
+        server.dispatcher = pathDispatcher()
+        val folderId = db.folderDao().insert(FolderEntity(name = "Graphics", createdAt = now))
+        val inFolder = listOf(addFeed("/a.xml", folderId), addFeed("/b.xml", folderId))
+        val elsewhere = addFeed("/c.xml")
+
+        val report = repo.refreshFolder(folderId)
+
+        assertThat(report.outcomes.keys).containsExactlyElementsIn(inFolder)
+        assertThat(report.outcomes).doesNotContainKey(elsewhere)
+        assertThat(requestedPaths()).containsExactly("/a.xml", "/b.xml")
+        assertThat(feeds.findById(elsewhere)!!.lastFetchedAt).isNull()
+    }
+
+    /** An empty folder is not an error, and asks the network for nothing. */
+    @Test
+    fun `refreshing a folder with nothing in it fetches nothing`() = runTest {
+        val folderId = db.folderDao().insert(FolderEntity(name = "Empty", createdAt = now))
+        addFeed("/a.xml")
+
+        val report = repo.refreshFolder(folderId)
+
+        assertThat(report.outcomes).isEmpty()
+        assertThat(server.requestCount).isEqualTo(0)
     }
 
     // ---- per-source failure isolation ------------------------------------------
@@ -661,7 +696,10 @@ class FeedRepositoryTest {
         .setBody("<!doctype html><html><head>$body</head><body>hello</body></html>")
         .addHeader("Content-Type", "text/html; charset=utf-8")
 
-    private suspend fun addFeed(path: String = "/feed.xml"): Long = feeds.insert(
+    private suspend fun addFeed(
+        path: String = "/feed.xml",
+        folderId: Long = FolderEntity.UNCATEGORIZED_ID,
+    ): Long = feeds.insert(
         FeedEntity(
             feedUrl = server.url(path).toString(),
             siteUrl = null,
@@ -674,8 +712,13 @@ class FeedRepositoryTest {
             lastSuccessAt = null,
             lastError = null,
             addedAt = now,
+            folderId = folderId,
         ),
     )
+
+    /** Every path the [server] was asked for, in the order the requests arrived. */
+    private fun requestedPaths(): List<String> =
+        List(server.requestCount) { server.takeRequest().path.orEmpty() }
 
     private fun storedEntry(
         feedId: Long,

@@ -469,7 +469,7 @@ No task in this plan takes a device screenshot.
         row for this test alone (`--tests '*FeedRepositoryTest*'`); issue #46 closed.
       - Rung: unit
 
-- [ ] **D14 — The untested controls get their tests. No production change. Issue #47.**
+- [x] **D14 — The untested controls get their tests. No production change. Issue #47.**
       `gh issue view 47 --json body`. Add tests, touch no `main` file:
       - `BackfillTestTags.OFFER_DECLINE` and `PROGRESS_DISMISS` (`BackfillOfferUi.kt:153,157`)
         in `BackfillOfferTest`; `HomeTestTags.REFRESH` (`HomeScreen.kt:1197`, the overflow item)
