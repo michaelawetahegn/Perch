@@ -358,6 +358,24 @@ abstract class EntryDao {
     abstract suspend fun setStarred(id: Long, isStarred: Boolean, starredAt: Long?)
 
     /**
+     * The three columns a full-text fetch owns, and nothing else (D03, #36).
+     *
+     * `ArticleTextRepository.loadFullText` reads the row, then spends seconds on the
+     * network before writing. A Room `@Update` would carry every other column back to
+     * what it was when the read happened — undoing a Read later or a Like the reader
+     * tapped while the page was still coming in, and a title a refresh corrected in the
+     * same window. `FeedRepository.mutate` avoids the same hazard the same way.
+     */
+    @Query(
+        """
+        UPDATE entries
+        SET contentHtml = :contentHtml, fullTextAt = :fullTextAt, imageUrl = :imageUrl
+        WHERE id = :id
+        """,
+    )
+    abstract suspend fun setFullText(id: Long, contentHtml: String?, fullTextAt: Long?, imageUrl: String?)
+
+    /**
      * How much of the reader's own curation sits inside [feedIds] — what U09a's delete
      * confirmation puts a number to before it cascades.
      *

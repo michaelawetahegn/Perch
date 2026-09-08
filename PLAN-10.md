@@ -231,7 +231,7 @@ No task in this plan takes a device screenshot.
         lost `testInstrumentationRunner` and all three `androidTestImplementation` lines.
         `.gitignore` gained `.kotlin/`.
 
-- [ ] **D03 — Read later and Like survive a full-text load. TDD. Issue #36.**
+- [x] **D03 — Read later and Like survive a full-text load. TDD. Issue #36.**
       `gh issue view 36 --json body`. §0.5 carries the root cause and the fix shape; the RED
       lives in `ArticleTextRepositoryTest.kt` (`app/src/test/.../data/repo/`, 11 tests today,
       none concurrent) using the fetcher hook described there.
@@ -243,6 +243,15 @@ No task in this plan takes a device screenshot.
       - Done: both tests named in the commit, RED output pasted, then GREEN; `./gradlew test`
         green and growing; issue #36 closed.
       - Rung: unit
+      - **Done 2026-09-07.** `EntryDao.setFullText(id, contentHtml, fullTextAt, imageUrl)` —
+        a targeted `UPDATE`, added beside `setSaved`/`setStarred` — replaces the Room `@Update`
+        of the whole row; `loadFullText` then re-reads with `findById`, indexes *that* row and
+        returns it under the unchanged `takeIf { safeHtml != null }`. RED (both new tests in
+        `ArticleTextRepositoryTest`, fetcher hook writing mid-fetch): `a Read later tapped while
+        the page is loading survives the write-back FAILED` / `a title a refresh corrected during
+        the fetch is not reverted FAILED`, `13 tests completed, 2 failed`. GREEN: same command
+        `BUILD SUCCESSFUL`. `./gradlew test` **BUILD SUCCESSFUL**, 1083 debug + 769 release =
+        **1852** (floor 1848). No schema change — the columns and the DB version are untouched.
 
 - [ ] **D04 — Pasting a link you had removed puts it back on To-Read. TDD. Issue #37.**
       `gh issue view 37 --json body`. §0.5: `SavedLinkRepository.kt:97,104-106`; the RED goes

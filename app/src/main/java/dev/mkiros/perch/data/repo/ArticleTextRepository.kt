@@ -65,14 +65,22 @@ class ArticleTextRepository(
             ?: content.ogImageUrl
         if (safeHtml == null && imageUrl == entry.imageUrl) return null
 
-        val updated = entry.copy(
+        // Three columns, not the whole row (D03, #36). Seconds have passed since `entry`
+        // was read, and the reader has been looking at the article for all of them: a
+        // Read later, a Like, or a title a refresh corrected in that window all live in
+        // columns this fetch does not own, and writing the row back would revert them.
+        // The summary stays the feed's either way: it is the list row's snippet, and the
+        // article screen already declines to print a standfirst that repeats the body's
+        // opening.
+        entryDao.setFullText(
+            id = entry.id,
             contentHtml = safeHtml ?: entry.contentHtml,
-            // The summary stays the feed's: it is the list row's snippet, and the article
-            // screen already declines to print a standfirst that repeats the body's opening.
             fullTextAt = if (safeHtml != null) clock.millis() else entry.fullTextAt,
             imageUrl = imageUrl,
         )
-        entryDao.update(updated)
+        // Re-read rather than reason about what the row now holds — whatever else landed
+        // during the fetch is part of the answer, and the screen re-renders from it.
+        val updated = entryDao.findById(entry.id) ?: return null
         // The recovered article is usually the first real body this entry has ever had, so
         // until this line the index only knew whatever stub the feed shipped (S08, #28).
         entryDao.index(updated)

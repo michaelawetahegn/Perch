@@ -234,6 +234,64 @@ class ArticleTextRepositoryTest {
         assertThat(after.fullTextAt).isNull()
     }
 
+    /**
+     * D03/#36. The article screen starts the fetch when the reader opens the article, and
+     * the reader can tap Read later or Like while it is still in flight — seconds, on a
+     * slow page. Writing the whole row back afterwards puts the flags as they were when
+     * the fetch *started* on top of the reader's tap, and the icon visibly flips off
+     * again. Only the three columns this fetch actually owns may be written.
+     */
+    @Test
+    fun `a Read later tapped while the page is loading survives the write-back`() = runTest {
+        val id = entries.insert(entry(link = "https://example.com/post/", contentHtml = null))
+        val page = "<html><body><article><p>${"Real prose with commas, and length. ".repeat(30)}</p></article></body></html>"
+        val repository = ArticleTextRepository(
+            entryDao = entries,
+            fetcher = { requested ->
+                entries.setSaved(id, true, 1_700_000_400_000L)
+                entries.setStarred(id, true, 1_700_000_400_000L)
+                FetchedPage(page.toByteArray(), "text/html", requested)
+            },
+            clock = clock,
+        )
+
+        val recovered = repository.loadFullText(id)
+
+        val stored = entries.findById(id)!!
+        assertThat(stored.isSaved).isTrue()
+        assertThat(stored.isStarred).isTrue()
+        assertThat(text(stored.contentHtml)).contains("Real prose with commas")
+        // What the screen re-renders from, so it has to carry the reader's tap too.
+        assertThat(recovered!!.isSaved).isTrue()
+    }
+
+    /**
+     * The same hazard, from the other side: the refresh worker can land mid-fetch and
+     * correct the title the feed shipped. The write-back must not roll that back either.
+     */
+    @Test
+    fun `a title a refresh corrected during the fetch is not reverted`() = runTest {
+        val id = entries.insert(entry(guid = "g1", link = "https://example.com/post/", contentHtml = null))
+        val page = "<html><body><article><p>${"Real prose with commas, and length. ".repeat(30)}</p></article></body></html>"
+        val repository = ArticleTextRepository(
+            entryDao = entries,
+            fetcher = { requested ->
+                entries.upsertAll(
+                    listOf(
+                        entry(guid = "g1", link = "https://example.com/post/", contentHtml = null)
+                            .copy(title = "The corrected title"),
+                    ),
+                )
+                FetchedPage(page.toByteArray(), "text/html", requested)
+            },
+            clock = clock,
+        )
+
+        repository.loadFullText(id)
+
+        assertThat(entries.findById(id)!!.title).isEqualTo("The corrected title")
+    }
+
     // ---- fixtures ---------------------------------------------------------------
 
     private fun text(html: String?): String = Jsoup.parse(html.orEmpty()).text()
