@@ -10,8 +10,9 @@ run over and over by [`loop.sh`](../loop.sh). Each session starts with **no memo
 last one**, reads `CLAUDE.md`, does the *single next unchecked task* in the active plan,
 commits, and exits. The loop then starts another.
 
-Three versions have been built this way: v0.1 (T01–T32), v0.2 (U01–U16) and v0.3
-(V01–V16, one task per GitHub issue, sixteen tasks in about five hours with zero blocked).
+Every version has been built this way: v0.1 (T01–T32), v0.2 (U01–U16), v0.3 (V01–V16, one
+task per GitHub issue, sixteen tasks in about five hours with zero blocked), v0.4 (W01–W12),
+v0.5 (X, Y, Z and R — four sequential plans, one loop each) and v0.6 (S01–S13, back to one).
 
 **If the human asks for a feature, a bug fix, or a batch of issues, this is the process to
 use** — not a single long session. Read this file, then follow "Starting new work" below.

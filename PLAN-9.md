@@ -461,7 +461,7 @@ a route, for reasons that apply identically here. Hoist the search state beside 
         **issue #28 closed** with a comment naming all three commits.
       - Rung: screenshot
 
-- [ ] **S11 — The review pass. The whole of v0.6, read at once.**
+- [x] **S11 — The review pass. The whole of v0.6, read at once.**
       Read `git diff v0.5.0..HEAD` — **the whole of it**, not one task's worth — and answer, in
       the commit message and in NOTES.md where it outlives the plan:
       1. **Does any doc still describe v0.5?** README.md (feature list and screenshot strip —

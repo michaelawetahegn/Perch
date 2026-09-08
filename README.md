@@ -7,13 +7,14 @@
 </p>
 
 <p align="center">
-  <img src="screenshots/home-dark.png" width="13.5%" alt="The Feed, one chronological stream, dark theme">
-  <img src="screenshots/drawer.png" width="13.5%" alt="The drawer, folders collapsed by default">
-  <img src="screenshots/article.png" width="13.5%" alt="Article reader view, the source name in the byline a link into that source">
-  <img src="screenshots/scoped-source-dark.png" width="13.5%" alt="The Feed scoped to a single source, its archive reached back past what the feed carries">
-  <img src="screenshots/code-dark.png" width="13.5%" alt="Syntax-highlighted code block with a pinned line-number gutter">
-  <img src="screenshots/table-dark.png" width="13.5%" alt="A tabular security advisory rendered with rules and a header row">
-  <img src="screenshots/to-read-dark.png" width="13.5%" alt="The To-Read queue">
+  <img src="screenshots/home-dark.png" width="11.8%" alt="The Feed, one chronological stream, dark theme">
+  <img src="screenshots/drawer.png" width="11.8%" alt="The drawer, folders collapsed by default">
+  <img src="screenshots/search-dark.png" width="11.8%" alt="Search over everything Perch has stored, results newest first">
+  <img src="screenshots/article.png" width="11.8%" alt="Article reader view, the source name in the byline a link into that source">
+  <img src="screenshots/scoped-source-dark.png" width="11.8%" alt="The Feed scoped to a single source, its archive reached back past what the feed carries">
+  <img src="screenshots/code-dark.png" width="11.8%" alt="Syntax-highlighted code block with a pinned line-number gutter">
+  <img src="screenshots/table-dark.png" width="11.8%" alt="A tabular security advisory rendered with rules and a header row">
+  <img src="screenshots/to-read-dark.png" width="11.8%" alt="The To-Read queue">
 </p>
 
 ## What Perch is
@@ -35,8 +36,18 @@ found first. RSS 2.0/0.9x, Atom 1.0 and RSS 1.0 (RDF). Folders, multi-select del
 
 **One Feed.** Every source in a single stream, newest first, over a window you pick — Past 24
 Hours through All Time, each measured back from right now, not from a midnight. Each row says
-who published it, in what category, and when. Tap the source name in an article's byline —
-or pick it in the drawer — to narrow the Feed to that source alone.
+who published it, in what category, and when — and a leading `~` when that date is a guess,
+because plenty of feeds ship no date at all and Perch would rather say so than invent one.
+Tap the source name in an article's byline — or pick it in the drawer — to narrow the Feed to
+that source alone; the overflow will then unsubscribe from that source without making you go
+back to the drawer to find it.
+
+**Finding it again.** A magnifier in the app bar of all three lists searches everything Perch
+has stored, by headline or by article text, however long ago you read it — no time window, no
+read filter. Search opened from a narrowed list stays narrowed, and says so: from To-Read it
+searches To-Read, from a source's feed it searches that source, and one action widens it back
+to everything. Coverage follows the text Perch actually has, so an article whose feed shipped
+only a headline is findable in full once you have opened it.
 
 **Reading.** Native Compose, not a WebView: paragraphs, headings, lists, quotes, tables with
 real rules, pinch-zoom images, and code blocks that scroll horizontally, syntax-highlighted in a

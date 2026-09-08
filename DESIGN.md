@@ -122,15 +122,16 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
 ```
 ┌ FEED ────────────────────────────────┐
 │ LargeTopAppBar: "Feed"   | source nm │  ← title reflects the active filter
-│  ⋮ overflow: Mark all read, Refresh, │
-│    Show read entries, Settings       │
+│                              🔍  ⋮   │  ← S10 search; ⋮ overflow: Mark all read,
+│                                      │    Refresh, Remove this source (scoped only),
+│                                      │    Show read entries, Settings
 │ ─────────────────────────────────────│
 │ All Time ⌄                           │  ← U08a time range; a dropdown, never scrolls away
 │ ─────────────────────────────────────│
 │ EntryRow ×N  (pull-to-refresh)       │  ← one stream, newest first, folders mixed
 │  ● Title (≤3 lines)        ┌───────┐ │
 │    Source · Category       │ thumb │ │
-│    5h                      └───────┘ │
+│    5h                      └───────┘ │  ← "~5h" when the date is a guess (S06)
 │  ● Title                   ┌───────┐ │
 │    Source · Category       │ thumb │ │
 │    6h                      └───────┘ │
@@ -191,9 +192,27 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
   Taking something out of To-Read or Liked animates the row out and offers an undo
   snackbar; adding to one offers nothing, because nothing vanished.
 - **Back is one ordered chain (PLAN-2 §0), not N handlers that happen to agree:**
-  an overlay closes → an article pops → To-Read/Liked returns to Feed → a scrolled Feed
-  scrolls to top → and only Feed-already-at-top leaves the app. The scroll-to-top rung is
-  not a navigation, so it must not animate as one.
+  an overlay closes → an article pops → **search leaves** → To-Read/Liked returns to Feed →
+  a scoped Feed widens → a scrolled Feed scrolls to top → and only Feed-already-at-top
+  leaves the app. The scroll-to-top rung is not a navigation, so it must not animate as one.
+
+- **Search (S10, #28)** is a magnifier in the app bar of all three lists, and it opens a
+  surface drawn **over** the list rather than a destination navigated to — which is what
+  makes "the search I opened on Liked" a thing that exists: the list behind is never torn
+  down, so leaving search is not a restore, and the scope the reader was already in comes
+  along without being re-chosen. The bar becomes back · a borderless text field, autofocused
+  with the keyboard already up · clear. The field's placeholder says what is being searched
+  — *Search every article*, or *Search in To-Read* / *Search in Source Name* — because a
+  search that quietly means less than the whole archive has to say so where the reader is
+  already looking. Results are the same `EntryRow` as everywhere else: they are the same
+  articles, and a second row shape would make them read as a different kind of object.
+  **Three things and no more: type, widen, leave.** *Search everything* is a single text
+  action in a strip above the results, present only while the search is narrowed — it is
+  the scope *label* as much as the control, which is how the reader learns the list they
+  are looking at is not everything. It is not a filter panel, and there is no second one:
+  every other narrowing is already reachable by opening the search from the list that means
+  it. Nothing typed yet is a prompt, not a blank; nothing found is its own state naming the
+  query back; both use §7's centred dimmed-glyph treatment.
 
 - **The time range (U08a)** is a **rolling** window measured from now, not a calendar one
   (W02/#15): "Past 24 Hours" is the last twenty-four hours, "Past Week" the last seven
@@ -226,8 +245,15 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
   opposite and collapses a failed figure — §8. A gap mid-sentence beats an empty frame;
   in a list, a stable footprint beats both.)
 - **Article screen:** `TopAppBar` with back, the **Like and Read-later toggles** (filled
-  when on, outlined when off — U09), and `Open in browser` (Custom Tab). Title, then `source · author · date`, then a
-  hairline, then body. Scroll position survives rotation.
+  when on, outlined when off — U09), and `Open in browser` (Custom Tab). Title, then the
+  byline, then a hairline, then body. Scroll position survives rotation.
+  **The byline is two lines, not a ragged row** (S05, #32): the source on its own line,
+  still tappable and still a full touch target, ellipsised at one line; `AUTHOR · DATE`
+  beneath it at up to two. Three independently-measured `Text`s in a `Row` wrap the last
+  child inside its own box while the first two stay centred against it, which is what the
+  reader photographed. This mirrors the entry row's own shape, where META sits above DATE.
+  Source and byline stay **two** semantics nodes: merging them into one `AnnotatedString`
+  is tempting and would cost the source's touch-target bounds and its navigation click.
 - **Add source sheet:** one text field (paste URL), one primary button. While resolving,
   the button becomes a spinner and the sheet shows the discovered feed title + entry
   count as confirmation *before* committing. Discovery failure renders inline under the

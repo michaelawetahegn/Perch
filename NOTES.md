@@ -2,12 +2,11 @@
 
 ## Log
 **The `.wslconfig` 7 GB cap only applies after `wsl --shutdown`** (2026-08-07) — MemTotal ~6.9 GB means live, ~9.9 GB means a freeze. Full environment picture is in CLAUDE.md.
-- **Standing grep gates:** no `Color(0x` / `N.dp` / `N.sp` outside `ui/theme/` — screens address roles, never tones;
-  **v0.5: no hostname literal under `data/`** (`grep -rnoE '"[a-z0-9.-]+\.(com|org|net|io|dev|me|ski|ca|xyz|blog)"`) — parse by **standards** (OG, JSON-LD, Dublin Core, sitemaps.org, RFC 5005/9309), never a table of known sites, so one blog's support makes similar ones work; fixtures exempt. **A rule lifting one fixture and moving no other is aimed at a site.**
-  **U01: the repo is public** (MIT) — a harvested fixture may differ from the served page by exactly one thing,
-  a third-party key rewritten `REDACTED-THIRD-PARTY-KEY` (`fixtures/homepages/`, the HF article page).
-- **This `gh` is old:** bare `gh issue view N` dies on a Projects-classic GraphQL field (use `--json`), no `gh label
-  list`, `gh issue close` has no `-r`. **V14: `scripts/release-notes.sh <last-tag>`** drafts a release page.
+- **Standing grep gates:** the two commands are in the active plan's §0.2. Behind the hostname one: parse by
+  **standards** (OG, JSON-LD, Dublin Core, sitemaps.org, RFC 5005/9309), so one blog's support makes similar ones work
+  — **a rule lifting one fixture and moving no other is aimed at a site.** **U01: the repo is public** (MIT), so a
+  harvested fixture differs from the served page by at most a key rewritten `REDACTED-THIRD-PARTY-KEY`.
+- **This `gh` is old:** bare `gh issue view N` dies on a Projects-classic GraphQL field (use `--json`), no `gh label list`, `gh issue close` has no `-r`. **V14: `scripts/release-notes.sh <last-tag>`** drafts a release page.
 - 2026-08-07 — **Standing UI-test traps.** Compose UI tests live in **`app/src/testDebug/`** (`ui-test-manifest` is
   `debugImplementation`). An injected tap/long-press **never reaches a node inside a drawer sheet, bottom sheet or
   dropdown** — use `performSemanticsAction(OnClick/OnLongClick)`. `PullToRefreshBox` ignores a swipe unless its child
@@ -34,8 +33,8 @@
   that settled it. **SPEC §6's 8 MiB cap stays 8 MiB**: `danluu` (11.1 MB) and `projectzero` (13.2 MB) are out of
   scope, not evidence against it. **Not ours:** the LLVM feed omits spaces around inline `<code>`/`<a>`.
 - 2026-08-07 — **U02: losing `~/.perch/perch-release.jks` or `signing.properties` makes every future install a data
-  wipe** — the cert (SHA-256 `61367c04…fce489`) *is* the update identity and cannot be rotated. Both `chmod 600`,
-  outside the repo, **not backed up yet**; absent it, release silently debug-signs. `assembleRelease` runs `lintVitalRelease`.
+  wipe** — the cert (SHA-256 `61367c04…fce489`) *is* the update identity, cannot be rotated, is `chmod 600` outside
+  the repo and is **not backed up**. Absent it, release silently debug-signs. `assembleRelease` runs `lintVitalRelease`.
 - 2026-08-07 — **U03: test databases come from `PerchDatabase.inMemory(context)`** (only it seeds Uncategorized).
   **U04: a fourth reader-owned flag needs two edits** — `EntryDao.upsertAll` (never Room `@Upsert`, it resolves on
   the primary key, ours on `(feedId, guid)`) and `deleteReadOlderThan`.
@@ -54,7 +53,7 @@
   "Continue reading" in the *unlowered* text; an extraction only ever replaces a body it beats.
 - 2026-08-08 — **U14 (profile).** `pending_entry_state`, keyed `(feedUrl, guid)`, **no FK to `feeds`** — its job is
   outliving a source that does not exist yet. `EntryDao.upsertAll` consumes parked rows, so a restore's flag turns
-  **on** and never off (idempotent). Codec is `org.json` — its tests need Robolectric. (DB is now **version 6** — Y02.)
+  **on** and never off (idempotent). Codec is `org.json` — its tests need Robolectric.
 - 2026-08-09 — **V01/#1: Robolectric builds `PerchApp` for every test** — a store cancels only a scope it *owns*. **Every full-suite flake so far: waiting on Room is not waiting on the screen. Poll in wall-clock time**, not `waitForIdle`.
 - **V02/#9: a `Clock` carries a zone**; `AppContainer` injects `systemDefaultZone()`, **`DateParser` stays UTC
   deliberately**; a zone test pins `TimeZone.setDefault`. Since W02 the zone decides only what a human *reads*.
@@ -70,11 +69,9 @@
 - 2026-08-25 — **v0.5.0 shipped (PLAN-6/#23, PLAN-7/#21, PLAN-8), archived.** `PageContentExtractor`
   (fetch→extract→sanitize→image) is the **one** function `ArticleTextRepository`,
   `SavedLinkRepository` and `BackfillRepository` all call — do not clone it. `feeds.isSynthetic`
-  → DB v6, seeded `perch:saved-links` row. **S01/#31 corrects this line: only `FeedDao` ever
-  said `isSynthetic = 0`** — `EntryQueries` never did, which is why a pasted link showed up in
-  the Feed for a whole version. It does now (`LIST_ITEMS`, both unread badges, `unreadIds`,
-  `FolderDao.observeUnreadCountsByFolder`); `SAVED`, `LIKED`, `statesToExport` and search must
-  **not** — a saved link is a stored article, just not feed traffic. `ArchiveDiscovery`/`BackfillRepository` (`data/archive/`, `data/repo/`): discovery order
+  → seeded `perch:saved-links` row; **S01/#31 corrected v0.5's claim that every query filtered it
+  — `EntryQueries` never did.** Which queries say it now, and which must never, is settled in
+  **SPEC.md §4**; do not re-derive it here. `ArchiveDiscovery`/`BackfillRepository` (`data/archive/`, `data/repo/`): discovery order
   RFC 5005 `prev-archive` → `robots.txt Sitemap:` → `/sitemap.xml`; post-vs-page is a dated URL
   path *or* a shape learned from the feed's own entry links, never a table of engines. `plan()`
   sorts by `lastmod` descending (unknown last) before `.take(MAX_PAGES=40)` — discovery order is
@@ -84,17 +81,19 @@
   is the whole one. `quantpedia.com` excluded from live gate 1 — its own TLS cert has expired,
   confirmed independently with `curl -v`, nothing Perch-side. `./gradlew test`:
   **1669** (976 debug + 693 release), 0 failures, grew monotonically from the 1524 v0.4.0 floor.
-- 2026-09-07 — **S08/#28: the search index is a standalone FTS4 table Perch writes itself.**
-  `entries_fts(title, body)`, `rowid = entries.id`, DB **v7**. Body is `HtmlSanitizer.flatten`ed
-  plain text (new fn; `summarize` now delegates to it) — never markup, or `class`/`https` match
-  everything. **Writes are Kotlin, deletes are a SQL trigger**: `EntryDao.index()` is called from
-  `upsertAll` (both branches) and `ArticleTextRepository.loadFullText`, but a source removal
-  reaches entries by `ON DELETE CASCADE` and never calls Kotlin, so `entries_fts_delete` fires
-  `AFTER DELETE ON entries`. The trigger needs **two** homes — `MIGRATION_6_7` *and* a `Callback`
-  on `build()`/`inMemory()` — because Room creates the table from the entity on a fresh install
-  and knows nothing about triggers. `MIGRATION_6_7` backfills in Kotlin (200-row pages), not
-  `INSERT … SELECT`: SQL cannot flatten HTML. `INSERT OR REPLACE` **does** work on an FTS4 table,
-  so re-indexing is one statement. `MIGRATION_6_7`'s `CREATE VIRTUAL TABLE` must be byte-for-byte
-  what `7.json` exports or Room fails validation on the next open.
-- 2026-08-25 — **v0.5.0 released** (`versionCode` 6). The v0.4→v0.5 upgrade was verified on the
-  emulator only: **the human's real phone is a separate device no session can reach.**
+- 2026-09-07 — **S08/#28: the search index.** Shape, write path and trigger are in **SPEC.md
+  §4**; §8a has the query contract. What is only here: `HtmlSanitizer.flatten` is a new function
+  and `summarize` now delegates to it — one flattener, not two. `INSERT OR REPLACE` **does** work
+  on an FTS4 table, so re-indexing is one statement. **`MIGRATION_6_7`'s `CREATE VIRTUAL TABLE`
+  must be byte-for-byte what `7.json` exports** or Room fails validation on the *next* open, not
+  on the migration — a test that only runs the migration will not catch it.
+- 2026-08-25 — **v0.5.0 released** (`versionCode` 6); its upgrade was verified on the emulator only, because **the human's real phone is a separate device no session can reach.**
+- 2026-09-07 — **S11, v0.6 read whole (`git diff v0.5.0..HEAD`, 53 files).** `./gradlew test`
+  **1844** (1079 debug + 765 release), 0 failures, up from the 1669 floor. **No test weakened:**
+  the version deleted 7 test lines — six widening a helper signature, and S03's removal of the
+  `selectInDrawer("All sources")` workaround tap that made `HomeScreenTest` pass while #30 was live.
+  Search, `~`-dated guesses, the two-line byline and *Remove this source* are now in SPEC.md
+  (§4, §5, §8, §8a, §10), DESIGN.md (§5) and the README, whose strip was re-captured because
+  every list gained a magnifier. **`FeedDao`'s KDoc was wrong, and PLAN-6 §0.3 with it:** the
+  saved-links row is *not* in the drawer and never was — the drawer reads `observeAll`, which filters
+  it, and `findByUrl`'s only callers are `SavedLinkRepository` and `FeedRepository.removeAll`.

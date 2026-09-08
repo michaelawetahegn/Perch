@@ -194,14 +194,40 @@ data class PendingEntryStateEntity(     // v5/U14; reader state a profile restor
 
 `feeds` also carries `val isSynthetic: Boolean = false` (v6/PLAN-6 Y02) — true only for the one seeded
 row (`FeedEntity.SAVED_LINKS_FEED_URL`, `"perch:saved-links"`) that a pasted link points at; every
-general feed query gained `WHERE isSynthetic = 0`, reached explicitly by URL elsewhere.
+general feed query says `WHERE isSynthetic = 0`, reached explicitly by URL elsewhere.
+
+**v0.6/PLAN-9 §0.3 (#31) extends that to the entry side**, which v0.5 shipped without: a pasted
+link was a source's article everywhere but the drawer. The predicate is on the *feed join*, never
+a new column on `entries` — `feeds.isSynthetic` already carries the meaning. It is said in exactly
+five entry-side places and no others: `EntryQueries.LIST_ITEMS` (the Feed), `observeUnreadCount`,
+`observeUnreadCountsByFeed`, `unreadIds` (mark-all-read, whose scope must match the Feed's exactly)
+and `FolderDao.observeUnreadCountsByFolder` — the saved-links row is filed under Uncategorized, so
+without the last one a pasted link inflates that folder's badge while appearing nowhere in the list
+behind it. `SAVED`, `LIKED`, `statesToExport` and search deliberately do **not** filter it: To-Read
+is where a pasted link lives, you may like one, a restore should bring the queue back, and a pasted
+article is a stored article and must be findable.
 
 Room schema exported to `app/schemas/`. **Destructive migration was removed at T31** —
 v0.1 is installed for daily use, so every schema change ships a real `Migration` plus its
 `app/schemas/N.json`. Version 1 is v0.1's baseline; version 2 adds folders (U03); version 3 adds
 read-later and the liked/saved timestamps (U04); version 4 adds `bodyIsExcerpt`/`fullTextAt` for
 full-text extraction (U10); version 5 adds `pending_entry_state` for profile restore (U14); version 6
-adds `feeds.isSynthetic` and seeds the saved-links feed for pasted links (PLAN-6 Y02). Current version: 6.
+adds `feeds.isSynthetic` and seeds the saved-links feed for pasted links (PLAN-6 Y02); version 7 adds
+the `entries_fts` search index and its delete trigger (PLAN-9 S08). Current version: 7.
+
+**`entries_fts` (v7/PLAN-9 §0.8)** is a standalone `FTS4(title, body)` whose `rowid` is
+`entries.id` — deliberately **not** `@Fts4(contentEntity = …)`, whose sync triggers Room does not
+reliably generate and whose failure mode is a silently stale index. It is the plain-text store, so
+no body is held twice: `body` is `HtmlSanitizer.flatten(contentHtml)` falling back to `summary`, and
+raw HTML is never indexed — a tokenizer fed markup matches on tag names, class names and URLs, so
+searching `img` or `https` would return the whole database. Writes are Kotlin, where the HTML is
+already in hand (`EntryDao.upsertAll`, `ArticleTextRepository` when it lands full text); **deletes
+are a SQL trigger** (`entries_fts_delete`, `AFTER DELETE ON entries`), because removing a source
+reaches its articles through `ON DELETE CASCADE` and never passes through Kotlin at all, and the
+same trigger is what keeps `deleteReadOlderThan`'s sweep from leaking orphans. The trigger is
+created both in `MIGRATION_6_7` and on fresh install, via a `Callback` beside the two seeds;
+`MIGRATION_6_7` backfills every existing row a page at a time, since an upgrade whose index starts
+empty is a search feature that finds nothing.
 
 ## 5. Parsing contract (the standing tests defend this)
 
@@ -224,6 +250,18 @@ leading zero, `GMT`/`UT`/`EST`/`+0000`/`Z`, weekday mismatch) → ISO-8601/RFC-3
 **feed-level `<lastBuildDate>`/`<updated>`** → `fetchedAt` with
 `publishedIsEstimated = true`. Never 1970, never a future date more than 24h out
 (clamp to now).
+
+**And the reader is told when it is a guess** (v0.6/PLAN-9 §0.7, #25). The marker is a
+leading tilde — `~3d`, `~3 Aug 2026` — and the rule lives in exactly one place,
+`RelativeTime.format(…, isEstimated)`, so every renderer inherits it: the list row (all
+three lists draw the same `EntryRow`), the article byline, and the backfill reach sentence.
+A tilde is a glyph and not a word, so it does not depart from dates living outside
+`strings.xml`. The reach sentence needs a data-model decision because `MIN(publishedAt)`
+aggregates across rows that are individually estimated or not: `FeedReach` carries a second
+aggregate, `oldestKnownPublishedAt` = `MIN(CASE WHEN publishedIsEstimated = 0 THEN
+publishedAt END)` (not SQL `FILTER`, whose availability varies with the device's bundled
+SQLite), and **the sentence prefers the oldest date it actually knows**, falling back to the
+overall `MIN` with a `~` only when a source has no known date at all.
 
 **Titles:** HTML entities decoded, tags stripped, whitespace collapsed.
 
@@ -305,11 +343,35 @@ pasted URL already parses as a feed, skip discovery entirely.
 - Opening an article marks it read (write-through, immediate; list row updates via Flow).
 - Long-press a row → the action sheet: save for later, like, mark read/unread, share (U09).
 - Overflow → **Mark all read** in the current scope (unified or single source),
-  with an undo snackbar (5s window, single-level undo).
+  with an undo snackbar (5s window, single-level undo). Since v0.6/S04 (#29) it also offers
+  **Remove this source** — but only while the Feed is narrowed to one source, because on the
+  unnarrowed Feed there is no "that source" to name, and never for the synthetic saved-links
+  source, which `FeedRepository.remove` refuses: an unremovable source shows no control at
+  all rather than an inert one, the same rule the drawer follows.
 - Unread counts per source and a total, exposed as a Room `Flow<Map<Long,Int>>` —
   computed by SQL `COUNT`, never in Kotlin.
 - Three independent reader-owned flags (PLAN-2 §0): `isRead`, `isSaved` (*Read later*),
   `isStarred` (*Liked*). Clearing one nulls its timestamp; none of them implies another.
+
+## 8a. Search (v0.6/PLAN-9 §0.8, #28)
+
+- **Everything stored is findable**, by title or by body text, over `entries_fts`. Coverage is
+  therefore as patchy as `contentHtml` is: a feed that ships a headline and a link has only its
+  summary indexed until the article is opened and full-text extraction replaces it. Search must
+  not pretend a never-opened article has a body.
+- **Reader input never reaches `MATCH`.** `FtsQuery.from(raw): String?` strips non-alphanumerics,
+  joins the tokens with `AND` and suffixes the last with `*` for prefix matching, returning null
+  for empty. A stray `"`, `*` or `AND` passed through would throw at runtime.
+- **Results are ordered by recency, not relevance** — `publishedAt DESC, e.id DESC`, like every
+  other list in the app. FTS4 has no `bm25`; `matchinfo` ranking is a different feature.
+- **Search ignores the time window and the read filter, always.** You are looking for something
+  you may have read months ago.
+- **Search inherits the surface it was opened from:** the Feed unscoped → every stored article,
+  pasted links included; a source- or folder-scoped Feed → that source or folder; To-Read →
+  `isSaved = 1`; Liked → `isStarred = 1`. One action, **Search everything**, widens a narrowed
+  search. That is the only scope control — there is no filter panel.
+- **Search is state, not a route** (§10), drawn over the surface it was opened from so the list
+  behind it is never torn down.
 
 ## 9. OPML
 
@@ -367,10 +429,16 @@ Those three are peers in a `NavigationBar`, switched with `saveState`/`restoreSt
 - **`article/{entryId}`** — the reading surface. The bar is **absent** here.
 - **`settings`**.
 
-Add-source, rename/remove, and the row-action sheet are sheets and dialogs over a
-destination, not destinations. Back is §0's ordered chain: overlay closes → article pops →
-To-Read/Liked returns to Feed → a scrolled Feed scrolls to top → only then does back leave
-the app. Returning from an article restores the list's scroll position.
+Add-source, rename/remove, the row-action sheet and **search** (S08–S10) are sheets, dialogs
+and overlays over a destination, not destinations: a scoped list is state and not a route, and
+search is state for the same reasons. Back is §0's ordered chain, declared once as
+`BackStep` rather than as N handlers that happen to agree: selection empties → overlay closes
+→ image viewer closes → article pops → **search leaves** → To-Read/Liked returns to Feed → a
+scoped Feed widens → a scrolled Feed scrolls to top → only then does back leave the app.
+`LeaveSearch` sits below `PopArticle` so an article opened from the results pops back *to* the
+results, and above `ReturnToFeed` — not merely above `LeaveScope` — because search is reachable
+from To-Read and Liked too, and any lower would change tabs and throw the question away in one
+press. Returning from an article restores the list's scroll position.
 
 ## 11. Definition of done (project level)
 

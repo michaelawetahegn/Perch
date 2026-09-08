@@ -17,8 +17,16 @@ import kotlinx.coroutines.flow.Flow
  * app since v1, and PLAN-6 §0.3's saved-links row is neither. Filtering here once is what
  * makes a refresh pass, an OPML export, a profile export and a source count all skip it for
  * free, rather than four call sites each remembering to check [FeedEntity.isSynthetic]. A
- * caller that genuinely wants it back — Y04's drawer — looks it up by
- * [FeedEntity.SAVED_LINKS_FEED_URL] through [findByUrl], which is deliberately unfiltered.
+ * caller that genuinely wants it back looks it up by [FeedEntity.SAVED_LINKS_FEED_URL]
+ * through [findByUrl], which is deliberately unfiltered.
+ *
+ * **The drawer is not one of those callers, and PLAN-6 §0.3 is wrong to say it is** (S11).
+ * The drawer's rows come from `FeedRepository.observeSources` → [observeAll], so the
+ * saved-links row has never been visible there and should not be: it is not a source a
+ * reader subscribed to, cannot be refreshed, renamed or removed, and To-Read in the bottom
+ * bar is already where its articles live. The two real [findByUrl] callers are
+ * `SavedLinkRepository`, which needs the id to file a pasted link under, and
+ * `FeedRepository.removeAll`, which needs it to refuse to delete it.
  */
 @Dao
 interface FeedDao {

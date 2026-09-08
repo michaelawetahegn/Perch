@@ -617,11 +617,6 @@ class HomeScreenTest {
         compose.waitForIdle()
     }
 
-    /**
-     * The selection bar's delete, waited out (U09a). The confirmation cannot open until
-     * the database has said how many saved or liked entries the batch holds, so the tap
-     * and the dialog are a coroutine apart.
-     */
     /** The app bar's overflow, opened the way a reader opens it. */
     private fun openOverflow() {
         compose.onNodeWithContentDescription("More options").performClick()
@@ -633,6 +628,11 @@ class HomeScreenTest {
         database.feedDao().findByUrl(FeedEntity.SAVED_LINKS_FEED_URL)!!.id
     }
 
+    /**
+     * The selection bar's delete, waited out (U09a). The confirmation cannot open until
+     * the database has said how many saved or liked entries the batch holds, so the tap
+     * and the dialog are a coroutine apart.
+     */
     private fun tapDelete() {
         tap(SelectionTestTags.DELETE)
         awaitState { _ -> viewModel.sourceDeletePrompt.value != null }
