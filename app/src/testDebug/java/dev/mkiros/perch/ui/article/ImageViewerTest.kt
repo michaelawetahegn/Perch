@@ -13,11 +13,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.test.doubleClick
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.doubleClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.pinch
 import androidx.compose.ui.test.swipeDown
@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import coil.Coil
 import com.google.common.truth.Truth.assertThat
+import dev.mkiros.perch.model.ThemeMode
 import dev.mkiros.perch.ui.article.zoom.ImageViewer
 import dev.mkiros.perch.ui.article.zoom.ZoomGeometry
 import dev.mkiros.perch.ui.article.zoom.ZoomState
@@ -33,7 +34,6 @@ import dev.mkiros.perch.ui.article.zoom.ZoomedImage
 import dev.mkiros.perch.ui.screenshot.StubImage
 import dev.mkiros.perch.ui.screenshot.stubImages
 import dev.mkiros.perch.ui.theme.PerchTheme
-import dev.mkiros.perch.ui.theme.ThemeMode
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule

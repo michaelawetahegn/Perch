@@ -23,6 +23,7 @@ import coil.Coil
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.parse.ArticleBlock
 import dev.mkiros.perch.data.parse.RichSpan
+import dev.mkiros.perch.model.ThemeMode
 import dev.mkiros.perch.ui.CUTOUT_PX
 import dev.mkiros.perch.ui.applyWindowInsets
 import dev.mkiros.perch.ui.article.ArticleBody
@@ -31,7 +32,6 @@ import dev.mkiros.perch.ui.article.zoom.ImageViewer
 import dev.mkiros.perch.ui.article.zoom.ZoomedImage
 import dev.mkiros.perch.ui.theme.Dimens
 import dev.mkiros.perch.ui.theme.PerchTheme
-import dev.mkiros.perch.ui.theme.ThemeMode
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule

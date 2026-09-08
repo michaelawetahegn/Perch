@@ -19,6 +19,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import dev.mkiros.perch.R
+import dev.mkiros.perch.model.BackfillProgress
 import dev.mkiros.perch.ui.theme.Dimens
 
 /**

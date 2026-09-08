@@ -1,10 +1,11 @@
 package dev.mkiros.perch.data.settings
 
 import com.google.common.truth.Truth.assertThat
-import dev.mkiros.perch.ui.home.TimeFilter
-import dev.mkiros.perch.ui.theme.ThemeMode
-import dev.mkiros.perch.work.RefreshInterval
+import dev.mkiros.perch.model.RefreshInterval
+import dev.mkiros.perch.model.ThemeMode
+import dev.mkiros.perch.model.TimeFilter
 import java.io.File
+import java.util.Base64
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
@@ -86,6 +87,25 @@ class SettingsStoreTest {
         assertThat(settings.refreshInterval).isEqualTo(RefreshInterval.Hourly)
     }
 
+    /**
+     * D21 moved [ThemeMode], [RefreshInterval] and [TimeFilter] into `dev.mkiros.perch.model`.
+     * These bytes are a preferences file captured from the build *before* that move, so this
+     * is the upgrade a reader on v0.6.0 actually performs: the store persists an enum by its
+     * bare [Enum.name], never by anything package-qualified, and moving the declaration must
+     * not silently reset four settings to their defaults on first launch.
+     */
+    @Test
+    fun `settings written by the build before the model package moved still read back`() = runTest {
+        file.writeBytes(Base64.getDecoder().decode(SETTINGS_FROM_V0_6_0))
+
+        val settings = withStore { it.settings.first() }
+
+        assertThat(settings.themeMode).isEqualTo(ThemeMode.Dark)
+        assertThat(settings.refreshInterval).isEqualTo(RefreshInterval.Every6Hours)
+        assertThat(settings.showReadEntries).isTrue()
+        assertThat(settings.timeFilter).isEqualTo(TimeFilter.PastMonth)
+    }
+
     @Test
     fun `a value written by a build that has since renamed the constant reads as the default`() =
         runTest {
@@ -124,4 +144,15 @@ class SettingsStoreTest {
             scope.cancel()
         }
     }
+
+    private companion object {
+        /**
+         * Dark theme, six-hourly refresh, read entries shown, Past Month — written by
+         * `SettingsStore` at commit 8e9a5b8, one commit before the `model` package existed.
+         */
+        const val SETTINGS_FROM_V0_6_0 =
+            "ChQKCnRoZW1lX21vZGUSBioERGFyawohChByZWZyZXNoX2ludGVydmFsEg0qC0V2ZXJ5NkhvdXJz" +
+                "ChcKEXNob3dfcmVhZF9lbnRyaWVzEgIIAQoaCgt0aW1lX2ZpbHRlchILKglQYXN0TW9udGg="
+    }
+
 }

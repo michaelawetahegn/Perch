@@ -27,17 +27,17 @@ import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.debug.DebugSeeder
+import dev.mkiros.perch.model.ThemeMode
+import dev.mkiros.perch.model.TimeFilter
 import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.ui.home.HomeTestTags
 import dev.mkiros.perch.ui.home.HomeViewModel
 import dev.mkiros.perch.ui.home.SelectionTestTags
-import dev.mkiros.perch.ui.home.TimeFilter
 import dev.mkiros.perch.ui.screenshot.Screenshots
 import dev.mkiros.perch.ui.screenshot.StubImage
-import dev.mkiros.perch.ui.screenshot.stubImages
 import dev.mkiros.perch.ui.screenshot.showHome as showHomeScreen
+import dev.mkiros.perch.ui.screenshot.stubImages
 import dev.mkiros.perch.ui.theme.PerchTheme
-import dev.mkiros.perch.ui.theme.ThemeMode
 import java.io.File
 import java.time.Clock
 import java.time.Instant

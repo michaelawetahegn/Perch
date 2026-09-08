@@ -24,6 +24,10 @@ import dev.mkiros.perch.data.parse.FetchedPage
 import dev.mkiros.perch.data.parse.PageFetcher
 import dev.mkiros.perch.data.repo.BackfillRepository
 import dev.mkiros.perch.data.settings.SettingsStore
+import dev.mkiros.perch.model.BackfillProgress
+import dev.mkiros.perch.model.BackfillRunState
+import dev.mkiros.perch.model.BackfillRunner
+import dev.mkiros.perch.model.TimeFilter
 import dev.mkiros.perch.support.MapPageFetcher
 import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.support.testEntry

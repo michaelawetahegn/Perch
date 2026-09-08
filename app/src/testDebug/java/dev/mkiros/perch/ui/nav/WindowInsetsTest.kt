@@ -21,6 +21,7 @@ import androidx.test.core.app.ApplicationProvider
 import coil.Coil
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.settings.SettingsStore
+import dev.mkiros.perch.model.TimeFilter
 import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.ui.CUTOUT_PX
 import dev.mkiros.perch.ui.NAVIGATION_BAR_PX
@@ -30,11 +31,11 @@ import dev.mkiros.perch.ui.article.ArticleTestTags
 import dev.mkiros.perch.ui.article.zoom.ImageViewer
 import dev.mkiros.perch.ui.article.zoom.ZoomedImage
 import dev.mkiros.perch.ui.home.HomeTestTags
-import dev.mkiros.perch.ui.home.TimeFilter
 import dev.mkiros.perch.ui.screenshot.StubImage
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.screenshot.stubImages
 import dev.mkiros.perch.ui.theme.PerchTheme
+import java.time.Clock
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Before
@@ -44,7 +45,6 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
-import java.time.Clock
 
 /**
  * V04 (issue #3): the app's one window-inset contract, asserted where it can be broken.

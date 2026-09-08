@@ -1,4 +1,4 @@
-package dev.mkiros.perch.ui.home
+package dev.mkiros.perch.model
 
 import java.time.Clock
 import java.time.Duration

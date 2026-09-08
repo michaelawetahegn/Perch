@@ -14,8 +14,9 @@ import dev.mkiros.perch.data.repo.ProfileRepository
 import dev.mkiros.perch.data.settings.PerchSettings
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.di.AppContainer
-import dev.mkiros.perch.ui.theme.ThemeMode
-import dev.mkiros.perch.work.RefreshInterval
+import dev.mkiros.perch.model.RefreshInterval
+import dev.mkiros.perch.model.RefreshScheduler
+import dev.mkiros.perch.model.ThemeMode
 import dev.mkiros.perch.work.WorkScheduler
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -86,15 +87,6 @@ sealed interface SettingsMessage {
      * update the app — and telling the reader that is the whole point of refusing.
      */
     data class ProfileTooNew(val found: Int, val supported: Int) : SettingsMessage
-}
-
-/**
- * Applies a chosen interval to the background schedule. A seam rather than a direct call
- * so that the ViewModel does not hold a `Context`, and so a test can assert scheduling
- * without WorkManager if it only cares about persistence.
- */
-fun interface RefreshScheduler {
-    fun schedule(interval: RefreshInterval)
 }
 
 /**

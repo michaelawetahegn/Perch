@@ -10,6 +10,7 @@ import androidx.work.WorkManager
 import androidx.work.testing.SynchronousExecutor
 import androidx.work.testing.WorkManagerTestInitHelper
 import com.google.common.truth.Truth.assertThat
+import dev.mkiros.perch.model.RefreshInterval
 import dev.mkiros.perch.support.awaitInRealTime
 import java.time.Duration
 import org.junit.Before

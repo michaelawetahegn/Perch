@@ -45,11 +45,9 @@
 - 2026-08-08 — **U09: the bottom bar and `NavHost` are siblings**; **Feed's `DrawerState`/`LazyListState` are
   hoisted into `PerchNavHost`** (state remembered inside Feed dies on a tab switch); back policy is the pure
   `nextBackStep(BackState)` in `BackChain.kt`. **U09a:** the selection `BackHandler` must live *inside* `ModalDrawerSheet` — the root one wins otherwise.
-- 2026-08-08 — **U07a: all three lists are Paging 3**, **placeholders off**; the queries live once in **`EntryQueries`**
-  because each exists twice — `Flow<List>` *and* `PagingSource`. **`uiState.entries` is gone**: ask the screen.
-- 2026-08-08 — **U10:** Readability-over-jsoup in `data/extract/`, **no new dependency**; fixtures in
-  `fixtures/articles/`. **`ArticleLowering` deletes truncation markers as chrome**, so `FullText` looks for
-  "Continue reading" in the *unlowered* text; an extraction only ever replaces a body it beats.
+- 2026-08-08 — **U07a: all three lists are Paging 3**, placeholders off; queries live once in **`EntryQueries`** because each exists twice — `Flow<List>` *and* `PagingSource`. **`uiState.entries` is gone**: ask the screen.
+- 2026-08-08 — **U10: `ArticleLowering` deletes truncation markers as chrome**, so `FullText` looks
+  for "Continue reading" in the *unlowered* text; an extraction only ever replaces a body it beats.
 - 2026-08-08 — **U14 (profile).** `pending_entry_state`, keyed `(feedUrl, guid)`, **no FK to `feeds`** — its job is
   outliving a source that does not exist yet. `EntryDao.upsertAll` consumes parked rows, so a restore's flag turns
   **on** and never off (idempotent). Codec is `org.json` — its tests need Robolectric.
@@ -69,13 +67,9 @@
   re-derive it. `ArchiveDiscovery`/`BackfillRepository` (`data/archive/`, `data/repo/`): discovery order
   RFC 5005 `prev-archive` → `robots.txt Sitemap:` → `/sitemap.xml`; post-vs-page is a dated URL
   path *or* a shape learned from the feed's own entry links, never a table of engines. `plan()`
-  sorts by `lastmod` descending (unknown last) before `.take(MAX_PAGES=40)` — discovery order is
-  sitemap *document* order, not date order, so an unsorted `.take` hands back an arbitrary 40 on
-  a large archive (measured live on `fzakaria.com`, 143/133 discovered). `BackfillOffer` carries
-  both `newPostCount` (true) and `pageCount` (capped) so the offer never claims a small archive
-  is the whole one. `quantpedia.com` excluded from live gate 1 — its own TLS cert has expired,
-  confirmed independently with `curl -v`, nothing Perch-side. `./gradlew test`:
-  **1669** (976 debug + 693 release), 0 failures, grew monotonically from the 1524 v0.4.0 floor.
+  sorts by `lastmod` before `.take(MAX_PAGES=40)` because discovery order is sitemap *document*
+  order (measured live on `fzakaria.com`, 143/133 discovered). `quantpedia.com` excluded from
+  live gate 1 — its own TLS cert has expired, confirmed with `curl -v`, nothing Perch-side.
 - 2026-09-07 — **S08/#28: the search index.** Shape, write path and query contract are in
   **SPEC.md §4/§8a**. What is only here: **`MIGRATION_6_7`'s `CREATE VIRTUAL TABLE` must be
   byte-for-byte what `7.json` exports** or Room fails validation on the *next* open, not on the
@@ -89,6 +83,11 @@
   everything past ~15 characters — type a URL in short chunks and submit with `input keyevent
   66`; never tap a button at its dump bounds while the IME is up (the tap lands on a key, and
   uiautomator does not dump the IME window) — `keyevent 111` hides it first.
+- 2026-09-08 — **D21: `dev.mkiros.perch.model`** (contents in SPEC §3's tree) — the direction is
+  **ui → data/work → model**, never back. `SettingsStore` persists an enum by its bare `name`, so
+  the move is invisible to an installed reader; `SettingsStoreTest` pins that with a base64
+  preferences file **captured from commit 8e9a5b8**, before the package existed — only ever
+  regenerate it from a build that actually wrote it.
 - 2026-09-08 — **`WorkSchedulerTest > choosing manual cancels…` is flaky in the full suite** (3 of 5 runs by D15;
   green on its own every time). It waits on WorkManager's *own* task executor, which `SynchronousExecutor` does not cover, so a
   loaded host outruns the 20 s `awaitInRealTime`. Re-run it; if it hardens, fix the executor.

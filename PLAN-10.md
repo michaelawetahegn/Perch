@@ -559,7 +559,7 @@ No task in this plan takes a device screenshot.
         no longer lists this one; `./gradlew test` green; issue #53 closed.
       - Rung: unit
 
-- [ ] **D21 — The shared types leave `ui/` and `work/`. Issue #54.**
+- [x] **D21 — The shared types leave `ui/` and `work/`. Issue #54.**
       `gh issue view 54 --json body`. §0.6 names the seven types and the package
       `dev.mkiros.perch.model`. Today: `SettingsStore.kt:12-14` imports `ui.home.TimeFilter`,
       `ui.theme.ThemeMode`, `work.RefreshInterval`; `WorkManagerBackfillRunner.kt:6-8` imports

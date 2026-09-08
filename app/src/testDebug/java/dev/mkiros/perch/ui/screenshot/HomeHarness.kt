@@ -16,15 +16,15 @@ import androidx.compose.ui.unit.Density
 import dev.mkiros.perch.data.net.ConnectivityMonitor
 import dev.mkiros.perch.data.repo.BackfillRepository
 import dev.mkiros.perch.data.settings.SettingsStore
+import dev.mkiros.perch.model.BackfillRunner
+import dev.mkiros.perch.model.ThemeMode
 import dev.mkiros.perch.support.PerchRule
-import dev.mkiros.perch.ui.home.BackfillRunner
 import dev.mkiros.perch.ui.home.DrawerSelection
 import dev.mkiros.perch.ui.home.HomeScope
 import dev.mkiros.perch.ui.home.HomeScreen
 import dev.mkiros.perch.ui.home.HomeViewModel
 import dev.mkiros.perch.ui.source.AddSourceViewModel
 import dev.mkiros.perch.ui.theme.PerchTheme
-import dev.mkiros.perch.ui.theme.ThemeMode
 import java.time.Clock
 
 /**

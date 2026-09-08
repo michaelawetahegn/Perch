@@ -44,9 +44,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.mkiros.perch.R
+import dev.mkiros.perch.model.RefreshInterval
+import dev.mkiros.perch.model.ThemeMode
 import dev.mkiros.perch.ui.theme.Dimens
-import dev.mkiros.perch.ui.theme.ThemeMode
-import dev.mkiros.perch.work.RefreshInterval
 import java.io.IOException
 
 /** Nodes a test needs to reach that a reader reaches by reading. */

@@ -9,9 +9,9 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStoreFile
-import dev.mkiros.perch.ui.home.TimeFilter
-import dev.mkiros.perch.ui.theme.ThemeMode
-import dev.mkiros.perch.work.RefreshInterval
+import dev.mkiros.perch.model.RefreshInterval
+import dev.mkiros.perch.model.ThemeMode
+import dev.mkiros.perch.model.TimeFilter
 import java.io.Closeable
 import java.io.File
 import java.io.IOException
@@ -19,13 +19,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 

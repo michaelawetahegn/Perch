@@ -5,11 +5,11 @@ import androidx.activity.ComponentActivity
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.semantics.SemanticsActions
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.filterToOne
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -25,6 +25,8 @@ import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.repo.ArticleTextRepository
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.debug.DebugSeeder
+import dev.mkiros.perch.model.ThemeMode
+import dev.mkiros.perch.model.TimeFilter
 import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.ui.article.ArticleScreen
 import dev.mkiros.perch.ui.article.ArticleUiState
@@ -34,7 +36,6 @@ import dev.mkiros.perch.ui.home.HomeScope
 import dev.mkiros.perch.ui.home.HomeTestTags
 import dev.mkiros.perch.ui.home.HomeViewModel
 import dev.mkiros.perch.ui.home.SelectionTestTags
-import dev.mkiros.perch.ui.home.TimeFilter
 import dev.mkiros.perch.ui.nav.NavTestTags
 import dev.mkiros.perch.ui.nav.PerchNavHost
 import dev.mkiros.perch.ui.nav.PerchTab
@@ -44,7 +45,6 @@ import dev.mkiros.perch.ui.search.SearchSurface
 import dev.mkiros.perch.ui.search.SearchTestTags
 import dev.mkiros.perch.ui.search.SearchViewModel
 import dev.mkiros.perch.ui.theme.PerchTheme
-import dev.mkiros.perch.ui.theme.ThemeMode
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset

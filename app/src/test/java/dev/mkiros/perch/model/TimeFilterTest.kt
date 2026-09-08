@@ -1,4 +1,4 @@
-package dev.mkiros.perch.ui.home
+package dev.mkiros.perch.model
 
 import com.google.common.truth.Truth.assertThat
 import java.time.Clock

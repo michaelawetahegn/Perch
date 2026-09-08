@@ -3,16 +3,16 @@ package dev.mkiros.perch.work
 import android.content.Context
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
-import dev.mkiros.perch.ui.home.BackfillProgress
-import dev.mkiros.perch.ui.home.BackfillRunState
-import dev.mkiros.perch.ui.home.BackfillRunner
+import dev.mkiros.perch.model.BackfillProgress
+import dev.mkiros.perch.model.BackfillRunState
+import dev.mkiros.perch.model.BackfillRunner
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 /**
  * The real [BackfillRunner] (Z03) — [BackfillWorker] already owns the fetch, the throttling
  * and the skipping (Z02); this is only the translation from what WorkManager reports into
- * what a screen can observe, the same division [dev.mkiros.perch.ui.settings.RefreshScheduler]
+ * what a screen can observe, the same division [dev.mkiros.perch.model.RefreshScheduler]
  * draws for the periodic pass.
  */
 class WorkManagerBackfillRunner(private val context: Context) : BackfillRunner {

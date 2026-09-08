@@ -10,12 +10,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalContext
-
-/**
- * How the reader wants the app to look. Persisted by Settings (T27); [System] follows
- * the platform setting, which is the default because §2 assumes night reading.
- */
-enum class ThemeMode { System, Light, Dark }
+import dev.mkiros.perch.model.ThemeMode
 
 /**
  * Corners per DESIGN.md §4: `medium` (12dp) for sheets, dialogs, and code blocks.

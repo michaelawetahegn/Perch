@@ -22,11 +22,11 @@ import androidx.work.testing.WorkManagerTestInitHelper
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.settings.PerchSettings
 import dev.mkiros.perch.data.settings.SettingsStore
+import dev.mkiros.perch.model.RefreshInterval
+import dev.mkiros.perch.model.ThemeMode
 import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.theme.PerchTheme
-import dev.mkiros.perch.ui.theme.ThemeMode
-import dev.mkiros.perch.work.RefreshInterval
 import dev.mkiros.perch.work.WorkScheduler
 import java.io.File
 import java.nio.file.Files

@@ -22,11 +22,11 @@ import dev.mkiros.perch.data.parse.FeedParser
 import dev.mkiros.perch.data.parse.HtmlSanitizer
 import dev.mkiros.perch.data.parse.ParseResult
 import dev.mkiros.perch.data.parse.RichSpan
+import dev.mkiros.perch.model.ThemeMode
 import dev.mkiros.perch.ui.article.ArticleBody
 import dev.mkiros.perch.ui.article.ArticleTestTags
 import dev.mkiros.perch.ui.theme.Dimens
 import dev.mkiros.perch.ui.theme.PerchTheme
-import dev.mkiros.perch.ui.theme.ThemeMode
 import java.io.File
 import org.junit.Rule
 import org.junit.Test

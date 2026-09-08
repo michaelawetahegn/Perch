@@ -6,7 +6,7 @@ import com.google.common.collect.Range
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.net.PerchHttp
-import dev.mkiros.perch.ui.home.TimeFilter
+import dev.mkiros.perch.model.TimeFilter
 import java.time.Instant
 import java.time.ZoneId
 import java.util.TimeZone

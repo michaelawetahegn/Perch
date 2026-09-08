@@ -98,6 +98,8 @@ app/src/main/java/dev/mkiros/perch/
 ├─ PerchApp.kt                     Application; builds AppContainer; schedules work
 ├─ MainActivity.kt                 single activity, edge-to-edge, hosts NavHost
 ├─ di/AppContainer.kt              manual DI: db, okhttp, repos, clock, connectivity, settings
+├─ model/ TimeFilter.kt  ThemeMode.kt  RefreshInterval.kt   the types every layer shares:
+│         BackfillRunner.kt  RefreshScheduler.kt            ui → data/work → model, never back
 ├─ data/
 │  ├─ db/  PerchDatabase.kt  FeedDao.kt  EntryDao.kt  FolderDao.kt
 │  │       EntryListItem.kt  EntryStateRow.kt  FeedReach.kt  FtsQuery.kt
@@ -123,8 +125,7 @@ app/src/main/java/dev/mkiros/perch/
    ├─ nav/   PerchNavHost.kt  PerchBottomBar.kt  BackChain.kt
    ├─ home/  HomeScreen.kt  HomeViewModel.kt  EntryRow.kt  DrawerSelection.kt
    │         EntryActions.kt  FolderActions.kt  SourceActions.kt  SelectionBar.kt
-   │         PagedList.kt  RelativeTime.kt  TimeFilter.kt
-   │         BackfillOfferUi.kt  BackfillRunner.kt
+   │         PagedList.kt  RelativeTime.kt  BackfillOfferUi.kt
    ├─ source/ AddSourceSheet.kt  AddSourceViewModel.kt
    ├─ article/ ArticleScreen.kt  ArticleViewModel.kt  ArticleBody.kt  RichText.kt
    │           code/{CodeHighlighter,CodeLanguage}.kt

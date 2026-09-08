@@ -1,4 +1,4 @@
-package dev.mkiros.perch.ui.home
+package dev.mkiros.perch.model
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -12,8 +12,8 @@ data class BackfillProgress(val done: Int, val total: Int, val state: BackfillRu
 }
 
 /**
- * How [HomeViewModel] drives one source's backfill without holding WorkManager itself —
- * mirrors [dev.mkiros.perch.ui.settings.RefreshScheduler]'s seam. Production wires this to
+ * How [dev.mkiros.perch.ui.home.HomeViewModel] drives one source's backfill without holding
+ * WorkManager itself — mirrors [RefreshScheduler]'s seam. Production wires this to
  * [dev.mkiros.perch.work.BackfillWorker] (`WorkManagerBackfillRunner`); a test fakes it and
  * asserts `enqueue`/`cancel` calls directly, driving progress by hand with no WorkManager
  * in the loop at all.
@@ -24,7 +24,7 @@ interface BackfillRunner {
     fun observe(feedId: Long): Flow<BackfillProgress?>
 
     companion object {
-        /** Every test not about backfill can build a [HomeViewModel] without one. */
+        /** Every test not about backfill can build a [dev.mkiros.perch.ui.home.HomeViewModel] without one. */
         val NoOp: BackfillRunner = object : BackfillRunner {
             override fun enqueue(feedId: Long) = Unit
             override fun cancel(feedId: Long) = Unit
