@@ -1,8 +1,6 @@
 package dev.mkiros.perch.data.parse
 
-import java.time.Instant
 import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
 
 /**
  * RSS 2.0 and 0.9x, per SPEC.md §5. RSS 1.0 is a different format on a different
@@ -13,6 +11,15 @@ import org.jsoup.nodes.Element
  * truncated document contributes the entries it managed to close.
  */
 class RssParser(private val dates: DateParser = DateParser()) {
+
+    /** RSS 2.0's names for the rungs [ItemMapping] reads; `<guid>` is its item identity. */
+    private val items = ItemMapping(
+        dates = dates,
+        dateElements = listOf("pubdate", "dc:date", "date", "published"),
+        bodyElements = listOf("content:encoded", "description", "summary"),
+        authorElements = listOf("dc:creator", "author", "dc:publisher"),
+        identity = { item -> plainText(item.childText("guid")) },
+    )
 
     fun parse(document: Document, requestUrl: String? = null): ParsedFeed? {
         val channel = document.childElement("rss")?.childElement("channel") ?: return null
@@ -28,43 +35,8 @@ class RssParser(private val dates: DateParser = DateParser()) {
             siteUrl = siteUrl,
             updatedAt = updatedAt,
             entries = channel.getElementsByTag("item").map { item ->
-                entry(item, base, feedUpdatedAt = updatedAt)
+                items.entry(item, base, feedUpdatedAt = updatedAt)
             },
         )
-    }
-
-    private fun entry(item: Element, base: String?, feedUpdatedAt: Instant?): ParsedEntry {
-        val title = plainText(item.childText("title")) ?: UNTITLED_ENTRY
-        val link = resolveUrl(base, item.childText("link"))
-        val publishedRaw = item.childText("pubdate", "dc:date", "date", "published")
-        val publishedAt = dates.parse(publishedRaw)
-        val body = item.childElement("content:encoded", "description", "summary")
-        val contentHtml = body?.markup()
-        // §0's gpuopen shape: a `<description>` with no `<content:encoded>` beside it is a
-        // teaser far more often than it is a short post, and nothing downstream can tell.
-        val bodyIsExcerpt = contentHtml != null &&
-            !body.tagName().equals("content:encoded", ignoreCase = true)
-        // The entry's own page is what its relative URLs were written against.
-        val imageBase = link ?: base
-
-        return ParsedEntry(
-            guid = item.childText("guid")?.let { plainText(it) }
-                ?: link
-                ?: stableGuid(title, publishedRaw),
-            title = title,
-            link = link,
-            author = personName(item.childText("dc:creator", "author", "dc:publisher")),
-            publishedAt = publishedAt ?: feedUpdatedAt,
-            publishedIsEstimated = publishedAt == null,
-            contentHtml = contentHtml,
-            imageUrl = LeadImage.fromItem(item, imageBase)
-                ?: LeadImage.fromBody(contentHtml, imageBase),
-            bodyIsExcerpt = bodyIsExcerpt,
-        )
-    }
-
-    private companion object {
-        const val UNTITLED_FEED = "(untitled feed)"
-        const val UNTITLED_ENTRY = "(untitled)"
     }
 }

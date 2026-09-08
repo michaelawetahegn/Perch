@@ -524,7 +524,7 @@ No task in this plan takes a device screenshot.
         green; issue #50 closed.
       - Rung: unit
 
-- [ ] **D18 — RSS and RDF map an item through one function. Issue #51.**
+- [x] **D18 — RSS and RDF map an item through one function. Issue #51.**
       `gh issue view 51 --json body`. `RssParser.kt:36-64` and `RdfParser.kt:242-272` differ
       only in the guid rung (`childText("guid")` vs `attrNamed("about")`) and the date-element
       names; `UNTITLED_FEED`/`UNTITLED_ENTRY` are at `RssParser.kt:66-69`, `AtomParser.kt:193-197`,

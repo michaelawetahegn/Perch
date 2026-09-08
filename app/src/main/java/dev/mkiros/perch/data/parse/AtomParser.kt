@@ -122,7 +122,5 @@ class AtomParser(private val dates: DateParser = DateParser()) {
 
     private companion object {
         const val ALTERNATE = "alternate"
-        const val UNTITLED_FEED = "(untitled feed)"
-        const val UNTITLED_ENTRY = "(untitled)"
     }
 }

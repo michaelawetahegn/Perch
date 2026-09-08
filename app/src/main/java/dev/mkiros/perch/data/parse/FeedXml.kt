@@ -139,3 +139,9 @@ internal fun personName(raw: String?): String? {
 }
 
 private val MAILBOX_NAME = Regex("\\(([^)]*)\\)\\s*$")
+
+/** What a feed with no usable `<title>` and no resolvable host is called. */
+internal const val UNTITLED_FEED = "(untitled feed)"
+
+/** What an entry with no usable `<title>` is called. */
+internal const val UNTITLED_ENTRY = "(untitled)"

@@ -1,8 +1,6 @@
 package dev.mkiros.perch.data.parse
 
-import java.time.Instant
 import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
 
 /**
  * RDF, i.e. RSS 1.0, per SPEC.md §5.
@@ -17,6 +15,19 @@ import org.jsoup.nodes.Element
  */
 class RdfParser(private val dates: DateParser = DateParser()) {
 
+    /**
+     * RSS 1.0's names for the rungs [ItemMapping] reads. `rdf:about` is a URI that names
+     * the item, not necessarily one we can open, so it is kept verbatim as identity while
+     * `link` stays the thing the user taps.
+     */
+    private val items = ItemMapping(
+        dates = dates,
+        dateElements = listOf("dc:date", "dcterms:issued", "pubDate", "date"),
+        bodyElements = listOf("content:encoded", "description"),
+        authorElements = listOf("dc:creator", "dc:publisher", "author"),
+        identity = { item -> item.attrNamed("about") },
+    )
+
     fun parse(document: Document, requestUrl: String? = null): ParsedFeed? {
         val root = document.childElementsNamed("RDF").firstOrNull() ?: return null
         val channel = root.childElementsNamed("channel").firstOrNull()
@@ -28,7 +39,8 @@ class RdfParser(private val dates: DateParser = DateParser()) {
 
         // Items belong beside the channel; feeds that nest them inside it are wrong but
         // common enough that dropping their entries would be the worse reading.
-        val items = root.childElementsNamed("item") + channel?.childElementsNamed("item").orEmpty()
+        val itemElements =
+            root.childElementsNamed("item") + channel?.childElementsNamed("item").orEmpty()
 
         return ParsedFeed(
             title = plainText(channel?.childText("title"))
@@ -37,44 +49,9 @@ class RdfParser(private val dates: DateParser = DateParser()) {
                 ?: UNTITLED_FEED,
             siteUrl = siteUrl,
             updatedAt = updatedAt,
-            entries = items.map { item -> entry(item, base, feedUpdatedAt = updatedAt) },
+            entries = itemElements.map { item ->
+                items.entry(item, base, feedUpdatedAt = updatedAt)
+            },
         )
-    }
-
-    private fun entry(item: Element, base: String?, feedUpdatedAt: Instant?): ParsedEntry {
-        val title = plainText(item.childText("title")) ?: UNTITLED_ENTRY
-        val link = resolveUrl(base, item.childText("link"))
-        val publishedRaw = item.childText("dc:date", "dcterms:issued", "pubDate", "date")
-        val publishedAt = dates.parse(publishedRaw)
-        val body = item.childElement("content:encoded", "description")
-        val contentHtml = body?.markup()
-        // RSS 1.0 draws the same line RSS 2.0 does: `content:encoded` is the article and
-        // `description` is the blurb (U10, PLAN-2 §0).
-        val bodyIsExcerpt = contentHtml != null &&
-            !body.tagName().equals("content:encoded", ignoreCase = true)
-        // The entry's own page is what its relative URLs were written against.
-        val imageBase = link ?: base
-
-        return ParsedEntry(
-            // rdf:about is a URI that names the item, not necessarily one we can open, so
-            // it is kept verbatim as identity while `link` stays the thing the user taps.
-            guid = item.attrNamed("about")
-                ?: link
-                ?: stableGuid(title, publishedRaw),
-            title = title,
-            link = link,
-            author = personName(item.childText("dc:creator", "dc:publisher", "author")),
-            publishedAt = publishedAt ?: feedUpdatedAt,
-            publishedIsEstimated = publishedAt == null,
-            contentHtml = contentHtml,
-            imageUrl = LeadImage.fromItem(item, imageBase)
-                ?: LeadImage.fromBody(contentHtml, imageBase),
-            bodyIsExcerpt = bodyIsExcerpt,
-        )
-    }
-
-    private companion object {
-        const val UNTITLED_FEED = "(untitled feed)"
-        const val UNTITLED_ENTRY = "(untitled)"
     }
 }
