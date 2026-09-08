@@ -24,8 +24,6 @@ import androidx.compose.ui.test.performSemanticsAction
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.PerchDatabase
-import dev.mkiros.perch.data.db.entity.EntryEntity
-import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.parse.FetchedPage
@@ -33,6 +31,8 @@ import dev.mkiros.perch.data.parse.PageFetcher
 import dev.mkiros.perch.data.repo.BackfillRepository
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.support.testEntry
+import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.ui.screenshot.Screenshots
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.source.AddSourceViewModel
@@ -409,17 +409,12 @@ class BackfillOfferTest {
 
     private fun seedFeed(entryCount: Int = 0, title: String = "A blog"): Long = runBlocking {
         val feedId = database.feedDao().insert(
-            FeedEntity(
+            testFeed(
                 feedUrl = SITE + "feed.xml",
                 siteUrl = SITE.trimEnd('/'),
                 title = title,
-                customTitle = null,
-                faviconUrl = null,
-                etag = null,
-                lastModified = null,
                 lastFetchedAt = now.toEpochMilli(),
                 lastSuccessAt = now.toEpochMilli(),
-                lastError = null,
                 addedAt = now.toEpochMilli(),
             ),
         )
@@ -434,18 +429,12 @@ class BackfillOfferTest {
         isEstimated: Boolean = false,
     ): Long = runBlocking {
         database.entryDao().insert(
-            EntryEntity(
+            testEntry(
                 feedId = feedId,
-                guid = "guid-${title.hashCode()}",
                 title = title,
                 link = "https://example.com/$title",
-                author = null,
                 publishedAt = published.toEpochMilli(),
                 publishedIsEstimated = isEstimated,
-                summary = null,
-                contentHtml = null,
-                imageUrl = null,
-                readAt = null,
                 fetchedAt = now.toEpochMilli(),
             ),
         )

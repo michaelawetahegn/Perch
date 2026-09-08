@@ -88,6 +88,10 @@
   everything past ~15 characters — type a URL in short chunks and submit with `input keyevent
   66`; never tap a button at its dump bounds while the IME is up (the tap lands on a key, and
   uiautomator does not dump the IME window) — `keyevent 111` hides it first.
+- 2026-09-08 — **`WorkSchedulerTest > choosing manual cancels…` is flaky in the full suite**
+  (2 of 3 `./gradlew test` runs at D09; green in isolation and on the run that shipped it). It
+  waits on WorkManager's *own* task executor, which `SynchronousExecutor` does not cover, so a
+  loaded host outruns the 20 s `awaitInRealTime`. Re-run it; if it hardens, fix the executor.
 - 2026-09-07 — **S12, live acceptance v6 (15 gates, ~90 s, not the 15–25 min the plan budgeted).**
   Gates 13/14/15 take their keywords **out of the corpus that just arrived** — see the file's own
   KDoc. A gate keyword must be ASCII-lettered and space-delimited or it tests typography, not

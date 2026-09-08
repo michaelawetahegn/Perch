@@ -2,9 +2,9 @@ package dev.mkiros.perch.data.db
 
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
-import dev.mkiros.perch.data.db.entity.EntryEntity
-import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.db.entity.FolderEntity
+import dev.mkiros.perch.support.testEntry
+import dev.mkiros.perch.support.testFeed
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -152,19 +152,9 @@ class EntryFtsIndexTest {
         .query("SELECT COUNT(*) FROM entries_fts")
         .use { it.moveToFirst(); it.getInt(0) }
 
-    private fun feed(feedUrl: String = "https://gijn.org/feed/") = FeedEntity(
+    private fun feed(feedUrl: String = "https://gijn.org/feed/") = testFeed(
         feedUrl = feedUrl,
         siteUrl = null,
-        title = "Example",
-        customTitle = null,
-        faviconUrl = null,
-        etag = null,
-        lastModified = null,
-        lastFetchedAt = null,
-        lastSuccessAt = null,
-        lastError = null,
-        addedAt = 0,
-        folderId = FolderEntity.UNCATEGORIZED_ID,
     )
 
     private fun entry(
@@ -173,18 +163,12 @@ class EntryFtsIndexTest {
         title: String = "Untitled",
         contentHtml: String? = null,
         summary: String? = null,
-    ) = EntryEntity(
+    ) = testEntry(
         feedId = feedId,
         guid = guid,
         title = title,
         link = null,
-        author = null,
-        publishedAt = 0,
-        publishedIsEstimated = false,
         summary = summary,
         contentHtml = contentHtml,
-        imageUrl = null,
-        readAt = null,
-        fetchedAt = 0,
     )
 }

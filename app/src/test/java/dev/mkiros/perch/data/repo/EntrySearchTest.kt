@@ -8,9 +8,10 @@ import dev.mkiros.perch.data.db.EntryListItem
 import dev.mkiros.perch.data.db.FeedDao
 import dev.mkiros.perch.data.db.FolderDao
 import dev.mkiros.perch.data.db.PerchDatabase
-import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.db.entity.FolderEntity
+import dev.mkiros.perch.support.testEntry
+import dev.mkiros.perch.support.testFeed
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -352,18 +353,10 @@ class EntrySearchTest {
 
     private suspend fun titles(flow: Flow<List<EntryListItem>>) = flow.first().map { it.title }
 
-    private fun feed(url: String, folderId: Long = FolderEntity.UNCATEGORIZED_ID) = FeedEntity(
+    private fun feed(url: String, folderId: Long = FolderEntity.UNCATEGORIZED_ID) = testFeed(
         feedUrl = url,
         siteUrl = url,
         title = "Source $url",
-        customTitle = null,
-        faviconUrl = null,
-        etag = null,
-        lastModified = null,
-        lastFetchedAt = null,
-        lastSuccessAt = null,
-        lastError = null,
-        addedAt = 0L,
         folderId = folderId,
     )
 
@@ -376,18 +369,14 @@ class EntrySearchTest {
         contentHtml: String? = null,
         summary: String? = null,
         publishedAt: Long = 0L,
-    ) = EntryEntity(
+    ) = testEntry(
         feedId = feedId,
         guid = guid,
         title = title,
         link = null,
-        author = null,
         publishedAt = publishedAt,
-        publishedIsEstimated = false,
         summary = summary,
         contentHtml = contentHtml,
-        imageUrl = null,
-        readAt = null,
         fetchedAt = 0L,
     )
 

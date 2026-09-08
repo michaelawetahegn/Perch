@@ -10,9 +10,9 @@ import androidx.compose.ui.test.swipeDown
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.PerchDatabase
-import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.theme.PerchTheme
 import java.time.Clock
@@ -124,18 +124,9 @@ class CollectionRefreshTest {
 
     private fun seedFeed(path: String): Long = runBlocking {
         database.feedDao().insert(
-            FeedEntity(
+            testFeed(
                 feedUrl = server.url(path).toString(),
-                siteUrl = "https://example.com",
                 title = "Source One",
-                customTitle = null,
-                faviconUrl = null,
-                etag = null,
-                lastModified = null,
-                lastFetchedAt = null,
-                lastSuccessAt = null,
-                lastError = null,
-                addedAt = 0L,
             ),
         )
     }

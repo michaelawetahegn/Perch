@@ -15,7 +15,6 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.EntryEntity
-import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.extract.ArticleFixtures
 import dev.mkiros.perch.data.parse.FetchedPage
 import dev.mkiros.perch.data.parse.PageFetcher
@@ -24,6 +23,8 @@ import dev.mkiros.perch.data.repo.EntryRepository
 import dev.mkiros.perch.data.repo.FeedRepository
 import dev.mkiros.perch.data.net.FeedFetcher
 import dev.mkiros.perch.data.net.PerchHttp
+import dev.mkiros.perch.support.testEntry
+import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.theme.PerchTheme
 import java.io.File
@@ -241,37 +242,21 @@ class ArticleFullTextTest {
         bodyIsExcerpt: Boolean = false,
     ): Long = runBlocking {
         database.entryDao().insert(
-            EntryEntity(
+            testEntry(
                 feedId = feedId,
                 guid = "guid-${link.hashCode()}",
                 title = "An entry",
                 link = link,
-                author = null,
                 publishedAt = now.minusSeconds(DAY).toEpochMilli(),
-                publishedIsEstimated = false,
                 summary = "A short summary.",
                 contentHtml = contentHtml,
-                imageUrl = null,
-                readAt = null,
                 bodyIsExcerpt = bodyIsExcerpt,
                 fetchedAt = now.toEpochMilli(),
             ),
         )
     }
 
-    private fun feed() = FeedEntity(
-        feedUrl = "https://example.com/feed.xml",
-        siteUrl = "https://example.com",
-        title = "Example",
-        customTitle = null,
-        faviconUrl = null,
-        etag = null,
-        lastModified = null,
-        lastFetchedAt = null,
-        lastSuccessAt = null,
-        lastError = null,
-        addedAt = 0L,
-    )
+    private fun feed() = testFeed(feedUrl = "https://example.com/feed.xml")
 
     private companion object {
         const val DAY = 24 * 3_600L

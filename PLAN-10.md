@@ -362,7 +362,7 @@ No task in this plan takes a device screenshot.
         `EntryRepositoryTest:42` is a KDoc sentence. `./gradlew test`: **1882** (1098 debug + 784
         release), 0 failures; `@Test` count 1004, unchanged against `HEAD`. −276/+97 lines.
 
-- [ ] **D09 — One way to build a feed and an entry in a test. Issue #42.**
+- [x] **D09 — One way to build a feed and an entry in a test. Issue #42.**
       `gh issue view 42 --json body`. `FeedEntity(` in 31 test files, `EntryEntity(` in 26.
       Create `app/src/test/.../support/Entities.kt` (§0.4) with `testFeed(…)` and `testEntry(…)`
       builders whose defaults are the ones the 10 testDebug `seedFeed`/`seedEntry` pairs agree
@@ -381,6 +381,20 @@ No task in this plan takes a device screenshot.
       - Done: test count unchanged; `./gradlew test` green; the number of files constructing
         `FeedEntity(` directly, before and after, in the commit; issue #42 closed.
       - Rung: unit
+      - **Done 2026-09-08.** `app/src/test/.../support/Entities.kt` holds `testFeed(…)` and
+        `testEntry(…)`; all 11 testDebug seed pairs and all 9 JVM twins now delegate, so the
+        files spelling a constructor out go **32 → 13** for `FeedEntity(` and **26 → 9** for
+        `EntryEntity(` — and one of each remaining is `Entities.kt` itself. The defaults are the
+        ones the copies already agreed on, with three *derived* rather than fixed because that
+        is the relation the copies kept restating by hand: `guid` from `title`, `contentHtml`
+        from `summary` (so a body-less fixture stays body-less), `fetchedAt` from `publishedAt`.
+        `isRead`/`isSaved`/`isStarred` likewise default to their timestamp being non-null.
+        Left for a later pass, none of them a seed *pair*: `BackfillRepositoryTest`,
+        `BackfillWorkerTest`, `DesignScreenshotTest`, `FeedRepositoryTest`,
+        `HomeEntryActionsTest`, `PagedFeedTest`, `PerchNavHostTest`, `ProfileRepositoryTest`,
+        `RefreshWorkerTest`, `SearchFromEverySurfaceTest`, `SearchSurfaceTest`,
+        `SettingsViewModelTest`. `./gradlew test`: **1882** (1098 debug + 784 release), 0
+        failures; `@Test` count 1004, unchanged against `HEAD`. −355/+76 lines.
 
 - [ ] **D10 — One rule opens the database and builds the container. Issue #43.**
       `gh issue view 43 --json body`. 22 files carry the same `@Before`/`@After`

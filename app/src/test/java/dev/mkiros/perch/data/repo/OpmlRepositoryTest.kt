@@ -6,6 +6,7 @@ import dev.mkiros.perch.data.db.FeedDao
 import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.db.entity.FolderEntity
+import dev.mkiros.perch.support.testFeed
 import java.io.File
 import java.time.Clock
 import java.time.Instant
@@ -54,17 +55,13 @@ class OpmlRepositoryTest {
 
     private fun PerchDatabase.repo() = OpmlRepository(feedDao(), FolderRepository(folderDao(), clock), clock)
 
-    private fun feed(index: Int) = FeedEntity(
+    private fun feed(index: Int) = testFeed(
         feedUrl = "https://source$index.example/feed.xml",
         siteUrl = if (index % 3 == 0) null else "https://source$index.example/",
         title = if (index % 5 == 0) "Bits & Bytes #$index" else "Source $index",
-        customTitle = null,
-        faviconUrl = null,
         etag = "\"etag-$index\"",
-        lastModified = null,
         lastFetchedAt = now,
         lastSuccessAt = now,
-        lastError = null,
         addedAt = now,
     )
 

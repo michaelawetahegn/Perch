@@ -7,9 +7,10 @@ import dev.mkiros.perch.data.db.EntryDao
 import dev.mkiros.perch.data.db.FeedDao
 import dev.mkiros.perch.data.db.FolderDao
 import dev.mkiros.perch.data.db.PerchDatabase
-import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.db.entity.FolderEntity
+import dev.mkiros.perch.support.testEntry
+import dev.mkiros.perch.support.testFeed
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -798,18 +799,13 @@ class EntryRepositoryTest {
         publishedAt: Long = 1_700_000_000_000L,
         publishedIsEstimated: Boolean = false,
     ): Long = entries.insert(
-        EntryEntity(
+        testEntry(
             feedId = feedId,
             guid = guid,
             title = "Entry $guid",
             link = "https://example.com/$guid",
-            author = null,
             publishedAt = publishedAt,
             publishedIsEstimated = publishedIsEstimated,
-            summary = null,
-            contentHtml = null,
-            imageUrl = null,
-            readAt = null,
             fetchedAt = 1_700_000_000_000L,
         ),
     )
@@ -817,19 +813,10 @@ class EntryRepositoryTest {
     private fun feed(
         feedUrl: String,
         folderId: Long = FolderEntity.UNCATEGORIZED_ID,
-    ) = FeedEntity(
+    ) = testFeed(
         feedUrl = feedUrl,
         siteUrl = "https://example.com/",
-        title = "Example",
-        customTitle = null,
-        faviconUrl = null,
-        etag = null,
-        lastModified = null,
-        lastFetchedAt = null,
-        lastSuccessAt = null,
-        lastError = null,
         addedAt = 1_700_000_000_000L,
-        sortIndex = 0,
         folderId = folderId,
     )
 

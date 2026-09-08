@@ -15,12 +15,12 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.ui.rowTitles
 import dev.mkiros.perch.data.db.PerchDatabase
-import dev.mkiros.perch.data.db.entity.EntryEntity
-import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.support.testEntry
+import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.source.AddSourceViewModel
 import dev.mkiros.perch.ui.theme.PerchTheme
@@ -367,18 +367,8 @@ class HomeTimeFilterTest {
         folderId: Long = FolderEntity.UNCATEGORIZED_ID,
     ): Long = runBlocking {
         database.feedDao().insert(
-            FeedEntity(
-                feedUrl = "https://example.com/${title.hashCode()}/feed.xml",
-                siteUrl = "https://example.com",
+            testFeed(
                 title = title,
-                customTitle = null,
-                faviconUrl = null,
-                etag = null,
-                lastModified = null,
-                lastFetchedAt = null,
-                lastSuccessAt = null,
-                lastError = null,
-                addedAt = 0L,
                 folderId = folderId,
             ),
         )
@@ -392,20 +382,12 @@ class HomeTimeFilterTest {
     ): Long = runBlocking {
         val published = Instant.parse(at).toEpochMilli()
         database.entryDao().insert(
-            EntryEntity(
+            testEntry(
                 feedId = feedId,
-                guid = "guid-${title.hashCode()}",
                 title = title,
-                link = "https://example.com/post",
-                author = null,
                 publishedAt = published,
-                publishedIsEstimated = false,
-                summary = null,
-                contentHtml = null,
-                imageUrl = null,
                 isRead = read,
                 readAt = if (read) published else null,
-                fetchedAt = published,
             ),
         )
     }

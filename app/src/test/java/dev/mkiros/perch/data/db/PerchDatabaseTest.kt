@@ -4,8 +4,8 @@ import android.database.sqlite.SQLiteConstraintException
 import androidx.test.core.app.ApplicationProvider
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
-import dev.mkiros.perch.data.db.entity.EntryEntity
-import dev.mkiros.perch.data.db.entity.FeedEntity
+import dev.mkiros.perch.support.testEntry
+import dev.mkiros.perch.support.testFeed
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -233,17 +233,10 @@ class PerchDatabaseTest {
         feedUrl: String,
         title: String = "Example",
         sortIndex: Int = 0,
-    ) = FeedEntity(
+    ) = testFeed(
         feedUrl = feedUrl,
         siteUrl = "https://example.com/",
         title = title,
-        customTitle = null,
-        faviconUrl = null,
-        etag = null,
-        lastModified = null,
-        lastFetchedAt = null,
-        lastSuccessAt = null,
-        lastError = null,
         addedAt = 1_700_000_000_000L,
         sortIndex = sortIndex,
     )
@@ -254,18 +247,14 @@ class PerchDatabaseTest {
         title: String = "An entry",
         publishedAt: Long = 1_700_000_000_000L,
         summary: String? = null,
-    ) = EntryEntity(
+    ) = testEntry(
         feedId = feedId,
         guid = guid,
         title = title,
         link = "https://example.com/$guid",
-        author = null,
         publishedAt = publishedAt,
-        publishedIsEstimated = false,
         summary = summary,
         contentHtml = null,
-        imageUrl = null,
-        readAt = null,
         fetchedAt = 1_700_000_000_000L,
     )
 }

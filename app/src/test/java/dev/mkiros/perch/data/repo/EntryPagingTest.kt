@@ -9,10 +9,10 @@ import dev.mkiros.perch.data.db.EntryListItem
 import dev.mkiros.perch.data.db.FeedDao
 import dev.mkiros.perch.data.db.FolderDao
 import dev.mkiros.perch.data.db.PerchDatabase
-import dev.mkiros.perch.data.db.entity.EntryEntity
-import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.support.awaitInRealTime
+import dev.mkiros.perch.support.testEntry
+import dev.mkiros.perch.support.testFeed
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -225,35 +225,21 @@ class EntryPagingTest {
     ): List<Long> =
         (0 until count).map { index ->
             entries.insert(
-                EntryEntity(
+                testEntry(
                     feedId = feedId,
                     guid = "$guidPrefix$index",
                     title = "Entry $index",
                     link = "https://example.com/$guidPrefix$index",
-                    author = null,
                     publishedAt = NOW - index * 1_000L - shift,
-                    publishedIsEstimated = false,
-                    summary = null,
-                    contentHtml = null,
-                    imageUrl = null,
-                    readAt = null,
                     fetchedAt = NOW,
                 ),
             )
         }
 
-    private fun feed(url: String, folderId: Long = FolderEntity.UNCATEGORIZED_ID) = FeedEntity(
+    private fun feed(url: String, folderId: Long = FolderEntity.UNCATEGORIZED_ID) = testFeed(
         feedUrl = url,
         siteUrl = url,
         title = "Source $url",
-        customTitle = null,
-        faviconUrl = null,
-        etag = null,
-        lastModified = null,
-        lastFetchedAt = null,
-        lastSuccessAt = null,
-        lastError = null,
-        addedAt = 0L,
         folderId = folderId,
     )
 

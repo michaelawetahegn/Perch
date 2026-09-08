@@ -3,9 +3,9 @@ package dev.mkiros.perch.data.db
 import android.database.sqlite.SQLiteConstraintException
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
-import dev.mkiros.perch.data.db.entity.EntryEntity
-import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.db.entity.FolderEntity
+import dev.mkiros.perch.support.testEntry
+import dev.mkiros.perch.support.testFeed
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -146,35 +146,19 @@ class FolderDaoTest {
         FolderEntity(name = name, sortIndex = sortIndex, createdAt = 0)
 
     private fun feed(feedUrl: String, folderId: Long = FolderEntity.UNCATEGORIZED_ID) =
-        FeedEntity(
+        testFeed(
             feedUrl = feedUrl,
             siteUrl = null,
-            title = "Example",
-            customTitle = null,
-            faviconUrl = null,
-            etag = null,
-            lastModified = null,
-            lastFetchedAt = null,
-            lastSuccessAt = null,
-            lastError = null,
-            addedAt = 0,
             folderId = folderId,
         )
 
     private fun entry(feedId: Long, guid: String, isRead: Boolean) =
-        EntryEntity(
+        testEntry(
             feedId = feedId,
             guid = guid,
             title = guid,
             link = null,
-            author = null,
-            publishedAt = 0,
-            publishedIsEstimated = false,
-            summary = null,
-            contentHtml = null,
-            imageUrl = null,
             isRead = isRead,
             readAt = if (isRead) 1 else null,
-            fetchedAt = 0,
         )
 }

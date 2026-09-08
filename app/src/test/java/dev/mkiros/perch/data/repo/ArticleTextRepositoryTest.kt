@@ -5,11 +5,11 @@ import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.EntryDao
 import dev.mkiros.perch.data.db.FeedDao
 import dev.mkiros.perch.data.db.PerchDatabase
-import dev.mkiros.perch.data.db.entity.EntryEntity
-import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.extract.ArticleFixtures
 import dev.mkiros.perch.data.parse.FetchedPage
 import dev.mkiros.perch.data.parse.PageFetcher
+import dev.mkiros.perch.support.testEntry
+import dev.mkiros.perch.support.testFeed
 import java.io.File
 import java.time.Clock
 import java.time.Instant
@@ -315,19 +315,10 @@ class ArticleTextRepositoryTest {
             clock = clock,
         )
 
-    private fun feed() = FeedEntity(
+    private fun feed() = testFeed(
         feedUrl = "https://example.com/feed",
         siteUrl = "https://example.com/",
-        title = "Example",
-        customTitle = null,
-        faviconUrl = null,
-        etag = null,
-        lastModified = null,
-        lastFetchedAt = null,
-        lastSuccessAt = null,
-        lastError = null,
         addedAt = 1_700_000_000_000L,
-        sortIndex = 0,
     )
 
     private fun entry(
@@ -336,19 +327,14 @@ class ArticleTextRepositoryTest {
         contentHtml: String?,
         bodyIsExcerpt: Boolean = false,
         imageUrl: String? = null,
-    ) = EntryEntity(
+    ) = testEntry(
         feedId = feedId,
         guid = guid,
         title = "An entry",
         link = link,
-        author = null,
         publishedAt = 1_700_000_000_000L,
-        publishedIsEstimated = false,
-        summary = null,
         contentHtml = contentHtml,
         imageUrl = imageUrl,
-        readAt = null,
         bodyIsExcerpt = bodyIsExcerpt,
-        fetchedAt = 1_700_000_000_000L,
     )
 }

@@ -19,13 +19,13 @@ import androidx.compose.ui.test.swipeDown
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.PerchDatabase
-import dev.mkiros.perch.data.db.entity.EntryEntity
-import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.net.ConnectivityMonitor
 import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.support.testEntry
+import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.source.AddSourceViewModel
 import dev.mkiros.perch.ui.theme.PerchTheme
@@ -461,18 +461,10 @@ class HomeRefreshTest {
         feedUrl: String = "https://example.com/${title.hashCode()}/feed.xml",
     ): Long = runBlocking {
         database.feedDao().insert(
-            FeedEntity(
+            testFeed(
                 feedUrl = feedUrl,
-                siteUrl = "https://example.com",
                 title = title,
-                customTitle = null,
-                faviconUrl = null,
-                etag = null,
-                lastModified = null,
-                lastFetchedAt = null,
-                lastSuccessAt = null,
                 lastError = lastError,
-                addedAt = 0L,
             ),
         )
     }
@@ -484,20 +476,12 @@ class HomeRefreshTest {
     ): Long = runBlocking {
         val publishedAt = now.minusSeconds(2 * DAY).toEpochMilli()
         database.entryDao().insert(
-            EntryEntity(
+            testEntry(
                 feedId = feedId,
-                guid = "guid-${title.hashCode()}",
                 title = title,
-                link = "https://example.com/post",
-                author = null,
                 publishedAt = publishedAt,
-                publishedIsEstimated = false,
                 summary = "A short summary.",
-                contentHtml = "<p>A short summary.</p>",
-                imageUrl = null,
-                isRead = readAt != null,
                 readAt = readAt,
-                fetchedAt = publishedAt,
             ),
         )
     }
