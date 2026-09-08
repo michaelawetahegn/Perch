@@ -543,7 +543,7 @@ back unnoticed.
         green: **1848** (1081 + 767), 0 failures. Run 1 failed and was right to: two-word
         search demanded a third word nobody typed — see §0.9.
 
-- [ ] **S13 — Release v0.6.0.** Bump `perchVersionCode` 6 → **7** and `perchVersionName`
+- [x] **S13 — Release v0.6.0.** Bump `perchVersionCode` 6 → **7** and `perchVersionName`
       `0.5.0` → **`0.6.0`** at `app/build.gradle.kts:12-13`, **the one place they live**. §0.1
       settles the digit; it is not this task's judgement call.
       - `./gradlew assembleRelease` (runs `lintVitalRelease`). Signing comes from
@@ -572,3 +572,20 @@ back unnoticed.
         PLAN-9.md` returns 0; `gh issue list --state open` holds only what is genuinely still
         open, each with a comment saying why.
       - Rung: build
+      - **Done 2026-09-07.** `perchVersionCode` 6→7, `perchVersionName` 0.5.0→0.6.0 at
+        `app/build.gradle.kts:12-13`, the one place they live. `./gradlew assembleRelease`
+        BUILD SUCCESSFUL, `lintVitalRelease` clean. Verified on the file, not the note:
+        `aapt2 dump badging perch-0.6.0.apk` reads `versionCode='7' versionName='0.6.0'`;
+        `apksigner verify --print-certs` prints U02's
+        `61367c0499de5c49c824f4d7ba7b4e692d33960cc57c0622772227a8b7fce489`.
+        In-place upgrade verified through the emulator UI: installed the v0.5.0 release APK
+        from GitHub, followed `lemire.me` (40 entries), read one and liked it, read a second
+        and saved it, unread 38 — then `adb install -r` of the v0.6.0 APK. After the DB 6→7
+        migration: To-Read still holds “The new Go JSON API…”, Liked still holds “AI
+        programming: a layered model”, the drawer still reads 38, and search on `layered`
+        and on `python quadratic` both return their pre-upgrade articles, so `MIGRATION_6_7`
+        populated the index from rows that were already there. README's strip was already
+        re-captured in S11. Release notes written by hand through `docs/RELEASE-NOTES.md`'s
+        template; #26 and #27 closed since v0.5.0 are the human's own closures with no code
+        behind them and are deliberately not on the page. NOTES.md pruned 101 → 96 lines.
+        `gh issue list --state open` is empty.

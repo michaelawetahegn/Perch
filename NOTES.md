@@ -79,23 +79,18 @@
   **SPEC.md §4/§8a**. What is only here: **`MIGRATION_6_7`'s `CREATE VIRTUAL TABLE` must be
   byte-for-byte what `7.json` exports** or Room fails validation on the *next* open, not on the
   migration — a test that only runs the migration will not catch it.
-- 2026-08-25 — **v0.5.0 released** (`versionCode` 6); its upgrade was verified on the emulator only, because **the human's real phone is a separate device no session can reach.**
-- 2026-09-07 — **S11, v0.6 read whole (`git diff v0.5.0..HEAD`, 53 files).** `./gradlew test`
-  **1844** (1079 debug + 765 release), 0 failures, up from the 1669 floor. **No test weakened:**
-  the version deleted 7 test lines — six widening a helper signature, and S03's removal of the
-  `selectInDrawer("All sources")` workaround tap that made `HomeScreenTest` pass while #30 was live.
-  Search, `~`-dated guesses, the two-line byline and *Remove this source* are now in SPEC.md
-  (§4, §5, §8, §8a, §10), DESIGN.md (§5) and the README, whose strip was re-captured because
-  every list gained a magnifier. **`FeedDao`'s KDoc was wrong, and PLAN-6 §0.3 with it:** the
-  saved-links row is *not* in the drawer and never was — the drawer reads `observeAll`, which filters
-  it, and `findByUrl`'s only callers are `SavedLinkRepository` and `FeedRepository.removeAll`.
-- 2026-09-07 — **S12, live acceptance v6: 15 gates green, and gate 13 earned its keep.**
-  Gates 13/14/15 are new (#28 index recall, #31's pasted row, #29/#30's removal through the
-  overflow) and every one takes its keywords **out of the corpus that just arrived** — see the
-  file's own KDoc. **Live run 1 found a real bug S09's unit tests could not:** ` AND ` is an
-  operator only under SQLite's *enhanced* FTS syntax, so two-word search silently demanded the
-  word "and" and lost every short article. Join is now a space (PLAN-9 §0.9, SPEC §8a).
-  A gate keyword must be ASCII-lettered and space-delimited or it tests typography, not search:
-  FTS4's `simple` tokenizer keeps every byte above 0x7F *inside* a word, `FtsQuery` splits on it.
-  The whole live suite runs in **~90 s**, not the 15–25 min the plan budgeted. `./gradlew test
-  assembleRelease`: **1848** (1081 + 767), 0 failures.
+- 2026-09-07 — **v0.6.0 released** (`versionCode` 7, DB 7); test floor **1848** (1081 debug +
+  767 release). APK `app/build/outputs/apk/release/perch-0.6.0.apk`. Its in-place upgrade was
+  verified on the **emulator only** — the human's real phone is a separate device no session
+  can reach. An upgrade check needs a seeded install and **there is no first-run seeder** (the
+  Maestro flow's "a clean install seeds itself" comment is stale): add a source through the UI,
+  and set the range to All Time or a fresh install looks empty. `adb shell input text` drops
+  everything past ~15 characters — type a URL in short chunks and submit with `input keyevent
+  66`; never tap a button at its dump bounds while the IME is up (the tap lands on a key, and
+  uiautomator does not dump the IME window) — `keyevent 111` hides it first.
+- 2026-09-07 — **S12, live acceptance v6 (15 gates, ~90 s, not the 15–25 min the plan budgeted).**
+  Gates 13/14/15 take their keywords **out of the corpus that just arrived** — see the file's own
+  KDoc. A gate keyword must be ASCII-lettered and space-delimited or it tests typography, not
+  search: FTS4's `simple` tokenizer keeps every byte above 0x7F *inside* a word, `FtsQuery` splits
+  on it. Live run 1 caught what S09's unit tests could not — ` AND ` is an operator only under
+  SQLite's *enhanced* FTS syntax, so two-word search demanded a word nobody typed (SPEC §8a).
