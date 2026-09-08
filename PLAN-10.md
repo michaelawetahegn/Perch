@@ -457,7 +457,7 @@ No task in this plan takes a device screenshot.
       - Done: test count unchanged; `./gradlew test` green; issue #45 closed.
       - Rung: unit
 
-- [ ] **D13 — The concurrency test measures, it does not sleep. Issue #46.**
+- [x] **D13 — The concurrency test measures, it does not sleep. Issue #46.**
       `gh issue view 46 --json body`. `FeedRepositoryTest.kt:315` `Thread.sleep(120)` inside a
       `MockWebServer` `Dispatcher` is how `at most four feeds are in flight at once` holds eight
       requests open. Replace with a `CountDownLatch`/`CyclicBarrier` so peak concurrency is

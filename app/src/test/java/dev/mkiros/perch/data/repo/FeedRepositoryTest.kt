@@ -370,10 +370,16 @@ class FeedRepositoryTest {
     fun `at most four feeds are in flight at once`() = runTest {
         val inFlight = AtomicInteger()
         val peak = AtomicInteger()
+        // The first four arrivals gate each other: none of them answers until all four are
+        // held open, so the peak is observed rather than timed. A fifth can only join them
+        // if the limiter is wider than the contract. The timeout means a limiter narrower
+        // than four fails the assertion below instead of hanging the suite.
+        val fourHeldOpen = CountDownLatch(4)
         server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 peak.accumulateAndGet(inFlight.incrementAndGet(), ::maxOf)
-                Thread.sleep(120)
+                fourHeldOpen.countDown()
+                fourHeldOpen.await(HOLD_SECONDS, TimeUnit.SECONDS)
                 inFlight.decrementAndGet()
                 return ok(rss(item("a1")))
             }
@@ -382,8 +388,7 @@ class FeedRepositoryTest {
 
         repo.refreshAll()
 
-        assertThat(peak.get()).isAtMost(4)
-        assertThat(peak.get()).isGreaterThan(1)
+        assertThat(peak.get()).isEqualTo(4)
     }
 
     // ---- retention -------------------------------------------------------------
