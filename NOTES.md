@@ -59,29 +59,27 @@
   `onNodeWithText("Feed")`**, and a drawer row is `hasClickAction() and !hasTestTag(ENTRY)`.
 - **V08/#10: the scoped list is state, not a route.** `HomeScope` is **hoisted into `PerchNavHost`** — third such
   state — `BackStep.LeaveScope` a rung above `ScrollFeedToTop`. `selectTab` is a silent no-op from the article route (`popUpTo(start){saveState}`/`restoreState`, pop first); scoping does not touch the time window.
-- 2026-08-25 — **v0.5.0 shipped (PLAN-6/#23, PLAN-7/#21, PLAN-8), archived.** `PageContentExtractor`
-  (fetch→extract→sanitize→image) is the **one** function `ArticleTextRepository`,
-  `SavedLinkRepository` and `BackfillRepository` all call — do not clone it. Which queries filter
-  `feeds.isSynthetic` (the seeded `perch:saved-links` row) is settled in **SPEC.md §4**; do not
-  re-derive it. `ArchiveDiscovery`/`BackfillRepository` (`data/archive/`, `data/repo/`): discovery order
-  RFC 5005 `prev-archive` → `robots.txt Sitemap:` → `/sitemap.xml`; post-vs-page is a dated URL
-  path *or* a shape learned from the feed's own entry links, never a table of engines. `plan()`
-  sorts by `lastmod` before `.take(MAX_PAGES=40)` because discovery order is sitemap *document*
-  order (measured live on `fzakaria.com`, 143/133 discovered). `quantpedia.com` excluded from
-  live gate 1 — its own TLS cert has expired, confirmed with `curl -v`, nothing Perch-side.
+- 2026-08-25 — **v0.5.0 (PLAN-6/#23, PLAN-7/#21, PLAN-8), archived.** `PageContentExtractor`
+  (fetch→extract→sanitize→image) stays the **one** path `ArticleTextRepository`, `SavedLinkRepository`
+  and `BackfillRepository` call — since D16 they share its parse and mapping too; do not clone it.
+  Which queries filter `feeds.isSynthetic` (the seeded `perch:saved-links` row): **SPEC.md §4**.
+  `ArchiveDiscovery`/`BackfillRepository` discovery order: RFC 5005 `prev-archive` → `robots.txt
+  Sitemap:` → `/sitemap.xml`; post-vs-page is a dated URL path *or* a shape learned from the feed's
+  own entry links, never a table of engines. `plan()` sorts by `lastmod` before `.take(MAX_PAGES=40)`
+  because discovery order is sitemap *document* order (`fzakaria.com`, 143/133 live).
+  `quantpedia.com` excluded from live gate 1 — its TLS cert has expired, nothing Perch-side.
 - 2026-09-07 — **S08/#28: the search index.** Shape, write path and query contract are in
   **SPEC.md §4/§8a**. What is only here: **`MIGRATION_6_7`'s `CREATE VIRTUAL TABLE` must be
   byte-for-byte what `7.json` exports** or Room fails validation on the *next* open, not on the
   migration — a test that only runs the migration will not catch it.
-- 2026-09-07 — **v0.6.0 released** (`versionCode` 7, DB 7); test floor **1848** (1081 debug +
-  767 release). APK `app/build/outputs/apk/release/perch-0.6.0.apk`. Its in-place upgrade was
-  verified on the **emulator only** — the human's real phone is a separate device no session
-  can reach. An upgrade check needs a seeded install and **there is no first-run seeder** (the
-  Maestro flow's "a clean install seeds itself" comment is stale): add a source through the UI,
-  and set the range to All Time or a fresh install looks empty. `adb shell input text` drops
-  everything past ~15 characters — type a URL in short chunks and submit with `input keyevent
-  66`; never tap a button at its dump bounds while the IME is up (the tap lands on a key, and
-  uiautomator does not dump the IME window) — `keyevent 111` hides it first.
+- 2026-09-08 — **v0.6.1 released** (`versionCode` 8, DB 7 — unchanged from v0.6.0); test floor
+  **1932** (1126 debug + 806 release). APK `app/build/outputs/apk/release/perch-0.6.1.apk`. In-place
+  upgrades are verified on the **emulator only**; the human's real phone no session can reach. An
+  upgrade check needs a seeded install and **there is no first-run seeder** (the Maestro flow's "a
+  clean install seeds itself" comment is stale): add a source through the UI, and set the range to
+  All Time or a fresh install looks empty. `adb shell input text` drops everything past ~15
+  characters — type a URL in short chunks, submit with `input keyevent 66`; never tap a button at
+  its dump bounds while the IME is up (uiautomator does not dump it) — `keyevent 111` hides it.
 - 2026-09-08 — **D21: `SettingsStore` persists an enum by its bare `name`**, so moving one to
   `model/` is invisible to an installed reader; `SettingsStoreTest` pins that with a base64
   preferences file **captured from 8e9a5b8** — only regenerate it from a build that wrote it.

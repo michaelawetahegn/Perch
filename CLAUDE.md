@@ -17,6 +17,9 @@ and what each failure mode actually means.
 
 ## If your prompt was "Read CLAUDE.md and continue", you are a loop session
 
+**As of v0.6.1 there is no active plan** — see the section below before doing anything
+else. Everything in this section applies the moment a `PLAN-11.md` exists, and not before.
+
 `loop.sh` starts every session with exactly that prompt. If it is yours, you are **the
 worker, not the orchestrator**. A `loop.sh` in `pgrep` is **your own driver** — not someone
 else's run to keep out of the way of, and not evidence that the work is already in hand.
@@ -34,45 +37,51 @@ is expected to end in a commit and a push; that is the only way progress exists 
 So: go to the cold start below, do the single next unchecked task, verify it, commit, push,
 close its issue, stop.
 
-## The active plan is `PLAN-10.md`
+## There is no active plan — v0.6.1 shipped on 2026-09-08
 
 Finished plans live in `docs/plans/` — v0.1 (T01–T32), v0.2 (U01–U16), v0.3 (V01–V16),
-v0.4 (W01–W12), all four of v0.5's slices (X01–X04, Y01–Y05, Z01–Z05, R00–R03) and v0.6
-(S01–S13) are **complete, frozen, and history only**; never reopen a box in any of them. The
-**active** plan is the one at the repository root, and all new work goes in it. Wherever these
-standing orders say "PLAN.md", read the active plan.
+v0.4 (W01–W12), all four of v0.5's slices (X01–X04, Y01–Y05, Z01–Z05, R00–R03), v0.6
+(S01–S13) and now **v0.6.1 (`PLAN-10.md`, D01–D30 — still at the repository root until the
+next plan archives it)** are **complete, frozen, and history only**; never reopen a box in
+any of them.
+
+**There is no active plan, so there is no next task to pick up.** A session that reads this,
+finds every box checked and has no instruction beyond "continue" is **not** a worker: say
+that the plan is finished and stop — do not invent work, do not start a refactor. When the
+human asks for the next batch, read `docs/RALPH.md` and open a `PLAN-11.md` at the repository
+root; that becomes the active plan and every rule below applies to it. Wherever these standing
+orders say "PLAN.md", read the active plan.
+
+**The next version's raw material is already filed.** Issues **#60–#64** are what D27's bounded
+re-survey found and left undone (one is a real if invisible bug, #60); `TECH_DEBT.md` holds
+everything v0.6.1 deliberately did not touch because it would need a behaviour change or a
+human decision. Between them they are a plan's worth of work; neither is a licence to start.
 
 **Each plan's §0 is authoritative for its own version** and deliberately overrides older
 text in SPEC.md, DESIGN.md and earlier plans. Where they conflict, the newest §0 wins and
 the task updates the older doc in the same commit — do not "fix" §0 to match the older text.
 `docs/plans/PLAN-4-v0.4.md` §0, `docs/plans/PLAN-6-v0.5-slice2.md` §0,
-`docs/plans/PLAN-7-v0.5-slice3.md` §0 and `docs/plans/PLAN-9-v0.6.md` §0 still bind for
-everything `PLAN-10.md` §0 does not restate.
-
-**v0.6.1 is a tech-debt pass, not a feature batch.** The human's brief: leave the code simpler,
-cleaner and better tested, **with behaviour unchanged** except where a failing test demonstrates
-a bug. `PLAN-10.md` carries all of it — D01–D26 the work (one GitHub issue each, #34–#59),
-D27 a bounded re-survey that files what is left as issues, D28 the version-wide review, D29
-live acceptance, **D30 alone bumps the version and cuts the release**, and only after D28 and
-D29 have passed. **Prefer deleting to adding.** An improvement that needs a behaviour change to
-justify it goes into `TECH_DEBT.md`, not into the code.
+`docs/plans/PLAN-7-v0.5-slice3.md` §0, `docs/plans/PLAN-9-v0.6.md` §0 and `PLAN-10.md` §0 all
+still bind for everything a future plan's §0 does not restate. In particular **`PLAN-10.md`
+§0.2's rule stands: prefer deleting to adding**, and an improvement that needs a behaviour
+change to justify it goes into `TECH_DEBT.md`, not into the code.
 
 **The hard constraint the human set in v0.5 still binds: no site-specific parsing.** The parser
 must stay generalised and extensible, so that supporting one site means similar sites parse
 too. `PLAN-10.md` §0.2 restates it with the grep gate that enforces it.
 
-**A `PLAN-10.md` task that names a GitHub issue is not done until that issue is closed** with
-a comment naming the commit and how it was verified — read it (`gh issue view N --json body`)
-before starting. **But `PLAN-10.md` §0 outranks an issue body where they disagree**: §0.5
-settles the four bugs' root causes and fix shapes, §0.6 settles where every deduplicated
-thing lands. D27–D30 are process tasks whose acceptance lives in the plan alone. Either way
+**A plan task that names a GitHub issue is not done until that issue is closed** with a comment
+naming the commit and how it was verified — read it (`gh issue view N --json body`) before
+starting, and remember the plan's §0 outranks an issue body where they disagree. Either way
 the commit is **pushed** (`git push`) so the human can watch from the issue tracker while AFK.
 
 ## Cold start (keep it under ~3k tokens)
 
-1. Read `PLAN-10.md`, `NOTES.md`, and `git log --oneline -15`. Nothing else yet.
-2. Find the **single next unchecked `[ ]` task** in PLAN-10.md. That is your entire job
-   this session. Read its GitHub issue.
+1. Read the active plan (the `PLAN-N.md` at the repository root), `NOTES.md`, and
+   `git log --oneline -15`. Nothing else yet.
+2. Find the **single next unchecked `[ ]` task** in it. That is your entire job this
+   session. Read its GitHub issue. **If every box is checked, the plan is finished:
+   say so and stop** — see "There is no active plan" above.
 3. Read only the files that task touches. **Never read the whole repo.** Consult
    `SPEC.md` / `DESIGN.md` only for the sections the task needs.
 4. Do the task. Verify. Commit. Push. Close the issue. Stop.

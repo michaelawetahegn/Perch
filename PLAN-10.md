@@ -800,7 +800,7 @@ No task in this plan takes a device screenshot.
         so no shot should move.
       - Rung: unit
 
-- [ ] **D30 — Release v0.6.1.** Bump `perchVersionCode` 7 → **8** and `perchVersionName`
+- [x] **D30 — Release v0.6.1.** Bump `perchVersionCode` 7 → **8** and `perchVersionName`
       `0.6.0` → **`0.6.1`** at `app/build.gradle.kts:12-13`, **the one place they live**. §0.1
       settles the digit; it is not this task's judgement call.
       - `./gradlew assembleRelease` (runs `lintVitalRelease`). Signing from
@@ -826,3 +826,28 @@ No task in this plan takes a device screenshot.
         `grep -c '^- \[ \]' PLAN-10.md` returns 0; `gh issue list --state open` holds only
         D27's issues for the next plan, each saying so.
       - Rung: build
+      - **Done 2026-09-08.** `perchVersionCode` 7→8, `perchVersionName` 0.6.0→0.6.1
+        (`app/build.gradle.kts:12-13`, the one place they live). `./gradlew assembleRelease`
+        **BUILD SUCCESSFUL in 2m 19s**, `lintVitalRelease` clean; `app-release.apk` renamed to
+        `perch-0.6.1.apk` by hand (W12).
+        **Verified on the file, not the build log:** `aapt2 dump badging` reads
+        `versionCode='8' versionName='0.6.1'`; `apksigner verify --print-certs` prints
+        `Signer #1 certificate SHA-256 digest:
+        61367c0499de5c49c824f4d7ba7b4e692d33960cc57c0622772227a8b7fce489` — U02's key, so it is
+        not debug-signed.
+        **In-place upgrade verified through the emulator UI**, over S13's seeded v0.6.0 install:
+        `device.sh install` printed `Success` and `dumpsys package` then read `versionCode=8
+        versionName=0.6.1` with `firstInstallTime=2026-09-07 21:06:24` unchanged against
+        `lastUpdateTime=2026-09-08 05:07:39` — an update, not a reinstall. After it the Feed
+        still holds its lemire.me rows at the All Time range it was left on, To-Read still holds
+        "The new Go JSON API: twice as fast, or 1.5x slower?" and Liked still holds "AI
+        programming: a layered model". No migration ran: DB stays at 7.
+        Release notes written by hand through `docs/RELEASE-NOTES.md`'s template from
+        `scripts/release-notes.sh v0.6.0`'s draft — 26 issues closed since v0.6.0, of which only
+        the four bugs (#36–#39) are things a reader can see, so the page has no **New** section
+        and says plainly that this is a maintenance release; v0.6.0's known issue (search indexes
+        an article's full text only once opened) still stands and is carried forward. D29a's
+        wrap fix is a regression introduced and reverted inside this version, so it is not on the
+        page. Turnover: CLAUDE.md's plan section now says there is no active plan and points a
+        cold session at #60–#64 and `TECH_DEBT.md`; NOTES.md pruned 101 → 99 lines with the
+        v0.6.1 floor (**1932** = 1126 debug + 806 release) and the APK path.
