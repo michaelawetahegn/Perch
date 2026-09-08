@@ -620,7 +620,7 @@ No task in this plan takes a device screenshot.
         release), 0 failures. (Run 1 hit the `SettingsViewModelTest` full-suite flake now in
         NOTES.md; green alone and on the re-run.)
 
-- [ ] **D24 — One empty state. Issue #57.**
+- [x] **D24 — One empty state. Issue #57.**
       `gh issue view 57 --json body`. `HomeScreen.kt:1420-1522`, `CollectionScreen.kt:289-346`,
       `SearchSurface.kt:271-305`. Grow `SearchSurface.Prompt(icon, title, body, tag)` into
       `EmptyState` in `ui/home/EmptyState.kt` (§0.6) with an icon slot (Home draws `PerchMark`)
@@ -632,6 +632,18 @@ No task in this plan takes a device screenshot.
       - Done: `grep -rn 'fillParentMaxSize' app/src/main` shows one site; `./gradlew test` green;
         issue #57 closed.
       - Rung: unit
+      - **Done 2026-09-08.** `EmptyState(icon, title, body, modifier, action = null)` in
+        `ui/home/EmptyState.kt`, with `EmptyStateIcon(image)` for the tinted glyph three of the
+        four states draw. Home's private copy is now `FeedEmptyState`, which picks the sentence
+        and hands over an `action` lambda; Collection's is `CollectionEmptyState`; search's
+        `Prompt` is gone. `modifier` lands on the centred content column, not the `LazyColumn`,
+        because that is the node the `EMPTY`/`PROMPT` tags have always marked. Home's
+        `Spacer(lg)`/`Spacer(sm)` became the shared title's `padding(top = lg, bottom = sm)` —
+        same box, same order, so the screenshots do not move. Net **−24 lines** (94 added in the
+        new file, 118 net removed from the three screens).
+        `grep -rn 'fillParentMaxSize' app/src/main`: **one site**, `EmptyState.kt:56`.
+        `./gradlew test`: **BUILD SUCCESSFUL in 3m 36s**, 1930 tests (1124 debug + 806
+        release), 0 failures.
 
 - [ ] **D25 — One URL form. Issue #58.**
       `gh issue view 58 --json body`. `AddSourceSheet.kt:114-217` and `SaveLinkSheet.kt:96-168`

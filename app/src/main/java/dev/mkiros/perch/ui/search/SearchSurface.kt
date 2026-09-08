@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -36,14 +34,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextAlign
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import dev.mkiros.perch.R
+import dev.mkiros.perch.ui.home.EmptyState
+import dev.mkiros.perch.ui.home.EmptyStateIcon
 import dev.mkiros.perch.ui.home.PagedEntryList
 import dev.mkiros.perch.ui.theme.Dimens
 
@@ -190,21 +188,21 @@ fun SearchSurface(
             when {
                 // Nothing asked yet. DESIGN.md §7: one empty state per cause, and "you
                 // have not typed anything" is not "there is nothing to find".
-                !current.isAsking -> Prompt(
-                    icon = Icons.Default.Search,
+                !current.isAsking -> EmptyState(
+                    icon = { EmptyStateIcon(Icons.Default.Search) },
                     title = stringResource(R.string.search_prompt_title),
                     body = stringResource(R.string.search_prompt_body),
-                    tag = SearchTestTags.PROMPT,
+                    modifier = Modifier.testTag(SearchTestTags.PROMPT),
                 )
                 // The first page of a question is in flight. Nothing is drawn: these
                 // answer in a frame, and an empty state that flashes between two full
                 // lists reads as a bug (home's rule, U07a).
                 results.itemCount == 0 && results.loadState.refresh is LoadState.Loading -> Unit
-                results.itemCount == 0 -> Prompt(
-                    icon = Icons.Default.SearchOff,
+                results.itemCount == 0 -> EmptyState(
+                    icon = { EmptyStateIcon(Icons.Default.SearchOff) },
                     title = stringResource(R.string.search_no_results_title, current.query),
                     body = stringResource(R.string.search_no_results_body),
-                    tag = SearchTestTags.EMPTY,
+                    modifier = Modifier.testTag(SearchTestTags.EMPTY),
                 )
                 else -> PagedEntryList(
                     entries = results,
@@ -213,50 +211,6 @@ fun SearchSurface(
                     onOpenEntry = onOpenEntry,
                     modifier = Modifier.testTag(SearchTestTags.LIST),
                     animate = false,
-                )
-            }
-        }
-    }
-}
-
-/**
- * Both of search's empty states, which differ only in what they say (DESIGN.md §7).
- *
- * A `LazyColumn` holding one full-size item rather than a plain `Column`, for V03/#6's
- * reason — it is the shape every empty state in Perch has, and keeping it means this one
- * cannot be the odd one out if a pull gesture is ever added here.
- */
-@Composable
-private fun Prompt(icon: ImageVector, title: String, body: String, tag: String) {
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
-        item {
-            Column(
-                modifier = Modifier
-                    .fillParentMaxSize()
-                    .padding(horizontal = Dimens.screenHorizontal)
-                    .testTag(tag),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(Dimens.emptyIcon),
-                )
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(top = Dimens.lg, bottom = Dimens.sm),
-                )
-                Text(
-                    text = body,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.width(Dimens.emptyContentWidth),
                 )
             }
         }

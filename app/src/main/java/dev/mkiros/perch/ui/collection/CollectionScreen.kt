@@ -1,13 +1,9 @@
 package dev.mkiros.perch.ui.collection
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.LibraryBooks
 import androidx.compose.material.icons.filled.AddLink
@@ -16,7 +12,6 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -33,17 +28,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import dev.mkiros.perch.R
+import dev.mkiros.perch.ui.home.EmptyState
+import dev.mkiros.perch.ui.home.EmptyStateIcon
 import dev.mkiros.perch.ui.home.EntryActionsSheet
 import dev.mkiros.perch.ui.home.EntryRow
 import dev.mkiros.perch.ui.home.PagedEntryList
@@ -187,7 +182,7 @@ fun CollectionScreen(
                         onLongPress = { actionsForId = it },
                     )
                     entries.loadState.refresh is LoadState.Loading -> Unit
-                    else -> EmptyState(viewModel.collection)
+                    else -> CollectionEmptyState(viewModel.collection)
                 }
             }
         }
@@ -241,7 +236,7 @@ fun CollectionScreen(
  * how, not told that it is empty, which they can see.
  */
 @Composable
-private fun EmptyState(collection: Collection) {
+private fun CollectionEmptyState(collection: Collection) {
     val icon = when (collection) {
         Collection.ToRead -> Icons.AutoMirrored.Filled.LibraryBooks
         Collection.Liked -> Icons.Default.FavoriteBorder
@@ -255,47 +250,12 @@ private fun EmptyState(collection: Collection) {
         Collection.Liked -> R.string.collection_empty_liked_body
     }
 
-    // Scrollable for the Feed's reason (V03/#6): `PullToRefreshBox` only sees a drag its
-    // child dispatches, so an empty state built out of plain `Column`s swallows the pull.
-    // One item at the parent's full size keeps the content centred.
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
-        item {
-            Column(
-                modifier = Modifier
-                    .fillParentMaxSize()
-                    .padding(horizontal = Dimens.screenHorizontal)
-                    .testTag(CollectionTestTags.EMPTY),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(Dimens.emptyIcon),
-                )
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Text(
-                        text = stringResource(title),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(top = Dimens.lg, bottom = Dimens.sm),
-                    )
-                    Text(
-                        text = stringResource(body),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.width(Dimens.emptyContentWidth),
-                    )
-                }
-            }
-        }
-    }
+    EmptyState(
+        icon = { EmptyStateIcon(icon) },
+        title = stringResource(title),
+        body = stringResource(body),
+        modifier = Modifier.testTag(CollectionTestTags.EMPTY),
+    )
 }
 
 /** What a search opened from one of these two lists is narrowed to (S10, §0.8). */

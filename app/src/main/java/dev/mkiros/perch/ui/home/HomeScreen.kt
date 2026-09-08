@@ -5,7 +5,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -85,7 +84,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -462,7 +460,7 @@ fun HomeScreen(
                     when {
                         uiState.isLoading || (entries.itemCount == 0 && loadingFirstPage) ->
                             SkeletonList()
-                        entries.itemCount == 0 -> EmptyState(
+                        entries.itemCount == 0 -> FeedEmptyState(
                             hasSources = uiState.hasSources,
                             widerFilter = uiState.widerFilter,
                             onAddSource = ::addSource,
@@ -1364,7 +1362,7 @@ private fun SkeletonBar(widthFraction: Float, height: Dp) {
  * T27 and attaches to the other case the same way.)
  */
 @Composable
-private fun EmptyState(
+private fun FeedEmptyState(
     hasSources: Boolean,
     widerFilter: TimeFilter?,
     onAddSource: () -> Unit,
@@ -1403,72 +1401,42 @@ private fun EmptyState(
         }
     }
 
-    // Scrollable on purpose (V03/#6). `PullToRefreshBox` only ever sees a drag its child
-    // dispatches down the nested-scroll chain, and a plain `Column` dispatches nothing —
-    // so pull-to-refresh, the one gesture a reader reaches for when the screen is empty,
-    // was inert exactly where they need it. One item at the parent's full size keeps the
-    // content centred and reserves the whole surface for the gesture.
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
-        item {
-            Column(
-                modifier = Modifier
-                    .fillParentMaxSize()
-                    .padding(horizontal = Dimens.screenHorizontal),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
+    // The one step out of the state, where there is one. `emptyWindow` is only true when
+    // `widerFilter` is non-null, so the smart cast carries into the slot below; re-testing
+    // it is what the compiler warns about.
+    val action: (@Composable () -> Unit)? = when {
+        emptyWindow -> ({
+            Button(
+                onClick = onWiden,
+                modifier = Modifier.testTag(HomeTestTags.EMPTY_WIDEN),
             ) {
-                if (icon == null) {
-                    PerchMark(size = Dimens.brandMark)
-                } else {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(Dimens.emptyIcon),
-                    )
-                }
-                Spacer(modifier = Modifier.size(Dimens.lg))
                 Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    textAlign = TextAlign.Center,
+                    stringResource(
+                        R.string.home_empty_widen,
+                        stringResource(widerFilter.labelRes()),
+                    ),
                 )
-                Spacer(modifier = Modifier.size(Dimens.sm))
-                Text(
-                    text = body,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.width(Dimens.emptyContentWidth),
-                )
-                // `emptyWindow` is only true when `widerFilter` is non-null, so the smart
-                // cast inside carries; re-testing it here is what the compiler warns about.
-                if (emptyWindow) {
-                    Spacer(modifier = Modifier.size(Dimens.xl))
-                    Button(
-                        onClick = onWiden,
-                        modifier = Modifier.testTag(HomeTestTags.EMPTY_WIDEN),
-                    ) {
-                        Text(
-                            stringResource(
-                                R.string.home_empty_widen,
-                                stringResource(widerFilter.labelRes()),
-                            ),
-                        )
-                    }
-                } else if (!hasSources) {
-                    Spacer(modifier = Modifier.size(Dimens.xl))
-                    Button(
-                        onClick = onAddSource,
-                        modifier = Modifier.testTag(HomeTestTags.EMPTY_ADD_SOURCE),
-                    ) {
-                        Text(stringResource(R.string.drawer_add_source))
-                    }
-                }
             }
-        }
+        })
+
+        !hasSources -> ({
+            Button(
+                onClick = onAddSource,
+                modifier = Modifier.testTag(HomeTestTags.EMPTY_ADD_SOURCE),
+            ) {
+                Text(stringResource(R.string.drawer_add_source))
+            }
+        })
+
+        else -> null
     }
+
+    EmptyState(
+        icon = { if (icon == null) PerchMark(size = Dimens.brandMark) else EmptyStateIcon(icon) },
+        title = title,
+        body = body,
+        action = action,
+    )
 }
 
 /** Material's disabled-content opacity: the one number a reader already knows (V10). */
