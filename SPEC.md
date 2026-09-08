@@ -108,7 +108,7 @@ app/src/main/java/dev/mkiros/perch/
 │  ├─ parse/ FeedParser.kt  RssParser.kt  AtomParser.kt  RdfParser.kt  FeedXml.kt
 │  │         ParsedFeed.kt  ParsedEntry.kt  ParseResult.kt  DateParser.kt
 │  │         FeedDiscovery.kt  HtmlSanitizer.kt  ArticleBlock.kt
-│  │         ArticleLowering.kt  LeadImage.kt  PastedUrl.kt
+│  │         ArticleLowering.kt  LeadImage.kt  PastedUrl.kt  ItemMapping.kt
 │  ├─ extract/ ArticleExtractor.kt  FullText.kt  PageContent.kt  PageMetadata.kt
 │  ├─ archive/ ArchiveDiscovery.kt  RobotsRules.kt        (v0.5 backfill)
 │  ├─ opml/ Opml.kt
@@ -116,7 +116,7 @@ app/src/main/java/dev/mkiros/perch/
 │  ├─ settings/ SettingsStore.kt                          (DataStore)
 │  └─ repo/ FeedRepository.kt  EntryRepository.kt  FolderRepository.kt
 │           ArticleTextRepository.kt  BackfillRepository.kt  SavedLinkRepository.kt
-│           OpmlRepository.kt  ProfileRepository.kt
+│           OpmlRepository.kt  ProfileRepository.kt  FolderResolver.kt
 ├─ work/ RefreshWorker.kt  BackfillWorker.kt  WorkScheduler.kt
 │        WorkManagerBackfillRunner.kt
 └─ ui/
@@ -125,8 +125,8 @@ app/src/main/java/dev/mkiros/perch/
    ├─ nav/   PerchNavHost.kt  PerchBottomBar.kt  BackChain.kt
    ├─ home/  HomeScreen.kt  HomeViewModel.kt  EntryRow.kt  DrawerSelection.kt
    │         EntryActions.kt  FolderActions.kt  SourceActions.kt  SelectionBar.kt
-   │         PagedList.kt  RelativeTime.kt  BackfillOfferUi.kt
-   ├─ source/ AddSourceSheet.kt  AddSourceViewModel.kt
+   │         PagedList.kt  EmptyState.kt  RelativeTime.kt  BackfillOfferUi.kt
+   ├─ source/ AddSourceSheet.kt  AddSourceViewModel.kt  UrlForm.kt
    ├─ article/ ArticleScreen.kt  ArticleViewModel.kt  ArticleBody.kt  RichText.kt
    │           code/{CodeHighlighter,CodeLanguage}.kt
    │           zoom/{ImageViewer,ZoomGeometry,ZoomState}.kt

@@ -699,7 +699,7 @@ No task in this plan takes a device screenshot.
         green (nothing changed, prove it anyway).
       - Rung: unit
 
-- [ ] **D28 — The review pass. The whole of v0.6.1, read at once.**
+- [x] **D28 — The review pass. The whole of v0.6.1, read at once.**
       Read `git diff v0.6.0..HEAD` — **the whole of it** — and answer, in the commit message and
       in NOTES.md where it outlives the plan:
       1. **Did the codebase shrink?** `wc -l` of `app/src/main` and of the tests against §0.2's
@@ -725,6 +725,41 @@ No task in this plan takes a device screenshot.
       - Done: the six answered in the commit message, each with the command that settled it;
         `./gradlew test` green; any new issue linked.
       - Rung: unit
+      - **Done 2026-09-08.** The six, in order. **1. No, `main` did not shrink** — 17,806 →
+        **17,868** (+62 over 99 → 106 files), tests 27,372 → **27,651**. Thirteen commits grew
+        `main`; four of them are the bug fixes, which §0.2 rule 2 does not cover, and D07, D16,
+        D17 and D25 each carry the sentence it asks for. **D18 (+12), D20 (+1), D21 (+13) and
+        D22 (+1) do not** — the growth is KDoc on files that each replaced two or more copies,
+        and the four together are +27 lines. **2. No doc still describes v0.6.0** beyond the
+        history that should: this session added the four files the plan created to SPEC.md §3
+        (D27's one deferred item), and no doc names a symbol D01 deleted. CLAUDE.md still names
+        PLAN-10 active — D30's edit. **3. Nothing scheduled to die survived.** `selectSource`,
+        `selectFolder`, `observeUnreadEntries`, `FeedRepository.reach`, `inlineCodePadding`,
+        `linkUnderline*` and `FakeFetcher` are 0 hits across `app/src`; the survivors are one
+        each (`MapPageFetcher`, `stubImages`, `PerchRule`, `ExportedSchemas.openAtCurrentVersion`,
+        `testFeed`/`testEntry`, `Await.awaitInRealTime`, `UNTITLED_*`, `hostRoot`, `pathOf`).
+        The `seedFeed`/`showHome`/`openAtCurrentVersion` names that remain are thin wrappers
+        delegating to the survivor — D27 filed the residue as #61. Swept for orphans beyond the
+        plan's list: every one of the ten unreferenced `strings.xml` names is a `<plurals>` read
+        through `R.plurals`, no `Dimens` token is unread, and no `ui/` test-tag constant is
+        unread. **4. No test was weakened.** Five commits touch an assertion: D01 **moved** two
+        (`reach`) into `EntryRepositoryTest`, D10/D11 rewrote receivers, D08 replaced
+        `assertIsDisplayed()`-as-a-loop-exit with the shared wait, and **D13 strengthened** —
+        `isAtMost(4)` + `isGreaterThan(1)` became `isEqualTo(4)`. D17 only added. **5. 1930
+        tests** (1124 debug + 806 release), 0 failures, 1 skipped — 82 above the floor — and all
+        four bug fixes pasted a named RED before their GREEN. **6. Behaviour unchanged.** D19,
+        D20, D23, D24 and D26 cited no pinning test; they are pinned by `OpmlRepositoryTest` +
+        `ProfileRepositoryTest`, `PastedUrlTest`, `PagedFeedTest`/`CollectionScreenTest`/
+        `SearchSurfaceTest`/`DesignScreenshotTest`, those three plus `HomeScreenTest`/
+        `HomeTimeRangeTest`, and `HomeEntryActionsTest`/`FolderDrawerTest`/`DrawerMultiSelectTest`
+        respectively. **§0.3 was wrong that the screenshots are a baseline** — they render into
+        gitignored `build/perch-screenshots` and nothing compares them, so this session did the
+        comparison: a `v0.6.0` worktree and HEAD, `--tests '*ScreenshotTest*'` in each, `md5sum`
+        — **35/35 byte-identical** (method in NOTES.md). One real behaviour delta found and
+        recorded rather than reverted: D26's merge carried `maxLines = 1` onto the entry-actions
+        sheet, which used to wrap (TECH_DEBT.md).
+        `./gradlew cleanTestDebugUnitTest cleanTestReleaseUnitTest test --no-build-cache`:
+        **BUILD SUCCESSFUL in 3m 11s**, 1930 tests, 0 failures. No new issue: D27's five stand.
 
 - [ ] **D29 — Live acceptance for v0.6.1.**
       The real corpus, the real network. This version adds **no gate**: the fifteen from S12

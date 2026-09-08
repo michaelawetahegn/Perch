@@ -123,8 +123,16 @@ Smaller than a session, recorded so a passing task can take them:
   debug caller** (`DebugSeeder.kt:48`). Not dead — D01's rule is satisfied — but the only thing
   that reads them ships in no release build, and no test names either.
 
-**For D28, not for the next plan:** SPEC.md §3's package tree does not list the four files this
-plan created — `data/parse/ItemMapping.kt` (D18), `data/repo/FolderResolver.kt` (D19),
-`ui/home/EmptyState.kt` (D24), `ui/source/UrlForm.kt` (D25). Every other path named in
-README.md, SPEC.md, DESIGN.md, CLAUDE.md, `docs/RALPH.md` and this file resolves to a file that
-exists. That is a four-line mechanical fix and it belongs to the review pass, not here.
+- **The entry-actions sheet's labels ellipsize now, and did not before.** Merging `DialogRow`
+  into `ActionRow` (D26) carried the dialog's `maxLines = 1, overflow = Ellipsis` onto the four
+  rows of `EntryActionsSheet`, which used to wrap. Nothing in the corpus is long enough to reach
+  it at the default scale, and the design screenshots are unchanged, but at a large font scale
+  "Remove from To-Read" would truncate where it used to take two lines. Either is defensible; a
+  task that picks one should pick it for both surfaces, which is why it is written down rather
+  than quietly reverted here. Found by D28 reading `EntryActions.kt:141-166` against
+  `FolderActions.kt:210-236` as v0.6.0 had them.
+
+**Closed by D28:** SPEC.md §3's package tree now lists the four files this plan created —
+`data/parse/ItemMapping.kt` (D18), `data/repo/FolderResolver.kt` (D19), `ui/home/EmptyState.kt`
+(D24), `ui/source/UrlForm.kt` (D25). Every path named in README.md, SPEC.md, DESIGN.md,
+CLAUDE.md, `docs/RALPH.md` and this file resolves to a file that exists.

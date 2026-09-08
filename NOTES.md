@@ -1,7 +1,6 @@
 # NOTES.md
 
 ## Log
-**The `.wslconfig` 7 GB cap only applies after `wsl --shutdown`** (2026-08-07) — MemTotal ~6.9 GB means live, ~9.9 GB means a freeze. Full environment picture is in CLAUDE.md.
 - **Standing grep gates:** the two commands are in the active plan's §0.2. Behind the hostname one: parse by
   **standards** (OG, JSON-LD, Dublin Core, sitemaps.org, RFC 5005/9309), so one blog's support makes similar ones work
   — **a rule lifting one fixture and moving no other is aimed at a site.** **U01: the repo is public** (MIT), so a
@@ -45,7 +44,6 @@
 - 2026-08-08 — **U09: the bottom bar and `NavHost` are siblings**; **Feed's `DrawerState`/`LazyListState` are
   hoisted into `PerchNavHost`** (state remembered inside Feed dies on a tab switch); back policy is the pure
   `nextBackStep(BackState)` in `BackChain.kt`. **U09a:** the selection `BackHandler` must live *inside* `ModalDrawerSheet` — the root one wins otherwise.
-- 2026-08-08 — **U07a: all three lists are Paging 3**, placeholders off; queries live once in **`EntryQueries`** because each exists twice — `Flow<List>` *and* `PagingSource`. **`uiState.entries` is gone**: ask the screen.
 - 2026-08-08 — **U10: `ArticleLowering` deletes truncation markers as chrome**, so `FullText` looks
   for "Continue reading" in the *unlowered* text; an extraction only ever replaces a body it beats.
 - 2026-08-08 — **U14 (profile).** `pending_entry_state`, keyed `(feedUrl, guid)`, **no FK to `feeds`** — its job is
@@ -83,11 +81,9 @@
   everything past ~15 characters — type a URL in short chunks and submit with `input keyevent
   66`; never tap a button at its dump bounds while the IME is up (the tap lands on a key, and
   uiautomator does not dump the IME window) — `keyevent 111` hides it first.
-- 2026-09-08 — **D21: `dev.mkiros.perch.model`** (contents in SPEC §3's tree) — the direction is
-  **ui → data/work → model**, never back. `SettingsStore` persists an enum by its bare `name`, so
-  the move is invisible to an installed reader; `SettingsStoreTest` pins that with a base64
-  preferences file **captured from commit 8e9a5b8**, before the package existed — only ever
-  regenerate it from a build that actually wrote it.
+- 2026-09-08 — **D21: `SettingsStore` persists an enum by its bare `name`**, so moving one to
+  `model/` is invisible to an installed reader; `SettingsStoreTest` pins that with a base64
+  preferences file **captured from 8e9a5b8** — only regenerate it from a build that wrote it.
 - 2026-09-08 — **Two full-suite-only flakes; both are green alone and on a re-run, so re-run before diagnosing.**
   `WorkSchedulerTest > choosing manual cancels…` (3 of 5 runs by D15) waits on WorkManager's *own* task executor,
   which `SynchronousExecutor` does not cover, so a loaded host outruns the 20 s `awaitInRealTime`.
@@ -98,3 +94,8 @@
   search: FTS4's `simple` tokenizer keeps every byte above 0x7F *inside* a word, `FtsQuery` splits
   on it. Live run 1 caught what S09's unit tests could not — ` AND ` is an operator only under
   SQLite's *enhanced* FTS syntax, so two-word search demanded a word nobody typed (SPEC §8a).
+- 2026-09-08 — **D28: the design screenshots are no committed baseline** — they render into
+  gitignored `build/perch-screenshots`, and `screenshots/` is hand-curated docs no test writes.
+  A version-wide pixel proof must do it itself: `git worktree add /tmp/perch-<tag> <tag>`, copy
+  `local.properties` in, `--tests '*ScreenshotTest*'` in both trees, `md5sum` both output dirs,
+  `git worktree remove`. v0.6.0 vs v0.6.1: **35/35 identical**, ~1 m 15 s for the older tree.
