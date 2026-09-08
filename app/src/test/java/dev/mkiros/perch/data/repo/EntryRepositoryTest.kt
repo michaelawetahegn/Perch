@@ -586,6 +586,25 @@ class EntryRepositoryTest {
         assertThat(repo.countSavedOrLikedIn(emptyList())).isEqualTo(0)
     }
 
+    /**
+     * D07/#40. Every other `IN (:ids)` query in [EntryDao] chunks at SQLite's host-variable
+     * ceiling; this one is the last that did not. A reader with a very large subscription
+     * list who deletes a folder hands the dialog more ids than SQLite will bind at once,
+     * and the count it is deciding on has to survive that rather than throw.
+     */
+    @Test
+    fun `the count survives a batch larger than SQLite binds in one statement`() = runTest {
+        val curated = feeds.insert(feed("https://a.example/feed"))
+        repo.setSaved(insertEntry(curated, "a1"), isSaved = true)
+        repo.setLiked(insertEntry(curated, "a2"), isLiked = true)
+        insertEntry(curated, "a3")
+        // The rest of the batch is ids of sources that are not here: what matters is how
+        // many host variables the query is handed, not how many rows they find.
+        val batch = listOf(curated) + (1..1_999L).map { curated + it }
+
+        assertThat(repo.countSavedOrLikedIn(batch)).isEqualTo(2)
+    }
+
     // ---- a guessed date travels with the row (#25, S06) --------------------------
 
     /**

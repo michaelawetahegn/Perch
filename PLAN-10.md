@@ -314,7 +314,7 @@ No task in this plan takes a device screenshot.
         `SettingsViewModel` had no test at all before this; the four transfers' happy paths
         are pinned here too.
 
-- [ ] **D07 — `countSavedOrLikedIn` chunks like its siblings. Issue #40.**
+- [x] **D07 — `countSavedOrLikedIn` chunks like its siblings. Issue #40.**
       `gh issue view 40 --json body`. `EntryDao.kt:374` is the one `IN (:ids)` without
       `.chunked(MAX_IDS_PER_STATEMENT)` (`:325,474,575,582`). Follow `setRead`'s shape exactly:
       the abstract `@Query` becomes private-ish, an `open suspend fun` sums the chunks.
@@ -323,6 +323,13 @@ No task in this plan takes a device screenshot.
         fine — it pins, the change is consistency.
       - Done: test named; `./gradlew test` green and growing; issue #40 closed.
       - Rung: unit
+      - **Done 2026-09-08.** Pinning test `EntryRepositoryTest.the count survives a batch
+        larger than SQLite binds in one statement` — 2,000 feed ids, 2 saved/liked among
+        them — passed before the change, as the plan said it would. `./gradlew test`
+        **BUILD SUCCESSFUL**, 1098 debug + 784 release = **1882** (was 1880). The
+        `@Query` is now `countSavedOrLikedInChunk`; the `@Transaction open suspend fun
+        countSavedOrLikedIn` sums `chunked(MAX_IDS_PER_STATEMENT)`, `setRead`'s shape
+        exactly. Summing is exact because `feedId` partitions the rows.
 
 - [ ] **D08 — One wall-clock poll loop. Issue #41.**
       `gh issue view 41 --json body`. `ScreenshotSupport.kt:117`

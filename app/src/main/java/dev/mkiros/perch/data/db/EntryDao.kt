@@ -375,6 +375,14 @@ abstract class EntryDao {
     )
     abstract suspend fun setFullText(id: Long, contentHtml: String?, fullTextAt: Long?, imageUrl: String?)
 
+    @Query(
+        """
+        SELECT COUNT(*) FROM entries
+        WHERE feedId IN (:feedIds) AND (isSaved = 1 OR isStarred = 1)
+        """,
+    )
+    abstract suspend fun countSavedOrLikedInChunk(feedIds: List<Long>): Int
+
     /**
      * How much of the reader's own curation sits inside [feedIds] — what U09a's delete
      * confirmation puts a number to before it cascades.
@@ -382,14 +390,15 @@ abstract class EntryDao {
      * `OR`, counted once per row: an entry that is both saved and liked is one article
      * about to be lost, and a dialog that called it two would overstate the damage in the
      * one place a reader is deciding whether to trust the number.
+     *
+     * Chunked at [MAX_IDS_PER_STATEMENT] like [setRead], and for the same reason: a batch
+     * is only as large as the folder the reader is deleting, and doing it here rather than
+     * at the call site means no caller can forget. Summing chunks is exact because the
+     * ids partition the rows — every entry has one `feedId`, so no row is counted twice.
      */
-    @Query(
-        """
-        SELECT COUNT(*) FROM entries
-        WHERE feedId IN (:feedIds) AND (isSaved = 1 OR isStarred = 1)
-        """,
-    )
-    abstract suspend fun countSavedOrLikedIn(feedIds: List<Long>): Int
+    @Transaction
+    open suspend fun countSavedOrLikedIn(feedIds: List<Long>): Int =
+        feedIds.chunked(MAX_IDS_PER_STATEMENT).sumOf { countSavedOrLikedInChunk(it) }
 
     // ---- retention ------------------------------------------------------------
 
