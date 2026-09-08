@@ -290,7 +290,7 @@ No task in this plan takes a device screenshot.
         **1860** (floor 1848). Fix is `.onFailure { if (it is CancellationException) throw it }`
         in both `runCatching` blocks, per §0.5.
 
-- [ ] **D06 — A throw in a ViewModel action becomes a message, not a crash. TDD. Issue #39.**
+- [x] **D06 — A throw in a ViewModel action becomes a message, not a crash. TDD. Issue #39.**
       `gh issue view 39 --json body`. §0.5: `SaveLinkViewModel.kt:70-83` and
       `SettingsViewModel.kt:174,191,219,237`. REDs in `SaveLinkViewModelTest.kt`
       (`app/src/test/.../ui/collection/`, drives `Result.failure` today only) and a new
@@ -301,6 +301,18 @@ No task in this plan takes a device screenshot.
       - Done: five REDs (one per site) shown and GREEN; `./gradlew test` green and growing;
         issue #39 closed.
       - Rung: unit
+      - **Done 2026-09-07.** RED, `./gradlew :app:testDebugUnitTest --tests
+        '*SaveLinkViewModelTest*' --tests '*SettingsViewModelTest*'`: `14 tests completed,
+        6 failed` — one per site (`SaveLinkViewModelTest.kt:174` timed out with the sheet
+        stuck on `isBusy = true`; the four `SettingsViewModelTest.kt:198` timed out with
+        `last message was null`, the `SecurityException` having left `viewModelScope`),
+        plus one happy-path assertion that `org.json` escapes `/`. GREEN: same command
+        `BUILD SUCCESSFUL`. `./gradlew test` **BUILD SUCCESSFUL**, 1097 debug + 783 release
+        = **1880** (floor 1848). Fix per §0.5: `catch (e: Exception) { if (e is
+        CancellationException) throw e; … }` at all five sites, surfaced through the
+        existing `SaveLinkFailure.Unreachable` / `SettingsMessage.TransferFailed` copy.
+        `SettingsViewModel` had no test at all before this; the four transfers' happy paths
+        are pinned here too.
 
 - [ ] **D07 — `countSavedOrLikedIn` chunks like its siblings. Issue #40.**
       `gh issue view 40 --json body`. `EntryDao.kt:374` is the one `IN (:ids)` without

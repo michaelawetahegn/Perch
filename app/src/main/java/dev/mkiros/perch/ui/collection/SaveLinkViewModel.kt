@@ -7,6 +7,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.mkiros.perch.data.repo.SaveLinkFailure
 import dev.mkiros.perch.data.repo.SavedLinkRepository
 import dev.mkiros.perch.di.AppContainer
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -68,15 +69,26 @@ class SaveLinkViewModel(
         if (!current.canSubmit) return
         _state.update { it.copy(isBusy = true, error = null) }
         viewModelScope.launch {
-            val result = savedLinks.saveLink(current.url)
+            // D06/#39: saveLink reports every *expected* disappointment as a
+            // SaveLinkFailure value, but it still asserts its own invariants and still
+            // talks to Room, and either can throw. Uncaught, that left viewModelScope and
+            // took the process down; survived, it would leave the sheet spinning on
+            // isBusy = true and refusing every dismissal. A throw becomes the same value
+            // every other failure already is, and the fold below phrases it.
+            val result = try {
+                savedLinks.saveLink(current.url)
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                Result.failure(e)
+            }
             _state.update { state ->
                 result.fold(
                     onSuccess = { SaveLinkUiState(savedEntryId = it) },
                     onFailure = { failure ->
                         state.copy(
                             isBusy = false,
-                            // saveLink only ever fails with SaveLinkFailure (its own KDoc);
-                            // the fallback is defensive, not a path this exercises.
+                            // Anything that is not saveLink's own vocabulary is still a
+                            // link that did not arrive, and reads as one.
                             error = failure as? SaveLinkFailure
                                 ?: SaveLinkFailure.Unreachable(failure.message.orEmpty()),
                         )

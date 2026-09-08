@@ -17,7 +17,7 @@ import dev.mkiros.perch.di.AppContainer
 import dev.mkiros.perch.ui.theme.ThemeMode
 import dev.mkiros.perch.work.RefreshInterval
 import dev.mkiros.perch.work.WorkScheduler
-import java.io.IOException
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -164,14 +164,24 @@ class SettingsViewModel(
         }
     }
 
-    /** Writes every subscription as OPML through [write], on the I/O dispatcher. */
+    /**
+     * Writes every subscription as OPML through [write], on the I/O dispatcher.
+     *
+     * D06/#39: [write] is the *screen's* half — a `ContentResolver` and a document `Uri`
+     * the reader picked, possibly some time ago — so it can fail in more ways than
+     * `IOException` names. A revoked grant raises `SecurityException`; uncaught, it left
+     * `viewModelScope` and killed the process instead of the transfer. Every reason a
+     * document could not be written is [SettingsMessage.TransferFailed], which is what a
+     * reader can act on; cancellation is not one of them and is rethrown.
+     */
     fun exportOpml(write: suspend (String) -> Unit) {
         viewModelScope.launch {
             val text = opml.export()
             _message.value = try {
                 withContext(Dispatchers.IO) { write(text) }
                 SettingsMessage.Exported
-            } catch (e: IOException) {
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
                 SettingsMessage.TransferFailed
             }
         }
@@ -183,12 +193,15 @@ class SettingsViewModel(
      * The refresh is deliberately not awaited and cannot fail the import: the rows are
      * already in the database, the reader is already being told how many landed, and forty
      * fetches must not hold a snackbar hostage.
+     *
+     * Whatever [read] throws is contained, for the reasons [exportOpml] gives.
      */
     fun importOpml(read: suspend () -> String) {
         viewModelScope.launch {
             val text = try {
                 withContext(Dispatchers.IO) { read() }
-            } catch (e: IOException) {
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
                 _message.value = SettingsMessage.TransferFailed
                 return@launch
             }
@@ -209,14 +222,18 @@ class SettingsViewModel(
         }
     }
 
-    /** Writes the whole reading identity through [write], on the I/O dispatcher (U14). */
+    /**
+     * Writes the whole reading identity through [write], on the I/O dispatcher (U14).
+     * Contains whatever [write] throws, for the reasons [exportOpml] gives.
+     */
     fun exportProfile(write: suspend (String) -> Unit) {
         viewModelScope.launch {
             val text = profile.export()
             _message.value = try {
                 withContext(Dispatchers.IO) { write(text) }
                 SettingsMessage.ProfileExported
-            } catch (e: IOException) {
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
                 SettingsMessage.TransferFailed
             }
         }
@@ -229,12 +246,15 @@ class SettingsViewModel(
      * entry state is parked until the articles it describes arrive, and this is what makes
      * them arrive. It still cannot fail the restore — the rows are already written and the
      * next scheduled pass would collect them anyway.
+     *
+     * Whatever [read] throws is contained, for the reasons [exportOpml] gives.
      */
     fun importProfile(read: suspend () -> String) {
         viewModelScope.launch {
             val text = try {
                 withContext(Dispatchers.IO) { read() }
-            } catch (e: IOException) {
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
                 _message.value = SettingsMessage.TransferFailed
                 return@launch
             }

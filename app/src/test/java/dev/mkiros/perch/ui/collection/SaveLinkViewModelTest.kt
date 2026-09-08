@@ -3,6 +3,7 @@ package dev.mkiros.perch.ui.collection
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.PerchDatabase
+import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.net.FeedFetcher
 import dev.mkiros.perch.data.repo.SaveLinkFailure
 import dev.mkiros.perch.data.repo.SavedLinkRepository
@@ -13,6 +14,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
@@ -58,11 +60,17 @@ class SaveLinkViewModelTest {
         database = PerchDatabase.inMemory(ApplicationProvider.getApplicationContext())
         server = MockWebServer()
         server.dispatcher = object : Dispatcher() {
-            override fun dispatch(request: RecordedRequest): MockResponse {
-                gate.await()
-                // Nothing there: the fetch fails, so this exercises the path the reader hit.
-                return MockResponse().setResponseCode(404)
-            }
+            override fun dispatch(request: RecordedRequest): MockResponse =
+                if (request.path == READABLE_PATH) {
+                    // A page that saves, so a test can reach what happens *after* the fetch.
+                    MockResponse()
+                        .setHeader("Content-Type", "text/html")
+                        .setBody("<html><head><title>A post</title></head><body><p>Words.</p></body></html>")
+                } else {
+                    gate.await()
+                    // Nothing there: the fetch fails, so this exercises the path the reader hit.
+                    MockResponse().setResponseCode(404)
+                }
         }
         server.start()
         viewModel = SaveLinkViewModel(
@@ -133,6 +141,28 @@ class SaveLinkViewModelTest {
         assertThat(viewModel.state.value).isEqualTo(SaveLinkUiState())
     }
 
+    /**
+     * D06/#39: [SavedLinkRepository.saveLink] documents its failures as [SaveLinkFailure]
+     * values, but it also has invariants it asserts with `error(...)` — and Room can raise
+     * anything. Nothing caught them, so the throw left `viewModelScope` and took the
+     * process with it; had it been survived, the sheet would have been left spinning on
+     * `isBusy = true` forever, refusing every dismissal (`canDismiss`). Here the invariant
+     * is broken for real, by removing the synthetic feed every saved link is filed on.
+     */
+    @Test
+    fun `a repository that throws leaves a sheet the reader can read and close`() = runBlocking {
+        val savedLinks = database.feedDao().findByUrl(FeedEntity.SAVED_LINKS_FEED_URL)!!
+        database.feedDao().deleteById(savedLinks.id)
+
+        viewModel.onUrlChange(server.url(READABLE_PATH).toString())
+        viewModel.submit()
+
+        awaitState { !it.isBusy }
+        assertThat(viewModel.state.value.error).isNotNull()
+        assertThat(viewModel.state.value.canDismiss).isTrue()
+        assertThat(viewModel.onDismissRequest()).isTrue()
+    }
+
     // ---- harness ---------------------------------------------------------------
 
     private fun awaitState(predicate: (SaveLinkUiState) -> Boolean) {
@@ -147,5 +177,6 @@ class SaveLinkViewModelTest {
     private companion object {
         const val TIMEOUT_MS = 10_000L
         const val POLL_MS = 10L
+        const val READABLE_PATH = "/article"
     }
 }
