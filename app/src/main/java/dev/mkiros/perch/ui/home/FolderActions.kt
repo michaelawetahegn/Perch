@@ -53,6 +53,7 @@ fun FolderActionsDialog(
                     testTag = FolderActionTestTags.RENAME,
                     onClick = onRename,
                     tint = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
                 )
                 ActionRow(
                     icon = Icons.Default.DeleteOutline,
@@ -60,6 +61,7 @@ fun FolderActionsDialog(
                     testTag = FolderActionTestTags.DELETE,
                     tint = MaterialTheme.colorScheme.error,
                     onClick = onDelete,
+                    maxLines = 1,
                 )
             }
         },
@@ -179,6 +181,7 @@ fun MoveSourceDialog(
                         testTag = FolderActionTestTags.folderChoice(folder.id),
                         onClick = { onMove(folder.id) },
                         tint = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
                     )
                 }
                 ActionRow(
@@ -187,6 +190,7 @@ fun MoveSourceDialog(
                     testTag = FolderActionTestTags.NEW_FOLDER,
                     tint = MaterialTheme.colorScheme.primary,
                     onClick = onNewFolder,
+                    maxLines = 1,
                 )
             }
         },

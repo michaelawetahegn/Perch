@@ -21,6 +21,7 @@
   dispatcher is LIFO and the graph registers later, so on To-Read/Liked back pops the tab before the
   chain is consulted. Anything drawn *over* the NavHost (search) must answer back with its own
   handler, composed deeper; `BackChain` keeps modelling the rung as an order, not as what runs.
+  **D29a: a `ModalBottomSheet` is its own window** — a `LocalDensity` provided around the screen reaches everything but the sheet, so a font-scale test of one sets the *environment* (`RuntimeEnvironment.setFontScale`) instead.
   **S03/#30: `HomeScope` is a bare id, so every delete path must widen it** —
   `HomeScreen.widenScopeIfRemoved` runs before `confirmRemoveSources`, `deleteFolders` and
   `deleteFolder`; a test that taps "All sources" first tests the workaround, not the bug.
@@ -94,8 +95,7 @@
   search: FTS4's `simple` tokenizer keeps every byte above 0x7F *inside* a word, `FtsQuery` splits
   on it. Live run 1 caught what S09's unit tests could not — ` AND ` is an operator only under
   SQLite's *enhanced* FTS syntax, so two-word search demanded a word nobody typed (SPEC §8a).
-- 2026-09-08 — **D28: the design screenshots are no committed baseline** — they render into
-  gitignored `build/perch-screenshots`, and `screenshots/` is hand-curated docs no test writes.
-  A version-wide pixel proof must do it itself: `git worktree add /tmp/perch-<tag> <tag>`, copy
-  `local.properties` in, `--tests '*ScreenshotTest*'` in both trees, `md5sum` both output dirs,
-  `git worktree remove`. v0.6.0 vs v0.6.1: **35/35 identical**, ~1 m 15 s for the older tree.
+- 2026-09-08 — **D28/D29a: the design screenshots are no committed baseline** — they render into gitignored
+  `build/perch-screenshots`, which **keeps stale shots: `rm -rf` it and `--rerun`** or the diff shows phantom extras.
+  The proof does it itself: `git worktree add /tmp/perch-<ref> <ref>`, copy `local.properties` in, `--tests
+  '*ScreenshotTest*'` both sides, `md5sum` both dirs, `git worktree remove`. **35/35** twice, v0.6.0 and D29a.

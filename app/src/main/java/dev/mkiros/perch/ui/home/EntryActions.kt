@@ -152,6 +152,12 @@ fun EntryActionsSheet(
  * `tint` is left `Unspecified` by default so the row takes `ListItem`'s own colours: a
  * dialog that wants to paint a destructive row red passes one, and passing it colours the
  * icon with the label rather than leaving the two disagreeing.
+ *
+ * `maxLines` is where the two surfaces part (D29a). A sheet rises to fit what is in it, so
+ * its labels wrap and stay readable at any text size; a dialog is a box of choices whose
+ * later rows would be pushed off the screen by an earlier one growing, so the dialogs pass
+ * `maxLines = 1` and take the ellipsis. Merging the two rows (D26) had quietly given the
+ * sheet the dialog's line.
  */
 @Composable
 internal fun ActionRow(
@@ -161,10 +167,11 @@ internal fun ActionRow(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     tint: Color = Color.Unspecified,
+    maxLines: Int = Int.MAX_VALUE,
 ) {
     ListItem(
         headlineContent = {
-            Text(text = label, color = tint, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(text = label, color = tint, maxLines = maxLines, overflow = TextOverflow.Ellipsis)
         },
         leadingContent = {
             Icon(

@@ -777,7 +777,7 @@ No task in this plan takes a device screenshot.
         `./gradlew test` still green.
       - Rung: maestro (live)
 
-- [ ] **D29a — The entry-actions sheet wraps its labels again, as it did in v0.6.0. TDD.**
+- [x] **D29a — The entry-actions sheet wraps its labels again, as it did in v0.6.0. TDD.**
       Inserted by the watching session after reading D28's review (its edit was swept into
       D29's commit; that is expected). D28 found the one behaviour delta of this plan and
       recorded it in `TECH_DEBT.md:127` instead of reverting it — but §0.2 rule 1 says behaviour

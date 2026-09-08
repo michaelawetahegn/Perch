@@ -14,6 +14,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextReplacement
+import androidx.compose.ui.text.TextLayoutResult
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.settings.SettingsStore
@@ -31,6 +32,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.GraphicsMode
 
 /**
  * Folders in the drawer (U06): the sections, their counts, the four things a reader can do
@@ -319,7 +321,38 @@ class FolderDrawerTest {
         assertThat(folderIdOf("GPUOpen")).isEqualTo(graphics.id)
     }
 
+    /**
+     * D29a's twin: the dialogs' rows are the same `ActionRow` as the sheet's (D26), and
+     * they are *not* allowed to grow with it. A dialog is a list of choices sized to its
+     * own box; a row that wrapped to three lines would push the ones under it off the
+     * screen, so a long label is cut with an ellipsis, as it has been since U06.
+     */
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    @Test
+    fun `a folder dialog's row stays on one line however long the folder's name`() {
+        // Long enough to overflow the dialog outright: the assertion is that it is cut,
+        // and a name that fits would pass whatever `ActionRow` did with its lines.
+        val graphics = seedFolder("Programming Languages and Compiler Implementation")
+        seedFeed(title = "GPUOpen")
+
+        showHome()
+        longPressInDrawer("GPUOpen")
+        tap(SelectionTestTags.MOVE)
+
+        val layout = layoutOf(FolderActionTestTags.folderChoice(graphics))
+        assertThat(layout.lineCount).isEqualTo(1)
+        assertThat(layout.isLineEllipsized(0)).isTrue()
+    }
+
     // ---- harness -------------------------------------------------------------------
+
+    /** The row's own node carries the label's layout: the `ActionRow` holds one `Text`. */
+    private fun layoutOf(testTag: String): TextLayoutResult {
+        val layouts = mutableListOf<TextLayoutResult>()
+        compose.onNodeWithTag(testTag).fetchSemanticsNode()
+            .config[SemanticsActions.GetTextLayoutResult].action?.invoke(layouts)
+        return layouts.first()
+    }
 
     private fun openDrawer() {
         compose.onNodeWithContentDescription("Open sources").performClick()

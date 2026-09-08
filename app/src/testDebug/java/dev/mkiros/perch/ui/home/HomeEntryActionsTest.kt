@@ -9,6 +9,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.core.content.IntentCompat
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
@@ -28,8 +29,10 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 
 /**
  * U09's row actions, from the Feed: long-press a row and the sheet's four items each do
@@ -184,7 +187,43 @@ class HomeEntryActionsTest {
         assertThat(saved.isRead).isFalse()
     }
 
+    /**
+     * D29a: a sheet row is not a dialog row. The four actions have always wrapped, and a
+     * reader at a large text size must be able to read the whole verb — an action that
+     * says "Remove from To-…" is the question §0 says a menu item must never ask.
+     *
+     * The measurement is real glyphs, so the graphics mode is native (as in
+     * [HomeTimeRangeTest]); the assertion is the line count, not `hasVisualOverflow`.
+     *
+     * The scale is set on the *environment*, not provided as a `LocalDensity` around the
+     * screen the way the screenshots do it: a `ModalBottomSheet` is its own window, and
+     * that window composes its own density from its configuration, so a local provided
+     * outside the sheet reaches everything but the sheet.
+     */
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    @Test
+    fun `the sheet's longest label wraps at a large font scale rather than truncating`() {
+        RuntimeEnvironment.setFontScale(2.5f)
+        seed(title = "An Async Runtime in C", isSaved = true)
+        showHome()
+
+        openActions()
+
+        // The longest of the five labels. Re-pin this when a label changes.
+        val layout = layoutOf("Remove from To-Read")
+        assertThat(layout.lineCount).isAtLeast(2)
+        assertThat(layout.isLineEllipsized(layout.lineCount - 1)).isFalse()
+    }
+
     // ---- harness ---------------------------------------------------------------
+
+    /** The label's own node — in the merged tree the row swallows it. */
+    private fun layoutOf(label: String): TextLayoutResult {
+        val layouts = mutableListOf<TextLayoutResult>()
+        compose.onNodeWithText(label, useUnmergedTree = true).fetchSemanticsNode()
+            .config[SemanticsActions.GetTextLayoutResult].action?.invoke(layouts)
+        return layouts.first()
+    }
 
     private fun openActions() {
         compose.onNodeWithTag(HomeTestTags.ENTRY)
