@@ -645,7 +645,7 @@ No task in this plan takes a device screenshot.
         `./gradlew test`: **BUILD SUCCESSFUL in 3m 36s**, 1930 tests (1124 debug + 806
         release), 0 failures.
 
-- [ ] **D25 — One URL form. Issue #58.**
+- [x] **D25 — One URL form. Issue #58.**
       `gh issue view 58 --json body`. `AddSourceSheet.kt:114-217` and `SaveLinkSheet.kt:96-168`
       share the column, title, `OutlinedTextField(Uri, Go)`, error line and spinner-or-label
       button; both containers share `LaunchedEffect(id) { onX(id); reset(); onDismiss() }`
@@ -658,6 +658,20 @@ No task in this plan takes a device screenshot.
       - Done: `./gradlew test` green; `wc -l` of the two sheet files before/after; issue #58
         closed.
       - Rung: unit
+      - **Done 2026-09-08.** `ui/source/UrlForm.kt` holds `UrlFormContent` — title, field,
+        error line, spinner-or-label button — with two `ColumnScope` slots, `belowField` and
+        `belowError`, so Add Source's folder picker and resolved-feed confirmation stay in the
+        exact order they were drawn in; the shared `LaunchedEffect(id) { onX(id); reset();
+        onDismiss() }` became `DismissWhenDone`. Save Link's content is now the form and
+        nothing else; S02/#33's `canDismiss`/`confirmValueChange` stayed on its container.
+        `wc -l`: `AddSourceSheet.kt` 289 → 235, `SaveLinkSheet.kt` 182 → 120, plus 138 for the
+        new file — **+22 lines** against §0.2's preference, and worth it: what the two sheets
+        no longer own between them is a second `OutlinedTextField(Uri, Go)`, a second error
+        line, a second spinner-or-label `Button` and a second self-close effect. The growth is
+        all named arguments and KDoc, where the deletion is behaviour that could drift apart.
+        `find app/src/main -name '*.kt' | xargs wc -l`: **17,857 → 17,879**; tests unchanged at
+        **27,651**. `./gradlew test`: **BUILD SUCCESSFUL in 3m 17s**, 1930 tests (1124 debug +
+        806 release), 0 failures.
 
 - [ ] **D26 — The small `ui/home` composables exist once. Issue #59.**
       `gh issue view 59 --json body`. `ActionRow` (`EntryActions.kt:141-166`) and `DialogRow`

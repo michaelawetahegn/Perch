@@ -3,25 +3,16 @@ package dev.mkiros.perch.ui.source
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,8 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.mkiros.perch.R
@@ -67,14 +56,12 @@ fun AddSourceSheet(
     val sheetState = rememberModalBottomSheetState()
     var creatingFolder by rememberSaveable { mutableStateOf(false) }
 
-    LaunchedEffect(state.addedFeedId) {
-        val addedFeedId = state.addedFeedId
-        if (addedFeedId != null) {
-            onAdded(addedFeedId)
-            viewModel.reset()
-            onDismiss()
-        }
-    }
+    DismissWhenDone(
+        resultId = state.addedFeedId,
+        onResult = onAdded,
+        reset = viewModel::reset,
+        onDismiss = onDismiss,
+    )
 
     ModalBottomSheet(
         onDismissRequest = {
@@ -110,6 +97,9 @@ fun AddSourceSheet(
  * The sheet's contents, independent of the container they sit in — which is what lets a
  * test drive the real paste → resolve → confirm → commit path without a bottom sheet's
  * animation in the way.
+ *
+ * The column itself is the shared [UrlFormContent]; what is Add Source's own is the folder
+ * picker under the field and the confirmation between the error and the button.
  */
 @Composable
 fun AddSourceSheetContent(
@@ -121,100 +111,56 @@ fun AddSourceSheetContent(
     onSubmit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .navigationBarsPadding()
-            .padding(horizontal = Dimens.screenHorizontal)
-            .padding(bottom = Dimens.xl),
-    ) {
-        Text(
-            text = stringResource(R.string.add_source_title),
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        Spacer(modifier = Modifier.size(Dimens.lg))
-
-        OutlinedTextField(
-            value = state.url,
-            onValueChange = onUrlChange,
-            label = { Text(stringResource(R.string.add_source_field_label)) },
-            singleLine = true,
-            isError = state.error != null,
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Uri,
-                imeAction = ImeAction.Go,
-            ),
-            keyboardActions = KeyboardActions(onGo = { onSubmit() }),
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag(AddSourceTestTags.URL_FIELD),
-        )
-
-        FolderPicker(
-            folders = folders,
-            selectedId = state.folderId,
-            onSelect = onFolderChange,
-            onNewFolder = onNewFolder,
-        )
-
-        state.error?.let { error ->
-            Spacer(modifier = Modifier.size(Dimens.sm))
-            Text(
-                text = error.message(),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.testTag(AddSourceTestTags.ERROR),
+    UrlFormContent(
+        title = stringResource(R.string.add_source_title),
+        fieldLabel = stringResource(R.string.add_source_field_label),
+        url = state.url,
+        onUrlChange = onUrlChange,
+        error = state.error?.message(),
+        submitLabel = stringResource(
+            if (state.resolved != null) R.string.add_source_confirm
+            else R.string.add_source_resolve,
+        ),
+        canSubmit = state.canSubmit,
+        isBusy = state.isBusy,
+        onSubmit = onSubmit,
+        fieldTag = AddSourceTestTags.URL_FIELD,
+        errorTag = AddSourceTestTags.ERROR,
+        submitTag = AddSourceTestTags.SUBMIT,
+        modifier = modifier,
+        belowField = {
+            FolderPicker(
+                folders = folders,
+                selectedId = state.folderId,
+                onSelect = onFolderChange,
+                onNewFolder = onNewFolder,
             )
-        }
-
-        state.resolved?.let { resolved ->
-            Spacer(modifier = Modifier.size(Dimens.lg))
-            Column(modifier = Modifier.testTag(AddSourceTestTags.CONFIRMATION)) {
-                Text(
-                    text = resolved.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Spacer(modifier = Modifier.size(Dimens.xs))
-                Text(
-                    text = pluralStringResource(
-                        R.plurals.add_source_entry_count,
-                        resolved.entryCount,
-                        resolved.entryCount,
-                    ),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+        },
+        belowError = {
+            state.resolved?.let { resolved ->
+                Spacer(modifier = Modifier.size(Dimens.lg))
+                Column(modifier = Modifier.testTag(AddSourceTestTags.CONFIRMATION)) {
+                    Text(
+                        text = resolved.title,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Spacer(modifier = Modifier.size(Dimens.xs))
+                    Text(
+                        text = pluralStringResource(
+                            R.plurals.add_source_entry_count,
+                            resolved.entryCount,
+                            resolved.entryCount,
+                        ),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
-        }
-
-        Spacer(modifier = Modifier.size(Dimens.xl))
-        Button(
-            onClick = onSubmit,
-            enabled = state.canSubmit,
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag(AddSourceTestTags.SUBMIT),
-        ) {
-            if (state.isBusy) {
-                CircularProgressIndicator(
-                    strokeWidth = Dimens.hairline,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier.size(Dimens.buttonSpinner),
-                )
-            } else {
-                Text(
-                    stringResource(
-                        if (state.resolved != null) R.string.add_source_confirm
-                        else R.string.add_source_resolve,
-                    ),
-                )
-            }
-        }
-    }
+        },
+    )
 }
 
 /**
