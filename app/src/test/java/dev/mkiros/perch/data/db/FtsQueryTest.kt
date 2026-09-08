@@ -21,12 +21,25 @@ class FtsQueryTest {
 
     @Test
     fun `several words must all appear, and only the last is a prefix`() {
-        assertThat(FtsQuery.from("strava fitness inv")).isEqualTo("strava AND fitness AND inv*")
+        assertThat(FtsQuery.from("strava fitness inv")).isEqualTo("strava fitness inv*")
+    }
+
+    /**
+     * PLAN-9 S12, from live gate 13: the join is a **space**, and the string ` AND ` is
+     * named here so that nothing can put it back unnoticed. Only SQLite's *enhanced* query
+     * syntax reads `AND` as an operator; under the standard one it is a third term the
+     * reader never typed, and an article that never says "and" stops being findable by two
+     * of its own words. `FtsQuery`'s KDoc has the full account.
+     */
+    @Test
+    fun `words are joined by a space, never by the word AND`() {
+        assertThat(FtsQuery.from("creepy crawlies")).isEqualTo("creepy crawlies*")
+        assertThat(FtsQuery.from("creepy crawlies")).doesNotContain(" AND ")
     }
 
     @Test
     fun `surrounding and repeated whitespace is not a token`() {
-        assertThat(FtsQuery.from("  strava   app  ")).isEqualTo("strava AND app*")
+        assertThat(FtsQuery.from("  strava   app  ")).isEqualTo("strava app*")
     }
 
     @Test
@@ -49,37 +62,37 @@ class FtsQueryTest {
 
     @Test
     fun `a half-typed phrase loses its quotes rather than opening one`() {
-        assertThat(FtsQuery.from("\"strava app")).isEqualTo("strava AND app*")
+        assertThat(FtsQuery.from("\"strava app")).isEqualTo("strava app*")
     }
 
     @Test
     fun `punctuation between words separates them instead of steering the parser`() {
         assertThat(FtsQuery.from("strava-app: (heatmap)")).isEqualTo(
-            "strava AND app AND heatmap*",
+            "strava app heatmap*",
         )
     }
 
     @Test
     fun `the operators are searched for, not obeyed`() {
         assertThat(FtsQuery.from("AND")).isEqualTo("and*")
-        assertThat(FtsQuery.from("fitness OR app")).isEqualTo("fitness AND or AND app*")
-        assertThat(FtsQuery.from("app NOT strava")).isEqualTo("app AND not AND strava*")
+        assertThat(FtsQuery.from("fitness OR app")).isEqualTo("fitness or app*")
+        assertThat(FtsQuery.from("app NOT strava")).isEqualTo("app not strava*")
     }
 
     @Test
     fun `emoji are not words`() {
         assertThat(FtsQuery.from("🚴")).isNull()
-        assertThat(FtsQuery.from("strava 🚴 app")).isEqualTo("strava AND app*")
+        assertThat(FtsQuery.from("strava 🚴 app")).isEqualTo("strava app*")
     }
 
     @Test
     fun `a word is a word in any script`() {
-        assertThat(FtsQuery.from("Ferrán café")).isEqualTo("ferrán AND café*")
+        assertThat(FtsQuery.from("Ferrán café")).isEqualTo("ferrán café*")
         assertThat(FtsQuery.from("日本語")).isEqualTo("日本語*")
     }
 
     @Test
     fun `digits are searchable`() {
-        assertThat(FtsQuery.from("gijn 2018")).isEqualTo("gijn AND 2018*")
+        assertThat(FtsQuery.from("gijn 2018")).isEqualTo("gijn 2018*")
     }
 }

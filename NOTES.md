@@ -22,11 +22,9 @@
   dispatcher is LIFO and the graph registers later, so on To-Read/Liked back pops the tab before the
   chain is consulted. Anything drawn *over* the NavHost (search) must answer back with its own
   handler, composed deeper; `BackChain` keeps modelling the rung as an order, not as what runs.
-  **S03/#30: `HomeScope` is a bare id, so every delete path must widen it** — `HomeScreen.widenScopeIfRemoved`
-  runs before `confirmRemoveSources`, `deleteFolders` and `deleteFolder`. The shell owns the scope (V08); the VM's
-  *resolved* scope (`HomeViewModel.kt:463-471`) feeds the bar's title only, never the query, which is why the bar
-  said "Feed" over an empty list. A test that taps "All sources" before looking at the rows tests the reader's
-  workaround, not the bug.
+  **S03/#30: `HomeScope` is a bare id, so every delete path must widen it** —
+  `HomeScreen.widenScopeIfRemoved` runs before `confirmRemoveSources`, `deleteFolders` and
+  `deleteFolder`; a test that taps "All sources" first tests the workaround, not the bug.
 - 2026-08-07 — **Live acceptance** (`acceptance/LiveAcceptanceTest`, `testDebug`): `./gradlew :app:testDebugUnitTest
   -Pperch.live=true --tests '*LiveAcceptance*'`. **V12/#8: gate 1 has no quota** — every source in `feeds.txt` bar
   `EXCLUDED_SOURCES` must pull (38/38 today), so a break arrives as a URL, and an exclusion carries the measurement
@@ -57,21 +55,17 @@
 - 2026-08-09 — **V01/#1: Robolectric builds `PerchApp` for every test** — a store cancels only a scope it *owns*. **Every full-suite flake so far: waiting on Room is not waiting on the screen. Poll in wall-clock time**, not `waitForIdle`.
 - **V02/#9: a `Clock` carries a zone**; `AppContainer` injects `systemDefaultZone()`, **`DateParser` stays UTC
   deliberately**; a zone test pins `TimeZone.setDefault`. Since W02 the zone decides only what a human *reads*.
-- **V06/#11: folder order is alphabetical (`COLLATE NOCASE`), Uncategorized pinned by `(id = 1) ASC`.** It governs
-  the **drawer only** since W03 — `FolderDao.observeAll` and `.getAll`, which must agree; `EntryQueries.LIST_ITEMS`
-  left the rule and is pure recency; `sortIndex` decides nothing (NOCASE-folding quirk: `FolderDao.kt`'s own KDoc).
-- **V05/#12: "Unread" is gone from every reader-facing string** (identifiers keep it); **pin `HomeTestTags.TITLE`,
-  never `onNodeWithText("Feed")`** — the tab has read "Feed" since U09. **W04/#20: a row's meta is now the bare
-  source name** (`EntryRowTestTags.META`, category dimmed after a `·`, Uncategorized unlabelled; `DATE` beneath),
-  so a drawer row is `hasClickAction() and !hasTestTag(HomeTestTags.ENTRY)`.
+- **V06/#11: folder order is alphabetical, drawer only** (`FolderDao.observeAll`/`.getAll` must
+  agree; `sortIndex` decides nothing — that KDoc has the NOCASE quirk). **V05/#12: "Unread" is gone
+  from every reader-facing string** (identifiers keep it); **pin `HomeTestTags.TITLE`, never
+  `onNodeWithText("Feed")`**, and a drawer row is `hasClickAction() and !hasTestTag(ENTRY)`.
 - **V08/#10: the scoped list is state, not a route.** `HomeScope` is **hoisted into `PerchNavHost`** — third such
   state — `BackStep.LeaveScope` a rung above `ScrollFeedToTop`. `selectTab` is a silent no-op from the article route (`popUpTo(start){saveState}`/`restoreState`, pop first); scoping does not touch the time window.
 - 2026-08-25 — **v0.5.0 shipped (PLAN-6/#23, PLAN-7/#21, PLAN-8), archived.** `PageContentExtractor`
   (fetch→extract→sanitize→image) is the **one** function `ArticleTextRepository`,
-  `SavedLinkRepository` and `BackfillRepository` all call — do not clone it. `feeds.isSynthetic`
-  → seeded `perch:saved-links` row; **S01/#31 corrected v0.5's claim that every query filtered it
-  — `EntryQueries` never did.** Which queries say it now, and which must never, is settled in
-  **SPEC.md §4**; do not re-derive it here. `ArchiveDiscovery`/`BackfillRepository` (`data/archive/`, `data/repo/`): discovery order
+  `SavedLinkRepository` and `BackfillRepository` all call — do not clone it. Which queries filter
+  `feeds.isSynthetic` (the seeded `perch:saved-links` row) is settled in **SPEC.md §4**; do not
+  re-derive it. `ArchiveDiscovery`/`BackfillRepository` (`data/archive/`, `data/repo/`): discovery order
   RFC 5005 `prev-archive` → `robots.txt Sitemap:` → `/sitemap.xml`; post-vs-page is a dated URL
   path *or* a shape learned from the feed's own entry links, never a table of engines. `plan()`
   sorts by `lastmod` descending (unknown last) before `.take(MAX_PAGES=40)` — discovery order is
@@ -81,12 +75,10 @@
   is the whole one. `quantpedia.com` excluded from live gate 1 — its own TLS cert has expired,
   confirmed independently with `curl -v`, nothing Perch-side. `./gradlew test`:
   **1669** (976 debug + 693 release), 0 failures, grew monotonically from the 1524 v0.4.0 floor.
-- 2026-09-07 — **S08/#28: the search index.** Shape, write path and trigger are in **SPEC.md
-  §4**; §8a has the query contract. What is only here: `HtmlSanitizer.flatten` is a new function
-  and `summarize` now delegates to it — one flattener, not two. `INSERT OR REPLACE` **does** work
-  on an FTS4 table, so re-indexing is one statement. **`MIGRATION_6_7`'s `CREATE VIRTUAL TABLE`
-  must be byte-for-byte what `7.json` exports** or Room fails validation on the *next* open, not
-  on the migration — a test that only runs the migration will not catch it.
+- 2026-09-07 — **S08/#28: the search index.** Shape, write path and query contract are in
+  **SPEC.md §4/§8a**. What is only here: **`MIGRATION_6_7`'s `CREATE VIRTUAL TABLE` must be
+  byte-for-byte what `7.json` exports** or Room fails validation on the *next* open, not on the
+  migration — a test that only runs the migration will not catch it.
 - 2026-08-25 — **v0.5.0 released** (`versionCode` 6); its upgrade was verified on the emulator only, because **the human's real phone is a separate device no session can reach.**
 - 2026-09-07 — **S11, v0.6 read whole (`git diff v0.5.0..HEAD`, 53 files).** `./gradlew test`
   **1844** (1079 debug + 765 release), 0 failures, up from the 1669 floor. **No test weakened:**
@@ -97,3 +89,13 @@
   every list gained a magnifier. **`FeedDao`'s KDoc was wrong, and PLAN-6 §0.3 with it:** the
   saved-links row is *not* in the drawer and never was — the drawer reads `observeAll`, which filters
   it, and `findByUrl`'s only callers are `SavedLinkRepository` and `FeedRepository.removeAll`.
+- 2026-09-07 — **S12, live acceptance v6: 15 gates green, and gate 13 earned its keep.**
+  Gates 13/14/15 are new (#28 index recall, #31's pasted row, #29/#30's removal through the
+  overflow) and every one takes its keywords **out of the corpus that just arrived** — see the
+  file's own KDoc. **Live run 1 found a real bug S09's unit tests could not:** ` AND ` is an
+  operator only under SQLite's *enhanced* FTS syntax, so two-word search silently demanded the
+  word "and" and lost every short article. Join is now a space (PLAN-9 §0.9, SPEC §8a).
+  A gate keyword must be ASCII-lettered and space-delimited or it tests typography, not search:
+  FTS4's `simple` tokenizer keeps every byte above 0x7F *inside* a word, `FtsQuery` splits on it.
+  The whole live suite runs in **~90 s**, not the 15–25 min the plan budgeted. `./gradlew test
+  assembleRelease`: **1848** (1081 + 767), 0 failures.

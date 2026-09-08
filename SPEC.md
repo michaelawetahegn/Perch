@@ -360,8 +360,11 @@ pasted URL already parses as a feed, skip discovery entirely.
   summary indexed until the article is opened and full-text extraction replaces it. Search must
   not pretend a never-opened article has a body.
 - **Reader input never reaches `MATCH`.** `FtsQuery.from(raw): String?` strips non-alphanumerics,
-  joins the tokens with `AND` and suffixes the last with `*` for prefix matching, returning null
-  for empty. A stray `"`, `*` or `AND` passed through would throw at runtime.
+  joins the tokens with a **space** and suffixes the last with `*` for prefix matching, returning
+  null for empty. A stray `"`, `*` or `AND` passed through would throw at runtime. The join is a
+  space rather than the word `AND` because only SQLite's *enhanced* query syntax reads `AND` as an
+  operator — under the standard syntax it is a third term the reader never typed, and an article
+  that never says "and" stops being findable by two of its own words (v0.6/PLAN-9 S12, found live).
 - **Results are ordered by recency, not relevance** — `publishedAt DESC, e.id DESC`, like every
   other list in the app. FTS4 has no `bm25`; `matchinfo` ranking is a different feature.
 - **Search ignores the time window and the read filter, always.** You are looking for something

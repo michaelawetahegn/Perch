@@ -225,9 +225,9 @@ the FTS table *is* the plain-text store, so the body is not held twice.
 
 **Query syntax is sanitized, never passed through.** Raw reader input reaches `MATCH` and a
 stray `"`, `*` or `AND` throws at runtime. A pure `FtsQuery.from(raw): String?` strips
-non-alphanumerics, joins the tokens with `AND`, suffixes the last token with `*` for
-prefix-matching, and returns `null` for empty — unit-tested on its own, with quotes, operators
-and emoji among the cases.
+non-alphanumerics, joins the tokens with a **space** (see §0.9 — S09 shipped ` AND ` here and
+it was wrong), suffixes the last token with `*` for prefix-matching, and returns `null` for
+empty — unit-tested on its own, with quotes, operators and emoji among the cases.
 
 **Results are ordered by recency, not relevance.** `publishedAt DESC, e.id DESC`, like every
 other list in the app. FTS4 has no `bm25`, and `matchinfo` ranking is a second feature; the
@@ -248,6 +248,22 @@ the only scope control; do not build a filter panel.
 a route, for reasons that apply identically here. Hoist the search state beside `homeScope`
 (`:157-159`), give it a `Saver`, and add a `BackStep` that leaves search **before**
 `LeaveScope` in `BackChain.kt`.
+
+### §0.9 The words a reader types are joined by a space, never by `AND` (S12, found live)
+
+S09 joined the tokens with the literal string ` AND `, and every unit test agreed with it —
+because SQLite has **two** FTS query syntaxes and only the *enhanced* one (a compile-time
+option) reads `AND` as an operator. Under the standard syntax it is an ordinary term, so
+`creepy AND crawlies*` quietly asks for articles that also contain the word "and". Long
+articles nearly always do, which is why the defect survived S09's own multi-word test: that
+test's one matching article reads "Strava heatmaps **and** open source intelligence".
+
+S12's live gate 13 found it the only way it could be found — by asking the real corpus for two
+words out of a *short* article's own headline. "Creepy crawlies" answered to one of its words
+and vanished under two. Both syntaxes read whitespace between terms as an implicit AND, so the
+join is a space: correct wherever the query lands. `EntrySearchTest` pins it on a fixture with
+no "and" anywhere in it, and `FtsQueryTest` spells ` AND ` out on purpose so nothing can put it
+back unnoticed.
 
 ---
 
@@ -489,7 +505,7 @@ a route, for reasons that apply identically here. Hoist the search state beside 
         `./gradlew test` green; any new issue created and linked.
       - Rung: unit
 
-- [ ] **S12 — Live acceptance for v0.6.**
+- [x] **S12 — Live acceptance for v0.6.**
       The real corpus, the real network, screenshots critiqued against DESIGN.md.
       - `JAVA_HOME=$HOME/.jdks/temurin-17 PATH=$JAVA_HOME/bin:$PATH ./gradlew
         :app:testDebugUnitTest -Pperch.live=true --tests '*LiveAcceptance*'`
@@ -518,6 +534,14 @@ a route, for reasons that apply identically here. Hoist the search state beside 
       - Done: every gate's count pasted into the commit message; the screenshots exist and were
         **opened and looked at**; the default no-network `./gradlew test` still green.
       - Rung: screenshot
+      - **Done 2026-09-07, two runs.** All 15 gates green on run 2 (gates 13/14/15 are new):
+        gate 1 38/38; gate 13 1080/1080 indexed, headline word 38/38, two headline words 29/29,
+        body word 10/10, a read article still findable; gate 14 the pasted row on To-Read,
+        absent from the Feed's 1079, found by a word of its own title; gate 15 removed
+        “Simon Willison's Weblog” from the overflow — 38 sources became 37, the list widened
+        to “Feed” with 6 rows and nothing tapped in between. `./gradlew test assembleRelease`
+        green: **1848** (1081 + 767), 0 failures. Run 1 failed and was right to: two-word
+        search demanded a third word nobody typed — see §0.9.
 
 - [ ] **S13 — Release v0.6.0.** Bump `perchVersionCode` 6 → **7** and `perchVersionName`
       `0.5.0` → **`0.6.0`** at `app/build.gradle.kts:12-13`, **the one place they live**. §0.1

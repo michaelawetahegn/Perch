@@ -26,6 +26,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.performTouchInput
 import androidx.paging.PagingSource
 import androidx.test.core.app.ApplicationProvider
@@ -46,6 +47,7 @@ import dev.mkiros.perch.data.net.FeedFetcher
 import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.parse.ArticleBlock
 import dev.mkiros.perch.data.parse.ArticleLowering
+import dev.mkiros.perch.data.parse.HtmlSanitizer
 import dev.mkiros.perch.data.repo.OpmlImportResult
 import dev.mkiros.perch.data.repo.PerchPaging
 import dev.mkiros.perch.data.repo.SourceResolution
@@ -68,6 +70,7 @@ import dev.mkiros.perch.ui.nav.PerchNavHost
 import dev.mkiros.perch.ui.nav.PerchTab
 import dev.mkiros.perch.ui.screenshot.Screenshots
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
+import dev.mkiros.perch.ui.search.SearchTestTags
 import dev.mkiros.perch.ui.theme.PerchTheme
 import dev.mkiros.perch.ui.theme.ThemeMode
 import java.io.ByteArrayInputStream
@@ -149,6 +152,14 @@ import org.robolectric.annotation.GraphicsMode
  * the Feed renders from, which is what "indistinguishable from a feed entry" reduces to.
  * Gate 12 spends most of fzakaria's remaining archive, so gate 7's offer screenshot (taken
  * after both) shows R00/#24's two numbers honestly shrunk rather than the opening 133/40.
+ *
+ * **PLAN-9 S12 adds v0.6's own three questions.** **Gate 13** asks the search index the only
+ * question that matters — a word the reader would actually remember, taken from the corpus
+ * that just arrived rather than hardcoded, finds the article it came out of (#28). **Gate 14**
+ * asks where a pasted link lives: on To-Read, out of the stream, and still in the index (#31).
+ * **Gate 15** removes the source being read, from the overflow, against a real library, and
+ * looks at what is left on screen (#29/#30) — it runs last in the file because it deletes a
+ * source and its articles, and every shot before it needs them.
  *
  * Where it deviates from PLAN.md: the file lives in `src/testDebug` rather than
  * `src/test`. Gate 3 needs a Compose rule, and `ui-test-manifest` is a
@@ -291,12 +302,26 @@ class LiveAcceptanceTest {
         report("GATE 12 (issue #21/#24's backfilled row)", backfilled.summary)
         failures += backfilled.failures
 
+        // PLAN-9 S12: v0.6's own questions, in the order a reader meets them — the index
+        // first, because gate 14 asks it about the pasted row and the search shot asks it
+        // for a word to type.
+        val search = theIndexAnswersAReadersQuestion()
+        report("GATE 13 (#28: a remembered word finds its article)", search.summary())
+        failures += search.failures
+
+        val pasteVisibility = thePastedLinkIsFindableButNotInTheStream(paste)
+        report("GATE 14 (#31: on To-Read, out of the stream, in the index)", pasteVisibility.summary)
+        failures += pasteVisibility.failures
+
         if (standard.samples.isEmpty()) {
             failures += "gate 3: nothing was pulled, so there was nothing to render"
         } else {
-            val shots = capture(standard.samples, paste)
+            val shots = capture(standard.samples, paste, search)
             report("GATE 3 (one publication)", shots.gate3.joinToString("\n"))
+            report("GATE 3b (#32: the byline under the longest source name)", shots.byline.joinToString("\n"))
             report("GATE 7 (the v0.2 surfaces)", shots.gate7.joinToString("\n"))
+            report("GATE 13b (#28: the search surface, live)", shots.search.joinToString("\n"))
+            report("GATE 15 (#29/#30: removing the source you are reading)", shots.removal.joinToString("\n"))
             failures += shots.failures
         }
 
@@ -1293,6 +1318,11 @@ class LiveAcceptanceTest {
     private class Captures {
         val gate3 = mutableListOf<String>()
         val gate7 = mutableListOf<String>()
+
+        /** S12's three additions: #32's byline, #28's surface, #29/#30's removal. */
+        val byline = mutableListOf<String>()
+        val search = mutableListOf<String>()
+        val removal = mutableListOf<String>()
         val failures = mutableListOf<String>()
     }
 
@@ -1305,7 +1335,11 @@ class LiveAcceptanceTest {
      * source is down, so a dead feed degrades the sample instead of failing the gate on
      * something gate 1 already reported.
      */
-    private fun capture(samples: List<Sample>, paste: PasteReport): Captures {
+    private fun capture(
+        samples: List<Sample>,
+        paste: PasteReport,
+        search: SearchReport,
+    ): Captures {
         val captures = Captures()
         val scene = mutableStateOf<Scene?>(null)
         compose.setContent {
@@ -1359,10 +1393,17 @@ class LiveAcceptanceTest {
         captureTheDrawerRefusing(captures)
         // Not the shell: a bare AlertDialog over PerchTheme, R00/#24's counts named live.
         captureBackfillOffer(scene, captures)
-        // Last, and deliberately: insets are dispatched to the Compose root itself, and the
-        // root outlives a scene change. A cutout applied before the list shots would still
-        // be on the window underneath them.
+        // S12: v0.6's own two shots, both before the cutout for the reason below.
+        captureSearchResults(scene, captures, search)
+        captureTheLongestByline(scene, captures)
+        // Last of the shots, and deliberately: insets are dispatched to the Compose root
+        // itself, and the root outlives a scene change. A cutout applied before the list
+        // shots would still be on the window underneath them.
         captureTheViewerUnderACutout(scene, zoomed, captures)
+        // Last of everything, and also deliberately: gate 15 unsubscribes from a real
+        // source, and `ON DELETE CASCADE` takes its articles with it — every shot above
+        // needs them, and the sample the cutout shot reuses could be one of them.
+        removingTheSourceYouAreReading(scene, captures)
         return captures
     }
 
@@ -1685,6 +1726,163 @@ class LiveAcceptanceTest {
             "to “${top.sourceTitle}” from the article's byline"
     }
 
+    /**
+     * S10/#28's surface, reached the way a reader reaches it: the magnifier in the Feed's
+     * app bar, then a word typed into the field — [SearchReport.busiest], the word this
+     * corpus answers most generously, so the shot is a list rather than a lucky single hit.
+     *
+     * A fresh `Scene.Shell` name re-keys the whole shell, which is what resets the drawer
+     * [captureTheDrawerRefusing] left open and in selection.
+     */
+    private fun captureSearchResults(
+        scene: MutableState<Scene?>,
+        captures: Captures,
+        search: SearchReport,
+    ) {
+        val word = search.busiest()
+        if (word == null) {
+            captures.failures += "gate 13: gate 13 asked the index nothing, so there is no " +
+                "live word to type into the search field"
+            return
+        }
+        scene.value = Scene.Shell("s12-search-dark", ThemeMode.Dark)
+        compose.awaitInRealTime("the Feed to come back before the search opens") {
+            compose.onAllNodesWithTag(HomeTestTags.ENTRY).fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNodeWithTag(HomeTestTags.SEARCH).performClick()
+        compose.waitForIdle()
+        compose.onNodeWithTag(SearchTestTags.FIELD).performTextReplacement(word)
+        try {
+            compose.awaitInRealTime("“$word” to return results") {
+                compose.onAllNodesWithTag(SearchTestTags.RESULT).fetchSemanticsNodes().isNotEmpty()
+            }
+        } catch (e: AssertionError) {
+            captures.failures += "gate 13: the search surface returned nothing for “$word”, " +
+                "which gate 13 measured against the same corpus — ${e.message}"
+            return
+        }
+        val rows = compose.onAllNodesWithTag(SearchTestTags.RESULT).fetchSemanticsNodes().size
+        captures.search += "  ${capture("s12-search-dark").file.name} — searching the live " +
+            "corpus for “$word”, $rows results on screen"
+    }
+
+    /**
+     * S05/#32: the byline is a subheading and has to wrap like one. The hostile case is not
+     * a long *headline* — gate 3 already picks that one — it is a long **source name**, which
+     * is what the reader's screenshot showed running into the date. So the source is chosen
+     * by the length of its own title, and the article under it by the length of its headline:
+     * the worst pair the live library can actually produce.
+     */
+    private fun captureTheLongestByline(scene: MutableState<Scene?>, captures: Captures) {
+        val pick = runBlocking {
+            database.feedDao().getAll()
+                .filterNot { it.isSynthetic }
+                .sortedByDescending { it.title.length }
+                .firstNotNullOfOrNull { feed ->
+                    database.entryDao().observeByFeed(feed.id).first()
+                        .maxByOrNull { it.title.length }?.let { feed to it }
+                }
+        }
+        if (pick == null) {
+            captures.failures += "gate 3b: no source in the live library holds an article, " +
+                "so #32's byline cannot be shot against a real source name"
+            return
+        }
+        val (feed, entry) = pick
+        val sample = Sample(entry.id, feed.feedUrl, entry.title, code = 0, images = 0, enumerated = 0)
+        showArticle(scene, "s12-byline-long-dark", ThemeMode.Dark, sample)
+        if (compose.onAllNodesWithTag(ArticleTestTags.SOURCE).fetchSemanticsNodes().isEmpty()) {
+            captures.failures += "gate 3b: “${entry.title.take(HEADLINE_ECHO)}” opened without " +
+                "a byline, so the shot says nothing about how one wraps"
+            return
+        }
+        captures.byline += "  ${capture("s12-byline-long-dark").file.name} — “${feed.title}” " +
+            "(${feed.title.length} characters, the longest source name in the live library) " +
+            "over a ${entry.title.length}-character headline"
+    }
+
+    /**
+     * S03+S04/#29+#30, live and end to end: scope the Feed to a source by tapping its name
+     * in an article's byline, unsubscribe from it through the app bar's overflow, and then
+     * look at what is on screen **with nothing tapped in between**. #30's complaint was
+     * exactly that gap — the source was gone, the scope still named its id, and the Feed
+     * that came back was empty under a title that said otherwise. A gate that widened the
+     * scope itself first, or tapped "All sources", would be testing the reader's workaround.
+     *
+     * It runs against the real library and it really unsubscribes, which is why it is last
+     * in the file: the source's articles go with it.
+     */
+    private fun removingTheSourceYouAreReading(scene: MutableState<Scene?>, captures: Captures) {
+        val before = runBlocking { database.feedDao().getAll().size }
+        scene.value = Scene.Shell("s12-remove-source", ThemeMode.Dark)
+        compose.awaitInRealTime("the Feed to fill before a source is removed from it") {
+            compose.onAllNodesWithTag(HomeTestTags.ENTRY).fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onAllNodesWithTag(HomeTestTags.ENTRY)[0].performClick()
+        compose.awaitInRealTime("the article to open") {
+            compose.onAllNodesWithTag(ArticleTestTags.SOURCE).fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNodeWithTag(ArticleTestTags.SOURCE).performClick()
+        compose.awaitInRealTime("the scoped Feed to load") {
+            compose.onAllNodesWithTag(HomeTestTags.ENTRY).fetchSemanticsNodes().isNotEmpty()
+        }
+        val scoped = barTitle()
+
+        compose.onNodeWithContentDescription("More options").performClick()
+        compose.waitForIdle()
+        if (compose.onAllNodesWithTag(HomeTestTags.REMOVE_SOURCE).fetchSemanticsNodes().isEmpty()) {
+            captures.failures += "gate 15: the Feed is scoped to “$scoped” and the overflow " +
+                "offers no way to remove it — S04/#29 is that shortcut"
+            return
+        }
+        // A dropdown item never receives an injected tap (NOTES.md, T22); the dialog's
+        // button is addressed the same way for the same reason.
+        compose.onNodeWithTag(HomeTestTags.REMOVE_SOURCE)
+            .performSemanticsAction(SemanticsActions.OnClick)
+        try {
+            compose.awaitInRealTime("the confirmation to open") {
+                compose.onAllNodesWithTag(SelectionTestTags.DELETE_CONFIRM)
+                    .fetchSemanticsNodes().isNotEmpty()
+            }
+        } catch (e: AssertionError) {
+            captures.failures += "gate 15: removing “$scoped” never asked for confirmation " +
+                "— ${e.message}"
+            return
+        }
+        compose.onNodeWithTag(SelectionTestTags.DELETE_CONFIRM)
+            .performSemanticsAction(SemanticsActions.OnClick)
+        try {
+            compose.awaitInRealTime("“$scoped” to be unsubscribed from") {
+                runBlocking { database.feedDao().getAll().size } < before
+            }
+        } catch (e: AssertionError) {
+            captures.failures += "gate 15: confirming left all $before sources subscribed " +
+                "— ${e.message}"
+            return
+        }
+
+        val after = runBlocking { database.feedDao().getAll().size }
+        val title = barTitle()
+        val rows = compose.onAllNodesWithTag(HomeTestTags.ENTRY).fetchSemanticsNodes().size
+        if (title == scoped) {
+            captures.failures += "gate 15: “$scoped” was unsubscribed from and the bar still " +
+                "reads its name — S03/#30 widens the scope the moment its source stops existing"
+        }
+        if (rows == 0) {
+            captures.failures += "gate 15: after removing “$scoped” the Feed is empty with " +
+                "$after sources still subscribed — that is #30, exactly as it was reported"
+        }
+        captures.removal += "  removed “$scoped” from the overflow of the Feed it was " +
+            "scoping: $before sources became $after, the list widened to “$title” with " +
+            "$rows rows on screen and nothing tapped in between"
+    }
+
+    /** What the Feed's app bar currently reads, or "" when there is no bar on screen. */
+    private fun barTitle(): String = compose.onAllNodesWithTag(HomeTestTags.TITLE)
+        .fetchSemanticsNodes().firstOrNull()
+        ?.config?.getOrNull(SemanticsProperties.Text)?.joinToString { it.text }
+        .orEmpty()
+
     /** A drawer row, addressed by its label exactly as `DrawerMultiSelectTest` does. */
     private fun drawerRow(label: String) =
         compose.onAllNodesWithText(label).filterToOne(hasClickAction())
@@ -1876,7 +2074,12 @@ class LiveAcceptanceTest {
         report
     }
 
-    private class PasteReport(var summary: String, val title: String? = null) {
+    private class PasteReport(
+        var summary: String,
+        val title: String? = null,
+        /** The saved row itself (S12/#31): gate 14 asks three surfaces about this id. */
+        val entryId: Long? = null,
+    ) {
         val failures = mutableListOf<String>()
     }
 
@@ -1906,6 +2109,7 @@ class LiveAcceptanceTest {
         val report = PasteReport(
             "$label: “${saved.title}” saved, isSaved=${saved.isSaved}",
             title = saved.title,
+            entryId = saved.id,
         )
         if (!saved.isSaved) {
             report.failures += "gate 11: $label — the saved row is not flagged isSaved"
@@ -1966,6 +2170,220 @@ class LiveAcceptanceTest {
         }
         report.summary += "; “${backfilledItem.title}” reads through the same list query as " +
             "any other row, source “${backfilledItem.sourceTitle}”"
+        report
+    }
+
+    // ---- gate 13: a remembered word finds its article ---------------------------
+
+    private class SearchReport {
+        var stored = 0
+        var indexed = 0
+        var titleAsked = 0
+        var titleFound = 0
+        var pairAsked = 0
+        var pairFound = 0
+        var bodyAsked = 0
+        var bodyFound = 0
+        var readAsked = false
+        var readFound = false
+        var readTitle: String? = null
+
+        /** Every word asked and how many articles it returned, for [busiest] and the log. */
+        val asked = mutableListOf<Pair<String, Int>>()
+        val failures = mutableListOf<String>()
+
+        /**
+         * The word out of this corpus that returned the most articles — what the search
+         * shot types, so the surface is captured answering a real question with a real
+         * list rather than a single contrived hit.
+         */
+        fun busiest(): String? = asked.maxByOrNull { it.second }?.first
+
+        fun summary() = "$indexed of $stored stored articles are indexed; " +
+            "a headline word found its own article $titleFound/$titleAsked times, " +
+            "two headline words $pairFound/$pairAsked, a word from the body " +
+            "$bodyFound/$bodyAsked; a read article is still findable: " +
+            (if (!readAsked) "not asked" else "$readFound") +
+            (readTitle?.let { " (“${it.take(HEADLINE_ECHO)}”)" } ?: "") +
+            "\n  busiest words: " + asked.sortedByDescending { it.second }.take(BUSIEST_SHOWN)
+                .joinToString(", ") { "${it.first} ×${it.second}" }
+    }
+
+    /**
+     * S08/S09/#28, live: the index is not a table that happens to exist, it is the claim
+     * that anything Perch has stored can be found again. Three ways of asking it, all with
+     * words taken **out of the corpus that just arrived** rather than hardcoded — a fixed
+     * keyword would be testing one blog's editorial calendar, and would rot the first week
+     * that blog changed subject.
+     *
+     * 1. **Coverage.** Every stored article has an indexed row. S08 indexes on the write
+     *    path, so a shortfall here is not a slow index — it is a write that skipped one,
+     *    and it reads to the reader as an article that has simply vanished.
+     * 2. **Recall.** For one article per source: a word out of its own headline finds it,
+     *    and so do two of them together (the `AND` `FtsQuery` builds). Then, on a sample,
+     *    a word out of the *body* — the sentence you remember reading, which is the
+     *    difference between a search over titles and a search over articles.
+     * 3. **The read one.** `EntryQueries.SEARCH` carries no read filter on purpose: what a
+     *    reader hunts for is usually something they have already read. So one article is
+     *    marked read and asked for again.
+     *
+     * Words are chosen so that SQLite and the reader agree on where they end — see
+     * [keywordsOf]. Nothing here touches the network: the corpus is already local by now.
+     */
+    private fun theIndexAnswersAReadersQuestion(): SearchReport = runBlocking {
+        val report = SearchReport()
+        report.stored = database.entryDao().countAll()
+        report.indexed = indexedRows()
+        if (report.indexed < report.stored) {
+            report.failures += "gate 13: the pull stored ${report.stored} articles and the " +
+                "index holds ${report.indexed} — S08 indexes on the write path, so the " +
+                "missing ${report.stored - report.indexed} cannot be found by any word at all"
+        }
+
+        // One article per source, so a prolific feed cannot be the whole of the evidence.
+        val perSource = database.feedDao().getAll().mapNotNull { feed ->
+            database.entryDao().observeByFeed(feed.id).first()
+                .firstOrNull { keywordsOf(it.title).isNotEmpty() }
+        }
+        if (perSource.isEmpty()) {
+            report.failures += "gate 13: nothing was pulled, so there was nothing to look for"
+            return@runBlocking report
+        }
+
+        for (entry in perSource) {
+            val words = keywordsOf(entry.title).sortedByDescending { it.length }
+            val word = words.first()
+            report.titleAsked++
+            val hits = container.entries.searchEntries(word).first()
+            report.asked += word to hits.size
+            if (hits.any { it.id == entry.id }) {
+                report.titleFound++
+            } else {
+                report.failures += "gate 13: “$word”, a word out of the headline " +
+                    "“${entry.title.take(HEADLINE_ECHO)}”, returned ${hits.size} articles " +
+                    "and not that one"
+            }
+            if (words.size >= 2) {
+                val pair = words.take(2)
+                val typed = pair.joinToString(" ")
+                report.pairAsked++
+                val both = container.entries.searchEntries(typed).first()
+                if (both.any { it.id == entry.id }) {
+                    report.pairFound++
+                } else {
+                    report.failures += "gate 13: “$typed” — two words out of the same " +
+                        "headline “${entry.title.take(HEADLINE_ECHO)}” — returned " +
+                        "${both.size} articles and not that one"
+                }
+            }
+        }
+
+        val bodies = perSource.mapNotNull { entry ->
+            val body = HtmlSanitizer.flatten(entry.contentHtml) ?: entry.summary
+            val titleWords = keywordsOf(entry.title).toSet()
+            val word = keywordsOf(body.orEmpty(), BODY_KEYWORD_CHARS)
+                .filterNot { it in titleWords }
+                .maxByOrNull { it.length }
+            word?.let { entry to it }
+        }.take(BODY_SAMPLE)
+        for ((entry, word) in bodies) {
+            report.bodyAsked++
+            val hits = container.entries.searchEntries(word).first()
+            report.asked += word to hits.size
+            if (hits.any { it.id == entry.id }) {
+                report.bodyFound++
+            } else {
+                report.failures += "gate 13: “$word”, a word out of the *body* of " +
+                    "“${entry.title.take(HEADLINE_ECHO)}” and not out of its headline, " +
+                    "returned ${hits.size} articles and not that one"
+            }
+        }
+
+        val read = perSource.first()
+        val readWord = keywordsOf(read.title).maxByOrNull { it.length }
+        if (readWord != null) {
+            report.readAsked = true
+            report.readTitle = read.title
+            container.entries.setRead(read.id, isRead = true)
+            report.readFound = container.entries.searchEntries(readWord).first()
+                .any { it.id == read.id }
+            if (!report.readFound) {
+                report.failures += "gate 13: “${read.title.take(HEADLINE_ECHO)}” stopped " +
+                    "answering to “$readWord” once it was read — search carries no read " +
+                    "filter (EntryQueries.SEARCH), because a read article is what you hunt for"
+            }
+        }
+        report
+    }
+
+    /** How many rows the FTS table holds — there is no DAO for it, and there should not be. */
+    private fun indexedRows(): Int =
+        database.query("SELECT count(*) FROM entries_fts", emptyArray()).use { cursor ->
+            if (cursor.moveToFirst()) cursor.getInt(0) else 0
+        }
+
+    /**
+     * The words in [text] that a reader could type and SQLite would tokenise the same way.
+     *
+     * Whitespace-delimited and ASCII-lettered on purpose, and not a general tokenizer: FTS4's
+     * `simple` tokenizer treats every byte above 0x7F as *part of* a word, while `FtsQuery`
+     * splits on everything Kotlin does not call a letter or a digit. So an em dash between
+     * two words is a separator to the reader and to the query and not to the index, and a
+     * keyword taken from one side of it would fail this gate over typography rather than
+     * over search. Words either side of a plain space are the ones all three agree on.
+     */
+    private fun keywordsOf(text: String, min: Int = KEYWORD_CHARS): List<String> = text
+        .split(' ', '\n', '\t')
+        .filter { word -> word.length >= min && word.all { it in 'a'..'z' || it in 'A'..'Z' } }
+        .map { it.lowercase() }
+        .distinct()
+
+    // ---- gate 14: where a pasted link lives -------------------------------------
+
+    private class PasteVisibilityReport(var summary: String) {
+        val failures = mutableListOf<String>()
+    }
+
+    /**
+     * S01/#31, live: a pasted link is on To-Read **and nowhere else in the stream** — the
+     * reader's complaint was finding it in the Feed among articles they subscribe to — but
+     * it is still a stored article, so it must remain findable. Three surfaces, one row:
+     * gate 11's own pasted article, asked of the queue, of the Feed's own list query, and
+     * of the index (PLAN-9 §0.3, and [dev.mkiros.perch.data.db.EntryQueries.SEARCH]'s
+     * deliberate absence of `isSynthetic = 0`).
+     */
+    private fun thePastedLinkIsFindableButNotInTheStream(
+        paste: PasteReport,
+    ): PasteVisibilityReport = runBlocking {
+        val label = "issue #31's pasted link"
+        val id = paste.entryId
+            ?: return@runBlocking PasteVisibilityReport(
+                "$label: gate 11 saved nothing, so there was no pasted row to look for — " +
+                    "reported there, not gated twice",
+            )
+        val report = PasteVisibilityReport("")
+        val queue = container.entries.observeSaved().first()
+        val stream = container.entries.observeEntries(includeRead = true).first()
+        if (queue.none { it.id == id }) {
+            report.failures += "gate 14: $label — “${paste.title}” is not on To-Read, " +
+                "which is the one list it is supposed to be on"
+        }
+        if (stream.any { it.id == id }) {
+            report.failures += "gate 14: $label — “${paste.title}” is in the Feed's own " +
+                "list query among ${stream.size} subscribed articles; #31 is that a pasted " +
+                "link is not feed traffic"
+        }
+        val word = keywordsOf(paste.title.orEmpty()).maxByOrNull { it.length }
+        val hits = word?.let { container.entries.searchEntries(it).first() }
+        if (word != null && hits?.any { it.id == id } != true) {
+            report.failures += "gate 14: $label — “$word”, a word out of its own title, " +
+                "returned ${hits?.size ?: 0} articles and not the pasted one; keeping it " +
+                "out of the stream is not keeping it out of the index"
+        }
+        report.summary = "$label: “${paste.title}” — on To-Read among ${queue.size} rows, " +
+            "absent from the Feed's ${stream.size}, " +
+            (word?.let { "found by “$it” among ${hits?.size ?: 0} results" }
+                ?: "no ASCII word in its title long enough to ask the index with")
         report
     }
 
@@ -2140,6 +2558,17 @@ class LiveAcceptanceTest {
 
         /** How far down the freshest sources [fileForTheShot] may look for its openers. */
         const val OPENER_POOL = 12
+
+        /**
+         * S12/#28 gate 13. Six characters is long enough that a headline reliably carries
+         * one and short enough that it is a word a reader would remember, not a compound
+         * they would never type; the body bar is higher because a body is long enough to
+         * offer a better one.
+         */
+        const val KEYWORD_CHARS = 6
+        const val BODY_KEYWORD_CHARS = 8
+        const val BODY_SAMPLE = 10
+        const val BUSIEST_SHOWN = 5
 
         const val SCREENSHOT_DIR = "build/perch-screenshots"
         const val HEADLINE_ECHO = 60

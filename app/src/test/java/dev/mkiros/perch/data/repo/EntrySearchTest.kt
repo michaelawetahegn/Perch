@@ -143,6 +143,29 @@ class EntrySearchTest {
         )
     }
 
+    /**
+     * PLAN-9 S12, found by live acceptance gate 13: two words a reader types have to find
+     * an article that never happens to contain the word *and*.
+     *
+     * The test above it passed for the wrong reason — its one matching article reads
+     * "Strava heatmaps **and** open source intelligence" — which is exactly how the defect
+     * survived S09. Every article in the fixture here is deliberately short and deliberately
+     * "and"-free, because that is the shape the live corpus failed on: a two-word search
+     * that quietly demanded a third word nobody typed.
+     */
+    @Test
+    fun `two words find an article that never says the word and`() = runTest {
+        val feedId = feeds.insert(feed("https://gijn.org/feed/"))
+        entries.upsertAll(
+            listOf(
+                entry(feedId, "a", title = "Creepy crawlies", contentHtml = "<p>Spiders, mostly.</p>"),
+                entry(feedId, "b", title = "Creepy stories", contentHtml = "<p>Ghosts, goblins.</p>"),
+            ),
+        )
+
+        assertThat(titles(repo.searchEntries("creepy crawlies"))).containsExactly("Creepy crawlies")
+    }
+
     @Test
     fun `results are newest first, like every other list`() = runTest {
         val feedId = feeds.insert(feed("https://gijn.org/feed/"))
