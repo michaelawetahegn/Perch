@@ -34,47 +34,44 @@ is expected to end in a commit and a push; that is the only way progress exists 
 So: go to the cold start below, do the single next unchecked task, verify it, commit, push,
 close its issue, stop.
 
-## The active plan is `PLAN-9.md`
+## The active plan is `PLAN-10.md`
 
 Finished plans live in `docs/plans/` — v0.1 (T01–T32), v0.2 (U01–U16), v0.3 (V01–V16),
-v0.4 (W01–W12) and all four of v0.5's slices (X01–X04, Y01–Y05, Z01–Z05, R00–R03) are
-**complete, frozen, and history only**; never reopen a box in any of them. The **active** plan
-is the one at the repository root, and all new work goes in it. Wherever these standing orders
-say "PLAN.md", read the active plan.
+v0.4 (W01–W12), all four of v0.5's slices (X01–X04, Y01–Y05, Z01–Z05, R00–R03) and v0.6
+(S01–S13) are **complete, frozen, and history only**; never reopen a box in any of them. The
+**active** plan is the one at the repository root, and all new work goes in it. Wherever these
+standing orders say "PLAN.md", read the active plan.
 
 **Each plan's §0 is authoritative for its own version** and deliberately overrides older
 text in SPEC.md, DESIGN.md and earlier plans. Where they conflict, the newest §0 wins and
 the task updates the older doc in the same commit — do not "fix" §0 to match the older text.
-`docs/plans/PLAN-4-v0.4.md` §0, `docs/plans/PLAN-6-v0.5-slice2.md` §0 and
-`docs/plans/PLAN-7-v0.5-slice3.md` §0 still bind for everything `PLAN-9.md` §0 does not
-restate.
+`docs/plans/PLAN-4-v0.4.md` §0, `docs/plans/PLAN-6-v0.5-slice2.md` §0,
+`docs/plans/PLAN-7-v0.5-slice3.md` §0 and `docs/plans/PLAN-9-v0.6.md` §0 still bind for
+everything `PLAN-10.md` §0 does not restate.
 
-**v0.6 is one plan, not four.** v0.5 was split into four sequential slices because it was three
-large features plus a release; v0.6 is a batch of reader-filed issues, so `PLAN-9.md` carries
-all of it — S01–S10 the work, S11 the version-wide review, S12 live acceptance, **S13 alone
-bumps the version and cuts the release**, and only after S11 and S12 have passed.
+**v0.6.1 is a tech-debt pass, not a feature batch.** The human's brief: leave the code simpler,
+cleaner and better tested, **with behaviour unchanged** except where a failing test demonstrates
+a bug. `PLAN-10.md` carries all of it — D01–D26 the work (one GitHub issue each, #34–#59),
+D27 a bounded re-survey that files what is left as issues, D28 the version-wide review, D29
+live acceptance, **D30 alone bumps the version and cuts the release**, and only after D28 and
+D29 have passed. **Prefer deleting to adding.** An improvement that needs a behaviour change to
+justify it goes into `TECH_DEBT.md`, not into the code.
 
 **The hard constraint the human set in v0.5 still binds: no site-specific parsing.** The parser
 must stay generalised and extensible, so that supporting one site means similar sites parse
-too. `PLAN-9.md` §0.2 restates it with the grep gate that enforces it.
+too. `PLAN-10.md` §0.2 restates it with the grep gate that enforces it.
 
-**A `PLAN-9.md` task that names a GitHub issue is not done until that issue is closed** with
+**A `PLAN-10.md` task that names a GitHub issue is not done until that issue is closed** with
 a comment naming the commit and how it was verified — read it (`gh issue view N --json body`)
-before starting, since the body carries the reader's own words, plus diagnoses and traps the
-plan does not repeat. **But `PLAN-9.md` §0 outranks an issue body where they disagree**: §0.3,
-§0.5 and §0.7 settle root causes and correct estimates that the issues themselves got wrong,
-and #28's three tasks share one issue that only S10 closes. S11–S13 are process tasks whose
-acceptance lives in the plan alone. Either way the commit is **pushed** (`git push`) so the
-human can watch from the issue tracker while AFK.
-
-**A bug is not fixed until a failing test reproduced it.** If it cannot be reproduced, do
-not guess a fix: comment the finding on the issue, log it in NOTES.md, mark the box
-`- [BLOCKED: cannot reproduce — …]` and move on. A speculative fix looks closed and is not.
+before starting. **But `PLAN-10.md` §0 outranks an issue body where they disagree**: §0.5
+settles the four bugs' root causes and fix shapes, §0.6 settles where every deduplicated
+thing lands. D27–D30 are process tasks whose acceptance lives in the plan alone. Either way
+the commit is **pushed** (`git push`) so the human can watch from the issue tracker while AFK.
 
 ## Cold start (keep it under ~3k tokens)
 
-1. Read `PLAN-9.md`, `NOTES.md`, and `git log --oneline -15`. Nothing else yet.
-2. Find the **single next unchecked `[ ]` task** in PLAN-9.md. That is your entire job
+1. Read `PLAN-10.md`, `NOTES.md`, and `git log --oneline -15`. Nothing else yet.
+2. Find the **single next unchecked `[ ]` task** in PLAN-10.md. That is your entire job
    this session. Read its GitHub issue.
 3. Read only the files that task touches. **Never read the whole repo.** Consult
    `SPEC.md` / `DESIGN.md` only for the sections the task needs.
