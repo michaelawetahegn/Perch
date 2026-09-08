@@ -12,6 +12,7 @@ import dev.mkiros.perch.data.parse.PageFetcher
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -220,6 +221,26 @@ class BackfillRepositoryTest {
         assertThat(entries.countAll()).isEqualTo(2)
     }
 
+    /**
+     * The twin of `FeedRepositoryTest`'s cancellation rule. `runCatching` around one page's
+     * fetch used to swallow the cancellation, count the page as failed and go on fetching
+     * the rest of the archive; a reader who asked Perch to stop gets to keep what landed
+     * (§0.3), but the cancellation itself belongs to the caller.
+     */
+    @Test
+    fun `a cancellation raised by a page fetch reaches the caller instead of counting as a failed page`() = runTest {
+        val feedId = addFeed(entryCount = 0, oldest = null, siteUrl = SITE.trimEnd('/'))
+        fetcher.pages[SITE + "sitemap.xml"] = sitemapOf(POST_1, POST_2)
+        fetcher.pages[POST_1] = article("First", "2020-01-01T00:00:00Z")
+        fetcher.pages[POST_2] = article("Second", "2020-02-02T00:00:00Z")
+        fetcher.cancelOn = POST_1
+
+        val thrown = runCatching { repo().run(feedId) }.exceptionOrNull()
+
+        assertThat(thrown).isInstanceOf(CancellationException::class.java)
+        assertThat(entries.countAll()).isEqualTo(0)
+    }
+
     @Test
     fun `the page cap stops discovery from fetching an unbounded archive`() = runTest {
         val feedId = addFeed(entryCount = 0, oldest = null, siteUrl = SITE.trimEnd('/'))
@@ -340,8 +361,13 @@ class BackfillRepositoryTest {
 
     private class FakeFetcher(val pages: MutableMap<String, FetchedPage> = mutableMapOf()) : PageFetcher {
         val requested = mutableListOf<String>()
+
+        /** The one URL whose fetch raises a cancellation instead of answering. */
+        var cancelOn: String? = null
+
         override suspend fun fetch(url: String): FetchedPage? {
             requested += url
+            if (url == cancelOn) throw CancellationException("the backfill was cancelled")
             val page = pages[url] ?: return null
             // Fixtures below don't know their own URL yet when they're built (they're
             // stored by URL as the map key) — stamp it on here so guid = final URL holds.

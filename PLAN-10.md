@@ -268,7 +268,7 @@ No task in this plan takes a device screenshot.
         release = **1854** (floor 1848). `upsertAll` untouched; the flag is set on the re-read
         row via the existing `EntryDao.setSaved`.
 
-- [ ] **D05 — A cancelled refresh is not a failed source. TDD. Issue #38.**
+- [x] **D05 — A cancelled refresh is not a failed source. TDD. Issue #38.**
       `gh issue view 38 --json body`. §0.5: `FeedRepository.kt:318`, `BackfillRepository.kt:117`;
       the precedent is `RefreshWorker.kt:37`. RED in `FeedRepositoryTest.kt` (it already uses
       `MockWebServer`; a `Dispatcher` that blocks on a latch holds the request open) and a twin
@@ -277,6 +277,18 @@ No task in this plan takes a device screenshot.
         attempts, mark BLOCKED with the diagnosis — do not ship the rethrow without its RED.
       - Done: both REDs shown, both GREEN; `./gradlew test` green and growing; issue #38 closed.
       - Rung: unit
+      - **Done 2026-09-07.** The plan's suggested RED — `MockWebServer` holding the response
+        open, `job.cancel()` mid-fetch — **passes on the unfixed code**: Room refuses a write
+        on a cancelled coroutine, so `recordFailure` throws before it can store anything. It is
+        kept as `a refresh cancelled mid-fetch is not recorded as the source failing` (it pins
+        the end-to-end property), and the RED that lands delivers the cancellation *from* the
+        fetch with the caller alive — an OkHttp interceptor that throws `CancellationException`
+        for the feed, `FakeFetcher.cancelOn` for the archive. RED: `expected instance of:
+        java.util.concurrent.CancellationException / but was: null`, `FeedRepositoryTest.kt:347`
+        and `BackfillRepositoryTest.kt:240`, `48 tests completed, 2 failed`. GREEN: same command
+        `BUILD SUCCESSFUL`. `./gradlew test` **BUILD SUCCESSFUL**, 1087 debug + 773 release =
+        **1860** (floor 1848). Fix is `.onFailure { if (it is CancellationException) throw it }`
+        in both `runCatching` blocks, per §0.5.
 
 - [ ] **D06 — A throw in a ViewModel action becomes a message, not a crash. TDD. Issue #39.**
       `gh issue view 39 --json body`. §0.5: `SaveLinkViewModel.kt:70-83` and

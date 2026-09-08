@@ -8,8 +8,12 @@ import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.net.FeedFetcher
 import java.io.File
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import okhttp3.OkHttpClient
@@ -287,6 +291,63 @@ class FeedRepositoryTest {
         val recovered = feeds.findById(id)!!
         assertThat(recovered.lastError).isNull()
         assertThat(recovered.consecutiveFailures).isEqualTo(0)
+    }
+
+    @Test
+    fun `a refresh cancelled mid-fetch is not recorded as the source failing`() = runBlocking {
+        val requestArrived = CountDownLatch(1)
+        val holdResponse = CountDownLatch(1)
+        server.dispatcher = object : Dispatcher() {
+            override fun dispatch(request: RecordedRequest): MockResponse {
+                requestArrived.countDown()
+                holdResponse.await(HOLD_SECONDS, TimeUnit.SECONDS)
+                return ok(rss(item("a1")))
+            }
+        }
+        val id = addFeed()
+
+        var outcome: FeedRefreshOutcome? = null
+        val refresh = launch(Dispatchers.IO) { outcome = repo.refresh(id) }
+        assertThat(requestArrived.await(HOLD_SECONDS, TimeUnit.SECONDS)).isTrue()
+        refresh.cancel()
+        holdResponse.countDown()
+        refresh.join()
+
+        // A reader who walked away is not a sick source: the cancellation is the caller's
+        // to see, and the health columns stay exactly as they were.
+        assertThat(outcome).isNull()
+        val feed = feeds.findById(id)!!
+        assertThat(feed.lastError).isNull()
+        assertThat(feed.consecutiveFailures).isEqualTo(0)
+        Unit
+    }
+
+    /**
+     * The same rule where the damage is actually reachable. Cancelling the whole job is
+     * survivable by accident — Room refuses the write on a cancelled coroutine — so the
+     * bug only shows when the `CancellationException` comes up out of the fetch while the
+     * caller is still alive to record a failure against.
+     */
+    @Test
+    fun `a cancellation raised by the fetch is not written to the source's health columns`() = runTest {
+        val cancelling = FeedRepository(
+            feedDao = feeds,
+            entryDao = entries,
+            fetcher = FeedFetcher(
+                OkHttpClient.Builder()
+                    .addInterceptor { throw CancellationException("the refresh was cancelled") }
+                    .build(),
+            ),
+            clock = Clock.fixed(Instant.ofEpochMilli(now), ZoneOffset.UTC),
+        )
+        val id = addFeed()
+
+        val thrown = runCatching { cancelling.refresh(id) }.exceptionOrNull()
+
+        assertThat(thrown).isInstanceOf(CancellationException::class.java)
+        val feed = feeds.findById(id)!!
+        assertThat(feed.lastError).isNull()
+        assertThat(feed.consecutiveFailures).isEqualTo(0)
     }
 
     @Test
@@ -685,5 +746,10 @@ class FeedRepositoryTest {
             dir = dir.parentFile
         }
         error("fixtures/snapshots/$name not found")
+    }
+
+    private companion object {
+        /** Generous enough that a slow machine never trips it, short enough to fail fast. */
+        const val HOLD_SECONDS = 5L
     }
 }

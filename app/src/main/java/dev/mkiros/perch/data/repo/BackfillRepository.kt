@@ -14,6 +14,7 @@ import dev.mkiros.perch.data.parse.LeadImage
 import dev.mkiros.perch.data.parse.PageFetcher
 import java.time.Clock
 import java.time.Instant
+import kotlinx.coroutines.CancellationException
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 
@@ -114,7 +115,12 @@ class BackfillRepository(
                 skipped++
             } else {
                 if (index > 0) delay(politeDelayMillis)
-                if (runCatching { fetchAndStore(feedId, post) }.getOrDefault(false)) stored++ else failed++
+                val ok = runCatching { fetchAndStore(feedId, post) }
+                    // A cancelled fetch is the reader stopping us, not a page that failed:
+                    // it belongs to the caller, not to this run's tally.
+                    .onFailure { if (it is CancellationException) throw it }
+                    .getOrDefault(false)
+                if (ok) stored++ else failed++
             }
             onProgress(index + 1, plan.toFetch.size)
         }

@@ -16,6 +16,7 @@ import dev.mkiros.perch.data.parse.ParsedEntry
 import dev.mkiros.perch.data.parse.ParsedFeed
 import java.time.Clock
 import java.time.Duration
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -309,10 +310,16 @@ class FeedRepository(
      * One source's turn. Nothing thrown from here escapes: an unexpected exception is as
      * much a per-source failure as a 500 is, and a refresh pass that dies on one feed's
      * surprise is the bug this guards against.
+     *
+     * A cancellation is the exception, in both senses. It is the caller giving up, not the
+     * source misbehaving, so it goes back up the stack the way [RefreshWorker] already
+     * sends it on — recording it would put a healthy feed on the sick floor after five
+     * refreshes nobody waited for.
      */
     private suspend fun refreshOne(feed: FeedEntity): FeedRefreshOutcome {
         val startedAt = clock.millis()
         val outcome = runCatching { fetchAndStore(feed, startedAt) }
+            .onFailure { if (it is CancellationException) throw it }
             .getOrElse { FeedRefreshOutcome.Failed(it.message ?: it.javaClass.simpleName) }
         if (outcome is FeedRefreshOutcome.Failed) recordFailure(feed, outcome.message, startedAt)
         return outcome
