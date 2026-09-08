@@ -686,7 +686,7 @@ No task in this plan takes a device screenshot.
       - Done: `./gradlew test` green; issue #59 closed.
       - Rung: unit
 
-- [ ] **D27 — The survey again, bounded: what is left becomes issues, not code.**
+- [x] **D27 — The survey again, bounded: what is left becomes issues, not code.**
       Re-run the six surveys of this plan's preamble against the tree as it now is — duplicated
       logic (data and UI), dead code, latent bugs and untested paths, test debt, architecture
       and doc drift — using greps, not a full read. **Write no production code.** For each
