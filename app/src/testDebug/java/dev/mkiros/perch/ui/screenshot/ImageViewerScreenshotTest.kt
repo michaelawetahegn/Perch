@@ -1,11 +1,7 @@
 package dev.mkiros.perch.ui.screenshot
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Canvas
 import android.graphics.Paint
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -24,9 +20,6 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.test.core.app.ApplicationProvider
 import coil.Coil
-import coil.ImageLoader
-import coil.map.Mapper
-import coil.request.Options
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.parse.ArticleBlock
 import dev.mkiros.perch.data.parse.RichSpan
@@ -39,7 +32,6 @@ import dev.mkiros.perch.ui.article.zoom.ZoomedImage
 import dev.mkiros.perch.ui.theme.Dimens
 import dev.mkiros.perch.ui.theme.PerchTheme
 import dev.mkiros.perch.ui.theme.ThemeMode
-import kotlinx.coroutines.Dispatchers
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -70,15 +62,7 @@ class ImageViewerScreenshotTest {
     @Before
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        Coil.setImageLoader(
-            ImageLoader.Builder(context)
-                .components { add(Schematic(context)) }
-                .dispatcher(Dispatchers.Main.immediate)
-                .fetcherDispatcher(Dispatchers.Main.immediate)
-                .decoderDispatcher(Dispatchers.Main.immediate)
-                .transformationDispatcher(Dispatchers.Main.immediate)
-                .build(),
-        )
+        stubImages(context) { url -> if (url == IMAGE_URL) schematic() else null }
     }
 
     @After
@@ -188,45 +172,35 @@ class ImageViewerScreenshotTest {
     }
 
     /** A pale wide schematic, drawn rather than downloaded — Coil never leaves the JVM. */
-    private class Schematic(private val context: Context) : Mapper<String, Drawable> {
-        override fun map(data: String, options: Options): Drawable? {
-            if (data != IMAGE_URL) return null
-            val bitmap = Bitmap.createBitmap(WIDTH, HEIGHT, Bitmap.Config.ARGB_8888)
-            val canvas = Canvas(bitmap)
-            val paint = Paint().apply { isAntiAlias = true }
+    private fun schematic() = StubImage(WIDTH, HEIGHT) {
+        val paint = Paint().apply { isAntiAlias = true }
 
-            canvas.drawColor(PAPER)
-            paint.color = INK
-            paint.strokeWidth = STROKE
-            var y = HEIGHT / 5f
-            while (y < HEIGHT) {
-                canvas.drawLine(MARGIN, y, WIDTH - MARGIN, y, paint)
-                y += HEIGHT / 5f
-            }
-            paint.color = ACCENT
-            canvas.drawRect(MARGIN, MARGIN, WIDTH / 3f, HEIGHT / 3f, paint)
-            paint.color = INK
-            paint.textSize = TEXT
-            canvas.drawText("wake_up_process()", MARGIN * 2f, HEIGHT / 2f, paint)
-            canvas.drawText("try_to_wake_up()", MARGIN * 2f, HEIGHT / 2f + TEXT * 2f, paint)
-
-            return BitmapDrawable(context.resources, bitmap)
+        drawColor(PAPER)
+        paint.color = INK
+        paint.strokeWidth = STROKE
+        var y = HEIGHT / 5f
+        while (y < HEIGHT) {
+            drawLine(MARGIN, y, WIDTH - MARGIN, y, paint)
+            y += HEIGHT / 5f
         }
-
-        private companion object {
-            const val WIDTH = 1600
-            const val HEIGHT = 900
-            const val MARGIN = 60f
-            const val STROKE = 4f
-            const val TEXT = 64f
-            const val PAPER = 0xFFF4F1EA.toInt()
-            const val INK = 0xFF2C3330.toInt()
-            const val ACCENT = 0xFFE0A33A.toInt()
-        }
+        paint.color = ACCENT
+        drawRect(MARGIN, MARGIN, WIDTH / 3f, HEIGHT / 3f, paint)
+        paint.color = INK
+        paint.textSize = TEXT
+        drawText("wake_up_process()", MARGIN * 2f, HEIGHT / 2f, paint)
+        drawText("try_to_wake_up()", MARGIN * 2f, HEIGHT / 2f + TEXT * 2f, paint)
     }
 
     private companion object {
         const val IMAGE_URL = "https://example.com/run-queue.png"
         const val MIN_COLOURS = 8
+        const val WIDTH = 1600
+        const val HEIGHT = 900
+        const val MARGIN = 60f
+        const val STROKE = 4f
+        const val TEXT = 64f
+        const val PAPER = 0xFFF4F1EA.toInt()
+        const val INK = 0xFF2C3330.toInt()
+        const val ACCENT = 0xFFE0A33A.toInt()
     }
 }

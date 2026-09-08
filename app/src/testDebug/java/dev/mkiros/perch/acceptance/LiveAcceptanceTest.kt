@@ -1,9 +1,6 @@
 package dev.mkiros.perch.acceptance
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.key
@@ -31,9 +28,6 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.paging.PagingSource
 import androidx.test.core.app.ApplicationProvider
 import coil.Coil
-import coil.ImageLoader
-import coil.map.Mapper
-import coil.request.Options
 import com.google.common.truth.Truth.assertWithMessage
 import dev.mkiros.perch.data.archive.ArchiveDiscovery
 import dev.mkiros.perch.data.db.PerchDatabase
@@ -70,7 +64,9 @@ import dev.mkiros.perch.ui.nav.NavTestTags
 import dev.mkiros.perch.ui.nav.PerchNavHost
 import dev.mkiros.perch.ui.nav.PerchTab
 import dev.mkiros.perch.ui.screenshot.Screenshots
+import dev.mkiros.perch.ui.screenshot.StubImage
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
+import dev.mkiros.perch.ui.screenshot.stubImages
 import dev.mkiros.perch.ui.search.SearchTestTags
 import dev.mkiros.perch.ui.theme.PerchTheme
 import dev.mkiros.perch.ui.theme.ThemeMode
@@ -81,7 +77,6 @@ import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZoneOffset
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -197,15 +192,8 @@ class LiveAcceptanceTest {
         // Gate 7's list shots ride on the same mapper, which is what makes them *mixed*:
         // a row whose entry resolved an `imageUrl` gets the slab, a row whose entry did
         // not still gets U08's outline placeholder.
-        Coil.setImageLoader(
-            ImageLoader.Builder(context)
-                .components { add(FlatImages(context)) }
-                .dispatcher(Dispatchers.Main.immediate)
-                .fetcherDispatcher(Dispatchers.Main.immediate)
-                .decoderDispatcher(Dispatchers.Main.immediate)
-                .transformationDispatcher(Dispatchers.Main.immediate)
-                .build(),
-        )
+        // Every remote image becomes one flat, fixed-shape placeholder.
+        stubImages(context) { StubImage(IMAGE_WIDTH, IMAGE_HEIGHT, colour = PLACEHOLDER) }
     }
 
     @After
@@ -2406,24 +2394,13 @@ class LiveAcceptanceTest {
     /** Straight to stdout: these counts are what the commit message has to quote. */
     private fun report(gate: String, body: String) = println("\n$gate\n$body")
 
-    /** Every remote image becomes one flat, fixed-shape placeholder. See [setUp]. */
-    private class FlatImages(private val context: Context) : Mapper<String, Drawable> {
-        override fun map(data: String, options: Options): Drawable = BitmapDrawable(
-            context.resources,
-            Bitmap.createBitmap(WIDTH, HEIGHT, Bitmap.Config.ARGB_8888).apply {
-                eraseColor(PLACEHOLDER)
-            },
-        )
-
-        private companion object {
-            const val WIDTH = 1200
-            const val HEIGHT = 675
-            const val PLACEHOLDER = 0xFF8E9A94.toInt()
-        }
-    }
-
     private companion object {
         const val LIVE_PROPERTY = "perch.live"
+
+        /** The flat placeholder every remote image becomes. See `setUp`. */
+        const val IMAGE_WIDTH = 1200
+        const val IMAGE_HEIGHT = 675
+        const val PLACEHOLDER = 0xFF8E9A94.toInt()
 
         /**
          * PLAN-3 V12: sources in `fixtures/feeds.txt` that are known not to pull, and why.

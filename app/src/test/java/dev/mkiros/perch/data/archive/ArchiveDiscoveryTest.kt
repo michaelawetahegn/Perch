@@ -2,7 +2,7 @@ package dev.mkiros.perch.data.archive
 
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.parse.FetchedPage
-import dev.mkiros.perch.data.parse.PageFetcher
+import dev.mkiros.perch.support.MapPageFetcher
 import java.io.ByteArrayOutputStream
 import java.time.Instant
 import java.util.zip.GZIPOutputStream
@@ -21,7 +21,7 @@ class ArchiveDiscoveryTest {
 
     @Test
     fun `reads a flat sitemap into posts with their lastmod dates`() = runTest {
-        val fetcher = FakeFetcher(
+        val fetcher = MapPageFetcher(
             pages = mapOf(SITE + "sitemap.xml" to xml(FLAT_SITEMAP)),
         )
         val discovery = ArchiveDiscovery(fetcher)
@@ -36,7 +36,7 @@ class ArchiveDiscoveryTest {
 
     @Test
     fun `recurses into a sitemap index and collects both children`() = runTest {
-        val fetcher = FakeFetcher(
+        val fetcher = MapPageFetcher(
             pages = mapOf(
                 SITE + "sitemap.xml" to xml(SITEMAP_INDEX),
                 "https://example.com/sitemap-1.xml" to xml(oneUrlSitemap("https://example.com/2026/01/02/post-one")),
@@ -55,7 +55,7 @@ class ArchiveDiscoveryTest {
 
     @Test
     fun `follows robots-txt to a sitemap at a non-default path`() = runTest {
-        val fetcher = FakeFetcher(
+        val fetcher = MapPageFetcher(
             pages = mapOf(
                 SITE + "robots.txt" to text("User-agent: *\nDisallow: /private/\nSitemap: https://example.com/custom/sitemap-posts.xml\n"),
                 "https://example.com/custom/sitemap-posts.xml" to xml(oneUrlSitemap("https://example.com/2024/03/09/custom-post")),
@@ -72,7 +72,7 @@ class ArchiveDiscoveryTest {
     @Test
     fun `ungzips a gzipped sitemap`() = runTest {
         val gzUrl = "https://example.com/sitemap.xml.gz"
-        val fetcher = FakeFetcher(
+        val fetcher = MapPageFetcher(
             pages = mapOf(
                 SITE + "robots.txt" to text("Sitemap: $gzUrl\n"),
                 gzUrl to FetchedPage(
@@ -91,7 +91,7 @@ class ArchiveDiscoveryTest {
 
     @Test
     fun `returns nothing rather than throwing for a site with no archive at all`() = runTest {
-        val discovery = ArchiveDiscovery(FakeFetcher())
+        val discovery = ArchiveDiscovery(MapPageFetcher())
 
         val posts = discovery.discover(SITE)
 
@@ -100,7 +100,7 @@ class ArchiveDiscoveryTest {
 
     @Test
     fun `does not mistake a tag or page URL for a post`() = runTest {
-        val fetcher = FakeFetcher(
+        val fetcher = MapPageFetcher(
             pages = mapOf(SITE + "sitemap.xml" to xml(MIXED_SITEMAP)),
         )
         val discovery = ArchiveDiscovery(fetcher)
@@ -112,7 +112,7 @@ class ArchiveDiscoveryTest {
 
     @Test
     fun `learns a posts-slug shape from the feed and matches sitemap URLs with the same shape`() = runTest {
-        val fetcher = FakeFetcher(
+        val fetcher = MapPageFetcher(
             pages = mapOf(SITE + "sitemap.xml" to xml(POSTS_SLUG_SITEMAP)),
         )
         val discovery = ArchiveDiscovery(fetcher)
@@ -129,7 +129,7 @@ class ArchiveDiscoveryTest {
 
     @Test
     fun `learns a bare-slug shape from the feed and still rejects a differently-shaped tag URL`() = runTest {
-        val fetcher = FakeFetcher(
+        val fetcher = MapPageFetcher(
             pages = mapOf(SITE + "sitemap.xml" to xml(BARE_SLUG_SITEMAP)),
         )
         val discovery = ArchiveDiscovery(fetcher)
@@ -148,7 +148,7 @@ class ArchiveDiscoveryTest {
     fun `follows RFC 5005 prev-archive from the feed and never touches robots or sitemaps`() = runTest {
         val page2 = "https://example.com/feed?page=2"
         val page3 = "https://example.com/feed?page=3"
-        val fetcher = FakeFetcher(
+        val fetcher = MapPageFetcher(
             pages = mapOf(
                 page2 to xml(archivedFeedPage(entryUrl = "https://example.com/2026/01/01/older", nextArchive = page3), finalUrl = page2),
                 page3 to xml(archivedFeedPage(entryUrl = "https://example.com/2025/12/01/oldest", nextArchive = null), finalUrl = page3),
@@ -167,15 +167,6 @@ class ArchiveDiscoveryTest {
     }
 
     // -- fixtures -------------------------------------------------------------------
-
-    private class FakeFetcher(private val pages: Map<String, FetchedPage> = emptyMap()) : PageFetcher {
-        val requested = mutableListOf<String>()
-
-        override suspend fun fetch(url: String): FetchedPage? {
-            requested += url
-            return pages[url]
-        }
-    }
 
     private companion object {
         const val SITE = "https://example.com/"

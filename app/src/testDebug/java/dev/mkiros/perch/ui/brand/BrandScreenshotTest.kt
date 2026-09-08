@@ -3,8 +3,6 @@ package dev.mkiros.perch.ui.brand
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,9 +23,6 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.test.core.app.ApplicationProvider
 import coil.Coil
-import coil.ImageLoader
-import coil.map.Mapper
-import coil.request.Options
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.settings.SettingsStore
@@ -38,6 +33,8 @@ import dev.mkiros.perch.ui.home.HomeViewModel
 import dev.mkiros.perch.ui.home.SelectionTestTags
 import dev.mkiros.perch.ui.home.TimeFilter
 import dev.mkiros.perch.ui.screenshot.Screenshots
+import dev.mkiros.perch.ui.screenshot.StubImage
+import dev.mkiros.perch.ui.screenshot.stubImages
 import dev.mkiros.perch.ui.screenshot.showHome as showHomeScreen
 import dev.mkiros.perch.ui.theme.PerchTheme
 import dev.mkiros.perch.ui.theme.ThemeMode
@@ -45,7 +42,6 @@ import java.io.File
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Rule
@@ -233,26 +229,13 @@ class BrandScreenshotTest {
     /** T29's stand-in loader: the list behind the drawer draws rows, not placeholders. */
     private fun stubThumbnails() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        Coil.setImageLoader(
-            ImageLoader.Builder(context)
-                .components { add(FlatColourImages(context)) }
-                .dispatcher(Dispatchers.Main.immediate)
-                .fetcherDispatcher(Dispatchers.Main.immediate)
-                .decoderDispatcher(Dispatchers.Main.immediate)
-                .transformationDispatcher(Dispatchers.Main.immediate)
-                .build(),
-        )
-    }
-
-    private class FlatColourImages(private val context: Context) : Mapper<String, Drawable> {
-        override fun map(data: String, options: Options): Drawable {
-            val bitmap = Bitmap.createBitmap(320, 180, Bitmap.Config.ARGB_8888)
-            bitmap.eraseColor(0xFF5B7F6E.toInt())
-            return BitmapDrawable(context.resources, bitmap)
-        }
+        stubImages(context) { SLAB }
     }
 
     private companion object {
         const val PERCH = "Perch"
+
+        /** Every URL becomes this muted slab — a stand-in for a lead image, not a mock of one. */
+        val SLAB = StubImage(width = 320, height = 180, colour = 0xFF5B7F6E.toInt())
     }
 }

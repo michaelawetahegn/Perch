@@ -2,7 +2,6 @@ package dev.mkiros.perch.data.db
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.entity.FolderEntity
@@ -76,11 +75,7 @@ class PerchMigration1To2Test {
     }
 
     /** Builds the shipped v1 schema, fills it with rows a real install would have, closes it. */
-    private fun seedVersion1() {
-        file.parentFile?.mkdirs()
-        SQLiteDatabase.deleteDatabase(file)
-        val v1 = SQLiteDatabase.openOrCreateDatabase(file, null)
-        ExportedSchemas.createStatements(version = 1).forEach(v1::execSQL)
+    private fun seedVersion1() = ExportedSchemas.seedVersion(file, version = 1) { v1 ->
         v1.execSQL(
             """
             INSERT INTO feeds (id, feedUrl, siteUrl, title, customTitle, faviconUrl, etag,
@@ -107,8 +102,6 @@ class PerchMigration1To2Test {
                  NULL, 0, NULL, 0, 1000)
             """.trimIndent(),
         )
-        v1.version = 1
-        v1.close()
     }
 
     /**
@@ -117,8 +110,5 @@ class PerchMigration1To2Test {
      * columns, indices or foreign keys fails inside this call rather than on a phone.
      */
     private fun openAtCurrentVersion(): PerchDatabase =
-        Room.databaseBuilder(context, PerchDatabase::class.java, file.name)
-            .addMigrations(*PerchDatabase.MIGRATIONS)
-            .build()
-            .also { db = it }
+        ExportedSchemas.openAtCurrentVersion(context, file).also { db = it }
 }

@@ -10,7 +10,6 @@ import dev.mkiros.perch.data.db.EntryDao
 import dev.mkiros.perch.data.db.FeedDao
 import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.FeedEntity
-import dev.mkiros.perch.data.parse.FetchedPage
 import dev.mkiros.perch.data.parse.PageFetcher
 import dev.mkiros.perch.data.repo.BackfillRepository
 import java.time.Clock
@@ -35,8 +34,7 @@ class BackfillWorkerTest {
     private lateinit var db: PerchDatabase
     private lateinit var feeds: FeedDao
     private lateinit var entries: EntryDao
-    private lateinit var fetcher: FakeFetcher
-    private lateinit var backfill: BackfillRepository
+        private lateinit var backfill: BackfillRepository
 
     private val now = Instant.parse("2026-08-24T12:00:00Z").toEpochMilli()
 
@@ -45,11 +43,10 @@ class BackfillWorkerTest {
         db = PerchDatabase.inMemory(ApplicationProvider.getApplicationContext())
         feeds = db.feedDao()
         entries = db.entryDao()
-        fetcher = FakeFetcher()
         backfill = BackfillRepository(
             feedDao = feeds,
             entryDao = entries,
-            fetcher = fetcher,
+            fetcher = PageFetcher { null },
             clock = Clock.fixed(Instant.ofEpochMilli(now), ZoneOffset.UTC),
             delay = { },
         )
@@ -114,7 +111,4 @@ class BackfillWorkerTest {
         ),
     )
 
-    private class FakeFetcher : PageFetcher {
-        override suspend fun fetch(url: String): FetchedPage? = null
-    }
 }

@@ -24,6 +24,7 @@ import dev.mkiros.perch.data.parse.FetchedPage
 import dev.mkiros.perch.data.parse.PageFetcher
 import dev.mkiros.perch.data.repo.BackfillRepository
 import dev.mkiros.perch.data.settings.SettingsStore
+import dev.mkiros.perch.support.MapPageFetcher
 import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.support.testEntry
 import dev.mkiros.perch.support.testFeed
@@ -50,7 +51,7 @@ import org.robolectric.annotation.GraphicsMode
  * the drawer's selection bar, and §0.4's honest reach sentence.
  *
  * [FakeBackfillRunner] stands in for WorkManager throughout, the same way
- * [BackfillRepositoryTest]'s `FakeFetcher` stands in for the network — this suite never
+ * [MapPageFetcher] stands in for the network — this suite never
  * touches either. [BackfillRepository] itself is real, over a stubbed [PageFetcher], so
  * "earned" is [BackfillRepository.plan]'s own call, not a fake answer this test hands back.
  */
@@ -94,7 +95,7 @@ class BackfillOfferTest {
 
     @Test
     fun `the offer appears once a source is added and its archive holds materially more`() {
-        val fetcher = FakeFetcher()
+        val fetcher = MapPageFetcher()
         fetcher.pages[SITE + "sitemap.xml"] = sitemapOf(POST_1, POST_2, POST_3)
         val feedId = seedFeed(entryCount = 1)
 
@@ -110,7 +111,7 @@ class BackfillOfferTest {
 
     @Test
     fun `no offer for a handful of extra posts`() {
-        val fetcher = FakeFetcher()
+        val fetcher = MapPageFetcher()
         fetcher.pages[SITE + "sitemap.xml"] = sitemapOf(POST_1)
         val feedId = seedFeed(entryCount = 10)
 
@@ -125,7 +126,7 @@ class BackfillOfferTest {
 
     @Test
     fun `no offer at all for a source with nothing beyond what the feed already gave us`() {
-        val fetcher = FakeFetcher()
+        val fetcher = MapPageFetcher()
         val feedId = seedFeed(entryCount = 1)
 
         showHome(fetcher)
@@ -137,7 +138,7 @@ class BackfillOfferTest {
 
     @Test
     fun `when the archive holds more than the cap, the offer states both numbers`() {
-        val fetcher = FakeFetcher()
+        val fetcher = MapPageFetcher()
         val many = (1..(BackfillRepository.MAX_PAGES + 5)).map { "https://example.com/2020/01/$it/post-$it" }
         fetcher.pages[SITE + "sitemap.xml"] = sitemapOf(*many.toTypedArray())
         val feedId = seedFeed(entryCount = 1)
@@ -161,7 +162,7 @@ class BackfillOfferTest {
 
     @Test
     fun `accepting the offer enqueues the run and the strip tracks its progress`() {
-        val fetcher = FakeFetcher()
+        val fetcher = MapPageFetcher()
         fetcher.pages[SITE + "sitemap.xml"] = sitemapOf(POST_1, POST_2, POST_3)
         val feedId = seedFeed(entryCount = 1)
 
@@ -181,7 +182,7 @@ class BackfillOfferTest {
 
     @Test
     fun `stopping the strip cancels the run rather than clearing what already landed`() {
-        val fetcher = FakeFetcher()
+        val fetcher = MapPageFetcher()
         fetcher.pages[SITE + "sitemap.xml"] = sitemapOf(POST_1, POST_2, POST_3)
         val feedId = seedFeed(entryCount = 1)
 
@@ -201,7 +202,7 @@ class BackfillOfferTest {
 
     @Test
     fun `the drawer's selection bar offers it again for a reader who declined`() {
-        val fetcher = FakeFetcher()
+        val fetcher = MapPageFetcher()
         fetcher.pages[SITE + "sitemap.xml"] = sitemapOf(POST_1)
         val feedId = seedFeed(entryCount = 1, title = "GPUOpen")
 
@@ -220,7 +221,7 @@ class BackfillOfferTest {
 
     @Test
     fun `All Time scoped to one source states how far its stored history reaches`() {
-        val fetcher = FakeFetcher()
+        val fetcher = MapPageFetcher()
         val feedId = seedFeed(title = "GPUOpen")
         seedEntry(feedId, "Old one", Instant.parse("2020-03-31T00:00:00Z"))
 
@@ -239,7 +240,7 @@ class BackfillOfferTest {
      */
     @Test
     fun `the reach sentence states the oldest date the source published for itself`() {
-        val fetcher = FakeFetcher()
+        val fetcher = MapPageFetcher()
         val feedId = seedFeed(title = "GPUOpen")
         seedEntry(feedId, "Undated one", Instant.parse("2019-01-05T00:00:00Z"), isEstimated = true)
         seedEntry(feedId, "Old one", Instant.parse("2020-03-31T00:00:00Z"))
@@ -254,7 +255,7 @@ class BackfillOfferTest {
     /** With no known date anywhere, the sentence still says something — as a guess. */
     @Test
     fun `a source whose every date was guessed reaches back to a guess`() {
-        val fetcher = FakeFetcher()
+        val fetcher = MapPageFetcher()
         val feedId = seedFeed(title = "GPUOpen")
         seedEntry(feedId, "Undated one", Instant.parse("2020-03-31T00:00:00Z"), isEstimated = true)
 
@@ -267,7 +268,7 @@ class BackfillOfferTest {
 
     @Test
     fun `the reach sentence is absent from the unified inbox`() {
-        val fetcher = FakeFetcher()
+        val fetcher = MapPageFetcher()
         seedFeed(title = "GPUOpen").also { seedEntry(it, "Old one", Instant.parse("2020-03-31T00:00:00Z")) }
 
         showHome(fetcher)
@@ -282,7 +283,7 @@ class BackfillOfferTest {
     fun `screenshot the backfill offer`() {
         // Issue #24: more candidates than MAX_PAGES, so the two counts the dialog states
         // actually differ — the shot this task's Done-condition asks be retaken and looked at.
-        val fetcher = FakeFetcher()
+        val fetcher = MapPageFetcher()
         val many = (1..(BackfillRepository.MAX_PAGES + 5)).map { "https://example.com/2020/01/$it/post-$it" }
         fetcher.pages[SITE + "sitemap.xml"] = sitemapOf(*many.toTypedArray())
         val feedId = seedFeed(entryCount = 1, title = "A blog")
@@ -297,7 +298,7 @@ class BackfillOfferTest {
     @Test
     @GraphicsMode(GraphicsMode.Mode.NATIVE)
     fun `screenshot a backfill in progress`() {
-        val fetcher = FakeFetcher()
+        val fetcher = MapPageFetcher()
         fetcher.pages[SITE + "sitemap.xml"] = sitemapOf(POST_1, POST_2, POST_3)
         val feedId = seedFeed(entryCount = 1, title = "A blog")
 
@@ -403,10 +404,6 @@ class BackfillOfferTest {
                 fetchedAt = now.toEpochMilli(),
             ),
         )
-    }
-
-    private class FakeFetcher(val pages: MutableMap<String, FetchedPage> = mutableMapOf()) : PageFetcher {
-        override suspend fun fetch(url: String): FetchedPage? = pages[url]
     }
 
     /** No WorkManager anywhere: [enqueue] and [cancel] just record the call, and a test

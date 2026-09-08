@@ -2,7 +2,6 @@ package dev.mkiros.perch.data.db
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.entity.PendingEntryStateEntity
@@ -87,11 +86,7 @@ class PerchMigration4To5Test {
         assertThat(migrated.entryDao().countPendingState()).isEqualTo(1)
     }
 
-    private fun seedVersion4() {
-        file.parentFile?.mkdirs()
-        SQLiteDatabase.deleteDatabase(file)
-        val v4 = SQLiteDatabase.openOrCreateDatabase(file, null)
-        ExportedSchemas.createStatements(version = 4).forEach(v4::execSQL)
+    private fun seedVersion4() = ExportedSchemas.seedVersion(file, version = 4) { v4 ->
         v4.execSQL(
             """
             INSERT INTO folders (id, name, sortIndex, createdAt)
@@ -125,13 +120,8 @@ class PerchMigration4To5Test {
                  0, NULL, 0, NULL, 0, NULL, 1, NULL, 1000)
             """.trimIndent(),
         )
-        v4.version = 4
-        v4.close()
     }
 
     private fun openAtCurrentVersion(): PerchDatabase =
-        Room.databaseBuilder(context, PerchDatabase::class.java, file.name)
-            .addMigrations(*PerchDatabase.MIGRATIONS)
-            .build()
-            .also { db = it }
+        ExportedSchemas.openAtCurrentVersion(context, file).also { db = it }
 }

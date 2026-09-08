@@ -439,7 +439,7 @@ No task in this plan takes a device screenshot.
       - Done: test count unchanged; `./gradlew test` green; issue #44 closed.
       - Rung: unit
 
-- [ ] **D12 — One image stub, one fake fetcher, one migration harness. Issue #45.**
+- [x] **D12 — One image stub, one fake fetcher, one migration harness. Issue #45.**
       `gh issue view 45 --json body`. Three small consolidations, one session:
       1. Coil `Mapper<String, Drawable>` stubs — `ImageViewerTest.kt:240`,
          `WindowInsetsTest.kt:238`, `ArticleBodyTest.kt:262`, `EntryRowTest.kt:424`,

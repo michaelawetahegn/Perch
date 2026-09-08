@@ -1,9 +1,6 @@
 package dev.mkiros.perch.ui.article
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
@@ -16,15 +13,13 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
 import coil.Coil
-import coil.ImageLoader
-import coil.map.Mapper
-import coil.request.Options
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.parse.ArticleBlock
 import dev.mkiros.perch.data.parse.RichSpan
 import dev.mkiros.perch.data.parse.SpanStyle
+import dev.mkiros.perch.ui.screenshot.StubImage
+import dev.mkiros.perch.ui.screenshot.stubImages
 import dev.mkiros.perch.ui.theme.PerchTheme
-import kotlinx.coroutines.Dispatchers
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -53,15 +48,10 @@ class ArticleBodyTest {
     @Before
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        Coil.setImageLoader(
-            ImageLoader.Builder(context)
-                .components { add(StubImages(IMAGE_URL, context)) }
-                .dispatcher(Dispatchers.Main.immediate)
-                .fetcherDispatcher(Dispatchers.Main.immediate)
-                .decoderDispatcher(Dispatchers.Main.immediate)
-                .transformationDispatcher(Dispatchers.Main.immediate)
-                .build(),
-        )
+        // Exactly one URL becomes a real drawable; everything else falls through and errors.
+        stubImages(context) { url ->
+            if (url == IMAGE_URL) StubImage(IMAGE_WIDTH, IMAGE_HEIGHT) else null
+        }
     }
 
     @After
@@ -257,27 +247,10 @@ class ArticleBodyTest {
     private fun topOf(text: String): Float =
         compose.onNodeWithText(text).fetchSemanticsNode().positionInRoot.y
 
-    /** Maps exactly one URL to a real drawable; everything else falls through and errors. */
-    private class StubImages(private val url: String, private val context: Context) :
-        Mapper<String, Drawable> {
-        override fun map(data: String, options: Options): Drawable? =
-            if (data == url) {
-                BitmapDrawable(
-                    context.resources,
-                    Bitmap.createBitmap(WIDTH, HEIGHT, Bitmap.Config.ARGB_8888),
-                )
-            } else {
-                null
-            }
-
-        private companion object {
-            const val WIDTH = 160
-            const val HEIGHT = 90
-        }
-    }
-
     private companion object {
         const val IMAGE_URL = "https://example.com/figure.png"
+        const val IMAGE_WIDTH = 160
+        const val IMAGE_HEIGHT = 90
         const val ARTICLE_URL = "https://example.com/post"
     }
 }

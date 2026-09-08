@@ -2,7 +2,6 @@ package dev.mkiros.perch.data.db
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import java.io.File
@@ -80,11 +79,7 @@ class PerchMigration3To4Test {
         assertThat(all.all { it.fullTextAt == null }).isTrue()
     }
 
-    private fun seedVersion3() {
-        file.parentFile?.mkdirs()
-        SQLiteDatabase.deleteDatabase(file)
-        val v3 = SQLiteDatabase.openOrCreateDatabase(file, null)
-        ExportedSchemas.createStatements(version = 3).forEach(v3::execSQL)
+    private fun seedVersion3() = ExportedSchemas.seedVersion(file, version = 3) { v3 ->
         v3.execSQL(
             """
             INSERT INTO folders (id, name, sortIndex, createdAt)
@@ -118,13 +113,8 @@ class PerchMigration3To4Test {
                  0, NULL, 0, NULL, 0, NULL, 1000)
             """.trimIndent(),
         )
-        v3.version = 3
-        v3.close()
     }
 
     private fun openAtCurrentVersion(): PerchDatabase =
-        Room.databaseBuilder(context, PerchDatabase::class.java, file.name)
-            .addMigrations(*PerchDatabase.MIGRATIONS)
-            .build()
-            .also { db = it }
+        ExportedSchemas.openAtCurrentVersion(context, file).also { db = it }
 }

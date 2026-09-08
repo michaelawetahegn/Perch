@@ -2,7 +2,6 @@ package dev.mkiros.perch.data.db
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import java.io.File
@@ -136,11 +135,7 @@ class PerchMigration6To7Test {
             .query("SELECT COUNT(*) FROM entries_fts")
             .use { it.moveToFirst(); it.getInt(0) }
 
-    private fun seedVersion6() {
-        file.parentFile?.mkdirs()
-        SQLiteDatabase.deleteDatabase(file)
-        val v6 = SQLiteDatabase.openOrCreateDatabase(file, null)
-        ExportedSchemas.createStatements(version = 6).forEach(v6::execSQL)
+    private fun seedVersion6() = ExportedSchemas.seedVersion(file, version = 6) { v6 ->
         v6.execSQL(
             """
             INSERT INTO folders (id, name, sortIndex, createdAt)
@@ -179,13 +174,8 @@ class PerchMigration6To7Test {
                  NULL, 0, NULL, 0, NULL, 0, NULL, 1, NULL, 1000)
             """.trimIndent(),
         )
-        v6.version = 6
-        v6.close()
     }
 
     private fun openAtCurrentVersion(): PerchDatabase =
-        Room.databaseBuilder(context, PerchDatabase::class.java, file.name)
-            .addMigrations(*PerchDatabase.MIGRATIONS)
-            .build()
-            .also { db = it }
+        ExportedSchemas.openAtCurrentVersion(context, file).also { db = it }
 }

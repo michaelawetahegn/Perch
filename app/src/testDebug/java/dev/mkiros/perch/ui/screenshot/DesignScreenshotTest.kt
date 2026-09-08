@@ -1,9 +1,6 @@
 package dev.mkiros.perch.ui.screenshot
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,9 +19,6 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.test.core.app.ApplicationProvider
 import coil.Coil
-import coil.ImageLoader
-import coil.map.Mapper
-import coil.request.Options
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.db.entity.FeedEntity
@@ -54,7 +48,6 @@ import dev.mkiros.perch.ui.theme.ThemeMode
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import okhttp3.mockwebserver.MockResponse
@@ -495,31 +488,11 @@ class DesignScreenshotTest {
      */
     private fun stubThumbnails() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        Coil.setImageLoader(
-            ImageLoader.Builder(context)
-                .components { add(FlatColourImages(context)) }
-                .dispatcher(Dispatchers.Main.immediate)
-                .fetcherDispatcher(Dispatchers.Main.immediate)
-                .decoderDispatcher(Dispatchers.Main.immediate)
-                .transformationDispatcher(Dispatchers.Main.immediate)
-                .build(),
-        )
+        stubImages(context) { SLAB }
     }
 
     /** Every URL becomes the same muted slab — a stand-in for a lead image, not a mock of one. */
-    private class FlatColourImages(private val context: Context) : Mapper<String, Drawable> {
-        override fun map(data: String, options: Options): Drawable {
-            val bitmap = Bitmap.createBitmap(WIDTH, HEIGHT, Bitmap.Config.ARGB_8888)
-            bitmap.eraseColor(COLOUR)
-            return BitmapDrawable(context.resources, bitmap)
-        }
-
-        private companion object {
-            const val WIDTH = 320
-            const val HEIGHT = 180
-            const val COLOUR = 0xFF5B7F6E.toInt()
-        }
-    }
+    private val SLAB = StubImage(width = 320, height = 180, colour = 0xFF5B7F6E.toInt())
 
     private fun feedIdOf(host: String): Long = runBlocking {
         perch.database.feedDao().getAll().first { it.feedUrl.contains(host) }.id

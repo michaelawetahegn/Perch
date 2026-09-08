@@ -1,6 +1,7 @@
 package dev.mkiros.perch.data.parse
 
 import com.google.common.truth.Truth.assertThat
+import dev.mkiros.perch.support.MapPageFetcher
 import java.io.File
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
@@ -20,7 +21,7 @@ class FeedDiscoveryTest {
 
     @Test
     fun `discovers a feed declared with rel before href and a relative target`() = runTest {
-        val fetcher = FakeFetcher()
+        val fetcher = MapPageFetcher()
         val discovery = FeedDiscovery(fetcher)
 
         val found = discovery.resolve(XANIA, homepage("xania-org", XANIA))
@@ -30,7 +31,7 @@ class FeedDiscoveryTest {
 
     @Test
     fun `discovers a feed declared with href before rel`() = runTest {
-        val discovery = FeedDiscovery(FakeFetcher())
+        val discovery = FeedDiscovery(MapPageFetcher())
 
         val found = discovery.resolve(HILLEL, homepage("hillelwayne-com", HILLEL))
 
@@ -39,7 +40,7 @@ class FeedDiscoveryTest {
 
     @Test
     fun `discovers a feed hosted on another domain and ignores non-feed alternates`() = runTest {
-        val discovery = FeedDiscovery(FakeFetcher())
+        val discovery = FeedDiscovery(MapPageFetcher())
 
         val found = discovery.resolve(GWERN, homepage("gwern-net", GWERN))
 
@@ -50,7 +51,7 @@ class FeedDiscoveryTest {
     @Test
     fun `gives up on a site that declares no feed and soft-404s every path guess`() = runTest {
         val softFourOhFour = homepage("research-nccgroup-com", NCC)
-        val fetcher = FakeFetcher(default = softFourOhFour)
+        val fetcher = MapPageFetcher(default = softFourOhFour)
         val discovery = FeedDiscovery(fetcher)
 
         val found = discovery.resolve(NCC, softFourOhFour)
@@ -61,7 +62,7 @@ class FeedDiscoveryTest {
 
     @Test
     fun `returns a feed URL unchanged without going to the network`() = runTest {
-        val fetcher = FakeFetcher()
+        val fetcher = MapPageFetcher()
         val discovery = FeedDiscovery(fetcher)
 
         val found = discovery.resolve(XANIA_FEED, page(ATOM, "application/atom+xml", XANIA_FEED))
@@ -79,7 +80,7 @@ class FeedDiscoveryTest {
               <link rel="alternate" type="application/atom+xml" href="/atom">
             </head><body/></html>
         """.trimIndent()
-        val discovery = FeedDiscovery(FakeFetcher())
+        val discovery = FeedDiscovery(MapPageFetcher())
 
         assertThat(discovery.resolve(SITE, page(html, "text/html", SITE)))
             .isEqualTo("https://example.com/atom")
@@ -89,7 +90,7 @@ class FeedDiscoveryTest {
     fun `falls back to rdf when it is the only declared feed`() = runTest {
         val html = """<html><head><link rel="alternate" type="application/rdf+xml"
                       href="feed.rdf"></head></html>"""
-        val discovery = FeedDiscovery(FakeFetcher())
+        val discovery = FeedDiscovery(MapPageFetcher())
 
         assertThat(discovery.resolve("https://example.com/blog/", page(html, "text/html", "https://example.com/blog/")))
             .isEqualTo("https://example.com/blog/feed.rdf")
@@ -101,7 +102,7 @@ class FeedDiscoveryTest {
               <link rel="alternate" type="text/markdown" href="/index.md">
               <link rel="stylesheet" type="application/rss+xml" href="/not-a-feed">
             </head></html>"""
-        val fetcher = FakeFetcher()
+        val fetcher = MapPageFetcher()
         val discovery = FeedDiscovery(fetcher)
 
         assertThat(discovery.resolve(SITE, page(html, "text/html", SITE))).isNull()
@@ -111,7 +112,7 @@ class FeedDiscoveryTest {
 
     @Test
     fun `guesses the common paths in order and stops at the first that parses`() = runTest {
-        val fetcher = FakeFetcher(
+        val fetcher = MapPageFetcher(
             pages = mapOf("https://example.com/atom.xml" to page(ATOM, "application/atom+xml", "https://example.com/atom.xml")),
             default = page(BLANK_HTML, "text/html", SITE),
         )
@@ -129,7 +130,7 @@ class FeedDiscoveryTest {
 
     @Test
     fun `reports the URL a guess redirected to, not the URL it guessed`() = runTest {
-        val fetcher = FakeFetcher(
+        val fetcher = MapPageFetcher(
             pages = mapOf("https://example.com/feed" to page(ATOM, "application/atom+xml", "https://example.com/feed.atom")),
         )
         val discovery = FeedDiscovery(fetcher)
@@ -141,7 +142,7 @@ class FeedDiscoveryTest {
     @Test
     fun `guesses against the host root, not the pasted path`() = runTest {
         val deep = "https://example.com/blog/2026/some-post/"
-        val fetcher = FakeFetcher(default = page(BLANK_HTML, "text/html", deep))
+        val fetcher = MapPageFetcher(default = page(BLANK_HTML, "text/html", deep))
         val discovery = FeedDiscovery(fetcher)
 
         discovery.resolve(deep, page(BLANK_HTML, "text/html", deep))
@@ -151,7 +152,7 @@ class FeedDiscoveryTest {
 
     @Test
     fun `fetches the pasted URL itself when the caller has not already`() = runTest {
-        val fetcher = FakeFetcher(
+        val fetcher = MapPageFetcher(
             pages = mapOf(SITE to page(ATOM, "application/atom+xml", SITE)),
         )
         val discovery = FeedDiscovery(fetcher)
@@ -162,24 +163,12 @@ class FeedDiscoveryTest {
 
     @Test
     fun `returns null when nothing can be fetched at all`() = runTest {
-        val discovery = FeedDiscovery(FakeFetcher())
+        val discovery = FeedDiscovery(MapPageFetcher())
 
         assertThat(discovery.resolve(SITE)).isNull()
     }
 
     // -- fixtures -------------------------------------------------------------------
-
-    private class FakeFetcher(
-        private val pages: Map<String, FetchedPage> = emptyMap(),
-        private val default: FetchedPage? = null,
-    ) : PageFetcher {
-        val requested = mutableListOf<String>()
-
-        override suspend fun fetch(url: String): FetchedPage? {
-            requested += url
-            return pages[url] ?: default
-        }
-    }
 
     private companion object {
         const val XANIA = "https://xania.org/"

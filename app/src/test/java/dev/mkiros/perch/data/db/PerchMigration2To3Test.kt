@@ -2,7 +2,6 @@ package dev.mkiros.perch.data.db
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.entity.FolderEntity
@@ -85,11 +84,7 @@ class PerchMigration2To3Test {
     }
 
     /** Builds the shipped v2 schema, fills it with rows a real install would have, closes it. */
-    private fun seedVersion2() {
-        file.parentFile?.mkdirs()
-        SQLiteDatabase.deleteDatabase(file)
-        val v2 = SQLiteDatabase.openOrCreateDatabase(file, null)
-        ExportedSchemas.createStatements(version = 2).forEach(v2::execSQL)
+    private fun seedVersion2() = ExportedSchemas.seedVersion(file, version = 2) { v2 ->
         v2.execSQL(
             """
             INSERT INTO folders (id, name, sortIndex, createdAt)
@@ -122,13 +117,8 @@ class PerchMigration2To3Test {
                  NULL, 0, NULL, 0, 1000)
             """.trimIndent(),
         )
-        v2.version = 2
-        v2.close()
     }
 
     private fun openAtCurrentVersion(): PerchDatabase =
-        Room.databaseBuilder(context, PerchDatabase::class.java, file.name)
-            .addMigrations(*PerchDatabase.MIGRATIONS)
-            .build()
-            .also { db = it }
+        ExportedSchemas.openAtCurrentVersion(context, file).also { db = it }
 }

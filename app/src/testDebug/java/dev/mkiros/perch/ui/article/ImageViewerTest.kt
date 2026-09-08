@@ -1,9 +1,6 @@
 package dev.mkiros.perch.ui.article
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,17 +25,15 @@ import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import coil.Coil
-import coil.ImageLoader
-import coil.map.Mapper
-import coil.request.Options
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.ui.article.zoom.ImageViewer
 import dev.mkiros.perch.ui.article.zoom.ZoomGeometry
 import dev.mkiros.perch.ui.article.zoom.ZoomState
 import dev.mkiros.perch.ui.article.zoom.ZoomedImage
+import dev.mkiros.perch.ui.screenshot.StubImage
+import dev.mkiros.perch.ui.screenshot.stubImages
 import dev.mkiros.perch.ui.theme.PerchTheme
 import dev.mkiros.perch.ui.theme.ThemeMode
-import kotlinx.coroutines.Dispatchers
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -73,15 +68,10 @@ class ImageViewerTest {
     @Before
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        Coil.setImageLoader(
-            ImageLoader.Builder(context)
-                .components { add(StubImage(context)) }
-                .dispatcher(Dispatchers.Main.immediate)
-                .fetcherDispatcher(Dispatchers.Main.immediate)
-                .decoderDispatcher(Dispatchers.Main.immediate)
-                .transformationDispatcher(Dispatchers.Main.immediate)
-                .build(),
-        )
+        // Coil offline: one real bitmap, so the viewer has a content aspect to bound pans with.
+        stubImages(context) { url ->
+            if (url == IMAGE_URL) StubImage(IMAGE_WIDTH, IMAGE_HEIGHT) else null
+        }
     }
 
     @After
@@ -236,25 +226,10 @@ class ImageViewerTest {
         }
     }
 
-    /** Coil offline: one real bitmap, so the viewer has a content aspect to bound pans with. */
-    private class StubImage(private val context: Context) : Mapper<String, Drawable> {
-        override fun map(data: String, options: Options): Drawable? = if (data == IMAGE_URL) {
-            BitmapDrawable(
-                context.resources,
-                Bitmap.createBitmap(WIDTH, HEIGHT, Bitmap.Config.ARGB_8888),
-            )
-        } else {
-            null
-        }
-
-        private companion object {
-            const val WIDTH = 800
-            const val HEIGHT = 1200
-        }
-    }
-
     private companion object {
         const val IMAGE_URL = "https://example.com/diagram.png"
+        const val IMAGE_WIDTH = 800
+        const val IMAGE_HEIGHT = 1200
         const val TOLERANCE = 0.05f
 
         /** Half the gap between the pinching fingers, and how far apart they end up. */

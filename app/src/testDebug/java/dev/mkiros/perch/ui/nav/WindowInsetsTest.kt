@@ -1,9 +1,6 @@
 package dev.mkiros.perch.ui.nav
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,9 +19,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import androidx.test.core.app.ApplicationProvider
 import coil.Coil
-import coil.ImageLoader
-import coil.map.Mapper
-import coil.request.Options
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.support.PerchRule
@@ -37,9 +31,10 @@ import dev.mkiros.perch.ui.article.zoom.ImageViewer
 import dev.mkiros.perch.ui.article.zoom.ZoomedImage
 import dev.mkiros.perch.ui.home.HomeTestTags
 import dev.mkiros.perch.ui.home.TimeFilter
+import dev.mkiros.perch.ui.screenshot.StubImage
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
+import dev.mkiros.perch.ui.screenshot.stubImages
 import dev.mkiros.perch.ui.theme.PerchTheme
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Before
@@ -90,15 +85,14 @@ class WindowInsetsTest {
     @Before
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        Coil.setImageLoader(
-            ImageLoader.Builder(context)
-                .components { add(StubImage(context)) }
-                .dispatcher(Dispatchers.Main.immediate)
-                .fetcherDispatcher(Dispatchers.Main.immediate)
-                .decoderDispatcher(Dispatchers.Main.immediate)
-                .transformationDispatcher(Dispatchers.Main.immediate)
-                .build(),
-        )
+        // A stand-in figure — Coil never leaves the JVM.
+        stubImages(context) { url ->
+            if (url == IMAGE_URL) {
+                StubImage(IMAGE_WIDTH, IMAGE_HEIGHT, colour = android.graphics.Color.GRAY)
+            } else {
+                null
+            }
+        }
     }
 
     @After
@@ -225,23 +219,10 @@ class WindowInsetsTest {
     /** [px] at this test's density (xhdpi ⇒ 2.0), as a [Dp] the bounds can be compared to. */
     private fun px(value: Int): Dp = (value / DENSITY).dp
 
-    /** A stand-in figure — Coil never leaves the JVM. */
-    private class StubImage(private val context: Context) : Mapper<String, Drawable> {
-        override fun map(data: String, options: Options): Drawable? {
-            if (data != IMAGE_URL) return null
-            val bitmap = Bitmap.createBitmap(WIDTH, HEIGHT, Bitmap.Config.ARGB_8888)
-            bitmap.eraseColor(android.graphics.Color.GRAY)
-            return BitmapDrawable(context.resources, bitmap)
-        }
-
-        private companion object {
-            const val WIDTH = 800
-            const val HEIGHT = 600
-        }
-    }
-
     private companion object {
         const val IMAGE_URL = "https://example.com/figure.png"
+        const val IMAGE_WIDTH = 800
+        const val IMAGE_HEIGHT = 600
         const val APP_NAME = "Perch"
         const val OPEN_SOURCES = "Open sources"
         const val DENSITY = 2f

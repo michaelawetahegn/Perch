@@ -2,8 +2,6 @@ package dev.mkiros.perch.ui.home
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.CompositionLocalProvider
@@ -24,22 +22,21 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import coil.Coil
-import coil.ImageLoader
 import coil.ImageLoader.Builder
 import coil.intercept.Interceptor
-import coil.map.Mapper
 import coil.request.ErrorResult
 import coil.request.ImageResult
-import coil.request.Options
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.EntryListItem
 import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.ui.screenshot.Screenshots
+import dev.mkiros.perch.ui.screenshot.StubImage
+import dev.mkiros.perch.ui.screenshot.installImageLoader
+import dev.mkiros.perch.ui.screenshot.stubImages
 import dev.mkiros.perch.ui.theme.Dimens
 import dev.mkiros.perch.ui.theme.PerchTheme
 import java.io.IOException
 import java.time.Instant
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.awaitCancellation
 import org.junit.After
 import org.junit.Rule
@@ -260,7 +257,7 @@ class EntryRowTest {
 
     @Test
     fun `an image that loads replaces the placeholder in the same footprint`() {
-        install(StubImages(IMAGE_URL, context))
+        installThumbnail()
         show(item(imageUrl = IMAGE_URL))
 
         thumbnail(EntryRowTestTags.THUMBNAIL_IMAGE).assertIsDisplayed()
@@ -270,7 +267,7 @@ class EntryRowTest {
 
     @Test
     fun `the row is the same height whether its image is absent, loaded or failed`() {
-        install(StubImages(IMAGE_URL, context))
+        installThumbnail()
         showAll(
             listOf(
                 item(id = 1, imageUrl = null),
@@ -326,20 +323,11 @@ class EntryRowTest {
             .toSet()
 
     private fun install(interceptor: Interceptor) =
-        install(Builder(context).components { add(interceptor) })
+        installImageLoader(Builder(context).components { add(interceptor) })
 
-    private fun install(mapper: Mapper<String, Drawable>) =
-        install(Builder(context).components { add(mapper) })
-
-    private fun install(builder: Builder) {
-        Coil.setImageLoader(
-            builder
-                .dispatcher(Dispatchers.Main.immediate)
-                .fetcherDispatcher(Dispatchers.Main.immediate)
-                .decoderDispatcher(Dispatchers.Main.immediate)
-                .transformationDispatcher(Dispatchers.Main.immediate)
-                .build(),
-        )
+    /** Maps exactly one URL to a real drawable; anything else falls through and errors. */
+    private fun installThumbnail() = stubImages(context) { url ->
+        if (url == IMAGE_URL) StubImage(IMAGE_WIDTH, IMAGE_HEIGHT) else null
     }
 
     // ---- a guessed date reads as a guess (#25, PLAN-9 §0.7) -------------------------
@@ -419,25 +407,6 @@ class EntryRowTest {
         folderName = folderName,
     )
 
-    /** Maps exactly one URL to a real drawable; anything else falls through and errors. */
-    private class StubImages(private val url: String, private val context: Context) :
-        Mapper<String, Drawable> {
-        override fun map(data: String, options: Options): Drawable? =
-            if (data == url) {
-                BitmapDrawable(
-                    context.resources,
-                    Bitmap.createBitmap(WIDTH, HEIGHT, Bitmap.Config.ARGB_8888),
-                )
-            } else {
-                null
-            }
-
-        private companion object {
-            const val WIDTH = 320
-            const val HEIGHT = 180
-        }
-    }
-
     /** A request that never completes — the row a reader sees while an image is in flight. */
     private object PendingForever : Interceptor {
         override suspend fun intercept(chain: Interceptor.Chain): ImageResult =
@@ -457,6 +426,8 @@ class EntryRowTest {
         const val DAY = 24 * HOUR
         const val ROW = "test:row"
         const val IMAGE_URL = "https://example.com/lead.png"
+        const val IMAGE_WIDTH = 320
+        const val IMAGE_HEIGHT = 180
         const val MISSING_URL = "https://example.invalid/gone.png"
         val THREE_LINES = 76.dp
 

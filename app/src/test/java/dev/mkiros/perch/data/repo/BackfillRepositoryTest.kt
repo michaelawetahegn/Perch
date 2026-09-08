@@ -8,7 +8,7 @@ import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.parse.FetchedPage
-import dev.mkiros.perch.data.parse.PageFetcher
+import dev.mkiros.perch.support.MapPageFetcher
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
@@ -25,7 +25,7 @@ import org.robolectric.RobolectricTestRunner
  *
  * Every clause of §0.3 is its own test: bounded, serialised, polite (a delay between
  * fetches, `robots.txt` obeyed), interruptible, resumable, idempotent, and one bad page
- * never abandons the rest. [FakeFetcher] stands in for the network throughout — this suite
+ * never abandons the rest. [MapPageFetcher] stands in for the network throughout — this suite
  * never touches it.
  */
 @RunWith(RobolectricTestRunner::class)
@@ -34,7 +34,7 @@ class BackfillRepositoryTest {
     private lateinit var db: PerchDatabase
     private lateinit var feeds: FeedDao
     private lateinit var entries: EntryDao
-    private lateinit var fetcher: FakeFetcher
+    private lateinit var fetcher: MapPageFetcher
     private lateinit var delays: MutableList<Long>
 
     private val now = Instant.parse("2026-08-24T12:00:00Z").toEpochMilli()
@@ -44,7 +44,7 @@ class BackfillRepositoryTest {
         db = PerchDatabase.inMemory(ApplicationProvider.getApplicationContext())
         feeds = db.feedDao()
         entries = db.entryDao()
-        fetcher = FakeFetcher()
+        fetcher = MapPageFetcher(stampFinalUrl = true)
         delays = mutableListOf()
     }
 
@@ -357,22 +357,6 @@ class BackfillRepositoryTest {
                 contentHtml = null, imageUrl = null, readAt = null, fetchedAt = now,
             ),
         )
-    }
-
-    private class FakeFetcher(val pages: MutableMap<String, FetchedPage> = mutableMapOf()) : PageFetcher {
-        val requested = mutableListOf<String>()
-
-        /** The one URL whose fetch raises a cancellation instead of answering. */
-        var cancelOn: String? = null
-
-        override suspend fun fetch(url: String): FetchedPage? {
-            requested += url
-            if (url == cancelOn) throw CancellationException("the backfill was cancelled")
-            val page = pages[url] ?: return null
-            // Fixtures below don't know their own URL yet when they're built (they're
-            // stored by URL as the map key) — stamp it on here so guid = final URL holds.
-            return if (page.finalUrl.isEmpty()) FetchedPage(page.bytes, page.contentType, url) else page
-        }
     }
 
     private companion object {
