@@ -70,5 +70,35 @@ data class FeedEntity(
         // A plain constant, not R.string: FolderEntity.UNCATEGORIZED_NAME sets the same
         // precedent for a built-in row's name, and this app has no localization to lose.
         const val SAVED_LINKS_TITLE = "Saved links"
+
+        /**
+         * A source an import wrote without fetching it (U13's OPML, U14's profile).
+         *
+         * No validators and no fetch history: that is exactly the state
+         * `FeedRepository.refreshAll` reads as "never polled", so the refresh after an
+         * import fetches everything rather than trusting a 304 from another install's
+         * ETag — and an import can write forty rows in the time one fetch would take.
+         */
+        fun unpolled(
+            feedUrl: String,
+            title: String,
+            siteUrl: String?,
+            customTitle: String?,
+            addedAt: Long,
+            folderId: Long,
+        ): FeedEntity = FeedEntity(
+            feedUrl = feedUrl,
+            siteUrl = siteUrl,
+            title = title,
+            customTitle = customTitle,
+            faviconUrl = null,
+            etag = null,
+            lastModified = null,
+            lastFetchedAt = null,
+            lastSuccessAt = null,
+            lastError = null,
+            addedAt = addedAt,
+            folderId = folderId,
+        )
     }
 }

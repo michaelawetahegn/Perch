@@ -79,9 +79,7 @@ class OpmlRepository(
         val addedAt = clock.millis()
         var added = 0
         var duplicates = 0
-        var foldersCreated = 0
-        // Folder name (case-folded, as `createFolder` matches) → the id it resolved to.
-        val resolved = mutableMapOf<String, Long>()
+        val resolver = FolderResolver(folders)
         for (outline in parsed.outlines) {
             // Re-read per outline rather than snapshotting: this is also what makes a file
             // that lists the same feed under two folders import it once. A source already
@@ -94,24 +92,13 @@ class OpmlRepository(
             // Resolved here rather than up front, so a folder is created only once a source
             // is actually going into it. A file whose "Podcasts" folder holds nothing but
             // feeds already subscribed to must not leave an empty row in the drawer.
-            val folderId = outline.folder?.let { name ->
-                resolved.getOrPut(name.trim().lowercase()) {
-                    folders.findFolderNamed(name)?.id
-                        ?: folders.createFolder(name).also { foldersCreated++ }
-                }
-            } ?: FolderEntity.UNCATEGORIZED_ID
+            val folderId = resolver.idOf(outline.folder) ?: FolderEntity.UNCATEGORIZED_ID
             feedDao.insert(
-                FeedEntity(
+                FeedEntity.unpolled(
                     feedUrl = outline.xmlUrl,
-                    siteUrl = outline.siteUrl,
                     title = outline.title,
+                    siteUrl = outline.siteUrl,
                     customTitle = null,
-                    faviconUrl = null,
-                    etag = null,
-                    lastModified = null,
-                    lastFetchedAt = null,
-                    lastSuccessAt = null,
-                    lastError = null,
                     addedAt = addedAt,
                     folderId = folderId,
                 ),
@@ -122,7 +109,7 @@ class OpmlRepository(
             added = added,
             duplicates = duplicates,
             invalid = parsed.invalid,
-            folders = foldersCreated,
+            folders = resolver.created,
         )
     }
 }

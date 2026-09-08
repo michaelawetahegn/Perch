@@ -537,7 +537,7 @@ No task in this plan takes a device screenshot.
         file); `./gradlew test` green; issue #51 closed.
       - Rung: unit
 
-- [ ] **D19 — Both importers resolve folders the same way. Issue #52.**
+- [x] **D19 — Both importers resolve folders the same way. Issue #52.**
       `gh issue view 52 --json body`. `ProfileRepository.FolderResolver` (`:201-215`) becomes
       top-level (§0.6); `OpmlRepository.import` (`:82-100`) uses it and drops its inline map and
       counter. The never-polled `FeedEntity` insert with five nulls (`OpmlRepository.kt:103-118`,
