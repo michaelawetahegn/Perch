@@ -2,11 +2,7 @@ package dev.mkiros.perch.ui.home
 
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.DrawerState
-import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
@@ -31,8 +27,7 @@ import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.support.testEntry
 import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
-import dev.mkiros.perch.ui.source.AddSourceViewModel
-import dev.mkiros.perch.ui.theme.PerchTheme
+import dev.mkiros.perch.ui.screenshot.showHome as showHomeScreen
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
@@ -500,38 +495,13 @@ class DrawerMultiSelectTest {
         compose.awaitInRealTime("the database to satisfy the test's predicate", predicate = predicate)
 
     private fun showHome() {
-        viewModel = HomeViewModel(
-            entries = perch.container.entries,
-            feeds = perch.container.feeds,
-            folders = perch.container.folders,
-            clock = clock,
-            settings = settings,
-        )
-        val addSourceViewModel = AddSourceViewModel(perch.container.feeds, perch.container.folders)
-        compose.setContent {
-            // Hoisted exactly as PerchNavHost hoists them, so the test can ask the same
-            // questions the shell's back chain asks.
-            drawerState = rememberDrawerState(DrawerValue.Closed)
-            selection = rememberSaveable(stateSaver = DrawerSelection.Saver) {
-                mutableStateOf<DrawerSelection>(DrawerSelection.None)
-            }
-            homeScope = rememberSaveable(stateSaver = HomeScope.Saver) {
-                mutableStateOf<HomeScope>(HomeScope.All)
-            }
-            PerchTheme(dynamicColor = false) {
-                HomeScreen(
-                    viewModel = viewModel,
-                    addSourceViewModel = addSourceViewModel,
-                    onOpenEntry = {},
-                    onOpenSettings = {},
-                    drawerState = drawerState,
-                    selection = selection,
-                    homeScope = homeScope,
-                )
-            }
-        }
-        awaitDb { !viewModel.uiState.value.isLoading }
-        compose.waitForIdle()
+        // The harness hoists drawer, selection and scope exactly as PerchNavHost does, so
+        // the test can ask the same questions the shell's back chain asks.
+        val home = showHomeScreen(perch, compose, clock, settings)
+        viewModel = home.viewModel
+        drawerState = home.drawerState
+        selection = home.selection
+        homeScope = home.homeScope
     }
 
     private fun seedFolder(name: String): Long = runBlocking {

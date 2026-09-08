@@ -28,28 +28,27 @@ import coil.request.Options
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.db.entity.FeedEntity
-import dev.mkiros.perch.debug.DebugSeeder
-import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.data.repo.ArticleTextRepository
+import dev.mkiros.perch.data.settings.SettingsStore
+import dev.mkiros.perch.debug.DebugSeeder
 import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.ui.article.ArticleScreen
-import dev.mkiros.perch.ui.collection.CollectionTestTags
-import dev.mkiros.perch.ui.nav.NavTestTags
-import dev.mkiros.perch.ui.nav.PerchNavHost
-import dev.mkiros.perch.ui.nav.PerchTab
 import dev.mkiros.perch.ui.article.ArticleUiState
 import dev.mkiros.perch.ui.article.ArticleViewModel
+import dev.mkiros.perch.ui.collection.CollectionTestTags
 import dev.mkiros.perch.ui.home.HomeScope
-import dev.mkiros.perch.ui.home.HomeScreen
 import dev.mkiros.perch.ui.home.HomeTestTags
 import dev.mkiros.perch.ui.home.HomeViewModel
 import dev.mkiros.perch.ui.home.SelectionTestTags
 import dev.mkiros.perch.ui.home.TimeFilter
+import dev.mkiros.perch.ui.nav.NavTestTags
+import dev.mkiros.perch.ui.nav.PerchNavHost
+import dev.mkiros.perch.ui.nav.PerchTab
+import dev.mkiros.perch.ui.screenshot.showHome as showHomeScreen
 import dev.mkiros.perch.ui.search.SearchState
 import dev.mkiros.perch.ui.search.SearchSurface
 import dev.mkiros.perch.ui.search.SearchTestTags
 import dev.mkiros.perch.ui.search.SearchViewModel
-import dev.mkiros.perch.ui.source.AddSourceViewModel
 import dev.mkiros.perch.ui.theme.PerchTheme
 import dev.mkiros.perch.ui.theme.ThemeMode
 import java.time.Clock
@@ -528,26 +527,11 @@ class DesignScreenshotTest {
 
     private fun showHome(mode: ThemeMode, scope: HomeScope = HomeScope.All) {
         stubThumbnails()
-        homeViewModel = HomeViewModel(
-            entries = perch.container.entries,
-            feeds = perch.container.feeds,
-            folders = perch.container.folders,
-            clock = clock,
-            settings = settings,
-        )
-        val addSourceViewModel = AddSourceViewModel(perch.container.feeds, perch.container.folders)
-        compose.setContent {
-            PerchTheme(mode = mode, dynamicColor = false) {
-                HomeScreen(
-                    viewModel = homeViewModel,
-                    addSourceViewModel = addSourceViewModel,
-                    onOpenEntry = {},
-                    onOpenSettings = {},
-                    homeScope = remember { mutableStateOf(scope) },
-                )
-            }
-        }
-        compose.awaitInRealTime("the list to load") { !homeViewModel.uiState.value.isLoading }
+        homeViewModel = showHomeScreen(
+            perch, compose, clock, settings,
+            scope = scope,
+            themeMode = mode,
+        ).viewModel
     }
 
     /**

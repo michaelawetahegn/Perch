@@ -1,8 +1,6 @@
 package dev.mkiros.perch.ui.home
 
 import androidx.activity.ComponentActivity
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
@@ -27,11 +25,10 @@ import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.support.testEntry
 import dev.mkiros.perch.support.testFeed
-import dev.mkiros.perch.ui.source.AddSourceTestTags
-import dev.mkiros.perch.ui.source.AddSourceViewModel
-import dev.mkiros.perch.ui.theme.PerchTheme
 import dev.mkiros.perch.ui.rowTitles
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
+import dev.mkiros.perch.ui.screenshot.showHome as showHomeScreen
+import dev.mkiros.perch.ui.source.AddSourceTestTags
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
@@ -654,31 +651,13 @@ class HomeScreenTest {
     }
 
     private fun showHome(onOpenEntry: (Long) -> Unit = {}, scope: HomeScope = HomeScope.All) {
-        viewModel = HomeViewModel(
-            entries = perch.container.entries,
-            feeds = perch.container.feeds,
-            folders = perch.container.folders,
-            clock = clock,
-            settings = settings,
-        )
-        val addSourceViewModel = AddSourceViewModel(perch.container.feeds, perch.container.folders)
-        compose.setContent {
-            PerchTheme(dynamicColor = false) {
-                HomeScreen(
-                    viewModel = viewModel,
-                    addSourceViewModel = addSourceViewModel,
-                    onOpenEntry = onOpenEntry,
-                    onOpenSettings = {},
-                    // The shell owns the scope (V08), so a test that needs the Feed
-                    // already narrowed hoists it in rather than reaching for a setter.
-                    homeScope = remember { mutableStateOf(scope) },
-                )
-            }
-        }
-        // Room delivers its first emission off the main thread, so the skeleton is on
-        // screen for a beat; wait for the state the assertions are actually about.
-        awaitState { !it.isLoading }
-        compose.waitForIdle()
+        // The shell owns the scope (V08), so a test that needs the Feed already narrowed
+        // hands it to the harness rather than reaching for a setter.
+        viewModel = showHomeScreen(
+            perch, compose, clock, settings,
+            scope = scope,
+            onOpenEntry = onOpenEntry,
+        ).viewModel
     }
 
     /** Y of a node's top edge in the root, for asserting one row is above another. */

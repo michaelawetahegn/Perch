@@ -3,11 +3,7 @@ package dev.mkiros.perch.ui.home
 import android.content.Context
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.DrawerState
-import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
@@ -33,8 +29,7 @@ import dev.mkiros.perch.support.testEntry
 import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.ui.screenshot.Screenshots
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
-import dev.mkiros.perch.ui.source.AddSourceViewModel
-import dev.mkiros.perch.ui.theme.PerchTheme
+import dev.mkiros.perch.ui.screenshot.showHome as showHomeScreen
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
@@ -362,40 +357,19 @@ class BackfillOfferTest {
     }
 
     private fun showHome(fetcher: PageFetcher) {
-        val backfill = BackfillRepository(
-            feedDao = perch.database.feedDao(),
-            entryDao = perch.database.entryDao(),
-            fetcher = fetcher,
-            clock = clock,
-        )
-        viewModel = HomeViewModel(
-            entries = perch.container.entries,
-            feeds = perch.container.feeds,
-            folders = perch.container.folders,
-            clock = clock,
-            settings = settings,
-            backfill = backfill,
+        val home = showHomeScreen(
+            perch, compose, clock, settings,
+            backfill = BackfillRepository(
+                feedDao = perch.database.feedDao(),
+                entryDao = perch.database.entryDao(),
+                fetcher = fetcher,
+                clock = clock,
+            ),
             backfillRunner = runner,
         )
-        val addSourceViewModel = AddSourceViewModel(perch.container.feeds, perch.container.folders)
-        compose.setContent {
-            drawerState = rememberDrawerState(DrawerValue.Closed)
-            selection = rememberSaveable(stateSaver = DrawerSelection.Saver) {
-                mutableStateOf<DrawerSelection>(DrawerSelection.None)
-            }
-            PerchTheme(dynamicColor = false) {
-                HomeScreen(
-                    viewModel = viewModel,
-                    addSourceViewModel = addSourceViewModel,
-                    onOpenEntry = {},
-                    onOpenSettings = {},
-                    drawerState = drawerState,
-                    selection = selection,
-                )
-            }
-        }
-        awaitViewModel { !viewModel.uiState.value.isLoading }
-        compose.waitForIdle()
+        viewModel = home.viewModel
+        drawerState = home.drawerState
+        selection = home.selection
     }
 
     private fun seedFeed(entryCount: Int = 0, title: String = "A blog"): Long = runBlocking {

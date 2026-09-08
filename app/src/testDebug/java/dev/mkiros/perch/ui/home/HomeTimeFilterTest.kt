@@ -11,15 +11,15 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
 import com.google.common.truth.Truth.assertThat
-import dev.mkiros.perch.ui.rowTitles
 import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.support.testEntry
 import dev.mkiros.perch.support.testFeed
+import dev.mkiros.perch.ui.rowTitles
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
-import dev.mkiros.perch.ui.source.AddSourceViewModel
-import dev.mkiros.perch.ui.theme.PerchTheme
+import dev.mkiros.perch.ui.screenshot.homeViewModel
+import dev.mkiros.perch.ui.screenshot.showHome as showHomeScreen
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId
@@ -152,13 +152,7 @@ class HomeTimeFilterTest {
 
         // A second view model over the same settings — process death, in miniature. The
         // range has to come out of DataStore, not out of the last view model's memory.
-        val relaunched = HomeViewModel(
-            entries = perch.container.entries,
-            feeds = perch.container.feeds,
-            folders = perch.container.folders,
-            clock = clock,
-            settings = settings,
-        )
+        val relaunched = homeViewModel(perch, clock, settings)
         // `uiState` is `WhileSubscribed`, so it stays at its initial value until someone
         // collects it — and the collection has to be a coroutine on the main looper that
         // `waitForIdle` can run, never a `runBlocking` that would sit on that looper and
@@ -311,26 +305,7 @@ class HomeTimeFilterTest {
         .onAllNodesWithTag("home:section:$folderId").fetchSemanticsNodes().isNotEmpty()
 
     private fun showHome(clock: Clock = this.clock) {
-        viewModel = HomeViewModel(
-            entries = perch.container.entries,
-            feeds = perch.container.feeds,
-            folders = perch.container.folders,
-            clock = clock,
-            settings = settings,
-        )
-        val addSourceViewModel = AddSourceViewModel(perch.container.feeds, perch.container.folders)
-        compose.setContent {
-            PerchTheme(dynamicColor = false) {
-                HomeScreen(
-                    viewModel = viewModel,
-                    addSourceViewModel = addSourceViewModel,
-                    onOpenEntry = {},
-                    onOpenSettings = {},
-                )
-            }
-        }
-        awaitState { !it.isLoading }
-        compose.waitForIdle()
+        viewModel = showHomeScreen(perch, compose, clock, settings).viewModel
     }
 
     private fun seedFolder(name: String, sortIndex: Int): Long = runBlocking {

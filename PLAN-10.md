@@ -416,7 +416,7 @@ No task in this plan takes a device screenshot.
         across tests before/after in the commit; issue #43 closed.
       - Rung: unit
 
-- [ ] **D11 — One Home harness. Issue #44.**
+- [x] **D11 — One Home harness. Issue #44.**
       `gh issue view 44 --json body`. `showHome()` copies at `HomeScreenTest.kt:695`,
       `HomeRefreshTest.kt:419`, `HomeTimeFilterTest.kt:346`, `HomeTimeRangeTest.kt:260`,
       `FolderDrawerTest.kt:409`, `DrawerMultiSelectTest.kt:534`, and the near-copies in
@@ -430,6 +430,12 @@ No task in this plan takes a device screenshot.
         exposes what tests read.
       - `DesignScreenshotTest` is a pixel gate (§0.3): if its captures change, the harness
         changed layout — fix the harness.
+      - The harness composes with the hoisted state **always** created, so a font scale is the
+        one seam it cannot pass through unchanged: `LocalDensity` is re-provided only when the
+        scale is not 1f, leaving the default path exactly the density Robolectric configured.
+      - The two relaunch tests (`HomeTimeFilterTest`, `HomeTimeRangeTest`) need a second
+        view-model over the same database with nothing composed, so the harness also exposes
+        `homeViewModel(perch, clock, settings, …)` — the one `HomeViewModel(` in testDebug.
       - Done: test count unchanged; `./gradlew test` green; issue #44 closed.
       - Rung: unit
 

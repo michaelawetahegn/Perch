@@ -15,8 +15,7 @@ import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.ui.rowTitles
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
-import dev.mkiros.perch.ui.source.AddSourceViewModel
-import dev.mkiros.perch.ui.theme.PerchTheme
+import dev.mkiros.perch.ui.screenshot.showHome as showHomeScreen
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule
@@ -161,23 +160,9 @@ class PagedFeedTest {
     }
 
     private fun showHome() {
-        viewModel = HomeViewModel(
-            entries = perch.container.entries,
-            feeds = perch.container.feeds,
-            folders = perch.container.folders,
-            clock = clock,
-            settings = settings,
-        )
-        compose.setContent {
-            PerchTheme(dynamicColor = false) {
-                HomeScreen(
-                    viewModel = viewModel,
-                    addSourceViewModel = AddSourceViewModel(perch.container.feeds, perch.container.folders),
-                    onOpenEntry = {},
-                    onOpenSettings = {},
-                )
-            }
-        }
+        viewModel = showHomeScreen(perch, compose, clock, settings).viewModel
+        // The harness waits for the Feed's state; the first page arrives on Paging's own
+        // flow, a beat later.
         compose.awaitInRealTime("the first page") { isDisplayed("Entry 00") }
     }
 

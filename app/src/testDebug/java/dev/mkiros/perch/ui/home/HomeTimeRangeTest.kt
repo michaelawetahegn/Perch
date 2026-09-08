@@ -1,7 +1,6 @@
 package dev.mkiros.perch.ui.home
 
 import androidx.activity.ComponentActivity
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
@@ -15,17 +14,14 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.text.TextLayoutResult
-import androidx.compose.ui.unit.Density
-import androidx.compose.runtime.CompositionLocalProvider
 import com.google.common.truth.Truth.assertThat
-import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.support.testEntry
 import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
-import dev.mkiros.perch.ui.source.AddSourceViewModel
-import dev.mkiros.perch.ui.theme.PerchTheme
+import dev.mkiros.perch.ui.screenshot.homeViewModel
+import dev.mkiros.perch.ui.screenshot.showHome as showHomeScreen
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
@@ -117,13 +113,7 @@ class HomeTimeRangeTest {
         chooseRange(TimeFilter.PastMonth)
 
         // A second view model over the same settings — process death, in miniature.
-        val relaunched = HomeViewModel(
-            entries = perch.container.entries,
-            feeds = perch.container.feeds,
-            folders = perch.container.folders,
-            clock = clock,
-            settings = settings,
-        )
+        val relaunched = homeViewModel(perch, clock, settings)
         val seen = mutableListOf<HomeUiState>()
         val job = MainScope().launch { relaunched.uiState.collect { seen += it } }
         try {
@@ -225,31 +215,7 @@ class HomeTimeRangeTest {
         }
 
     private fun showHome(fontScale: Float = 1f) {
-        viewModel = HomeViewModel(
-            entries = perch.container.entries,
-            feeds = perch.container.feeds,
-            folders = perch.container.folders,
-            clock = clock,
-            settings = settings,
-        )
-        val addSourceViewModel = AddSourceViewModel(perch.container.feeds, perch.container.folders)
-        compose.setContent {
-            val density = LocalDensity.current
-            CompositionLocalProvider(
-                LocalDensity provides Density(density.density, fontScale),
-            ) {
-                PerchTheme(dynamicColor = false) {
-                    HomeScreen(
-                        viewModel = viewModel,
-                        addSourceViewModel = addSourceViewModel,
-                        onOpenEntry = {},
-                        onOpenSettings = {},
-                    )
-                }
-            }
-        }
-        awaitState { !it.isLoading }
-        compose.waitForIdle()
+        viewModel = showHomeScreen(perch, compose, clock, settings, fontScale = fontScale).viewModel
     }
 
     private fun seedFeed(title: String): Long = runBlocking {

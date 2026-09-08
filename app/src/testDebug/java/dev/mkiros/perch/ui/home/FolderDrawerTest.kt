@@ -21,8 +21,7 @@ import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.support.testEntry
 import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
-import dev.mkiros.perch.ui.source.AddSourceViewModel
-import dev.mkiros.perch.ui.theme.PerchTheme
+import dev.mkiros.perch.ui.screenshot.showHome as showHomeScreen
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
@@ -382,26 +381,7 @@ class FolderDrawerTest {
     private fun awaitDb(predicate: () -> Boolean) = awaitState { predicate() }
 
     private fun showHome() {
-        viewModel = HomeViewModel(
-            entries = perch.container.entries,
-            feeds = perch.container.feeds,
-            folders = perch.container.folders,
-            clock = clock,
-            settings = settings,
-        )
-        val addSourceViewModel = AddSourceViewModel(perch.container.feeds, perch.container.folders)
-        compose.setContent {
-            PerchTheme(dynamicColor = false) {
-                HomeScreen(
-                    viewModel = viewModel,
-                    addSourceViewModel = addSourceViewModel,
-                    onOpenEntry = {},
-                    onOpenSettings = {},
-                )
-            }
-        }
-        awaitState { !it.isLoading }
-        compose.waitForIdle()
+        viewModel = showHomeScreen(perch, compose, clock, settings).viewModel
     }
 
     private fun seedFolder(name: String): Long = runBlocking {

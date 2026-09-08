@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.SemanticsActions
@@ -34,14 +33,12 @@ import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.debug.DebugSeeder
 import dev.mkiros.perch.support.PerchRule
-import dev.mkiros.perch.ui.home.HomeScreen
 import dev.mkiros.perch.ui.home.HomeTestTags
 import dev.mkiros.perch.ui.home.HomeViewModel
 import dev.mkiros.perch.ui.home.SelectionTestTags
 import dev.mkiros.perch.ui.home.TimeFilter
 import dev.mkiros.perch.ui.screenshot.Screenshots
-import dev.mkiros.perch.ui.screenshot.awaitInRealTime
-import dev.mkiros.perch.ui.source.AddSourceViewModel
+import dev.mkiros.perch.ui.screenshot.showHome as showHomeScreen
 import dev.mkiros.perch.ui.theme.PerchTheme
 import dev.mkiros.perch.ui.theme.ThemeMode
 import java.io.File
@@ -230,25 +227,7 @@ class BrandScreenshotTest {
 
     private fun showHome(mode: ThemeMode) {
         stubThumbnails()
-        homeViewModel = HomeViewModel(
-            entries = perch.container.entries,
-            feeds = perch.container.feeds,
-            folders = perch.container.folders,
-            clock = clock,
-            settings = settings,
-        )
-        val addSourceViewModel = AddSourceViewModel(perch.container.feeds, perch.container.folders)
-        compose.setContent {
-            PerchTheme(mode = mode, dynamicColor = false) {
-                HomeScreen(
-                    viewModel = homeViewModel,
-                    addSourceViewModel = addSourceViewModel,
-                    onOpenEntry = {},
-                    onOpenSettings = {},
-                )
-            }
-        }
-        compose.awaitInRealTime("the list to load") { !homeViewModel.uiState.value.isLoading }
+        homeViewModel = showHomeScreen(perch, compose, clock, settings, themeMode = mode).viewModel
     }
 
     /** T29's stand-in loader: the list behind the drawer draws rows, not placeholders. */

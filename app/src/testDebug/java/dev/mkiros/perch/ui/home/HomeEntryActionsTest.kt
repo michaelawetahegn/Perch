@@ -16,10 +16,9 @@ import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.support.PerchRule
-import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.rowTitles
-import dev.mkiros.perch.ui.source.AddSourceViewModel
-import dev.mkiros.perch.ui.theme.PerchTheme
+import dev.mkiros.perch.ui.screenshot.awaitInRealTime
+import dev.mkiros.perch.ui.screenshot.showHome as showHomeScreen
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
@@ -207,23 +206,9 @@ class HomeEntryActionsTest {
         compose.awaitInRealTime(what) { predicate(entry()) }
 
     private fun showHome() {
-        viewModel = HomeViewModel(
-            entries = perch.container.entries,
-            feeds = perch.container.feeds,
-            folders = perch.container.folders,
-            clock = clock,
-            settings = settings,
-        )
-        compose.setContent {
-            PerchTheme(dynamicColor = false) {
-                HomeScreen(
-                    viewModel = viewModel,
-                    addSourceViewModel = AddSourceViewModel(perch.container.feeds, perch.container.folders),
-                    onOpenEntry = {},
-                    onOpenSettings = {},
-                )
-            }
-        }
+        viewModel = showHomeScreen(perch, compose, clock, settings).viewModel
+        // The harness waits for the Feed's state; these tests act on a row, which is a
+        // recomposition further on.
         compose.awaitInRealTime("the list to load") { compose.rowTitles().isNotEmpty() }
     }
 
