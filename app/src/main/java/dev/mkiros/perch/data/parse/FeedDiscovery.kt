@@ -1,7 +1,6 @@
 package dev.mkiros.perch.data.parse
 
-import java.io.ByteArrayInputStream
-import org.jsoup.Jsoup
+import dev.mkiros.perch.data.extract.PageContentExtractor
 
 /** A page someone fetched for us: what came back, and where it came back from. */
 class FetchedPage(
@@ -54,9 +53,7 @@ class FeedDiscovery(
      * parser; `rel` may carry several tokens, and `type` may carry parameters.
      */
     private fun declaredFeedUrl(page: FetchedPage): String? {
-        val document = runCatching {
-            Jsoup.parse(ByteArrayInputStream(page.bytes), null, page.finalUrl)
-        }.getOrNull() ?: return null
+        val document = PageContentExtractor.parse(page.bytes, page.finalUrl) ?: return null
 
         val alternates = document.select("link[href]")
             .filter { link -> link.attr("rel").split(WHITESPACE).any { it.equals("alternate", true) } }

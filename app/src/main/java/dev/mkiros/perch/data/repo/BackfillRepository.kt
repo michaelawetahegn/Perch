@@ -5,18 +5,14 @@ import dev.mkiros.perch.data.archive.ArchivePost
 import dev.mkiros.perch.data.archive.RobotsRules
 import dev.mkiros.perch.data.db.EntryDao
 import dev.mkiros.perch.data.db.FeedDao
-import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.extract.PageContentExtractor
-import dev.mkiros.perch.data.parse.HtmlSanitizer
-import dev.mkiros.perch.data.parse.LeadImage
+import dev.mkiros.perch.data.extract.toEntry
 import dev.mkiros.perch.data.parse.PageFetcher
 import dev.mkiros.perch.data.parse.hostRoot
 import java.time.Clock
 import java.time.Instant
 import kotlinx.coroutines.CancellationException
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
 
 /** What [BackfillRepository.plan] found, before anything is fetched. */
 data class BackfillPlan(
@@ -129,25 +125,17 @@ class BackfillRepository(
 
     private suspend fun fetchAndStore(feedId: Long, post: ArchivePost): Boolean {
         val fetched = fetcher.fetch(post.url) ?: return false
-        val document = parseHtml(fetched.bytes, fetched.finalUrl) ?: return false
+        val document = PageContentExtractor.parse(fetched.bytes, fetched.finalUrl) ?: return false
         val content = PageContentExtractor.extract(document, fetched.finalUrl)
         val (publishedAt, estimated) = backfillDate(content.metadata.publishedAt, post.lastmod)
 
         entryDao.upsertAll(
             listOf(
-                EntryEntity(
+                content.toEntry(
                     feedId = feedId,
-                    guid = fetched.finalUrl,
-                    title = content.metadata.title ?: fetched.finalUrl,
-                    link = fetched.finalUrl,
-                    author = null,
+                    finalUrl = fetched.finalUrl,
                     publishedAt = publishedAt,
                     publishedIsEstimated = estimated,
-                    summary = HtmlSanitizer.summarize(content.bodyHtml),
-                    contentHtml = content.bodyHtml,
-                    imageUrl = content.bodyHtml?.let { LeadImage.fromBody(it, fetched.finalUrl) }
-                        ?: content.ogImageUrl,
-                    readAt = null,
                     fetchedAt = clock.millis(),
                 ),
             ),
@@ -173,9 +161,6 @@ class BackfillRepository(
         return RobotsRules.parse(String(page.bytes, Charsets.UTF_8))
     }
 
-    /** Same shape as every other caller of [PageContentExtractor]: jsoup sniffs the page's own charset. */
-    private fun parseHtml(bytes: ByteArray, baseUrl: String): Document? =
-        runCatching { Jsoup.parse(bytes.inputStream(), null, baseUrl) }.getOrNull()
 
     companion object {
         /**

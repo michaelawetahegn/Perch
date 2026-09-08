@@ -2,14 +2,13 @@ package dev.mkiros.perch.data.repo
 
 import dev.mkiros.perch.data.db.EntryDao
 import dev.mkiros.perch.data.db.entity.EntryEntity
+import dev.mkiros.perch.data.extract.ArticleExtractor
 import dev.mkiros.perch.data.extract.PageContentExtractor
 import dev.mkiros.perch.data.parse.LeadImage
 import dev.mkiros.perch.data.parse.PageFetcher
 import java.time.Clock
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
 
 /**
  * Goes and gets the article when the feed did not ship one (U10).
@@ -44,7 +43,9 @@ class ArticleTextRepository(
         val link = entry.link?.takeIf { it.isNotBlank() } ?: return null
 
         val page = fetcher.fetch(link) ?: return null
-        val document = withContext(Dispatchers.Default) { parse(page.bytes, page.finalUrl) }
+        val document = withContext(Dispatchers.Default) {
+            PageContentExtractor.parse(page.bytes, page.finalUrl)
+        }
             ?: return null
 
         val content = PageContentExtractor.extract(document, page.finalUrl)
@@ -89,13 +90,5 @@ class ArticleTextRepository(
 
     /** Compared as prose, not as markup: an extraction wraps its paragraphs more heavily. */
     private fun isFullerThan(candidate: String, existing: String?): Boolean =
-        Jsoup.parse(candidate).text().length > Jsoup.parse(existing.orEmpty()).text().length
-
-    /**
-     * Bytes to a document, letting jsoup sniff the page's own `<meta charset>` — the
-     * declaration in the markup beats the one in the header, and plenty of pages have only
-     * the former.
-     */
-    private fun parse(bytes: ByteArray, baseUrl: String): Document? =
-        runCatching { Jsoup.parse(bytes.inputStream(), null, baseUrl) }.getOrNull()
+        ArticleExtractor.textLength(candidate) > ArticleExtractor.textLength(existing)
 }

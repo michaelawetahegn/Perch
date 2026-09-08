@@ -2,19 +2,15 @@ package dev.mkiros.perch.data.repo
 
 import dev.mkiros.perch.data.db.EntryDao
 import dev.mkiros.perch.data.db.FeedDao
-import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.extract.PageContentExtractor
+import dev.mkiros.perch.data.extract.toEntry
 import dev.mkiros.perch.data.net.FeedFetcher
 import dev.mkiros.perch.data.net.FetchResult
 import dev.mkiros.perch.data.parse.FeedParser
-import dev.mkiros.perch.data.parse.HtmlSanitizer
-import dev.mkiros.perch.data.parse.LeadImage
 import dev.mkiros.perch.data.parse.ParseResult
 import dev.mkiros.perch.ui.source.normalizePastedUrl
 import java.time.Clock
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
 
 /**
  * Why a pasted link did not become a saved entry (PLAN-6 §0.4) — every reason
@@ -71,7 +67,7 @@ class SavedLinkRepository(
             return Result.failure(SaveLinkFailure.IsFeed(fetched.finalUrl))
         }
 
-        val document = parseHtml(fetched.bytes, fetched.finalUrl)
+        val document = PageContentExtractor.parse(fetched.bytes, fetched.finalUrl)
             ?: return Result.failure(SaveLinkFailure.Unreachable("$normalized is not a readable page."))
 
         val savedFeedId = feedDao.findByUrl(FeedEntity.SAVED_LINKS_FEED_URL)?.id
@@ -79,24 +75,16 @@ class SavedLinkRepository(
 
         val content = PageContentExtractor.extract(document, fetched.finalUrl)
         val now = clock.millis()
-        val entity = EntryEntity(
+        // A page that declares no date at all is dated *now*, and says so: a link saved
+        // today belongs at the top of To-Read, not at the bottom under EPOCH.
+        val entity = content.toEntry(
             feedId = savedFeedId,
-            guid = fetched.finalUrl,
-            // A page with no title at all (no `<head>`, U01's corpus has several) still
-            // saves — the reader can still open it by its address.
-            title = content.metadata.title ?: fetched.finalUrl,
-            link = fetched.finalUrl,
-            author = null,
+            finalUrl = fetched.finalUrl,
             publishedAt = content.metadata.publishedAt?.toEpochMilli() ?: now,
             publishedIsEstimated = content.metadata.publishedAt == null,
-            summary = HtmlSanitizer.summarize(content.bodyHtml),
-            contentHtml = content.bodyHtml,
-            imageUrl = content.bodyHtml?.let { LeadImage.fromBody(it, fetched.finalUrl) }
-                ?: content.ogImageUrl,
-            readAt = null,
+            fetchedAt = now,
             isSaved = true,
             savedAt = now,
-            fetchedAt = now,
         )
 
         // Idempotent on (feedId, guid), same as a refetched feed entry — pasting the same
@@ -114,7 +102,4 @@ class SavedLinkRepository(
         return Result.success(saved.id)
     }
 
-    /** Same shape as [ArticleTextRepository]'s own: jsoup sniffs the page's own charset. */
-    private fun parseHtml(bytes: ByteArray, baseUrl: String): Document? =
-        runCatching { Jsoup.parse(bytes.inputStream(), null, baseUrl) }.getOrNull()
 }

@@ -99,7 +99,19 @@ object ArticleExtractor {
      * outcome worse than not trying.
      */
     fun proseLength(html: String?, baseUrl: String?): Int =
-        extract(html, baseUrl)?.let { Jsoup.parse(it, baseUrl.orEmpty()).text().length } ?: 0
+        textLength(extract(html, baseUrl), baseUrl)
+
+    /**
+     * How much prose is in markup that is already an article body — the other half of that
+     * comparison, and the rule [dev.mkiros.perch.data.repo.ArticleTextRepository] applies
+     * when it weighs a fresh extraction against the body the feed shipped (D16).
+     *
+     * Text, not markup, is the whole point: an extraction wraps its paragraphs far more
+     * heavily than a feed's summary does, so comparing HTML lengths would hand every
+     * contest to the extractor.
+     */
+    fun textLength(html: String?, baseUrl: String? = null): Int =
+        html?.let { Jsoup.parse(it, baseUrl.orEmpty()).text().length } ?: 0
 
     // ---- 1. strip ---------------------------------------------------------------
 
