@@ -54,13 +54,18 @@ fun RenameSourceDialog(
                 Text(stringResource(R.string.source_rename_confirm))
             }
         },
-        dismissButton = { CancelButton(onDismiss) },
+        dismissButton = { CancelButton(SourceActionTestTags.CANCEL, onDismiss) },
     )
 }
 
+/**
+ * The one "Cancel" in `ui/home` (D26). Every dialog that can be backed out of draws the
+ * same button with the same string; only the handle differs, because the label is on
+ * screen in more than one dialog and matching it by text would match a coincidence.
+ */
 @Composable
-private fun CancelButton(onClick: () -> Unit) {
-    TextButton(onClick = onClick, modifier = Modifier.testTag(SourceActionTestTags.CANCEL)) {
+internal fun CancelButton(testTag: String, onClick: () -> Unit) {
+    TextButton(onClick = onClick, modifier = Modifier.testTag(testTag)) {
         Text(stringResource(R.string.action_cancel))
     }
 }

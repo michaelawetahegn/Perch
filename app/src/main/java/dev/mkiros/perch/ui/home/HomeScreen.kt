@@ -1,6 +1,7 @@
 package dev.mkiros.perch.ui.home
 
 import androidx.activity.compose.BackHandler
+import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -913,30 +914,40 @@ private fun SourceDrawer(
             // selection is how a reader loses a batch they were halfway through building.
             if (!selecting) {
                 HorizontalDivider(modifier = Modifier.padding(Dimens.md))
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Add, contentDescription = null) },
-                    label = { Text(stringResource(R.string.drawer_add_source)) },
-                    selected = false,
+                DrawerNavItem(
+                    icon = Icons.Default.Add,
+                    labelRes = R.string.drawer_add_source,
                     onClick = onAddSource,
-                    modifier = Modifier.padding(horizontal = Dimens.md),
                 )
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.CreateNewFolder, contentDescription = null) },
-                    label = { Text(stringResource(R.string.drawer_new_folder)) },
-                    selected = false,
+                DrawerNavItem(
+                    icon = Icons.Default.CreateNewFolder,
+                    labelRes = R.string.drawer_new_folder,
                     onClick = onNewFolder,
-                    modifier = Modifier.padding(horizontal = Dimens.md),
                 )
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                    label = { Text(stringResource(R.string.drawer_settings)) },
-                    selected = false,
+                DrawerNavItem(
+                    icon = Icons.Default.Settings,
+                    labelRes = R.string.drawer_settings,
                     onClick = onOpenSettings,
-                    modifier = Modifier.padding(horizontal = Dimens.md),
                 )
             }
         }
     }
+}
+
+/**
+ * One of the three ways out of the drawer (D26) — they differ only in icon, label and
+ * what they do, and none of them is ever the selected destination: the drawer's selection
+ * is a source, not a navigation row.
+ */
+@Composable
+private fun DrawerNavItem(icon: ImageVector, @StringRes labelRes: Int, onClick: () -> Unit) {
+    NavigationDrawerItem(
+        icon = { Icon(icon, contentDescription = null) },
+        label = { Text(stringResource(labelRes)) },
+        selected = false,
+        onClick = onClick,
+        modifier = Modifier.padding(horizontal = Dimens.md),
+    )
 }
 
 /**

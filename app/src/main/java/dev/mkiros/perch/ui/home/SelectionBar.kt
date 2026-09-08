@@ -195,14 +195,7 @@ fun DeleteSourcesDialog(
                 )
             }
         },
-        dismissButton = {
-            TextButton(
-                onClick = onDismiss,
-                modifier = Modifier.testTag(SelectionTestTags.DELETE_CANCEL),
-            ) {
-                Text(stringResource(R.string.action_cancel))
-            }
-        },
+        dismissButton = { CancelButton(SelectionTestTags.DELETE_CANCEL, onDismiss) },
     )
 }
 

@@ -673,7 +673,7 @@ No task in this plan takes a device screenshot.
         **27,651**. `./gradlew test`: **BUILD SUCCESSFUL in 3m 17s**, 1930 tests (1124 debug +
         806 release), 0 failures.
 
-- [ ] **D26 — The small `ui/home` composables exist once. Issue #59.**
+- [x] **D26 — The small `ui/home` composables exist once. Issue #59.**
       `gh issue view 59 --json body`. `ActionRow` (`EntryActions.kt:141-166`) and `DialogRow`
       (`FolderActions.kt:210-236`) → one; `CancelButton` (`SourceActions.kt:61-67`),
       `FolderCancelButton` (`FolderActions.kt:203-208`) and the inline `TextButton` at

@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.PlaylistRemove
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -33,6 +34,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -93,6 +95,7 @@ fun EntryActionsSheet(
                 ),
                 testTag = EntryActionTestTags.SAVE,
                 onClick = onToggleSaved,
+                modifier = Modifier.fillMaxWidth(),
             )
             ActionRow(
                 icon = if (item.isStarred) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
@@ -101,6 +104,7 @@ fun EntryActionsSheet(
                 ),
                 testTag = EntryActionTestTags.LIKE,
                 onClick = onToggleLiked,
+                modifier = Modifier.fillMaxWidth(),
             )
             ActionRow(
                 icon = if (item.isRead) {
@@ -117,12 +121,14 @@ fun EntryActionsSheet(
                 ),
                 testTag = EntryActionTestTags.READ,
                 onClick = onToggleRead,
+                modifier = Modifier.fillMaxWidth(),
             )
             ActionRow(
                 icon = Icons.Default.Share,
                 label = stringResource(R.string.entry_action_share),
                 testTag = EntryActionTestTags.SHARE,
                 onClick = onShare,
+                modifier = Modifier.fillMaxWidth(),
             )
             // Nothing to put on the clipboard if the entry never carried a link — an
             // affordance that would copy the empty string is worse than its absence.
@@ -132,33 +138,48 @@ fun EntryActionsSheet(
                     label = stringResource(R.string.entry_action_copy_link),
                     testTag = EntryActionTestTags.COPY_LINK,
                     onClick = onCopyLink,
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
         }
     }
 }
 
+/**
+ * One tappable icon-and-label row of an action surface — this sheet's actions and the
+ * folder dialogs' rows are the same `ListItem` (D26).
+ *
+ * `tint` is left `Unspecified` by default so the row takes `ListItem`'s own colours: a
+ * dialog that wants to paint a destructive row red passes one, and passing it colours the
+ * icon with the label rather than leaving the two disagreeing.
+ */
 @Composable
-private fun ActionRow(
+internal fun ActionRow(
     icon: ImageVector,
     label: String,
     testTag: String,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    tint: Color = Color.Unspecified,
 ) {
     ListItem(
-        headlineContent = { Text(label) },
+        headlineContent = {
+            Text(text = label, color = tint, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        },
         leadingContent = {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
+                tint = tint.takeOrElse { LocalContentColor.current },
                 modifier = Modifier.size(Dimens.icon),
             )
         },
+        // A dialog and a sheet both paint their own container; a second surface on top of
+        // either would show as a band across the body.
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
         // `ListItem` has no onClick slot, so the gesture is a modifier — and it goes on the
         // same node as the tag, or a test would address a node that answers nothing.
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = modifier
             .clickable(onClick = onClick)
             .testTag(testTag),
     )

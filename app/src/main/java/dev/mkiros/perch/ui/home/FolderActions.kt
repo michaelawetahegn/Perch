@@ -1,10 +1,8 @@
 package dev.mkiros.perch.ui.home
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -14,9 +12,6 @@ import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.DriveFileRenameOutline
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -27,8 +22,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -54,13 +47,14 @@ fun FolderActionsDialog(
         title = { Text(text = folderName, maxLines = 2, overflow = TextOverflow.Ellipsis) },
         text = {
             Column {
-                DialogRow(
+                ActionRow(
                     icon = Icons.Default.DriveFileRenameOutline,
                     label = stringResource(R.string.folder_action_rename),
                     testTag = FolderActionTestTags.RENAME,
                     onClick = onRename,
+                    tint = MaterialTheme.colorScheme.onSurface,
                 )
-                DialogRow(
+                ActionRow(
                     icon = Icons.Default.DeleteOutline,
                     label = stringResource(R.string.folder_action_delete),
                     testTag = FolderActionTestTags.DELETE,
@@ -70,7 +64,7 @@ fun FolderActionsDialog(
             }
         },
         confirmButton = {},
-        dismissButton = { FolderCancelButton(onDismiss) },
+        dismissButton = { CancelButton(FolderActionTestTags.CANCEL, onDismiss) },
     )
 }
 
@@ -112,7 +106,7 @@ fun FolderNameDialog(
                 Text(stringResource(R.string.folder_name_confirm))
             }
         },
-        dismissButton = { FolderCancelButton(onDismiss) },
+        dismissButton = { CancelButton(FolderActionTestTags.CANCEL, onDismiss) },
     )
 }
 
@@ -141,7 +135,7 @@ fun DeleteFolderDialog(
                 )
             }
         },
-        dismissButton = { FolderCancelButton(onDismiss) },
+        dismissButton = { CancelButton(FolderActionTestTags.CANCEL, onDismiss) },
     )
 }
 
@@ -175,7 +169,7 @@ fun MoveSourceDialog(
                     .verticalScroll(rememberScrollState()),
             ) {
                 folders.forEach { folder ->
-                    DialogRow(
+                    ActionRow(
                         icon = if (folder.id == currentFolderId) {
                             Icons.Default.Check
                         } else {
@@ -184,9 +178,10 @@ fun MoveSourceDialog(
                         label = folder.name,
                         testTag = FolderActionTestTags.folderChoice(folder.id),
                         onClick = { onMove(folder.id) },
+                        tint = MaterialTheme.colorScheme.onSurface,
                     )
                 }
-                DialogRow(
+                ActionRow(
                     icon = Icons.Default.CreateNewFolder,
                     label = stringResource(R.string.folder_new),
                     testTag = FolderActionTestTags.NEW_FOLDER,
@@ -196,43 +191,7 @@ fun MoveSourceDialog(
             }
         },
         confirmButton = {},
-        dismissButton = { FolderCancelButton(onDismiss) },
-    )
-}
-
-@Composable
-private fun FolderCancelButton(onClick: () -> Unit) {
-    TextButton(onClick = onClick, modifier = Modifier.testTag(FolderActionTestTags.CANCEL)) {
-        Text(stringResource(R.string.action_cancel))
-    }
-}
-
-@Composable
-private fun DialogRow(
-    icon: ImageVector,
-    label: String,
-    testTag: String,
-    onClick: () -> Unit,
-    tint: Color = MaterialTheme.colorScheme.onSurface,
-) {
-    ListItem(
-        headlineContent = {
-            Text(text = label, color = tint, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        },
-        leadingContent = {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = tint,
-                modifier = Modifier.size(Dimens.icon),
-            )
-        },
-        // The dialog already paints its own container; a second surface on top of it
-        // would show as a band across the body.
-        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-        modifier = Modifier
-            .clickable(onClick = onClick)
-            .testTag(testTag),
+        dismissButton = { CancelButton(FolderActionTestTags.CANCEL, onDismiss) },
     )
 }
 
