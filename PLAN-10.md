@@ -495,7 +495,7 @@ No task in this plan takes a device screenshot.
         `./gradlew test` green; issue #48 closed.
       - Rung: unit
 
-- [ ] **D16 — The page repositories share one parse, one mapping, one prose rule. Issue #49.**
+- [x] **D16 — The page repositories share one parse, one mapping, one prose rule. Issue #49.**
       `gh issue view 49 --json body`. §0.6 decides where. Anchors: the parse at
       `ArticleTextRepository.kt:86-92`, `SavedLinkRepository.kt:111-112`,
       `BackfillRepository.kt:171-172`, `FeedDiscovery.kt:58-60`; the mapping at
