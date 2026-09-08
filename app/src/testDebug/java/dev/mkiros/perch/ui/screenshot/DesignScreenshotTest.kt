@@ -47,6 +47,10 @@ import dev.mkiros.perch.ui.home.HomeTestTags
 import dev.mkiros.perch.ui.home.HomeViewModel
 import dev.mkiros.perch.ui.home.SelectionTestTags
 import dev.mkiros.perch.ui.home.TimeFilter
+import dev.mkiros.perch.ui.search.SearchState
+import dev.mkiros.perch.ui.search.SearchSurface
+import dev.mkiros.perch.ui.search.SearchTestTags
+import dev.mkiros.perch.ui.search.SearchViewModel
 import dev.mkiros.perch.ui.source.AddSourceViewModel
 import dev.mkiros.perch.ui.theme.PerchTheme
 import dev.mkiros.perch.ui.theme.ThemeMode
@@ -342,6 +346,29 @@ class DesignScreenshotTest {
         capture("empty-state")
     }
 
+    /**
+     * S10/#28's two states, over the real seeded corpus.
+     *
+     * The prompt is the one worth looking hardest at: it is the first thing a reader sees
+     * after tapping the magnifier, and it is the only place the app explains that search
+     * reaches everything it has ever stored rather than only what is on screen.
+     */
+    @Test
+    fun `search with nothing typed yet`() {
+        seed()
+        showSearch(query = "")
+
+        capture("search-prompt")
+    }
+
+    @Test
+    fun `search results over the seeded corpus`() {
+        seed()
+        showSearch(query = "the")
+
+        capture("search-results")
+    }
+
     // ---- harness ---------------------------------------------------------------
 
     /**
@@ -545,6 +572,23 @@ class DesignScreenshotTest {
     private fun saveSomeEntries(count: Int) = runBlocking {
         database.entryDao().observeAll().first().take(count)
             .forEach { container.entries.setSaved(it.id, isSaved = true) }
+    }
+
+    private fun showSearch(query: String) {
+        stubThumbnails()
+        val viewModel = SearchViewModel(container.entries, clock)
+        compose.setContent {
+            PerchTheme(mode = ThemeMode.Dark, dynamicColor = false) {
+                val state = remember {
+                    mutableStateOf<SearchState?>(SearchState.everything().asking(query))
+                }
+                SearchSurface(viewModel = viewModel, state = state, onOpenEntry = {})
+            }
+        }
+        val tag = if (query.isEmpty()) SearchTestTags.PROMPT else SearchTestTags.RESULT
+        compose.awaitInRealTime("the search surface") {
+            compose.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty()
+        }
     }
 
     private fun showShell(mode: ThemeMode) {

@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.LibraryBooks
 import androidx.compose.material.icons.filled.AddLink
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -53,6 +54,7 @@ import dev.mkiros.perch.ui.home.EntryRow
 import dev.mkiros.perch.ui.home.copyLink
 import dev.mkiros.perch.ui.home.pagedFooter
 import dev.mkiros.perch.ui.home.shareEntry
+import dev.mkiros.perch.ui.search.SearchState
 import dev.mkiros.perch.ui.theme.Dimens
 
 /**
@@ -75,6 +77,9 @@ fun CollectionScreen(
     // caller still supplies one because a screen composed alone (a test) should not have to
     // know that in advance.
     saveLinkViewModel: SaveLinkViewModel? = null,
+    // S10/#28, defaulted for the reason above it: a search opened here inherits *this*
+    // list, and the label is the same word the bar is showing.
+    onOpenSearch: (SearchState) -> Unit = {},
 ) {
     val entries = viewModel.entries.collectAsLazyPagingItems()
     val pendingUndo by viewModel.pendingUndo.collectAsStateWithLifecycle()
@@ -122,12 +127,26 @@ fun CollectionScreen(
         viewModel.clearSavedLinkTitle()
     }
 
+    // Read once, because the bar shows it and a search opened from the bar carries it —
+    // one string, so the placeholder cannot come to name a different list than the title.
+    val title = stringResource(viewModel.collection.titleRes())
+
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(viewModel.collection.titleRes())) },
+                title = { Text(title) },
                 actions = {
+                    IconButton(
+                        onClick = { onOpenSearch(searchScopeOf(viewModel.collection, title)) },
+                        modifier = Modifier.testTag(CollectionTestTags.SEARCH),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = stringResource(R.string.search_action),
+                            modifier = Modifier.size(Dimens.icon),
+                        )
+                    }
                     // §0.4: only To-Read reaches for a single article without following its
                     // site. Liked never shows this — a link a reader pastes has not been
                     // read yet, and "Liked" only ever means something they read and kept.
@@ -325,6 +344,13 @@ private fun EmptyState(collection: Collection) {
     }
 }
 
+/** What a search opened from one of these two lists is narrowed to (S10, §0.8). */
+internal fun searchScopeOf(collection: Collection, label: String): SearchState =
+    when (collection) {
+        Collection.ToRead -> SearchState.inToRead(label)
+        Collection.Liked -> SearchState.inLiked(label)
+    }
+
 internal fun Collection.titleRes(): Int = when (this) {
     Collection.ToRead -> R.string.tab_to_read
     Collection.Liked -> R.string.tab_liked
@@ -335,4 +361,5 @@ object CollectionTestTags {
     const val ENTRY = "collection:entry"
     const val EMPTY = "collection:empty"
     const val SAVE_LINK = "collection:save-link"
+    const val SEARCH = "collection:search"
 }

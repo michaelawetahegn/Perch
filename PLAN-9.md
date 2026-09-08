@@ -436,7 +436,7 @@ a route, for reasons that apply identically here. Hoist the search state beside 
         green and growing.
       - Rung: unit
 
-- [ ] **S10 — A search icon at the top of the feed. TDD + screenshot. Issue #28 (3 of 3).**
+- [x] **S10 — A search icon at the top of the feed. TDD + screenshot. Issue #28 (3 of 3).**
       Depends on S09. §0.8 carries the decisions — **search is state, not a route**, it inherits
       the surface it was opened from, and one "Search everything" action widens it.
       - Icon into `TopAppBar.actions` (`HomeScreen.kt:356-361`, today just `HomeOverflow`);

@@ -171,6 +171,22 @@
     <!-- S02/#33: a save ended in silence; To-Read now names what it just got. %1$s is the article's title. -->
     <string name="save_link_saved">Saved “%1$s”</string>
 
+    <!-- Search (S10, #28): find a stored article by remembering a word from it. -->
+    <string name="search_action">Search</string>
+    <string name="search_leave">Leave search</string>
+    <string name="search_clear">Clear what was typed</string>
+    <!-- The field's placeholder. The second is used when the search inherited a surface;
+         %1$s is that surface's name — a source, a folder, "To-Read" or "Liked". -->
+    <string name="search_hint">Search every article</string>
+    <string name="search_hint_in">Search in %1$s</string>
+    <!-- §0.8: the one scope control there is. -->
+    <string name="search_everything">Search everything</string>
+    <string name="search_prompt_title">Find something you have read</string>
+    <string name="search_prompt_body">Type a word you remember, from the headline or from the article itself. Everything Perch has stored can be found here, however long ago you read it.</string>
+    <!-- %1$s is what the reader typed, quoted back so they can see what was asked. -->
+    <string name="search_no_results_title">Nothing matches “%1$s”</string>
+    <string name="search_no_results_body">Try another word, or fewer of them. Only articles Perch has already fetched can be searched.</string>
+
     <!-- The bottom bar's three destinations (PLAN-2 §0, U09) -->
     <string name="tab_feed">Feed</string>
     <!-- "To-Read", not "Saved": the label says what the list is for, not what the gesture was. -->

@@ -37,6 +37,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.RssFeed
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
@@ -98,6 +99,7 @@ import dev.mkiros.perch.ui.source.AddSourceSheet
 import dev.mkiros.perch.ui.source.AddSourceViewModel
 import dev.mkiros.perch.ui.brand.PerchMark
 import dev.mkiros.perch.ui.brand.PerchWordmark
+import dev.mkiros.perch.ui.search.SearchState
 import dev.mkiros.perch.ui.theme.Dimens
 import kotlinx.coroutines.launch
 
@@ -120,6 +122,12 @@ fun HomeScreen(
     onOpenEntry: (Long) -> Unit,
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
+    // S10/#28. The Feed resolves the surface, not the shell: what a search inherits is
+    // whichever source or folder the *resolved* scope names — the one filtered down to a
+    // source that still exists (S04) — together with its display name, and only this
+    // screen holds both. Defaulted so a screen composed alone in a test still draws a bar
+    // that behaves, exactly as `saveLinkViewModel` is on `CollectionScreen`.
+    onOpenSearch: (SearchState) -> Unit = {},
     // Both hoisted so the shell can reason about them (U09): the back chain has to know
     // whether the drawer is open, and Feed's scroll offset has to outlive a tab switch —
     // which it cannot do if it is remembered inside the screen the switch tears down.
@@ -376,6 +384,16 @@ fun HomeScreen(
                         }
                     },
                     actions = {
+                        IconButton(
+                            onClick = { onOpenSearch(searchScopeOf(uiState)) },
+                            modifier = Modifier.testTag(HomeTestTags.SEARCH),
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = stringResource(R.string.search_action),
+                                modifier = Modifier.size(Dimens.icon),
+                            )
+                        }
                         HomeOverflow(
                             onRefresh = viewModel::refresh,
                             onMarkAllRead = viewModel::markAllRead,
@@ -616,6 +634,21 @@ fun HomeScreen(
             )
         }
     }
+}
+
+/**
+ * What a search opened from this bar inherits (S10, §0.8).
+ *
+ * Read off the *resolved* scope for S04's reason: it is the scope already filtered down to
+ * a source or folder that still exists, so a stale id cannot become a search that can
+ * never match anything. [HomeUiState.selectedTitle] is the same name the bar is showing,
+ * which is what makes the placeholder read as a continuation of the list rather than as a
+ * new place.
+ */
+internal fun searchScopeOf(state: HomeUiState): SearchState = when (val scope = state.scope) {
+    HomeScope.All -> SearchState.everything()
+    is HomeScope.Source -> SearchState.inSource(scope.id, state.selectedTitle)
+    is HomeScope.Folder -> SearchState.inFolder(scope.id, state.selectedTitle)
 }
 
 /**
@@ -1156,6 +1189,9 @@ object HomeTestTags {
      * than at a screen coordinate that the app bar or a banner would shift.
      */
     const val ENTRY = "home:entry"
+
+    /** S10/#28's way in, beside the overflow rather than inside it: it is a destination. */
+    const val SEARCH = "home:search"
 
     const val MARK_ALL_READ = "home:overflow:mark-all-read"
     const val REFRESH = "home:overflow:refresh"

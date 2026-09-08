@@ -115,6 +115,42 @@ class BackChainTest {
         assertThat(step).isEqualTo(BackStep.ScrollFeedToTop)
     }
 
+    /**
+     * S10/#28's rung. Search is opened *from* a surface and drawn over it, so back must
+     * put the reader back on the list they were looking at — not widen it, not change
+     * tabs, and above all not quit. It sits above [BackStep.ReturnToFeed] rather than
+     * merely above [BackStep.LeaveScope] because search is reachable from To-Read and
+     * Liked as well: were it below, back out of a search on Liked would jump to the Feed
+     * and lose the question in the same press.
+     */
+    @Test
+    fun `back leaves search before it returns to the Feed`() {
+        val step = nextBackStep(
+            BackState(searchOpen = true, tab = PerchTab.Liked, feedScoped = true, feedScrolled = true),
+        )
+
+        assertThat(step).isEqualTo(BackStep.LeaveSearch)
+    }
+
+    @Test
+    fun `back leaves search before it widens a scoped Feed`() {
+        val step = nextBackStep(BackState(searchOpen = true, feedScoped = true))
+
+        assertThat(step).isEqualTo(BackStep.LeaveSearch)
+    }
+
+    /**
+     * The other side of the same order: an article opened *from* the results pops back to
+     * the results. Search outlives the article it launched, so a reader who reads one hit
+     * and comes back is still looking at their own question.
+     */
+    @Test
+    fun `an article opened from search pops back to the results`() {
+        val step = nextBackStep(BackState(searchOpen = true, onArticle = true))
+
+        assertThat(step).isEqualTo(BackStep.PopArticle)
+    }
+
     @Test
     fun `only Feed at the top may leave the app`() {
         val step = nextBackStep(BackState(tab = PerchTab.Feed, feedScrolled = false))
@@ -132,6 +168,7 @@ class BackChainTest {
             BackState(selectionActive = true, overlayOpen = true),
             BackState(overlayOpen = true),
             BackState(onArticle = true),
+            BackState(searchOpen = true),
             BackState(tab = PerchTab.ToRead),
             BackState(tab = PerchTab.Liked),
             BackState(feedScoped = true),
@@ -150,6 +187,7 @@ class BackChainTest {
             BackStep.CloseOverlay,
             BackStep.CloseImageViewer,
             BackStep.PopArticle,
+            BackStep.LeaveSearch,
             BackStep.ReturnToFeed,
             BackStep.LeaveScope,
             BackStep.ScrollFeedToTop,

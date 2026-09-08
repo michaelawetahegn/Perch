@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -47,6 +48,9 @@ import dev.mkiros.perch.ui.home.DrawerSelection
 import dev.mkiros.perch.ui.home.HomeScope
 import dev.mkiros.perch.ui.home.HomeScreen
 import dev.mkiros.perch.ui.home.HomeViewModel
+import dev.mkiros.perch.ui.search.SearchState
+import dev.mkiros.perch.ui.search.SearchSurface
+import dev.mkiros.perch.ui.search.SearchViewModel
 import dev.mkiros.perch.ui.settings.SettingsScreen
 import dev.mkiros.perch.ui.settings.SettingsViewModel
 import dev.mkiros.perch.ui.source.AddSourceViewModel
@@ -158,11 +162,20 @@ fun PerchNavHost(
         mutableStateOf<HomeScope>(HomeScope.All)
     }
 
+    // S10/#28, hoisted for the fourth time and the fourth time for the same reason: it is
+    // a rung of the back chain, and a rung the chain cannot see is a rung that is only true
+    // by luck of composition order. Null is "no search open". `rememberSaveable` so a
+    // rotation mid-typing does not throw the question away.
+    val search = rememberSaveable(stateSaver = SearchState.Saver) {
+        mutableStateOf<SearchState?>(null)
+    }
+
     val backState = BackState(
         selectionActive = drawerSelection.value.isActive,
         overlayOpen = drawerState.isOpen,
         imageViewerOpen = zoomedImage.value != null,
         onArticle = route == Routes.ARTICLE,
+        searchOpen = search.value != null,
         tab = tab ?: PerchTab.Feed,
         feedScoped = homeScope.value.isNarrowed,
         feedScrolled = feedListState.canScrollBackward,
@@ -181,6 +194,7 @@ fun PerchNavHost(
             BackStep.CloseOverlay -> scope.launch { drawerState.close() }
             BackStep.CloseImageViewer -> zoomedImage.value = null
             BackStep.PopArticle -> navController.popBackStack()
+            BackStep.LeaveSearch -> search.value = null
             BackStep.ReturnToFeed -> selectTab(navController, PerchTab.Feed)
             BackStep.LeaveScope -> homeScope.value = HomeScope.All
             // Not a navigation: nothing is popped and nothing animates as a transition.
@@ -190,11 +204,11 @@ fun PerchNavHost(
     }
 
     Column(modifier = modifier.fillMaxSize().semantics { testTagsAsResourceId = true }) {
+        Box(modifier = Modifier.weight(1f)) {
         NavHost(
             navController = navController,
             startDestination = Routes.FEED,
             modifier = Modifier
-                .weight(1f)
                 // The one place the contract needs a hand (V04). The bar and the graph are
                 // siblings, so a screen's `Scaffold` cannot see that the strip of screen
                 // its content would otherwise keep clear of the gesture handle is already
@@ -227,6 +241,7 @@ fun PerchNavHost(
                     listState = feedListState,
                     selection = drawerSelection,
                     homeScope = homeScope,
+                    onOpenSearch = { search.value = it },
                 )
             }
 
@@ -237,6 +252,7 @@ fun PerchNavHost(
                     ),
                     onOpenEntry = { entryId -> navController.navigate(Routes.article(entryId)) },
                     saveLinkViewModel = viewModel(factory = SaveLinkViewModel.factory(container)),
+                    onOpenSearch = { search.value = it },
                 )
             }
 
@@ -246,6 +262,7 @@ fun PerchNavHost(
                         factory = CollectionViewModel.factory(container, Collection.Liked),
                     ),
                     onOpenEntry = { entryId -> navController.navigate(Routes.article(entryId)) },
+                    onOpenSearch = { search.value = it },
                 )
             }
 
@@ -295,12 +312,32 @@ fun PerchNavHost(
             }
         }
 
+        // S10/#28: drawn *over* the list it was opened from rather than in place of it, so
+        // the surface behind keeps its scroll position, its view-model and its place in the
+        // back stack — leaving search is not a restore, because nothing was torn down. Only
+        // while a tab is showing: an article opened from the results covers the results, and
+        // popping it brings the reader back to the question they left, still typed.
+        val open = search.value
+        if (open != null && tab != null) {
+            SearchSurface(
+                viewModel = viewModel(factory = SearchViewModel.factory(container)),
+                state = search,
+                onOpenEntry = { entryId -> navController.navigate(Routes.article(entryId)) },
+            )
+        }
+        }
+
         // Absent, not merely disabled, on the article and settings routes: the reading
         // surface is the one screen with no furniture under it (§0).
         if (tab != null) {
             PerchBottomBar(
                 current = tab,
                 onSelect = { selected ->
+                    // A tab is a place; a search is a question about one. Choosing a tab —
+                    // even the current one — means "put me back on my list", so the
+                    // question is closed rather than carried onto a surface it did not
+                    // inherit and would then be silently answering about.
+                    search.value = null
                     if (selected == tab) return@PerchBottomBar
                     selectTab(navController, selected)
                 },

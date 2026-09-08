@@ -33,6 +33,21 @@ enum class BackStep {
     /** An article returns to the list it was opened from. */
     PopArticle,
 
+    /**
+     * Search (S10, #28) closes, leaving the list it was opened over exactly as it was.
+     *
+     * Below [PopArticle] so an article opened from the results pops back *to* the results
+     * — the reader's question outlives the one hit they followed. Above [ReturnToFeed],
+     * not merely above [LeaveScope], because search is reachable from To-Read and Liked as
+     * well as from the Feed: any lower and backing out of a search on Liked would change
+     * tabs and throw the question away in the same press.
+     *
+     * Like [CloseOverlay] and [CloseImageViewer], the step that actually runs is the
+     * surface's own `BackHandler`; on a non-Feed tab `NavController`'s callback outranks
+     * the root one and would pop the tab instead.
+     */
+    LeaveSearch,
+
     /** To-Read or Liked returns to Feed. Peers do not stack; back means "go home". */
     ReturnToFeed,
 
@@ -75,6 +90,11 @@ enum class BackStep {
  *   exists here for the same reason [overlayOpen] does.
  * @param onArticle the article route is on top of the stack. `NavHost` pops it, so this
  *   rung exists to keep the root handler *out of the way* of predictive back.
+ * @param searchOpen search is drawn over whichever surface it was opened from (§0.8).
+ *   Answered by `SearchSurface`'s own handler, which is composed deeper than both this one
+ *   and `NavController`'s and so is reached first; the rung exists here for the same reason
+ *   [overlayOpen] does — to keep the policy true as an order, and to keep the root handler
+ *   out of its way.
  * @param tab which of §0's three destinations is showing.
  * @param feedScoped Feed is narrowed to one source or folder rather than showing the
  *   unified inbox (V08). Answered by the shell, which owns the scope for exactly this
@@ -86,6 +106,7 @@ data class BackState(
     val overlayOpen: Boolean = false,
     val imageViewerOpen: Boolean = false,
     val onArticle: Boolean = false,
+    val searchOpen: Boolean = false,
     val tab: PerchTab = PerchTab.Feed,
     val feedScoped: Boolean = false,
     val feedScrolled: Boolean = false,
@@ -102,6 +123,7 @@ fun nextBackStep(state: BackState): BackStep = when {
     state.overlayOpen -> BackStep.CloseOverlay
     state.imageViewerOpen -> BackStep.CloseImageViewer
     state.onArticle -> BackStep.PopArticle
+    state.searchOpen -> BackStep.LeaveSearch
     state.tab != PerchTab.Feed -> BackStep.ReturnToFeed
     state.feedScoped -> BackStep.LeaveScope
     state.feedScrolled -> BackStep.ScrollFeedToTop
