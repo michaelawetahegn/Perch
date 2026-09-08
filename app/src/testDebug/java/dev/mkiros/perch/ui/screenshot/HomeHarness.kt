@@ -16,7 +16,6 @@ import androidx.compose.ui.unit.Density
 import dev.mkiros.perch.data.net.ConnectivityMonitor
 import dev.mkiros.perch.data.repo.BackfillRepository
 import dev.mkiros.perch.data.settings.SettingsStore
-import dev.mkiros.perch.model.BackfillRunner
 import dev.mkiros.perch.model.ThemeMode
 import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.ui.home.DrawerSelection
@@ -53,7 +52,7 @@ class HomeHarness(
  *
  * Every parameter past [compose] is a seam some test actually needs: [clock] and
  * [settings] because a test class usually pins both, [connectivity] for the offline strip,
- * [backfill]/[backfillRunner] for the archive offer, [scope] for a Feed that opens already
+ * [backfill] for the archive offer (its runner comes from [perch]'s container), [scope] for a Feed that opens already
  * narrowed, [themeMode] and [fontScale] for the screenshot and accessibility shots. The
  * defaults are what a test that cares about none of them would have written by hand.
  *
@@ -68,7 +67,6 @@ fun showHome(
     settings: SettingsStore = perch.settings,
     connectivity: ConnectivityMonitor = ConnectivityMonitor.AlwaysOnline,
     backfill: BackfillRepository? = null,
-    backfillRunner: BackfillRunner = BackfillRunner.NoOp,
     scope: HomeScope = HomeScope.All,
     themeMode: ThemeMode = ThemeMode.System,
     fontScale: Float = 1f,
@@ -81,7 +79,6 @@ fun showHome(
         settings = settings,
         connectivity = connectivity,
         backfill = backfill,
-        backfillRunner = backfillRunner,
     )
     val addSourceViewModel = AddSourceViewModel(perch.container.feeds, perch.container.folders)
     lateinit var harness: HomeHarness
@@ -136,7 +133,6 @@ fun homeViewModel(
     settings: SettingsStore = perch.settings,
     connectivity: ConnectivityMonitor = ConnectivityMonitor.AlwaysOnline,
     backfill: BackfillRepository? = null,
-    backfillRunner: BackfillRunner = BackfillRunner.NoOp,
 ): HomeViewModel = HomeViewModel(
     entries = perch.container.entries,
     feeds = perch.container.feeds,
@@ -145,7 +141,7 @@ fun homeViewModel(
     connectivity = connectivity,
     settings = settings,
     backfill = backfill,
-    backfillRunner = backfillRunner,
+    backfillRunner = perch.container.backfillRunner,
 )
 
 /**

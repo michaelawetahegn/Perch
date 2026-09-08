@@ -14,6 +14,10 @@ import dev.mkiros.perch.data.repo.OpmlRepository
 import dev.mkiros.perch.data.repo.ProfileRepository
 import dev.mkiros.perch.data.repo.SavedLinkRepository
 import dev.mkiros.perch.data.settings.SettingsStore
+import dev.mkiros.perch.model.BackfillRunner
+import dev.mkiros.perch.model.RefreshScheduler
+import dev.mkiros.perch.work.WorkManagerBackfillRunner
+import dev.mkiros.perch.work.WorkScheduler
 import okhttp3.OkHttpClient
 import java.io.Closeable
 import java.time.Clock
@@ -56,6 +60,17 @@ class AppContainer(
      * to "online": a test about the reading list should not have to own a settings file.
      */
     val settings: SettingsStore = SettingsStore.inMemory(),
+    /**
+     * WorkManager, as the Feed sees it. A seam on the container rather than something a
+     * ViewModel factory builds for itself, so that no factory needs a `Context` (D22 /
+     * issue #55) — the container is the one place that knows how this app is assembled.
+     *
+     * Defaults to [BackfillRunner.NoOp] for the same reason [connectivity] defaults to
+     * "online": a test about anything else should not have to own a WorkManager.
+     */
+    val backfillRunner: BackfillRunner = BackfillRunner.NoOp,
+    /** WorkManager as Settings sees it; [backfillRunner]'s reasoning, periodic side. */
+    val refreshScheduler: RefreshScheduler = RefreshScheduler { },
 ) : Closeable {
 
     /**
@@ -131,6 +146,8 @@ class AppContainer(
                 httpClient = PerchHttp.client(app.cacheDir),
                 connectivity = ConnectivityMonitor.system(app),
                 settings = SettingsStore.create(app),
+                backfillRunner = WorkManagerBackfillRunner(app),
+                refreshScheduler = { interval -> WorkScheduler.setInterval(app, interval) },
             )
         }
     }

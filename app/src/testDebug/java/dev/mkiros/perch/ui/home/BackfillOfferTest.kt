@@ -66,7 +66,7 @@ class BackfillOfferTest {
     val compose = createAndroidComposeRule<ComponentActivity>()
 
     private lateinit var viewModel: HomeViewModel
-    private lateinit var runner: FakeBackfillRunner
+    private val runner = FakeBackfillRunner()
     private lateinit var drawerState: DrawerState
     private lateinit var selection: MutableState<DrawerSelection>
 
@@ -79,7 +79,7 @@ class BackfillOfferTest {
     private lateinit var previousZone: TimeZone
 
     @get:Rule(order = 1)
-    val perch = PerchRule(clock = clock)
+    val perch = PerchRule(clock = clock, backfillRunner = runner)
 
     @Before
     fun setUp() {
@@ -87,7 +87,6 @@ class BackfillOfferTest {
         // the exact date it asserts cannot depend on which machine the suite runs on.
         previousZone = TimeZone.getDefault()
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
-        runner = FakeBackfillRunner()
     }
 
     @After
@@ -419,7 +418,6 @@ class BackfillOfferTest {
                 fetcher = fetcher,
                 clock = clock,
             ),
-            backfillRunner = runner,
         )
         viewModel = home.viewModel
         drawerState = home.drawerState

@@ -1,6 +1,5 @@
 package dev.mkiros.perch.ui.settings
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
@@ -17,7 +16,6 @@ import dev.mkiros.perch.di.AppContainer
 import dev.mkiros.perch.model.RefreshInterval
 import dev.mkiros.perch.model.RefreshScheduler
 import dev.mkiros.perch.model.ThemeMode
-import dev.mkiros.perch.work.WorkScheduler
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -280,19 +278,14 @@ class SettingsViewModel(
     companion object {
         private const val STOP_TIMEOUT_MS = 5_000L
 
-        /**
-         * @param context whatever composed the screen; only its application context is
-         *   retained, and only to reach WorkManager.
-         */
-        fun factory(container: AppContainer, context: Context) = viewModelFactory {
+        fun factory(container: AppContainer) = viewModelFactory {
             initializer {
-                val app = context.applicationContext
                 SettingsViewModel(
                     settings = container.settings,
                     opml = container.opml,
                     profile = container.profile,
                     feeds = container.feeds,
-                    scheduler = { interval -> WorkScheduler.setInterval(app, interval) },
+                    scheduler = container.refreshScheduler,
                 )
             }
         }

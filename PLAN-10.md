@@ -575,7 +575,7 @@ No task in this plan takes a device screenshot.
         #54 closed.
       - Rung: unit
 
-- [ ] **D22 — `AppContainer` owns the WorkManager seams. Issue #55.**
+- [x] **D22 — `AppContainer` owns the WorkManager seams. Issue #55.**
       `gh issue view 55 --json body`. §0.6 decides the two fields and their defaults.
       `HomeViewModel.factory(container, context)` (`:754-764`, "mirrors `SettingsViewModel.factory`")
       constructs `WorkManagerBackfillRunner(context.applicationContext)` itself;
@@ -589,6 +589,14 @@ No task in this plan takes a device screenshot.
       - Done: `grep -rn 'factory(container, context)' app/src` returns nothing; `./gradlew test`
         green; issue #55 closed.
       - Rung: unit
+      - **Done 2026-09-08.** `AppContainer` gained `backfillRunner` / `refreshScheduler` with
+        §0.6's defaults; `create` wires `WorkManagerBackfillRunner(app)` and
+        `WorkScheduler.setInterval`. Both factories are `factory(container)`, both lost their
+        `Context` import, and `PerchNavHost` lost two `LocalContext.current` locals and the
+        import. `PerchRule` gained `backfillRunner`, so `BackfillOfferTest`'s
+        `FakeBackfillRunner` arrives through the container and `HomeHarness` lost the
+        parameter. `./gradlew test`: **BUILD SUCCESSFUL in 4m 56s**, 1930 tests
+        (1124 debug + 806 release), 0 failures.
 
 - [ ] **D23 — One paged entry list. Issue #56.**
       `gh issue view 56 --json body`. `HomeScreen.kt:1251-1288`, `CollectionScreen.kt:246-278`,

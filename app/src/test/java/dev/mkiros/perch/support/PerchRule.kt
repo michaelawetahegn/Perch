@@ -6,6 +6,7 @@ import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.model.BackfillRunner
 import org.junit.rules.ExternalResource
 import java.time.Clock
 
@@ -35,6 +36,8 @@ import java.time.Clock
 class PerchRule(
     private val clock: Clock = Clock.systemDefaultZone(),
     val settings: SettingsStore = SettingsStore.inMemory(),
+    /** D22: the Feed's WorkManager seam is the container's, so a fake arrives the same way. */
+    private val backfillRunner: BackfillRunner = BackfillRunner.NoOp,
 ) : ExternalResource() {
 
     /** Valid from the rule's `before` — that is, from `@Before` onwards. */
@@ -49,6 +52,7 @@ class PerchRule(
             httpClient = PerchHttp.client(cacheDir = null),
             clock = clock,
             settings = settings,
+            backfillRunner = backfillRunner,
         )
     }
 

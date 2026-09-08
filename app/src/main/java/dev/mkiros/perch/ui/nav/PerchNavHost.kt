@@ -25,7 +25,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -231,9 +230,8 @@ fun PerchNavHost(
             },
         ) {
             composable(Routes.FEED) {
-                val context = LocalContext.current
                 HomeScreen(
-                    viewModel = viewModel(factory = HomeViewModel.factory(container, context)),
+                    viewModel = viewModel(factory = HomeViewModel.factory(container)),
                     addSourceViewModel = viewModel(factory = AddSourceViewModel.factory(container)),
                     onOpenEntry = { entryId -> navController.navigate(Routes.article(entryId)) },
                     onOpenSettings = { navController.navigate(Routes.SETTINGS) },
@@ -302,11 +300,8 @@ fun PerchNavHost(
             }
 
             composable(Routes.SETTINGS) {
-                // The context is only ever used to reach WorkManager, and the factory keeps
-                // the application one — a ViewModel outliving this composition is the point.
-                val context = LocalContext.current
                 SettingsScreen(
-                    viewModel = viewModel(factory = SettingsViewModel.factory(container, context)),
+                    viewModel = viewModel(factory = SettingsViewModel.factory(container)),
                     onBack = { navController.popBackStack() },
                 )
             }
