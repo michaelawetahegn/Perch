@@ -26,10 +26,8 @@ import coil.ImageLoader
 import coil.map.Mapper
 import coil.request.Options
 import com.google.common.truth.Truth.assertThat
-import dev.mkiros.perch.data.db.PerchDatabase
-import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.settings.SettingsStore
-import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.ui.CUTOUT_PX
 import dev.mkiros.perch.ui.NAVIGATION_BAR_PX
 import dev.mkiros.perch.ui.STATUS_BAR_PX
@@ -79,8 +77,6 @@ class WindowInsetsTest {
     @get:Rule
     val compose = createAndroidComposeRule<ComponentActivity>()
 
-    private lateinit var database: PerchDatabase
-    private lateinit var container: AppContainer
     private lateinit var navController: NavHostController
 
     /** U07: the shell tests are not about the day filter, so it must not empty the list. */
@@ -88,16 +84,12 @@ class WindowInsetsTest {
         runBlocking { it.setTimeFilter(TimeFilter.AllTime) }
     }
 
+    @get:Rule(order = 1)
+    val perch = PerchRule(clock = Clock.systemDefaultZone(), settings = settings)
+
     @Before
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        database = PerchDatabase.inMemory(context)
-        container = AppContainer(
-            database = database,
-            httpClient = PerchHttp.client(cacheDir = null),
-            clock = Clock.systemDefaultZone(),
-            settings = settings,
-        )
         Coil.setImageLoader(
             ImageLoader.Builder(context)
                 .components { add(StubImage(context)) }
@@ -112,7 +104,6 @@ class WindowInsetsTest {
     @After
     fun tearDown() {
         Coil.reset()
-        database.close()
     }
 
     // ---- the overlay, which is the one with a reported symptom ---------------------
@@ -212,7 +203,7 @@ class WindowInsetsTest {
         compose.setContent {
             PerchTheme(dynamicColor = false) {
                 navController = rememberNavController()
-                PerchNavHost(container = container, navController = navController)
+                PerchNavHost(container = perch.container, navController = navController)
             }
         }
         compose.waitForIdle()

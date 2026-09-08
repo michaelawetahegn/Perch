@@ -1,6 +1,5 @@
 package dev.mkiros.perch.ui.collection
 
-import android.content.Context
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.semantics.SemanticsActions
@@ -12,11 +11,8 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextInput
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
-import dev.mkiros.perch.data.db.PerchDatabase
-import dev.mkiros.perch.data.net.PerchHttp
-import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.theme.PerchTheme
 import kotlinx.coroutines.runBlocking
@@ -44,24 +40,21 @@ class SaveLinkSheetTest {
     @get:Rule
     val compose = createAndroidComposeRule<ComponentActivity>()
 
-    private lateinit var database: PerchDatabase
     private lateinit var server: MockWebServer
-    private lateinit var container: AppContainer
     private lateinit var viewModel: SaveLinkViewModel
+
+    @get:Rule(order = 1)
+    val perch = PerchRule()
 
     @Before
     fun setUp() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        database = PerchDatabase.inMemory(context)
         server = MockWebServer()
         server.start()
-        container = AppContainer(database = database, httpClient = PerchHttp.client(cacheDir = null))
     }
 
     @After
     fun tearDown() {
         server.shutdown()
-        database.close()
     }
 
     @Test
@@ -73,7 +66,7 @@ class SaveLinkSheetTest {
         submit()
         awaitState { it.savedEntryId != null }
 
-        val saved = runBlocking { database.entryDao().findById(viewModel.state.value.savedEntryId!!)!! }
+        val saved = runBlocking { perch.database.entryDao().findById(viewModel.state.value.savedEntryId!!)!! }
         assertThat(saved.title).isEqualTo("A Pasted Article")
         assertThat(saved.isSaved).isTrue()
     }
@@ -135,7 +128,7 @@ class SaveLinkSheetTest {
     // ---- harness ---------------------------------------------------------------
 
     private fun showSheet() {
-        viewModel = SaveLinkViewModel(container.savedLinks)
+        viewModel = SaveLinkViewModel(perch.container.savedLinks)
         compose.setContent {
             val state by viewModel.state.collectAsStateWithLifecycle()
             PerchTheme(dynamicColor = false) {
@@ -165,7 +158,7 @@ class SaveLinkSheetTest {
             predicate(viewModel.state.value)
         }
 
-    private fun entryCount(): Int = runBlocking { database.entryDao().countAll() }
+    private fun entryCount(): Int = runBlocking { perch.database.entryDao().countAll() }
 
     private fun article(title: String) = MockResponse()
         .setBody(

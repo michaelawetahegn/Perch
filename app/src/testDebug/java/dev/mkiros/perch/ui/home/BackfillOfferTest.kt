@@ -23,14 +23,12 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
-import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.FolderEntity
-import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.parse.FetchedPage
 import dev.mkiros.perch.data.parse.PageFetcher
 import dev.mkiros.perch.data.repo.BackfillRepository
 import dev.mkiros.perch.data.settings.SettingsStore
-import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.support.testEntry
 import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.ui.screenshot.Screenshots
@@ -67,8 +65,6 @@ class BackfillOfferTest {
     @get:Rule
     val compose = createAndroidComposeRule<ComponentActivity>()
 
-    private lateinit var database: PerchDatabase
-    private lateinit var container: AppContainer
     private lateinit var viewModel: HomeViewModel
     private lateinit var runner: FakeBackfillRunner
     private lateinit var drawerState: DrawerState
@@ -82,25 +78,20 @@ class BackfillOfferTest {
 
     private lateinit var previousZone: TimeZone
 
+    @get:Rule(order = 1)
+    val perch = PerchRule(clock = clock)
+
     @Before
     fun setUp() {
         // §0.4's reach sentence reads `RelativeTime`'s default (system) zone — pinned so
         // the exact date it asserts cannot depend on which machine the suite runs on.
         previousZone = TimeZone.getDefault()
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        database = PerchDatabase.inMemory(context)
-        container = AppContainer(
-            database = database,
-            httpClient = PerchHttp.client(cacheDir = null),
-            clock = clock,
-        )
         runner = FakeBackfillRunner()
     }
 
     @After
     fun tearDown() {
-        database.close()
         TimeZone.setDefault(previousZone)
     }
 
@@ -372,21 +363,21 @@ class BackfillOfferTest {
 
     private fun showHome(fetcher: PageFetcher) {
         val backfill = BackfillRepository(
-            feedDao = database.feedDao(),
-            entryDao = database.entryDao(),
+            feedDao = perch.database.feedDao(),
+            entryDao = perch.database.entryDao(),
             fetcher = fetcher,
             clock = clock,
         )
         viewModel = HomeViewModel(
-            entries = container.entries,
-            feeds = container.feeds,
-            folders = container.folders,
+            entries = perch.container.entries,
+            feeds = perch.container.feeds,
+            folders = perch.container.folders,
             clock = clock,
             settings = settings,
             backfill = backfill,
             backfillRunner = runner,
         )
-        val addSourceViewModel = AddSourceViewModel(container.feeds, container.folders)
+        val addSourceViewModel = AddSourceViewModel(perch.container.feeds, perch.container.folders)
         compose.setContent {
             drawerState = rememberDrawerState(DrawerValue.Closed)
             selection = rememberSaveable(stateSaver = DrawerSelection.Saver) {
@@ -408,7 +399,7 @@ class BackfillOfferTest {
     }
 
     private fun seedFeed(entryCount: Int = 0, title: String = "A blog"): Long = runBlocking {
-        val feedId = database.feedDao().insert(
+        val feedId = perch.database.feedDao().insert(
             testFeed(
                 feedUrl = SITE + "feed.xml",
                 siteUrl = SITE.trimEnd('/'),
@@ -428,7 +419,7 @@ class BackfillOfferTest {
         published: Instant,
         isEstimated: Boolean = false,
     ): Long = runBlocking {
-        database.entryDao().insert(
+        perch.database.entryDao().insert(
             testEntry(
                 feedId = feedId,
                 title = title,

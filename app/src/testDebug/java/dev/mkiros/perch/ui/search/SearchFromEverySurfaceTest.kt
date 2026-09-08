@@ -1,6 +1,5 @@
 package dev.mkiros.perch.ui.search
 
-import android.content.Context
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -12,14 +11,11 @@ import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
-import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.db.entity.FeedEntity
-import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.settings.SettingsStore
-import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.ui.article.ArticleTestTags
 import dev.mkiros.perch.ui.collection.CollectionTestTags
 import dev.mkiros.perch.ui.home.HomeTestTags
@@ -32,8 +28,6 @@ import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.theme.PerchTheme
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import org.junit.After
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -58,8 +52,6 @@ class SearchFromEverySurfaceTest {
     @get:Rule
     val compose = createAndroidComposeRule<ComponentActivity>()
 
-    private lateinit var database: PerchDatabase
-    private lateinit var container: AppContainer
     private lateinit var navController: NavHostController
 
     private var gijnId = 0L
@@ -70,22 +62,8 @@ class SearchFromEverySurfaceTest {
         runBlocking { it.setTimeFilter(TimeFilter.AllTime) }
     }
 
-    @Before
-    fun setUp() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        database = PerchDatabase.inMemory(context)
-        container = AppContainer(
-            database = database,
-            httpClient = PerchHttp.client(cacheDir = null),
-            clock = Clock.systemUTC(),
-            settings = settings,
-        )
-    }
-
-    @After
-    fun tearDown() {
-        database.close()
-    }
+    @get:Rule(order = 1)
+    val perch = PerchRule(clock = Clock.systemUTC(), settings = settings)
 
     @Test
     fun `search opened from the Feed reaches every stored article`() {
@@ -234,30 +212,30 @@ class SearchFromEverySurfaceTest {
         compose.setContent {
             PerchTheme(dynamicColor = false) {
                 navController = rememberNavController()
-                PerchNavHost(container = container, navController = navController)
+                PerchNavHost(container = perch.container, navController = navController)
             }
         }
         compose.waitForIdle()
     }
 
     private fun saveTheAllocatorPiece() = runBlocking {
-        val id = database.entryDao().observeAll().first()
+        val id = perch.database.entryDao().observeAll().first()
             .first { it.title == "Chris on allocators" }.id
-        container.entries.setSaved(id, isSaved = true)
+        perch.container.entries.setSaved(id, isSaved = true)
     }
 
     private fun likeTheStravaPiece() = runBlocking {
-        val id = database.entryDao().observeAll().first()
+        val id = perch.database.entryDao().observeAll().first()
             .first { it.title.startsWith("Investigations") }.id
-        container.entries.setLiked(id, isLiked = true)
+        perch.container.entries.setLiked(id, isLiked = true)
     }
 
     /** Returns the id of the GIJN article, so a test can open it and scope from its byline. */
     private fun seed(): Long = runBlocking {
-        gijnId = database.feedDao().insert(feed("https://gijn.org/feed/", "GIJN"))
-        nullProgramId = database.feedDao()
+        gijnId = perch.database.feedDao().insert(feed("https://gijn.org/feed/", "GIJN"))
+        nullProgramId = perch.database.feedDao()
             .insert(feed("https://nullprogram.com/feed/", "Null Program"))
-        database.entryDao().upsertAll(
+        perch.database.entryDao().upsertAll(
             listOf(
                 entry(
                     gijnId,
@@ -273,7 +251,7 @@ class SearchFromEverySurfaceTest {
                 ),
             ),
         )
-        database.entryDao().observeAll().first().first { it.feedId == gijnId }.id
+        perch.database.entryDao().observeAll().first().first { it.feedId == gijnId }.id
     }
 
     private fun feed(url: String, title: String) = FeedEntity(

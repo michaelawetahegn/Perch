@@ -1,17 +1,13 @@
 package dev.mkiros.perch.ui.collection
 
-import android.content.Context
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
-import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
-import dev.mkiros.perch.data.db.PerchDatabase
-import dev.mkiros.perch.data.net.PerchHttp
-import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.theme.PerchTheme
@@ -46,12 +42,13 @@ class CollectionRefreshTest {
     @get:Rule
     val compose = createAndroidComposeRule<ComponentActivity>()
 
-    private lateinit var database: PerchDatabase
-    private lateinit var container: AppContainer
     private lateinit var viewModel: CollectionViewModel
     private lateinit var server: MockWebServer
 
     private val clock = Clock.fixed(Instant.parse("2026-08-07T12:00:00Z"), ZoneOffset.UTC)
+
+    @get:Rule(order = 1)
+    val perch = PerchRule(clock = clock)
 
     @Before
     fun setUp() {
@@ -62,18 +59,10 @@ class CollectionRefreshTest {
                 .setBody(RSS)
         }
         server.start()
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        database = PerchDatabase.inMemory(context)
-        container = AppContainer(
-            database = database,
-            httpClient = PerchHttp.client(cacheDir = null),
-            clock = clock,
-        )
     }
 
     @After
     fun tearDown() {
-        database.close()
         server.shutdown()
     }
 
@@ -111,7 +100,7 @@ class CollectionRefreshTest {
         List(server.requestCount) { server.takeRequest().path.orEmpty() }
 
     private fun showEmpty(collection: Collection) {
-        viewModel = CollectionViewModel(container.entries, container.feeds, clock, collection)
+        viewModel = CollectionViewModel(perch.container.entries, perch.container.feeds, clock, collection)
         compose.setContent {
             PerchTheme(dynamicColor = false) {
                 CollectionScreen(viewModel = viewModel, onOpenEntry = {})
@@ -123,7 +112,7 @@ class CollectionRefreshTest {
     }
 
     private fun seedFeed(path: String): Long = runBlocking {
-        database.feedDao().insert(
+        perch.database.feedDao().insert(
             testFeed(
                 feedUrl = server.url(path).toString(),
                 title = "Source One",

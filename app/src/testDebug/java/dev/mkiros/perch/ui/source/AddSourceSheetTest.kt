@@ -1,6 +1,5 @@
 package dev.mkiros.perch.ui.source
 
-import android.content.Context
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.semantics.SemanticsActions
@@ -13,12 +12,9 @@ import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
-import dev.mkiros.perch.data.db.PerchDatabase
-import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.repo.SourceResolution
-import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.theme.PerchTheme
 import kotlinx.coroutines.flow.first
@@ -51,27 +47,21 @@ class AddSourceSheetTest {
     @get:Rule
     val compose = createAndroidComposeRule<ComponentActivity>()
 
-    private lateinit var database: PerchDatabase
     private lateinit var server: MockWebServer
-    private lateinit var container: AppContainer
     private lateinit var viewModel: AddSourceViewModel
+
+    @get:Rule(order = 1)
+    val perch = PerchRule()
 
     @Before
     fun setUp() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        database = PerchDatabase.inMemory(context)
         server = MockWebServer()
         server.start()
-        container = AppContainer(
-            database = database,
-            httpClient = PerchHttp.client(cacheDir = null),
-        )
     }
 
     @After
     fun tearDown() {
         server.shutdown()
-        database.close()
     }
 
     @Test
@@ -158,7 +148,7 @@ class AddSourceSheetTest {
         server.dispatcher = serving("/feed.xml" to feed(items = 1))
         val url = server.url("/feed.xml").toString()
         runBlocking {
-            container.feeds.add(container.feeds.resolve(url) as SourceResolution.Resolved)
+            perch.container.feeds.add(perch.container.feeds.resolve(url) as SourceResolution.Resolved)
         }
 
         showSheet()
@@ -196,7 +186,7 @@ class AddSourceSheetTest {
     // ---- harness ---------------------------------------------------------------
 
     private fun showSheet() {
-        viewModel = AddSourceViewModel(container.feeds, container.folders)
+        viewModel = AddSourceViewModel(perch.container.feeds, perch.container.folders)
         compose.setContent {
             val state by viewModel.state.collectAsStateWithLifecycle()
             val folders by viewModel.folders.collectAsStateWithLifecycle()
@@ -234,12 +224,12 @@ class AddSourceSheetTest {
         }
 
     private fun feedUrls(): List<String> = runBlocking {
-        database.feedDao().observeAll().first().map { it.feedUrl }
+        perch.database.feedDao().observeAll().first().map { it.feedUrl }
     }
 
     private fun feedCount(): Int = feedUrls().size
 
-    private fun entryCount(): Int = runBlocking { database.entryDao().countAll() }
+    private fun entryCount(): Int = runBlocking { perch.database.entryDao().countAll() }
 
     /** Serves [overrides] by path; everything else soft-404s to a plain HTML page. */
     private fun serving(vararg overrides: Pair<String, MockResponse>) =

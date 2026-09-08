@@ -12,12 +12,10 @@ import androidx.compose.ui.test.performSemanticsAction
 import androidx.test.core.app.ApplicationProvider
 import androidx.core.content.IntentCompat
 import com.google.common.truth.Truth.assertThat
-import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.db.entity.FeedEntity
-import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.settings.SettingsStore
-import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.rowTitles
 import dev.mkiros.perch.ui.source.AddSourceViewModel
@@ -26,8 +24,6 @@ import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
 import kotlinx.coroutines.runBlocking
-import org.junit.After
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -54,8 +50,6 @@ class HomeEntryActionsTest {
     @get:Rule
     val compose = createAndroidComposeRule<ComponentActivity>()
 
-    private lateinit var database: PerchDatabase
-    private lateinit var container: AppContainer
     private lateinit var viewModel: HomeViewModel
 
     private val now = Instant.parse("2026-08-07T12:00:00Z")
@@ -73,22 +67,8 @@ class HomeEntryActionsTest {
         }
     }
 
-    @Before
-    fun setUp() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        database = PerchDatabase.inMemory(context)
-        container = AppContainer(
-            database = database,
-            httpClient = PerchHttp.client(cacheDir = null),
-            clock = clock,
-            settings = settings,
-        )
-    }
-
-    @After
-    fun tearDown() {
-        database.close()
-    }
+    @get:Rule(order = 1)
+    val perch = PerchRule(clock = clock, settings = settings)
 
     @Test
     fun `save for later files the entry on the To-Read queue`() {
@@ -220,7 +200,7 @@ class HomeEntryActionsTest {
 
     private var entryId: Long = 0L
 
-    private fun entry(): EntryEntity = runBlocking { database.entryDao().findById(entryId)!! }
+    private fun entry(): EntryEntity = runBlocking { perch.database.entryDao().findById(entryId)!! }
 
     /** The write goes through a coroutine and Room's executor — wall-clock, never virtual. */
     private fun awaitEntry(what: String, predicate: (EntryEntity) -> Boolean) =
@@ -228,9 +208,9 @@ class HomeEntryActionsTest {
 
     private fun showHome() {
         viewModel = HomeViewModel(
-            entries = container.entries,
-            feeds = container.feeds,
-            folders = container.folders,
+            entries = perch.container.entries,
+            feeds = perch.container.feeds,
+            folders = perch.container.folders,
             clock = clock,
             settings = settings,
         )
@@ -238,7 +218,7 @@ class HomeEntryActionsTest {
             PerchTheme(dynamicColor = false) {
                 HomeScreen(
                     viewModel = viewModel,
-                    addSourceViewModel = AddSourceViewModel(container.feeds, container.folders),
+                    addSourceViewModel = AddSourceViewModel(perch.container.feeds, perch.container.folders),
                     onOpenEntry = {},
                     onOpenSettings = {},
                 )
@@ -252,7 +232,7 @@ class HomeEntryActionsTest {
         isSaved: Boolean = false,
         readAt: Long? = null,
     ): Long = runBlocking {
-        val feedId = database.feedDao().insert(
+        val feedId = perch.database.feedDao().insert(
             FeedEntity(
                 feedUrl = "https://example.com/feed.xml",
                 siteUrl = "https://example.com",
@@ -267,7 +247,7 @@ class HomeEntryActionsTest {
                 addedAt = 0L,
             ),
         )
-        entryId = database.entryDao().insert(
+        entryId = perch.database.entryDao().insert(
             EntryEntity(
                 feedId = feedId,
                 guid = "guid-1",

@@ -1,6 +1,5 @@
 package dev.mkiros.perch.ui.home
 
-import android.content.Context
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -21,14 +20,11 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextReplacement
-import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
-import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.db.entity.FolderEntity
-import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.settings.SettingsStore
-import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.support.testEntry
 import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.ui.source.AddSourceTestTags
@@ -41,8 +37,6 @@ import java.time.Instant
 import java.time.ZoneOffset
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import org.junit.After
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -66,8 +60,6 @@ class HomeScreenTest {
     @get:Rule
     val compose = createAndroidComposeRule<ComponentActivity>()
 
-    private lateinit var database: PerchDatabase
-    private lateinit var container: AppContainer
     private lateinit var viewModel: HomeViewModel
 
     private val now = Instant.parse("2026-08-07T12:00:00Z")
@@ -83,21 +75,8 @@ class HomeScreenTest {
         runBlocking { it.setTimeFilter(TimeFilter.AllTime) }
     }
 
-    @Before
-    fun setUp() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        database = PerchDatabase.inMemory(context)
-        container = AppContainer(
-            database = database,
-            httpClient = PerchHttp.client(cacheDir = null),
-            clock = clock,
-        )
-    }
-
-    @After
-    fun tearDown() {
-        database.close()
-    }
+    @get:Rule(order = 1)
+    val perch = PerchRule(clock = clock)
 
     @Test
     fun `a row shows its title and its source with a relative time, and no snippet`() {
@@ -327,7 +306,7 @@ class HomeScreenTest {
 
         showHome()
         selectInDrawer("Source One")
-        runBlocking { container.entries.setRead(entryId = idOf("Only in one"), isRead = true) }
+        runBlocking { perch.container.entries.setRead(entryId = idOf("Only in one"), isRead = true) }
         compose.awaitInRealTime("the last unread entry to leave") { compose.rowTitles().isEmpty() }
 
         compose.onNodeWithText("You're all caught up").assertIsDisplayed()
@@ -626,7 +605,7 @@ class HomeScreenTest {
 
     /** The one seeded synthetic source (PLAN-6 §0.3), which the drawer never lists. */
     private fun savedLinksFeedId(): Long = runBlocking {
-        database.feedDao().findByUrl(FeedEntity.SAVED_LINKS_FEED_URL)!!.id
+        perch.database.feedDao().findByUrl(FeedEntity.SAVED_LINKS_FEED_URL)!!.id
     }
 
     /**
@@ -642,12 +621,12 @@ class HomeScreenTest {
     /** A drawer badge is inside the item's merged semantics, so it needs the raw tree. */
     private fun badge(testTag: String) = compose.onNodeWithTag(testTag, useUnmergedTree = true)
 
-    private fun feeds() = runBlocking { database.feedDao().observeAll().first() }
+    private fun feeds() = runBlocking { perch.database.feedDao().observeAll().first() }
 
     private fun feedTitles() = feeds().map { it.title }
 
     private fun entryTitles() = runBlocking {
-        database.entryDao().observeAll().first().map { it.title }
+        perch.database.entryDao().observeAll().first().map { it.title }
     }
 
     /** Waits for a *later* database emission, in wall-clock time. */
@@ -671,19 +650,18 @@ class HomeScreenTest {
         }
 
     private fun idOf(title: String): Long = runBlocking {
-        database.entryDao().observeAll().first().first { it.title == title }.id
+        perch.database.entryDao().observeAll().first().first { it.title == title }.id
     }
-
 
     private fun showHome(onOpenEntry: (Long) -> Unit = {}, scope: HomeScope = HomeScope.All) {
         viewModel = HomeViewModel(
-            entries = container.entries,
-            feeds = container.feeds,
-            folders = container.folders,
+            entries = perch.container.entries,
+            feeds = perch.container.feeds,
+            folders = perch.container.folders,
             clock = clock,
             settings = settings,
         )
-        val addSourceViewModel = AddSourceViewModel(container.feeds, container.folders)
+        val addSourceViewModel = AddSourceViewModel(perch.container.feeds, perch.container.folders)
         compose.setContent {
             PerchTheme(dynamicColor = false) {
                 HomeScreen(
@@ -708,7 +686,7 @@ class HomeScreenTest {
         compose.onNodeWithText(text).fetchSemanticsNode().positionInRoot.y
 
     private fun seedFolder(name: String): Long = runBlocking {
-        database.folderDao().insert(FolderEntity(name = name, sortIndex = 0, createdAt = 0L))
+        perch.database.folderDao().insert(FolderEntity(name = name, sortIndex = 0, createdAt = 0L))
     }
 
     private fun seedFeed(
@@ -717,7 +695,7 @@ class HomeScreenTest {
         lastError: String? = null,
         folderId: Long = FolderEntity.UNCATEGORIZED_ID,
     ): Long = runBlocking {
-        database.feedDao().insert(
+        perch.database.feedDao().insert(
             testFeed(
                 title = title,
                 customTitle = customTitle,
@@ -734,7 +712,7 @@ class HomeScreenTest {
         publishedAt: Instant = now.minusSeconds(2 * DAY),
         readAt: Long? = null,
     ): Long = runBlocking {
-        database.entryDao().insert(
+        perch.database.entryDao().insert(
             testEntry(
                 feedId = feedId,
                 title = title,

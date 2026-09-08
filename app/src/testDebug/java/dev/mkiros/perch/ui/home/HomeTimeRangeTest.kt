@@ -1,6 +1,5 @@
 package dev.mkiros.perch.ui.home
 
-import android.content.Context
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.SemanticsActions
@@ -18,13 +17,10 @@ import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.Density
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
-import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.FolderEntity
-import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.settings.SettingsStore
-import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.support.testEntry
 import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
@@ -36,8 +32,6 @@ import java.time.ZoneOffset
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.junit.After
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -63,30 +57,13 @@ class HomeTimeRangeTest {
     @get:Rule
     val compose = createAndroidComposeRule<ComponentActivity>()
 
-    private lateinit var database: PerchDatabase
-    private lateinit var container: AppContainer
-    private lateinit var settings: SettingsStore
+    private val settings = SettingsStore.inMemory()
     private lateinit var viewModel: HomeViewModel
 
     private val clock = Clock.fixed(Instant.parse("2026-08-07T12:00:00Z"), ZoneOffset.UTC)
 
-    @Before
-    fun setUp() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        database = PerchDatabase.inMemory(context)
-        settings = SettingsStore.inMemory()
-        container = AppContainer(
-            database = database,
-            httpClient = PerchHttp.client(cacheDir = null),
-            clock = clock,
-            settings = settings,
-        )
-    }
-
-    @After
-    fun tearDown() {
-        database.close()
-    }
+    @get:Rule(order = 1)
+    val perch = PerchRule(clock = clock, settings = settings)
 
     @Test
     fun `the closed control names the active range and none of the other four`() {
@@ -141,9 +118,9 @@ class HomeTimeRangeTest {
 
         // A second view model over the same settings — process death, in miniature.
         val relaunched = HomeViewModel(
-            entries = container.entries,
-            feeds = container.feeds,
-            folders = container.folders,
+            entries = perch.container.entries,
+            feeds = perch.container.feeds,
+            folders = perch.container.folders,
             clock = clock,
             settings = settings,
         )
@@ -249,13 +226,13 @@ class HomeTimeRangeTest {
 
     private fun showHome(fontScale: Float = 1f) {
         viewModel = HomeViewModel(
-            entries = container.entries,
-            feeds = container.feeds,
-            folders = container.folders,
+            entries = perch.container.entries,
+            feeds = perch.container.feeds,
+            folders = perch.container.folders,
             clock = clock,
             settings = settings,
         )
-        val addSourceViewModel = AddSourceViewModel(container.feeds, container.folders)
+        val addSourceViewModel = AddSourceViewModel(perch.container.feeds, perch.container.folders)
         compose.setContent {
             val density = LocalDensity.current
             CompositionLocalProvider(
@@ -276,7 +253,7 @@ class HomeTimeRangeTest {
     }
 
     private fun seedFeed(title: String): Long = runBlocking {
-        database.feedDao().insert(
+        perch.database.feedDao().insert(
             testFeed(
                 title = title,
             ),
@@ -289,7 +266,7 @@ class HomeTimeRangeTest {
         at: String = "2026-08-07T09:00:00Z",
     ): Long = runBlocking {
         val published = Instant.parse(at).toEpochMilli()
-        database.entryDao().insert(
+        perch.database.entryDao().insert(
             testEntry(
                 feedId = feedId,
                 title = title,

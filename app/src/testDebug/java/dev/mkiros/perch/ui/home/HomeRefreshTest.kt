@@ -1,6 +1,5 @@
 package dev.mkiros.perch.ui.home
 
-import android.content.Context
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsDisplayed
@@ -16,14 +15,11 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
-import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
-import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.net.ConnectivityMonitor
-import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.settings.SettingsStore
-import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.support.testEntry
 import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
@@ -64,8 +60,6 @@ class HomeRefreshTest {
     @get:Rule
     val compose = createAndroidComposeRule<ComponentActivity>()
 
-    private lateinit var database: PerchDatabase
-    private lateinit var container: AppContainer
     private lateinit var viewModel: HomeViewModel
     private lateinit var server: MockWebServer
 
@@ -85,6 +79,9 @@ class HomeRefreshTest {
         runBlocking { it.setTimeFilter(TimeFilter.AllTime) }
     }
 
+    @get:Rule(order = 1)
+    val perch = PerchRule(clock = clock)
+
     @Before
     fun setUp() {
         server = MockWebServer()
@@ -97,18 +94,10 @@ class HomeRefreshTest {
             }
         }
         server.start()
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        database = PerchDatabase.inMemory(context)
-        container = AppContainer(
-            database = database,
-            httpClient = PerchHttp.client(cacheDir = null),
-            clock = clock,
-        )
     }
 
     @After
     fun tearDown() {
-        database.close()
         server.shutdown()
     }
 
@@ -390,11 +379,11 @@ class HomeRefreshTest {
      * screen" are different questions — and the one this test is asking is the first.
      */
     private fun listedTitles(): List<String> = runBlocking {
-        container.entries.observeEntries(includeRead = false).first().map { it.title }
+        perch.container.entries.observeEntries(includeRead = false).first().map { it.title }
     }
 
     private fun unreadTitles(): List<String> = runBlocking {
-        database.entryDao().observeAll().first().filterNot { it.isRead }.map { it.title }
+        perch.database.entryDao().observeAll().first().filterNot { it.isRead }.map { it.title }
     }
 
     private fun awaitState(predicate: (HomeUiState) -> Boolean) =
@@ -405,14 +394,14 @@ class HomeRefreshTest {
 
     private fun showHome(connectivity: ConnectivityMonitor = ConnectivityMonitor.AlwaysOnline) {
         viewModel = HomeViewModel(
-            entries = container.entries,
-            feeds = container.feeds,
-            folders = container.folders,
+            entries = perch.container.entries,
+            feeds = perch.container.feeds,
+            folders = perch.container.folders,
             clock = clock,
             connectivity = connectivity,
             settings = settings,
         )
-        val addSourceViewModel = AddSourceViewModel(container.feeds, container.folders)
+        val addSourceViewModel = AddSourceViewModel(perch.container.feeds, perch.container.folders)
         compose.setContent {
             PerchTheme(dynamicColor = false) {
                 HomeScreen(
@@ -460,7 +449,7 @@ class HomeRefreshTest {
         lastError: String? = null,
         feedUrl: String = "https://example.com/${title.hashCode()}/feed.xml",
     ): Long = runBlocking {
-        database.feedDao().insert(
+        perch.database.feedDao().insert(
             testFeed(
                 feedUrl = feedUrl,
                 title = title,
@@ -475,7 +464,7 @@ class HomeRefreshTest {
         readAt: Long? = null,
     ): Long = runBlocking {
         val publishedAt = now.minusSeconds(2 * DAY).toEpochMilli()
-        database.entryDao().insert(
+        perch.database.entryDao().insert(
             testEntry(
                 feedId = feedId,
                 title = title,

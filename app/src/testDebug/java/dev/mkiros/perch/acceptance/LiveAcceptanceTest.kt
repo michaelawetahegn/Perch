@@ -53,6 +53,7 @@ import dev.mkiros.perch.data.repo.PerchPaging
 import dev.mkiros.perch.data.repo.SourceResolution
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.ui.CUTOUT_PX
 import dev.mkiros.perch.ui.applyWindowInsets
 import dev.mkiros.perch.ui.article.ArticleScreen
@@ -174,9 +175,6 @@ class LiveAcceptanceTest {
     @get:Rule
     val compose = createAndroidComposeRule<ComponentActivity>()
 
-    private lateinit var database: PerchDatabase
-    private lateinit var container: AppContainer
-
     private val clock: Clock = Clock.systemUTC()
 
     /**
@@ -186,16 +184,12 @@ class LiveAcceptanceTest {
      */
     private val settings = SettingsStore.inMemory()
 
+    @get:Rule(order = 1)
+    val perch = PerchRule(clock = clock, settings = settings)
+
     @Before
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        database = PerchDatabase.inMemory(context)
-        container = AppContainer(
-            database = database,
-            httpClient = PerchHttp.client(cacheDir = null),
-            clock = clock,
-            settings = settings,
-        )
         // The figure treatment is what gate 3 is looking at, and an image block collapses
         // the whole figure on a failed load — so every remote image resolves to a flat
         // placeholder of a fixed shape. Layout structure is the subject; the photograph
@@ -217,7 +211,6 @@ class LiveAcceptanceTest {
     @After
     fun tearDown() {
         Coil.reset()
-        database.close()
     }
 
     @Test
@@ -364,14 +357,14 @@ class LiveAcceptanceTest {
             urls.map { url ->
                 async {
                     inFlight.withPermit {
-                        val outcome = runCatching { container.feeds.resolve(url) }
+                        val outcome = runCatching { perch.container.feeds.resolve(url) }
                         val resolution = outcome.getOrElse {
                             return@withPermit "$url — threw ${it.javaClass.simpleName}: ${it.message}"
                         }
                         when (resolution) {
                             is SourceResolution.Resolved -> {
                                 if (resolution.entryCount == 0) return@withPermit "$url — feed has no entries"
-                                writes.withLock { container.feeds.add(resolution) }
+                                writes.withLock { perch.container.feeds.add(resolution) }
                                 null
                             }
                             is SourceResolution.AlreadySubscribed ->
@@ -421,8 +414,8 @@ class LiveAcceptanceTest {
      */
     private fun lowerEveryEntry(): StandardizeReport = runBlocking {
         val report = StandardizeReport()
-        for (feed in database.feedDao().getAll()) {
-            for (entry in database.entryDao().observeByFeed(feed.id).first()) {
+        for (feed in perch.database.feedDao().getAll()) {
+            for (entry in perch.database.entryDao().observeByFeed(feed.id).first()) {
                 report.entries++
                 val blocks = try {
                     ArticleLowering.toBlocks(entry.contentHtml)
@@ -624,8 +617,8 @@ class LiveAcceptanceTest {
      * alone ships 144 entries and every one of them qualifies.
      */
     private fun openTheShortOnes(): OpenReport = runBlocking {
-        val feeds = database.feedDao().getAll()
-        val allEntries = feeds.associateWith { database.entryDao().observeByFeed(it.id).first() }
+        val feeds = perch.database.feedDao().getAll()
+        val allEntries = feeds.associateWith { perch.database.entryDao().observeByFeed(it.id).first() }
         val report = OpenReport(
             corpusEntries = allEntries.values.sumOf { it.size },
             corpusWithImage = allEntries.values.sumOf { rows -> rows.count { it.imageUrl != null } },
@@ -659,13 +652,13 @@ class LiveAcceptanceTest {
                 async {
                     inFlight.withPermit {
                         val before = FullText.prose(entry.contentHtml).length
-                        val outcome = runCatching { container.articleText.loadFullText(entry.id) }
+                        val outcome = runCatching { perch.container.articleText.loadFullText(entry.id) }
                         writes.withLock {
                             outcome.onFailure {
                                 report.errors += "${feed.feedUrl} “${entry.title}” — " +
                                     "${it.javaClass.simpleName}: ${it.message}"
                             }.onSuccess {
-                                val after = database.entryDao().findById(entry.id) ?: return@onSuccess
+                                val after = perch.database.entryDao().findById(entry.id) ?: return@onSuccess
                                 report.opened += Opened(
                                     feedUrl = feed.feedUrl,
                                     title = entry.title,
@@ -782,8 +775,8 @@ class LiveAcceptanceTest {
      * constant is a decision and belongs in a commit message.
      */
     private fun thumbnailsPerSource(opened: OpenReport): PerSourceReport = runBlocking {
-        val rows = database.feedDao().getAll().map { feed ->
-            val entries = database.entryDao().observeByFeed(feed.id).first()
+        val rows = perch.database.feedDao().getAll().map { feed ->
+            val entries = perch.database.entryDao().observeByFeed(feed.id).first()
             Triple(
                 feed.feedUrl.substringAfter("://").substringBefore("/"),
                 entries.count { it.imageUrl != null },
@@ -847,7 +840,7 @@ class LiveAcceptanceTest {
      */
     private fun theBlindSpotPageStillYieldsItsArticle(): BlindSpotReport = runBlocking {
         val label = "#17's Hugging Face post"
-        val fetched = runCatching { FeedFetcher(container.httpClient).fetch(BLIND_SPOT_PAGE_URL) }
+        val fetched = runCatching { FeedFetcher(perch.container.httpClient).fetch(BLIND_SPOT_PAGE_URL) }
             .getOrNull()
             ?: return@runBlocking BlindSpotReport(
                 "$label: $BLIND_SPOT_PAGE_URL could not be fetched — reported, not gated",
@@ -907,22 +900,22 @@ class LiveAcceptanceTest {
      */
     private fun foldersRoundTrip(): FolderReport = runBlocking {
         val report = FolderReport()
-        val feeds = database.feedDao().getAll().sortedBy { it.feedUrl }
+        val feeds = perch.database.feedDao().getAll().sortedBy { it.feedUrl }
         report.sources = feeds.size
         if (feeds.isEmpty()) {
             report.failures += "gate 6: nothing was pulled, so there was nothing to file"
             return@runBlocking report
         }
 
-        val folderIds = FOLDER_NAMES.map { container.folders.createFolder(it) }
+        val folderIds = FOLDER_NAMES.map { perch.container.folders.createFolder(it) }
         report.named = folderIds.size
         feeds.forEachIndexed { index, feed ->
             val slot = index % (folderIds.size + 1)
-            if (slot < folderIds.size) container.folders.moveSource(feed.id, folderIds[slot])
+            if (slot < folderIds.size) perch.container.folders.moveSource(feed.id, folderIds[slot])
         }
-        val before = folderMap(database)
+        val before = folderMap(perch.database)
 
-        val exported = container.opml.export()
+        val exported = perch.container.opml.export()
         val fresh = PerchDatabase.inMemory(ApplicationProvider.getApplicationContext())
         try {
             val reader = AppContainer(
@@ -989,8 +982,8 @@ class LiveAcceptanceTest {
      */
     private fun foldersReadInTheReadersOrder(): FolderOrderReport = runBlocking {
         val report = FolderOrderReport()
-        val direct = database.folderDao().getAll()
-        val observed = database.folderDao().observeAll().first()
+        val direct = perch.database.folderDao().getAll()
+        val observed = perch.database.folderDao().observeAll().first()
         report.drawer = direct.map { it.name }
 
         val named = direct.filter { it.id != FolderEntity.UNCATEGORIZED_ID }
@@ -1052,10 +1045,10 @@ class LiveAcceptanceTest {
      */
     private fun theWindowIsTheLastTwentyFourHours(): DayBoundaryReport = runBlocking {
         val report = DayBoundaryReport()
-        val entries = database.entryDao().observeAll().first()
+        val entries = perch.database.entryDao().observeAll().first()
         report.corpus = entries.size
 
-        val appZone = AppContainer(database = database, httpClient = container.httpClient).clock.zone
+        val appZone = AppContainer(database = perch.database, httpClient = perch.container.httpClient).clock.zone
         report.zone = "$appZone"
         if (appZone != ZoneId.systemDefault()) {
             report.failures += "gate 8: AppContainer's default clock is zoned $appZone, not " +
@@ -1082,7 +1075,7 @@ class LiveAcceptanceTest {
             return@runBlocking report
         }
 
-        val visible = database.entryDao()
+        val visible = perch.database.entryDao()
             .observeListItems(feedId = null, folderId = null, includeRead = true, publishedAfter = since)
             .first()
             .map { it.id }
@@ -1141,8 +1134,8 @@ class LiveAcceptanceTest {
      */
     private fun everyTableStaysRectangular(): TableReport = runBlocking {
         val report = TableReport()
-        for (feed in database.feedDao().getAll()) {
-            for (entry in database.entryDao().observeByFeed(feed.id).first()) {
+        for (feed in perch.database.feedDao().getAll()) {
+            for (entry in perch.database.entryDao().observeByFeed(feed.id).first()) {
                 val html = entry.contentHtml ?: continue
                 checkTables(html, "${feed.feedUrl} “${entry.title.take(TABLE_LABEL)}”", report)
             }
@@ -1213,7 +1206,7 @@ class LiveAcceptanceTest {
      */
     private suspend fun theZdiPageKeepsItsTable(report: TableReport) {
         val label = "V09's page path"
-        val fetched = runCatching { FeedFetcher(container.httpClient).fetch(ZDI_PAGE_URL) }
+        val fetched = runCatching { FeedFetcher(perch.container.httpClient).fetch(ZDI_PAGE_URL) }
             .getOrNull()
         if (fetched == null) {
             report.page = "$label: $ZDI_PAGE_URL could not be fetched — reported, not gated"
@@ -1258,8 +1251,8 @@ class LiveAcceptanceTest {
      * answer.
      */
     private fun theFeedLoadsOnePage(): PagingReport = runBlocking {
-        val corpus = database.entryDao().countAll()
-        val source = database.entryDao().pagedListItems(
+        val corpus = perch.database.entryDao().countAll()
+        val source = perch.database.entryDao().pagedListItems(
             feedId = null,
             folderId = null,
             includeRead = true,
@@ -1348,7 +1341,7 @@ class LiveAcceptanceTest {
                     PerchTheme(mode = current.mode, dynamicColor = false) {
                         when (current) {
                             is Scene.Article -> ArticleScreen(viewModel = current.viewModel, onBack = {})
-                            is Scene.Shell -> PerchNavHost(container = container)
+                            is Scene.Shell -> PerchNavHost(container = perch.container)
                             is Scene.Offer -> BackfillOfferDialog(
                                 newPostCount = current.newPostCount,
                                 pageCount = current.pageCount,
@@ -1506,9 +1499,9 @@ class LiveAcceptanceTest {
         val staging = runBlocking {
             val how = fileForTheShot()
             settings.setTimeFilter(TimeFilter.AllTime)
-            database.entryDao().observeAll().first().take(SAVED_FOR_THE_SHOT).forEach {
-                container.entries.setSaved(it.id, true)
-                container.entries.setLiked(it.id, true)
+            perch.database.entryDao().observeAll().first().take(SAVED_FOR_THE_SHOT).forEach {
+                perch.container.entries.setSaved(it.id, true)
+                perch.container.entries.setLiked(it.id, true)
             }
             how
         }
@@ -1521,7 +1514,7 @@ class LiveAcceptanceTest {
         // W03: the Feed is one chronological stream. What used to be counted here was
         // folder sections; what is checked now is that no folder moved an article — the
         // live list, read a full page deep, is in non-increasing publication order.
-        val page = runBlocking { container.entries.observeEntries(includeRead = true).first() }
+        val page = runBlocking { perch.container.entries.observeEntries(includeRead = true).first() }
             .take(PerchPaging.PAGE_SIZE)
         val outOfOrder = page.zipWithNext().count { (above, below) ->
             above.publishedAt < below.publishedAt
@@ -1613,11 +1606,11 @@ class LiveAcceptanceTest {
      */
     private fun captureTheDrawerRefusing(captures: Captures) {
         val (source, folder) = runBlocking {
-            val folders = database.folderDao().getAll()
+            val folders = perch.database.folderDao().getAll()
                 .filter { it.id != FolderEntity.UNCATEGORIZED_ID }
-            val titles = database.feedDao().getAll().groupBy { it.title }
+            val titles = perch.database.feedDao().getAll().groupBy { it.title }
             val feed = folders.firstNotNullOfOrNull { folder ->
-                database.feedDao().getAll()
+                perch.database.feedDao().getAll()
                     .firstOrNull { it.folderId == folder.id && titles.getValue(it.title).size == 1 }
             }
             feed to folders.firstOrNull()
@@ -1665,14 +1658,14 @@ class LiveAcceptanceTest {
      */
     private fun captureBackfillOffer(scene: MutableState<Scene?>, captures: Captures) {
         val feed = runBlocking {
-            database.feedDao().getAll().firstOrNull { it.feedUrl == FZAKARIA_FEED_URL }
+            perch.database.feedDao().getAll().firstOrNull { it.feedUrl == FZAKARIA_FEED_URL }
         }
         if (feed == null) {
             captures.failures += "gate 7: fzakaria.com was not pulled at gate 1, so there is " +
                 "no source to offer an archive for"
             return
         }
-        val plan = runBlocking { container.backfill.plan(feed.id) }
+        val plan = runBlocking { perch.container.backfill.plan(feed.id) }
         if (plan == null || plan.toFetch.isEmpty()) {
             captures.failures += "gate 7: fzakaria.com's archive has nothing left to offer " +
                 "after gate 12's run — cannot shoot the offer dialog"
@@ -1696,7 +1689,7 @@ class LiveAcceptanceTest {
     private fun captureTheScopedList(captures: Captures) {
         runBlocking { settings.setShowReadEntries(true) }
         val top = runBlocking {
-            database.entryDao()
+            perch.database.entryDao()
                 .observeListItems(feedId = null, folderId = null, includeRead = true, publishedAfter = null)
                 .first().firstOrNull()
         }
@@ -1775,11 +1768,11 @@ class LiveAcceptanceTest {
      */
     private fun captureTheLongestByline(scene: MutableState<Scene?>, captures: Captures) {
         val pick = runBlocking {
-            database.feedDao().getAll()
+            perch.database.feedDao().getAll()
                 .filterNot { it.isSynthetic }
                 .sortedByDescending { it.title.length }
                 .firstNotNullOfOrNull { feed ->
-                    database.entryDao().observeByFeed(feed.id).first()
+                    perch.database.entryDao().observeByFeed(feed.id).first()
                         .maxByOrNull { it.title.length }?.let { feed to it }
                 }
         }
@@ -1813,7 +1806,7 @@ class LiveAcceptanceTest {
      * in the file: the source's articles go with it.
      */
     private fun removingTheSourceYouAreReading(scene: MutableState<Scene?>, captures: Captures) {
-        val before = runBlocking { database.feedDao().getAll().size }
+        val before = runBlocking { perch.database.feedDao().getAll().size }
         scene.value = Scene.Shell("s12-remove-source", ThemeMode.Dark)
         compose.awaitInRealTime("the Feed to fill before a source is removed from it") {
             compose.onAllNodesWithTag(HomeTestTags.ENTRY).fetchSemanticsNodes().isNotEmpty()
@@ -1853,7 +1846,7 @@ class LiveAcceptanceTest {
             .performSemanticsAction(SemanticsActions.OnClick)
         try {
             compose.awaitInRealTime("“$scoped” to be unsubscribed from") {
-                runBlocking { database.feedDao().getAll().size } < before
+                runBlocking { perch.database.feedDao().getAll().size } < before
             }
         } catch (e: AssertionError) {
             captures.failures += "gate 15: confirming left all $before sources subscribed " +
@@ -1861,7 +1854,7 @@ class LiveAcceptanceTest {
             return
         }
 
-        val after = runBlocking { database.feedDao().getAll().size }
+        val after = runBlocking { perch.database.feedDao().getAll().size }
         val title = barTitle()
         val rows = compose.onAllNodesWithTag(HomeTestTags.ENTRY).fetchSemanticsNodes().size
         if (title == scoped) {
@@ -1918,11 +1911,11 @@ class LiveAcceptanceTest {
      * the corpus's own and not the staging's.
      */
     private suspend fun fileForTheShot(): String {
-        val named = database.folderDao().getAll()
+        val named = perch.database.folderDao().getAll()
             .filter { it.id != FolderEntity.UNCATEGORIZED_ID }
         if (named.size < MIN_NAMED_FOLDERS) return "not staged: ${named.size} named folders"
-        val freshestFirst = database.feedDao().getAll()
-            .map { it to database.entryDao().observeByFeed(it.id).first() }
+        val freshestFirst = perch.database.feedDao().getAll()
+            .map { it to perch.database.entryDao().observeByFeed(it.id).first() }
             .sortedByDescending { (_, entries) -> entries.maxOfOrNull { it.publishedAt } ?: 0L }
 
         // One opener per named folder bar the last, taken off the top: a source's newest
@@ -1934,11 +1927,11 @@ class LiveAcceptanceTest {
         val openers = freshestFirst.take(minOf(named.size - 1, OPENER_POOL))
 
         openers.forEachIndexed { index, (feed, _) ->
-            container.folders.moveSource(feed.id, named[index].id)
+            perch.container.folders.moveSource(feed.id, named[index].id)
         }
         freshestFirst.map { (feed, _) -> feed }
             .filterNot { feed -> openers.any { it.first.id == feed.id } }
-            .forEach { container.folders.moveSource(it.id, named.last().id) }
+            .forEach { perch.container.folders.moveSource(it.id, named.last().id) }
 
         return "staged: " + openers.mapIndexed { index, (feed, rows) ->
             val newest = rows.maxOfOrNull { it.publishedAt } ?: 0L
@@ -1954,9 +1947,9 @@ class LiveAcceptanceTest {
         sample: Sample,
     ) {
         val viewModel = ArticleViewModel(
-            entries = container.entries,
-            feeds = container.feeds,
-            articleText = container.articleText,
+            entries = perch.container.entries,
+            feeds = perch.container.feeds,
+            articleText = perch.container.articleText,
             entryId = sample.entryId,
             zone = ZoneOffset.UTC,
         )
@@ -2026,12 +2019,12 @@ class LiveAcceptanceTest {
      */
     private fun theReportersArchiveIsReachable(): ArchiveReport = runBlocking {
         val label = "issue #21's fzakaria.com"
-        val feed = database.feedDao().getAll().firstOrNull { it.feedUrl == FZAKARIA_FEED_URL }
+        val feed = perch.database.feedDao().getAll().firstOrNull { it.feedUrl == FZAKARIA_FEED_URL }
             ?: return@runBlocking ArchiveReport(
                 "$label: feed was not pulled at gate 1 — reported there, not gated here",
             )
-        val reach = database.entryDao().reach(feed.id)
-        val fetcher = FeedFetcher(container.httpClient)
+        val reach = perch.database.entryDao().reach(feed.id)
+        val fetcher = FeedFetcher(perch.container.httpClient)
         val feedPage = fetcher.fetch(feed.feedUrl)
             ?: return@runBlocking ArchiveReport("$label: could not refetch its own feed").also {
                 it.failures += "gate 10: $label — ${feed.feedUrl} could not be refetched"
@@ -2041,7 +2034,7 @@ class LiveAcceptanceTest {
             ?: return@runBlocking ArchiveReport("$label: ArchiveDiscovery threw").also {
                 it.failures += "gate 10: $label — ArchiveDiscovery.discover threw"
             }
-        val stored = database.entryDao().guidsForFeed(feed.id).toHashSet()
+        val stored = perch.database.entryDao().guidsForFeed(feed.id).toHashSet()
         val fresh = discovered.filterNot { it.url in stored }
 
         val report = ArchiveReport(
@@ -2093,7 +2086,7 @@ class LiveAcceptanceTest {
      */
     private fun pastedLinkLandsOnToRead(): PasteReport = runBlocking {
         val label = "issue #23's pasted link"
-        val result = container.savedLinks.saveLink(REPORTERS_POST_URL)
+        val result = perch.container.savedLinks.saveLink(REPORTERS_POST_URL)
         val id = result.getOrNull()
         if (id == null) {
             return@runBlocking PasteReport(
@@ -2102,7 +2095,7 @@ class LiveAcceptanceTest {
                 it.failures += "gate 11: $label — did not save: ${result.exceptionOrNull()?.message}"
             }
         }
-        val saved = database.entryDao().findById(id)
+        val saved = perch.database.entryDao().findById(id)
             ?: return@runBlocking PasteReport("$label: row $id vanished after saveLink").also {
                 it.failures += "gate 11: $label — saved row $id could not be reread"
             }
@@ -2138,22 +2131,22 @@ class LiveAcceptanceTest {
      */
     private fun backfilledEntryIsIndistinguishable(): BackfillIndistinguishableReport = runBlocking {
         val label = "issue #21/#24's backfilled row"
-        val feed = database.feedDao().getAll().firstOrNull { it.feedUrl == FZAKARIA_FEED_URL }
+        val feed = perch.database.feedDao().getAll().firstOrNull { it.feedUrl == FZAKARIA_FEED_URL }
             ?: return@runBlocking BackfillIndistinguishableReport(
                 "$label: feed was not pulled at gate 1 — reported there, not gated here",
             )
-        val ordinary = database.entryDao().observeByFeed(feed.id).first().firstOrNull()
-        val result = container.backfill.run(feed.id)
+        val ordinary = perch.database.entryDao().observeByFeed(feed.id).first().firstOrNull()
+        val result = perch.container.backfill.run(feed.id)
         val report = BackfillIndistinguishableReport(
             "$label: backfill attempted ${result.attempted}, stored ${result.stored}, " +
                 "skipped ${result.skippedByRobots} (robots), failed ${result.failed}",
         )
-        val backfilled = database.entryDao().findByGuid(feed.id, REPORTERS_POST_URL)
+        val backfilled = perch.database.entryDao().findByGuid(feed.id, REPORTERS_POST_URL)
         if (backfilled == null) {
             report.failures += "gate 12: $label — $REPORTERS_POST_URL was not stored by the run"
             return@runBlocking report
         }
-        val items = database.entryDao()
+        val items = perch.database.entryDao()
             .observeListItems(feedId = feed.id, folderId = null, includeRead = true, publishedAfter = null)
             .first()
         val backfilledItem = items.firstOrNull { it.id == backfilled.id }
@@ -2232,7 +2225,7 @@ class LiveAcceptanceTest {
      */
     private fun theIndexAnswersAReadersQuestion(): SearchReport = runBlocking {
         val report = SearchReport()
-        report.stored = database.entryDao().countAll()
+        report.stored = perch.database.entryDao().countAll()
         report.indexed = indexedRows()
         if (report.indexed < report.stored) {
             report.failures += "gate 13: the pull stored ${report.stored} articles and the " +
@@ -2241,8 +2234,8 @@ class LiveAcceptanceTest {
         }
 
         // One article per source, so a prolific feed cannot be the whole of the evidence.
-        val perSource = database.feedDao().getAll().mapNotNull { feed ->
-            database.entryDao().observeByFeed(feed.id).first()
+        val perSource = perch.database.feedDao().getAll().mapNotNull { feed ->
+            perch.database.entryDao().observeByFeed(feed.id).first()
                 .firstOrNull { keywordsOf(it.title).isNotEmpty() }
         }
         if (perSource.isEmpty()) {
@@ -2254,7 +2247,7 @@ class LiveAcceptanceTest {
             val words = keywordsOf(entry.title).sortedByDescending { it.length }
             val word = words.first()
             report.titleAsked++
-            val hits = container.entries.searchEntries(word).first()
+            val hits = perch.container.entries.searchEntries(word).first()
             report.asked += word to hits.size
             if (hits.any { it.id == entry.id }) {
                 report.titleFound++
@@ -2267,7 +2260,7 @@ class LiveAcceptanceTest {
                 val pair = words.take(2)
                 val typed = pair.joinToString(" ")
                 report.pairAsked++
-                val both = container.entries.searchEntries(typed).first()
+                val both = perch.container.entries.searchEntries(typed).first()
                 if (both.any { it.id == entry.id }) {
                     report.pairFound++
                 } else {
@@ -2288,7 +2281,7 @@ class LiveAcceptanceTest {
         }.take(BODY_SAMPLE)
         for ((entry, word) in bodies) {
             report.bodyAsked++
-            val hits = container.entries.searchEntries(word).first()
+            val hits = perch.container.entries.searchEntries(word).first()
             report.asked += word to hits.size
             if (hits.any { it.id == entry.id }) {
                 report.bodyFound++
@@ -2304,8 +2297,8 @@ class LiveAcceptanceTest {
         if (readWord != null) {
             report.readAsked = true
             report.readTitle = read.title
-            container.entries.setRead(read.id, isRead = true)
-            report.readFound = container.entries.searchEntries(readWord).first()
+            perch.container.entries.setRead(read.id, isRead = true)
+            report.readFound = perch.container.entries.searchEntries(readWord).first()
                 .any { it.id == read.id }
             if (!report.readFound) {
                 report.failures += "gate 13: “${read.title.take(HEADLINE_ECHO)}” stopped " +
@@ -2318,7 +2311,7 @@ class LiveAcceptanceTest {
 
     /** How many rows the FTS table holds — there is no DAO for it, and there should not be. */
     private fun indexedRows(): Int =
-        database.query("SELECT count(*) FROM entries_fts", emptyArray()).use { cursor ->
+        perch.database.query("SELECT count(*) FROM entries_fts", emptyArray()).use { cursor ->
             if (cursor.moveToFirst()) cursor.getInt(0) else 0
         }
 
@@ -2362,8 +2355,8 @@ class LiveAcceptanceTest {
                     "reported there, not gated twice",
             )
         val report = PasteVisibilityReport("")
-        val queue = container.entries.observeSaved().first()
-        val stream = container.entries.observeEntries(includeRead = true).first()
+        val queue = perch.container.entries.observeSaved().first()
+        val stream = perch.container.entries.observeEntries(includeRead = true).first()
         if (queue.none { it.id == id }) {
             report.failures += "gate 14: $label — “${paste.title}” is not on To-Read, " +
                 "which is the one list it is supposed to be on"
@@ -2374,7 +2367,7 @@ class LiveAcceptanceTest {
                 "link is not feed traffic"
         }
         val word = keywordsOf(paste.title.orEmpty()).maxByOrNull { it.length }
-        val hits = word?.let { container.entries.searchEntries(it).first() }
+        val hits = word?.let { perch.container.entries.searchEntries(it).first() }
         if (word != null && hits?.any { it.id == id } != true) {
             report.failures += "gate 14: $label — “$word”, a word out of its own title, " +
                 "returned ${hits?.size ?: 0} articles and not the pasted one; keeping it " +

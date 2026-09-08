@@ -396,15 +396,20 @@ No task in this plan takes a device screenshot.
         `SettingsViewModelTest`. `./gradlew test`: **1882** (1098 debug + 784 release), 0
         failures; `@Test` count 1004, unchanged against `HEAD`. −355/+76 lines.
 
-- [ ] **D10 — One rule opens the database and builds the container. Issue #43.**
+- [x] **D10 — One rule opens the database and builds the container. Issue #43.**
       `gh issue view 43 --json body`. 22 files carry the same `@Before`/`@After`
       (`HomeScreenTest.kt:85-99`, `FolderDrawerTest.kt:76-90`, and every other
       `grep -l 'AppContainer(' app/src/test app/src/testDebug`). A JUnit `TestRule`,
       `PerchRule(clock, settings)` in `app/src/test/.../support/PerchRule.kt`, that owns
       `PerchDatabase.inMemory(context)` and `AppContainer(database, httpClient =
       PerchHttp.client(cacheDir = null), clock, settings)` and closes the database after.
-      - Compose tests already have `@get:Rule val compose = createComposeRule()`; the two rules
-        are independent — order does not matter, say so in the rule's KDoc.
+      - Compose tests already have `@get:Rule val compose = createComposeRule()`. The plan
+        assumed the two rules were independent; **they are not**, and the rule's KDoc now says
+        so. `@get:Rule(order = 1)` on `PerchRule` keeps it *inner*, where the hand-written
+        `@After` closed the database — inside the Compose environment. Left to the default,
+        `BackfillOfferTest` failed the next test in the class with
+        `UncaughtExceptionsBeforeTest`: a `viewModelScope` nothing cancels reached a closed
+        connection pool after the environment had gone.
       - A test that customises `clock` or `settings` passes them to the rule; nothing else
         changes in test bodies.
       - Done: test count unchanged; `./gradlew test` green; `grep -c 'PerchDatabase.inMemory'`

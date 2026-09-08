@@ -1,6 +1,5 @@
 package dev.mkiros.perch.ui.home
 
-import android.content.Context
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsDisplayed
@@ -11,14 +10,11 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
-import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.ui.rowTitles
-import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.FolderEntity
-import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.settings.SettingsStore
-import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.support.testEntry
 import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
@@ -31,8 +27,6 @@ import java.time.ZoneOffset
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.junit.After
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -52,31 +46,14 @@ class HomeTimeFilterTest {
     @get:Rule
     val compose = createAndroidComposeRule<ComponentActivity>()
 
-    private lateinit var database: PerchDatabase
-    private lateinit var container: AppContainer
-    private lateinit var settings: SettingsStore
+    private val settings = SettingsStore.inMemory()
     private lateinit var viewModel: HomeViewModel
 
     private val now = Instant.parse("2026-08-07T12:00:00Z")
     private val clock = Clock.fixed(now, ZoneOffset.UTC)
 
-    @Before
-    fun setUp() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        database = PerchDatabase.inMemory(context)
-        settings = SettingsStore.inMemory()
-        container = AppContainer(
-            database = database,
-            httpClient = PerchHttp.client(cacheDir = null),
-            clock = clock,
-            settings = settings,
-        )
-    }
-
-    @After
-    fun tearDown() {
-        database.close()
-    }
+    @get:Rule(order = 1)
+    val perch = PerchRule(clock = clock, settings = settings)
 
     // ---- the time filter ---------------------------------------------------------
 
@@ -176,9 +153,9 @@ class HomeTimeFilterTest {
         // A second view model over the same settings — process death, in miniature. The
         // range has to come out of DataStore, not out of the last view model's memory.
         val relaunched = HomeViewModel(
-            entries = container.entries,
-            feeds = container.feeds,
-            folders = container.folders,
+            entries = perch.container.entries,
+            feeds = perch.container.feeds,
+            folders = perch.container.folders,
             clock = clock,
             settings = settings,
         )
@@ -313,7 +290,7 @@ class HomeTimeFilterTest {
     }
 
     private fun folderIdOf(name: String): Long = runBlocking {
-        database.folderDao().getAll().first { it.name == name }.id
+        perch.database.folderDao().getAll().first { it.name == name }.id
     }
 
     /** See `HomeScreenTest.awaitState`: Room's emissions need wall-clock time. */
@@ -335,13 +312,13 @@ class HomeTimeFilterTest {
 
     private fun showHome(clock: Clock = this.clock) {
         viewModel = HomeViewModel(
-            entries = container.entries,
-            feeds = container.feeds,
-            folders = container.folders,
+            entries = perch.container.entries,
+            feeds = perch.container.feeds,
+            folders = perch.container.folders,
             clock = clock,
             settings = settings,
         )
-        val addSourceViewModel = AddSourceViewModel(container.feeds, container.folders)
+        val addSourceViewModel = AddSourceViewModel(perch.container.feeds, perch.container.folders)
         compose.setContent {
             PerchTheme(dynamicColor = false) {
                 HomeScreen(
@@ -357,7 +334,7 @@ class HomeTimeFilterTest {
     }
 
     private fun seedFolder(name: String, sortIndex: Int): Long = runBlocking {
-        database.folderDao().insert(
+        perch.database.folderDao().insert(
             FolderEntity(name = name, sortIndex = sortIndex, createdAt = 0L),
         )
     }
@@ -366,7 +343,7 @@ class HomeTimeFilterTest {
         title: String,
         folderId: Long = FolderEntity.UNCATEGORIZED_ID,
     ): Long = runBlocking {
-        database.feedDao().insert(
+        perch.database.feedDao().insert(
             testFeed(
                 title = title,
                 folderId = folderId,
@@ -381,7 +358,7 @@ class HomeTimeFilterTest {
         read: Boolean = false,
     ): Long = runBlocking {
         val published = Instant.parse(at).toEpochMilli()
-        database.entryDao().insert(
+        perch.database.entryDao().insert(
             testEntry(
                 feedId = feedId,
                 title = title,

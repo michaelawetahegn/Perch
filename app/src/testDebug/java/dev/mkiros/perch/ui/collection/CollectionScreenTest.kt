@@ -1,6 +1,5 @@
 package dev.mkiros.perch.ui.collection
 
-import android.content.Context
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsDisplayed
@@ -10,12 +9,9 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.performSemanticsAction
-import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
-import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.EntryEntity
-import dev.mkiros.perch.data.net.PerchHttp
-import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.support.testEntry
 import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.ui.home.EntryActionTestTags
@@ -26,8 +22,6 @@ import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
 import kotlinx.coroutines.runBlocking
-import org.junit.After
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -49,29 +43,14 @@ class CollectionScreenTest {
     @get:Rule
     val compose = createAndroidComposeRule<ComponentActivity>()
 
-    private lateinit var database: PerchDatabase
-    private lateinit var container: AppContainer
     private lateinit var viewModel: CollectionViewModel
     private lateinit var saveLinkViewModel: SaveLinkViewModel
 
     private val now = Instant.parse("2026-08-07T12:00:00Z")
     private val clock = Clock.fixed(now, ZoneOffset.UTC)
 
-    @Before
-    fun setUp() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        database = PerchDatabase.inMemory(context)
-        container = AppContainer(
-            database = database,
-            httpClient = PerchHttp.client(cacheDir = null),
-            clock = clock,
-        )
-    }
-
-    @After
-    fun tearDown() {
-        database.close()
-    }
+    @get:Rule(order = 1)
+    val perch = PerchRule(clock = clock)
 
     // ---- the empty states ------------------------------------------------------
 
@@ -161,7 +140,7 @@ class CollectionScreenTest {
         show(Collection.ToRead)
         compose.onNodeWithTag(CollectionTestTags.EMPTY).assertExists()
 
-        runBlocking { container.entries.setSaved(entryId, isSaved = true) }
+        runBlocking { perch.container.entries.setSaved(entryId, isSaved = true) }
 
         compose.awaitInRealTime("the queue to fill") { titles().contains("Saved from the Feed") }
         compose.onNodeWithText("Saved from the Feed").assertIsDisplayed()
@@ -259,7 +238,7 @@ class CollectionScreenTest {
 
     private fun titles(): List<String> = compose.rowTitles()
 
-    private fun entry(id: Long): EntryEntity = runBlocking { database.entryDao().findById(id)!! }
+    private fun entry(id: Long): EntryEntity = runBlocking { perch.database.entryDao().findById(id)!! }
 
     private fun openActions() {
         compose.onNodeWithTag(CollectionTestTags.ENTRY)
@@ -274,8 +253,8 @@ class CollectionScreenTest {
     }
 
     private fun show(collection: Collection) {
-        viewModel = CollectionViewModel(container.entries, container.feeds, clock, collection)
-        saveLinkViewModel = SaveLinkViewModel(container.savedLinks)
+        viewModel = CollectionViewModel(perch.container.entries, perch.container.feeds, clock, collection)
+        saveLinkViewModel = SaveLinkViewModel(perch.container.savedLinks)
         compose.setContent {
             PerchTheme(dynamicColor = false) {
                 CollectionScreen(
@@ -295,7 +274,7 @@ class CollectionScreenTest {
     }
 
     private fun seedFeed(): Long = runBlocking {
-        database.feedDao().insert(
+        perch.database.feedDao().insert(
             testFeed(
                 feedUrl = "https://example.com/feed.xml",
                 title = "Null Program",
@@ -311,7 +290,7 @@ class CollectionScreenTest {
         starredAt: Instant? = null,
         readAt: Long? = null,
     ): Long = runBlocking {
-        database.entryDao().insert(
+        perch.database.entryDao().insert(
             testEntry(
                 feedId = feedId,
                 title = title,

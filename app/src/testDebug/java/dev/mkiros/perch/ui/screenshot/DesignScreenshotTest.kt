@@ -26,14 +26,12 @@ import coil.ImageLoader
 import coil.map.Mapper
 import coil.request.Options
 import com.google.common.truth.Truth.assertThat
-import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.db.entity.FeedEntity
-import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.debug.DebugSeeder
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.data.repo.ArticleTextRepository
-import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.ui.article.ArticleScreen
 import dev.mkiros.perch.ui.collection.CollectionTestTags
 import dev.mkiros.perch.ui.nav.NavTestTags
@@ -92,8 +90,6 @@ class DesignScreenshotTest {
     @get:Rule
     val compose = createAndroidComposeRule<ComponentActivity>()
 
-    private lateinit var database: PerchDatabase
-    private lateinit var container: AppContainer
     private lateinit var homeViewModel: HomeViewModel
     private lateinit var server: MockWebServer
 
@@ -110,24 +106,19 @@ class DesignScreenshotTest {
         runBlocking { it.setTimeFilter(TimeFilter.AllTime) }
     }
 
+    @get:Rule(order = 1)
+    val perch = PerchRule(clock = clock)
+
     @Before
     fun setUp() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        database = PerchDatabase.inMemory(context)
         server = MockWebServer()
         server.start()
-        container = AppContainer(
-            database = database,
-            httpClient = PerchHttp.client(cacheDir = null),
-            clock = clock,
-        )
     }
 
     @After
     fun tearDown() {
         Coil.reset()
         server.shutdown()
-        database.close()
     }
 
     @Test
@@ -291,7 +282,7 @@ class DesignScreenshotTest {
                 .addHeader("Content-Type", "text/html; charset=utf-8"),
         )
         runBlocking {
-            container.savedLinks.saveLink(server.url("/the-mean-means-nothing").toString()).getOrThrow()
+            perch.container.savedLinks.saveLink(server.url("/the-mean-means-nothing").toString()).getOrThrow()
         }
         showShell(ThemeMode.Dark)
         compose.onNodeWithTag(NavTestTags.tab(PerchTab.ToRead)).performClick()
@@ -413,7 +404,7 @@ class DesignScreenshotTest {
     /** Fills the database from the T28 seed assets, the same way a debug install does. */
     private fun seed() = runBlocking {
         val assets = ApplicationProvider.getApplicationContext<Context>().assets
-        val added = DebugSeeder(assets, container.feeds, clock).seedIfEmpty()
+        val added = DebugSeeder(assets, perch.container.feeds, clock).seedIfEmpty()
         assertThat(added).isGreaterThan(0)
     }
 
@@ -425,14 +416,14 @@ class DesignScreenshotTest {
      * because the drawer shot needs it and W04's category labels do too.
      */
     private fun sortIntoFolders() = runBlocking {
-        val byHost = database.feedDao().getAll().associateBy { feed ->
+        val byHost = perch.database.feedDao().getAll().associateBy { feed ->
             feed.feedUrl.substringAfter("://").substringBefore("/")
         }
         FOLDER_LAYOUT.forEach { (name, hosts) ->
-            val folderId = container.folders.createFolder(name)
+            val folderId = perch.container.folders.createFolder(name)
             hosts.forEach { host ->
                 byHost.entries.firstOrNull { it.key.contains(host) }?.let { (_, feed) ->
-                    container.folders.moveSource(feed.id, folderId)
+                    perch.container.folders.moveSource(feed.id, folderId)
                 }
             }
         }
@@ -440,7 +431,7 @@ class DesignScreenshotTest {
 
     /** The id of a folder created by [sortIntoFolders], by its name. */
     private fun folderIdOf(name: String): Long = runBlocking {
-        database.folderDao().findByName(name)!!.id
+        perch.database.folderDao().findByName(name)!!.id
     }
 
     /**
@@ -448,7 +439,7 @@ class DesignScreenshotTest {
      * shot is of a layout, not of a fetch, and no fixture in the corpus is this verbose.
      */
     private fun seedLongBylineEntry(): Long = runBlocking {
-        val feedId = database.feedDao().insert(
+        val feedId = perch.database.feedDao().insert(
             FeedEntity(
                 feedUrl = "https://example.org/gijn/feed.xml",
                 siteUrl = "https://example.org/gijn",
@@ -463,7 +454,7 @@ class DesignScreenshotTest {
                 addedAt = now.toEpochMilli(),
             ),
         )
-        database.entryDao().insert(
+        perch.database.entryDao().insert(
             EntryEntity(
                 feedId = feedId,
                 guid = "long-byline",
@@ -486,8 +477,8 @@ class DesignScreenshotTest {
 
     /** An entry with a body, from the source whose feed URL contains [host]. */
     private fun firstReadableEntryOf(host: String): Long = runBlocking {
-        val feed = database.feedDao().getAll().first { it.feedUrl.contains(host) }
-        database.entryDao().observeAll().first()
+        val feed = perch.database.feedDao().getAll().first { it.feedUrl.contains(host) }
+        perch.database.entryDao().observeAll().first()
             .first { it.feedId == feed.id && !it.contentHtml.isNullOrBlank() }
             .id
     }
@@ -532,19 +523,19 @@ class DesignScreenshotTest {
     }
 
     private fun feedIdOf(host: String): Long = runBlocking {
-        database.feedDao().getAll().first { it.feedUrl.contains(host) }.id
+        perch.database.feedDao().getAll().first { it.feedUrl.contains(host) }.id
     }
 
     private fun showHome(mode: ThemeMode, scope: HomeScope = HomeScope.All) {
         stubThumbnails()
         homeViewModel = HomeViewModel(
-            entries = container.entries,
-            feeds = container.feeds,
-            folders = container.folders,
+            entries = perch.container.entries,
+            feeds = perch.container.feeds,
+            folders = perch.container.folders,
             clock = clock,
             settings = settings,
         )
-        val addSourceViewModel = AddSourceViewModel(container.feeds, container.folders)
+        val addSourceViewModel = AddSourceViewModel(perch.container.feeds, perch.container.folders)
         compose.setContent {
             PerchTheme(mode = mode, dynamicColor = false) {
                 HomeScreen(
@@ -570,13 +561,13 @@ class DesignScreenshotTest {
 
     /** Files the newest [count] seeded entries under *Read later*, newest saved first. */
     private fun saveSomeEntries(count: Int) = runBlocking {
-        database.entryDao().observeAll().first().take(count)
-            .forEach { container.entries.setSaved(it.id, isSaved = true) }
+        perch.database.entryDao().observeAll().first().take(count)
+            .forEach { perch.container.entries.setSaved(it.id, isSaved = true) }
     }
 
     private fun showSearch(query: String) {
         stubThumbnails()
-        val viewModel = SearchViewModel(container.entries, clock)
+        val viewModel = SearchViewModel(perch.container.entries, clock)
         compose.setContent {
             PerchTheme(mode = ThemeMode.Dark, dynamicColor = false) {
                 val state = remember {
@@ -595,7 +586,7 @@ class DesignScreenshotTest {
         stubThumbnails()
         compose.setContent {
             PerchTheme(mode = mode, dynamicColor = false) {
-                PerchNavHost(container = container)
+                PerchNavHost(container = perch.container)
             }
         }
         compose.waitForIdle()
@@ -603,10 +594,10 @@ class DesignScreenshotTest {
 
     private fun showArticle(entryId: Long) {
         val viewModel = ArticleViewModel(
-            entries = container.entries,
-            feeds = container.feeds,
+            entries = perch.container.entries,
+            feeds = perch.container.feeds,
             // Offline and deterministic: a screenshot must not depend on a page fetch.
-            articleText = ArticleTextRepository(container.database.entryDao(), { null }, clock),
+            articleText = ArticleTextRepository(perch.container.database.entryDao(), { null }, clock),
             entryId = entryId,
             zone = ZoneOffset.UTC,
         )

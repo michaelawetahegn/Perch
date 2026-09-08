@@ -18,11 +18,9 @@ import androidx.compose.ui.test.performSemanticsAction
 import androidx.test.core.app.ApplicationProvider
 import androidx.core.content.IntentCompat
 import com.google.common.truth.Truth.assertThat
-import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.EntryEntity
-import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.repo.ArticleTextRepository
-import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.support.testEntry
 import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
@@ -33,8 +31,6 @@ import java.time.Instant
 import java.time.ZoneOffset
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import org.junit.After
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -54,27 +50,11 @@ class ArticleScreenTest {
     @get:Rule
     val compose = createAndroidComposeRule<ComponentActivity>()
 
-    private lateinit var database: PerchDatabase
-    private lateinit var container: AppContainer
-
     private val now = Instant.parse("2026-08-07T12:00:00Z")
     private val clock = Clock.fixed(now, ZoneOffset.UTC)
 
-    @Before
-    fun setUp() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        database = PerchDatabase.inMemory(context)
-        container = AppContainer(
-            database = database,
-            httpClient = PerchHttp.client(cacheDir = null),
-            clock = clock,
-        )
-    }
-
-    @After
-    fun tearDown() {
-        database.close()
-    }
+    @get:Rule(order = 1)
+    val perch = PerchRule(clock = clock)
 
     @Test
     fun `the article shows its headline, its byline, and its body`() {
@@ -386,7 +366,7 @@ class ArticleScreenTest {
         compose.onNodeWithContentDescription("Like").assertExists()
         tap(ArticleTestTags.LIKE)
 
-        await { runBlocking { container.entries.find(entryId) }?.isStarred == true }
+        await { runBlocking { perch.container.entries.find(entryId) }?.isStarred == true }
         compose.onNodeWithContentDescription("Remove from Liked").assertExists()
     }
 
@@ -398,7 +378,7 @@ class ArticleScreenTest {
         compose.onNodeWithContentDescription("Save for later").assertExists()
         tap(ArticleTestTags.SAVE)
 
-        await { runBlocking { container.entries.find(entryId) }?.isSaved == true }
+        await { runBlocking { perch.container.entries.find(entryId) }?.isSaved == true }
         compose.onNodeWithContentDescription("Remove from To-Read").assertExists()
     }
 
@@ -409,7 +389,7 @@ class ArticleScreenTest {
     @Test
     fun `a liked entry opens with its toggle already on`() {
         val entryId = seedEntry(seedFeed(title = "Null Program"), title = "An Async Runtime in C")
-        runBlocking { container.entries.setLiked(entryId, isLiked = true) }
+        runBlocking { perch.container.entries.setLiked(entryId, isLiked = true) }
 
         showArticle(entryId)
 
@@ -427,12 +407,12 @@ class ArticleScreenTest {
 
     private fun showArticle(entryId: Long, onOpenSource: (Long) -> Unit = {}) {
         val viewModel = ArticleViewModel(
-            entries = container.entries,
-            feeds = container.feeds,
+            entries = perch.container.entries,
+            feeds = perch.container.feeds,
             // U10's extraction is deliberately inert here: these tests are about what the
             // renderer does with a body, and every one of their bodies is short enough to
             // trip the trigger. `ArticleFullTextTest` is where the fetch is exercised.
-            articleText = ArticleTextRepository(database.entryDao(), { null }, clock),
+            articleText = ArticleTextRepository(perch.database.entryDao(), { null }, clock),
             entryId = entryId,
             zone = ZoneOffset.UTC,
         )
@@ -464,11 +444,11 @@ class ArticleScreenTest {
         compose.awaitInRealTime("the database to satisfy the test's predicate", predicate = predicate)
 
     private fun entry(entryId: Long): EntryEntity = runBlocking {
-        database.entryDao().observeAll().first().first { it.id == entryId }
+        perch.database.entryDao().observeAll().first().first { it.id == entryId }
     }
 
     private fun seedFeed(title: String, customTitle: String? = null): Long = runBlocking {
-        database.feedDao().insert(
+        perch.database.feedDao().insert(
             testFeed(
                 title = title,
                 customTitle = customTitle,
@@ -485,7 +465,7 @@ class ArticleScreenTest {
         link: String? = "https://example.com/post",
         publishedIsEstimated: Boolean = false,
     ): Long = runBlocking {
-        database.entryDao().insert(
+        perch.database.entryDao().insert(
             testEntry(
                 feedId = feedId,
                 title = title,

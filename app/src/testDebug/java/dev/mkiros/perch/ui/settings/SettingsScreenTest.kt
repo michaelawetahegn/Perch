@@ -20,17 +20,16 @@ import androidx.work.WorkManager
 import androidx.work.testing.SynchronousExecutor
 import androidx.work.testing.WorkManagerTestInitHelper
 import com.google.common.truth.Truth.assertThat
-import dev.mkiros.perch.data.db.PerchDatabase
-import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.settings.PerchSettings
 import dev.mkiros.perch.data.settings.SettingsStore
-import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.theme.PerchTheme
 import dev.mkiros.perch.ui.theme.ThemeMode
 import dev.mkiros.perch.work.RefreshInterval
 import dev.mkiros.perch.work.WorkScheduler
 import java.io.File
+import java.nio.file.Files
 import java.time.Duration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -42,7 +41,6 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
@@ -63,17 +61,25 @@ class SettingsScreenTest {
     @get:Rule
     val compose = createAndroidComposeRule<ComponentActivity>()
 
-    @get:Rule
-    val folder = TemporaryFolder()
-
     private lateinit var context: Context
-    private lateinit var database: PerchDatabase
-    private lateinit var container: AppContainer
     private lateinit var viewModel: SettingsViewModel
+
+    /**
+     * A real file-backed store: "persists" is the claim, so nothing here may be satisfied
+     * by a value that only ever lived in memory. The directory is made here rather than by
+     * a `TemporaryFolder` rule, because [perch] takes the store at construction time and
+     * one rule may not assume another has already run.
+     */
+    private val storeDir: File = Files.createTempDirectory("perch-settings").toFile()
     private val storeScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     /** The scheme the app is drawing with, sampled from inside the theme on every frame. */
     private var scheme: ColorScheme? = null
+
+    @get:Rule(order = 1)
+    val perch = PerchRule(
+        settings = SettingsStore.at(File(storeDir, "settings.preferences_pb"), storeScope),
+    )
 
     @Before
     fun setUp() {
@@ -85,20 +91,12 @@ class SettingsScreenTest {
                 .setExecutor(SynchronousExecutor())
                 .build(),
         )
-        database = PerchDatabase.inMemory(context)
-        container = AppContainer(
-            database = database,
-            httpClient = PerchHttp.client(cacheDir = null),
-            // A real file-backed store: "persists" is the claim, so nothing here may be
-            // satisfied by a value that only ever lived in memory.
-            settings = SettingsStore.at(File(folder.root, "settings.preferences_pb"), storeScope),
-        )
     }
 
     @After
     fun tearDown() {
         storeScope.cancel()
-        database.close()
+        storeDir.deleteRecursively()
     }
 
     // ---- refresh interval ---------------------------------------------------------
@@ -234,10 +232,10 @@ class SettingsScreenTest {
 
     private fun showSettings() {
         viewModel = SettingsViewModel(
-            settings = container.settings,
-            opml = container.opml,
-            profile = container.profile,
-            feeds = container.feeds,
+            settings = perch.container.settings,
+            opml = perch.container.opml,
+            profile = perch.container.profile,
+            feeds = perch.container.feeds,
             scheduler = { interval -> WorkScheduler.setInterval(context, interval) },
         )
         compose.setContent {
@@ -271,7 +269,7 @@ class SettingsScreenTest {
     /** A DataStore write lands on its own thread, so this waits in wall-clock time. */
     private fun awaitSettings(predicate: (PerchSettings) -> Boolean) =
         compose.awaitInRealTime("stored settings matching the test's predicate") {
-            predicate(runBlocking { container.settings.settings.first() })
+            predicate(runBlocking { perch.container.settings.settings.first() })
         }
 
     private fun label(resId: Int): String = context.getString(resId)

@@ -1,6 +1,5 @@
 package dev.mkiros.perch.ui.home
 
-import android.content.Context
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
@@ -25,13 +24,10 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
-import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
-import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.FolderEntity
-import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.settings.SettingsStore
-import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.support.testEntry
 import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
@@ -42,8 +38,6 @@ import java.time.Instant
 import java.time.ZoneOffset
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import org.junit.After
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -68,8 +62,6 @@ class DrawerMultiSelectTest {
     @get:Rule
     val compose = createAndroidComposeRule<ComponentActivity>()
 
-    private lateinit var database: PerchDatabase
-    private lateinit var container: AppContainer
     private lateinit var viewModel: HomeViewModel
     private lateinit var drawerState: DrawerState
     private lateinit var selection: MutableState<DrawerSelection>
@@ -83,21 +75,8 @@ class DrawerMultiSelectTest {
         runBlocking { it.setTimeFilter(TimeFilter.AllTime) }
     }
 
-    @Before
-    fun setUp() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        database = PerchDatabase.inMemory(context)
-        container = AppContainer(
-            database = database,
-            httpClient = PerchHttp.client(cacheDir = null),
-            clock = clock,
-        )
-    }
-
-    @After
-    fun tearDown() {
-        database.close()
-    }
+    @get:Rule(order = 1)
+    val perch = PerchRule(clock = clock)
 
     // ---- entering, toggling, leaving ------------------------------------------------
 
@@ -492,16 +471,16 @@ class DrawerMultiSelectTest {
     private fun checkbox(testTag: String) =
         compose.onNodeWithTag(testTag, useUnmergedTree = true)
 
-    private fun folders() = runBlocking { database.folderDao().getAll() }
+    private fun folders() = runBlocking { perch.database.folderDao().getAll() }
 
     private fun folderNames() = folders().map { it.name }
 
-    private fun feeds() = runBlocking { database.feedDao().getAll() }
+    private fun feeds() = runBlocking { perch.database.feedDao().getAll() }
 
     private fun feedTitles() = feeds().map { it.title }
 
     private fun entryTitles() = runBlocking {
-        database.entryDao().observeAll().first().map { it.title }
+        perch.database.entryDao().observeAll().first().map { it.title }
     }
 
     private fun folderIdOf(title: String) = feeds().first { it.title == title }.folderId
@@ -522,13 +501,13 @@ class DrawerMultiSelectTest {
 
     private fun showHome() {
         viewModel = HomeViewModel(
-            entries = container.entries,
-            feeds = container.feeds,
-            folders = container.folders,
+            entries = perch.container.entries,
+            feeds = perch.container.feeds,
+            folders = perch.container.folders,
             clock = clock,
             settings = settings,
         )
-        val addSourceViewModel = AddSourceViewModel(container.feeds, container.folders)
+        val addSourceViewModel = AddSourceViewModel(perch.container.feeds, perch.container.folders)
         compose.setContent {
             // Hoisted exactly as PerchNavHost hoists them, so the test can ask the same
             // questions the shell's back chain asks.
@@ -556,14 +535,14 @@ class DrawerMultiSelectTest {
     }
 
     private fun seedFolder(name: String): Long = runBlocking {
-        container.folders.createFolder(name)
+        perch.container.folders.createFolder(name)
     }
 
     private fun seedFeed(
         title: String,
         folderId: Long = FolderEntity.UNCATEGORIZED_ID,
     ): Long = runBlocking {
-        database.feedDao().insert(
+        perch.database.feedDao().insert(
             testFeed(
                 title = title,
                 folderId = folderId,
@@ -577,7 +556,7 @@ class DrawerMultiSelectTest {
         isSaved: Boolean = false,
         isLiked: Boolean = false,
     ): Long = runBlocking {
-        database.entryDao().insert(
+        perch.database.entryDao().insert(
             testEntry(
                 feedId = feedId,
                 title = title,

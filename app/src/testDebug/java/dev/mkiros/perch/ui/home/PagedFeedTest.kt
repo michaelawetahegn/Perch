@@ -1,6 +1,5 @@
 package dev.mkiros.perch.ui.home
 
-import android.content.Context
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -8,23 +7,18 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performScrollToIndex
-import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
-import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.db.entity.FeedEntity
-import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.repo.PerchPaging
 import dev.mkiros.perch.data.settings.SettingsStore
-import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.ui.rowTitles
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.source.AddSourceViewModel
 import dev.mkiros.perch.ui.theme.PerchTheme
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import org.junit.After
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -50,8 +44,6 @@ class PagedFeedTest {
     @get:Rule
     val compose = createAndroidComposeRule<ComponentActivity>()
 
-    private lateinit var database: PerchDatabase
-    private lateinit var container: AppContainer
     private lateinit var viewModel: HomeViewModel
 
     private val now = Instant.parse("2026-08-08T12:00:00Z")
@@ -62,21 +54,8 @@ class PagedFeedTest {
         runBlocking { it.setTimeFilter(TimeFilter.AllTime) }
     }
 
-    @Before
-    fun setUp() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        database = PerchDatabase.inMemory(context)
-        container = AppContainer(
-            database = database,
-            httpClient = PerchHttp.client(cacheDir = null),
-            clock = clock,
-        )
-    }
-
-    @After
-    fun tearDown() {
-        database.close()
-    }
+    @get:Rule(order = 1)
+    val perch = PerchRule(clock = clock)
 
     // ---- where the list ends ----------------------------------------------------
 
@@ -126,7 +105,7 @@ class PagedFeedTest {
         scrollTo(40)
         assertThat(isDisplayed("Entry 00")).isFalse()
 
-        runBlocking { container.entries.setRead(idOf("Entry 00"), isRead = true) }
+        runBlocking { perch.container.entries.setRead(idOf("Entry 00"), isRead = true) }
         compose.awaitInRealTime("the list to take the write") {
             !compose.rowTitles().contains("Entry 00")
         }
@@ -183,9 +162,9 @@ class PagedFeedTest {
 
     private fun showHome() {
         viewModel = HomeViewModel(
-            entries = container.entries,
-            feeds = container.feeds,
-            folders = container.folders,
+            entries = perch.container.entries,
+            feeds = perch.container.feeds,
+            folders = perch.container.folders,
             clock = clock,
             settings = settings,
         )
@@ -193,7 +172,7 @@ class PagedFeedTest {
             PerchTheme(dynamicColor = false) {
                 HomeScreen(
                     viewModel = viewModel,
-                    addSourceViewModel = AddSourceViewModel(container.feeds, container.folders),
+                    addSourceViewModel = AddSourceViewModel(perch.container.feeds, perch.container.folders),
                     onOpenEntry = {},
                     onOpenSettings = {},
                 )
@@ -203,11 +182,11 @@ class PagedFeedTest {
     }
 
     private fun idOf(title: String): Long = runBlocking {
-        database.entryDao().observeAll().first().first { it.title == title }.id
+        perch.database.entryDao().observeAll().first().first { it.title == title }.id
     }
 
     private fun seed(count: Int) = runBlocking {
-        val feedId = database.feedDao().insert(
+        val feedId = perch.database.feedDao().insert(
             FeedEntity(
                 feedUrl = "https://example.com/feed.xml",
                 siteUrl = "https://example.com",
@@ -223,7 +202,7 @@ class PagedFeedTest {
             ),
         )
         repeat(count) { index ->
-            database.entryDao().insert(
+            perch.database.entryDao().insert(
                 EntryEntity(
                     feedId = feedId,
                     guid = "guid-$index",

@@ -1,11 +1,8 @@
 package dev.mkiros.perch.ui.settings
 
-import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
-import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.FeedEntity
-import dev.mkiros.perch.data.net.PerchHttp
-import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.support.awaitInRealTime
 import java.io.IOException
 import kotlinx.coroutines.Dispatchers
@@ -20,6 +17,7 @@ import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
 import org.junit.After
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -40,13 +38,14 @@ import org.robolectric.RobolectricTestRunner
 @RunWith(RobolectricTestRunner::class)
 class SettingsViewModelTest {
 
-    private lateinit var database: PerchDatabase
-    private lateinit var container: AppContainer
     private lateinit var server: MockWebServer
     private lateinit var viewModel: SettingsViewModel
 
     /** The one address every source in this test lives at, so no refresh leaves the host. */
     private lateinit var feedUrl: String
+
+    @get:Rule(order = 1)
+    val perch = PerchRule()
 
     @Before
     fun setUp() {
@@ -58,21 +57,17 @@ class SettingsViewModelTest {
         }
         server.start()
         feedUrl = server.url("/feed.xml").toString()
-        database = PerchDatabase.inMemory(ApplicationProvider.getApplicationContext())
-        container = AppContainer(database, PerchHttp.client(cacheDir = null))
         viewModel = SettingsViewModel(
-            settings = container.settings,
-            opml = container.opml,
-            profile = container.profile,
-            feeds = container.feeds,
+            settings = perch.container.settings,
+            opml = perch.container.opml,
+            profile = perch.container.profile,
+            feeds = perch.container.feeds,
             scheduler = {},
         )
     }
 
     @After
     fun tearDown() {
-        container.close()
-        database.close()
         server.shutdown()
         Dispatchers.resetMain()
     }
@@ -96,7 +91,7 @@ class SettingsViewModelTest {
 
         val message = awaitMessage { it is SettingsMessage.Imported }
         assertThat((message as SettingsMessage.Imported).added).isEqualTo(1)
-        assertThat(runBlocking { database.feedDao().findByUrl(feedUrl) }).isNotNull()
+        assertThat(runBlocking { perch.database.feedDao().findByUrl(feedUrl) }).isNotNull()
     }
 
     @Test
@@ -116,7 +111,7 @@ class SettingsViewModelTest {
     @Test
     fun `importing a profile restores it and reports what came back`() {
         subscribe()
-        val exported = runBlocking { container.profile.export() }
+        val exported = runBlocking { perch.container.profile.export() }
 
         viewModel.importProfile { exported }
 
@@ -165,7 +160,7 @@ class SettingsViewModelTest {
     // ---- harness ----------------------------------------------------------------
 
     private fun subscribe() = runBlocking {
-        database.feedDao().insert(
+        perch.database.feedDao().insert(
             FeedEntity(
                 feedUrl = feedUrl,
                 siteUrl = server.url("/").toString(),

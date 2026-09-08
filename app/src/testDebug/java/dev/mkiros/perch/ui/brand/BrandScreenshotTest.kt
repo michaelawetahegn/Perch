@@ -30,12 +30,10 @@ import coil.ImageLoader
 import coil.map.Mapper
 import coil.request.Options
 import com.google.common.truth.Truth.assertThat
-import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.FolderEntity
-import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.debug.DebugSeeder
-import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.ui.home.HomeScreen
 import dev.mkiros.perch.ui.home.HomeTestTags
 import dev.mkiros.perch.ui.home.HomeViewModel
@@ -53,7 +51,6 @@ import java.time.ZoneOffset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.junit.After
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -78,8 +75,6 @@ class BrandScreenshotTest {
     @get:Rule
     val compose = createAndroidComposeRule<ComponentActivity>()
 
-    private lateinit var database: PerchDatabase
-    private lateinit var container: AppContainer
     private lateinit var homeViewModel: HomeViewModel
 
     private val clock = Clock.fixed(Instant.parse("2026-08-07T12:00:00Z"), ZoneOffset.UTC)
@@ -90,21 +85,12 @@ class BrandScreenshotTest {
         runBlocking { it.setTimeFilter(TimeFilter.AllTime) }
     }
 
-    @Before
-    fun setUp() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        database = PerchDatabase.inMemory(context)
-        container = AppContainer(
-            database = database,
-            httpClient = PerchHttp.client(cacheDir = null),
-            clock = clock,
-        )
-    }
+    @get:Rule(order = 1)
+    val perch = PerchRule(clock = clock)
 
     @After
     fun tearDown() {
         Coil.reset()
-        database.close()
     }
 
     @Test
@@ -239,19 +225,19 @@ class BrandScreenshotTest {
 
     private fun seed() = runBlocking {
         val assets = ApplicationProvider.getApplicationContext<Context>().assets
-        assertThat(DebugSeeder(assets, container.feeds, clock).seedIfEmpty()).isGreaterThan(0)
+        assertThat(DebugSeeder(assets, perch.container.feeds, clock).seedIfEmpty()).isGreaterThan(0)
     }
 
     private fun showHome(mode: ThemeMode) {
         stubThumbnails()
         homeViewModel = HomeViewModel(
-            entries = container.entries,
-            feeds = container.feeds,
-            folders = container.folders,
+            entries = perch.container.entries,
+            feeds = perch.container.feeds,
+            folders = perch.container.folders,
             clock = clock,
             settings = settings,
         )
-        val addSourceViewModel = AddSourceViewModel(container.feeds, container.folders)
+        val addSourceViewModel = AddSourceViewModel(perch.container.feeds, perch.container.folders)
         compose.setContent {
             PerchTheme(mode = mode, dynamicColor = false) {
                 HomeScreen(
