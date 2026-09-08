@@ -24,7 +24,7 @@ commits (`RALPH.md` §4).
 | [`PLAN-7-v0.5-slice3.md`](PLAN-7-v0.5-slice3.md) | v0.5.0 | Z01–Z05 | Slice 3 — a blog's past, not just its present: sitemap/RFC 5005 archive discovery and an opt-in backfill. |
 | [`PLAN-8-v0.5-slice4.md`](PLAN-8-v0.5-slice4.md) | v0.5.0 | R00–R03 | Slice 4 — a capped backfill fetches the newest posts and states the archive's true size (#24), then the version read as a whole, live acceptance, and the release. |
 | [`PLAN-9-v0.6.md`](PLAN-9-v0.6.md) | v0.6.0 | S01–S13 | The reader's batch: search across everything stored (#28), deleting a source from where you are reading it (#29, #30), a pasted link that stays out of the Feed (#31), a byline that wraps (#32), a link sheet that waits (#33), and a guessed date that says so (#25). |
-| [`PLAN-10.md`](../../PLAN-10.md) | v0.6.1 | D01–D30 | The tech-debt pass: four bugs a failing test could show, dead code, duplicated logic in data and UI, a test suite with one harness instead of twenty-two, docs that describe the app that exists. |
+| [`PLAN-10-v0.6.1.md`](PLAN-10-v0.6.1.md) | v0.6.1 | D01–D30 | The tech-debt pass: four bugs a failing test could show, dead code, duplicated logic in data and UI, a test suite with one harness instead of twenty-two, docs that describe the app that exists. |
 
 [`bootstrap-prompt.md`](bootstrap-prompt.md) is the original prompt that produced
 `SPEC.md`, `DESIGN.md`, `PLAN-1` and `loop.sh` in a single session, before any code

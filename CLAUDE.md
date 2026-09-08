@@ -41,8 +41,7 @@ close its issue, stop.
 
 Finished plans live in `docs/plans/` — v0.1 (T01–T32), v0.2 (U01–U16), v0.3 (V01–V16),
 v0.4 (W01–W12), all four of v0.5's slices (X01–X04, Y01–Y05, Z01–Z05, R00–R03), v0.6
-(S01–S13) and now **v0.6.1 (`PLAN-10.md`, D01–D30 — still at the repository root until the
-next plan archives it)** are **complete, frozen, and history only**; never reopen a box in
+(S01–S13) and v0.6.1 (`PLAN-10-v0.6.1.md`, D01–D30) are **complete, frozen, and history only**; never reopen a box in
 any of them.
 
 **There is no active plan, so there is no next task to pick up.** A session that reads this,
@@ -61,14 +60,14 @@ human decision. Between them they are a plan's worth of work; neither is a licen
 text in SPEC.md, DESIGN.md and earlier plans. Where they conflict, the newest §0 wins and
 the task updates the older doc in the same commit — do not "fix" §0 to match the older text.
 `docs/plans/PLAN-4-v0.4.md` §0, `docs/plans/PLAN-6-v0.5-slice2.md` §0,
-`docs/plans/PLAN-7-v0.5-slice3.md` §0, `docs/plans/PLAN-9-v0.6.md` §0 and `PLAN-10.md` §0 all
-still bind for everything a future plan's §0 does not restate. In particular **`PLAN-10.md`
+`docs/plans/PLAN-7-v0.5-slice3.md` §0, `docs/plans/PLAN-9-v0.6.md` §0 and `docs/plans/PLAN-10-v0.6.1.md` §0 all
+still bind for everything a future plan's §0 does not restate. In particular **`docs/plans/PLAN-10-v0.6.1.md`
 §0.2's rule stands: prefer deleting to adding**, and an improvement that needs a behaviour
 change to justify it goes into `TECH_DEBT.md`, not into the code.
 
 **The hard constraint the human set in v0.5 still binds: no site-specific parsing.** The parser
 must stay generalised and extensible, so that supporting one site means similar sites parse
-too. `PLAN-10.md` §0.2 restates it with the grep gate that enforces it.
+too. `docs/plans/PLAN-10-v0.6.1.md` §0.2 restates it with the grep gate that enforces it.
 
 **A plan task that names a GitHub issue is not done until that issue is closed** with a comment
 naming the commit and how it was verified — read it (`gh issue view N --json body`) before

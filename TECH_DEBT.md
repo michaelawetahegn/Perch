@@ -1,6 +1,6 @@
 # TECH_DEBT.md — what the tech-debt pass deliberately left alone
 
-The v0.6.1 pass (`PLAN-10.md`) fixed only what a failing test could demonstrate and refactored
+The v0.6.1 pass (`docs/plans/PLAN-10-v0.6.1.md`) fixed only what a failing test could demonstrate and refactored
 only where behaviour stayed identical. Everything below would need a **behaviour change** to
 justify, a **human decision**, or more room than one session — so it is recorded here rather
 than done. A loop session that finds another such item appends it; the re-survey task (D27)
