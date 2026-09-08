@@ -164,7 +164,7 @@ No task in this plan takes a device screenshot.
 
 ## The tasks
 
-- [ ] **D01 — Nothing that has no caller. Issue #34.**
+- [x] **D01 — Nothing that has no caller. Issue #34.**
       `gh issue view 34 --json body`. Delete, in `main`: `HomeViewModel.selectSource` and
       `selectFolder` (`HomeViewModel.kt:517-527`; `grep -rn '\.selectSource(\|\.selectFolder('
       app/src` returns nothing — `HomeScreen.kt:196/202` are local lambdas, not these),
@@ -183,6 +183,14 @@ No task in this plan takes a device screenshot.
         (`observeSourceCount` — only `DebugSeeder.kt:48` calls it; say so) and
         `EntryRepository.kt:155` (goes with the deletion).
       - Do **not** delete the test-only surface listed in TECH_DEBT.md ("Deliberate").
+      - **Done 2026-09-07 — two of the named symbols were survey false positives and stay.**
+        `CUTOUT_PX` has three callers (`WindowInsetsTest.kt:124/128/135`,
+        `ImageViewerScreenshotTest.kt:113`, `LiveAcceptanceTest.kt:1484-1495`); deleting it
+        breaks the build. `CodeScreenshotTest.kt:192` is a line *inside* the `KOTLIN_SAMPLE`
+        string literal the highlighter is screenshotted against, not a declaration — the
+        survey grep matched fixture text. Neither `EntryRepositoryTest` reach test covered
+        `entryCount` or the empty source, so both `FeedRepositoryTest` tests were **moved**,
+        not deleted, and the count held at 1848.
       - Done: `./gradlew test` green, count ≥ 1846 with every removed test named; `wc -l`
         before/after in the commit; issue #34 closed.
       - Rung: unit

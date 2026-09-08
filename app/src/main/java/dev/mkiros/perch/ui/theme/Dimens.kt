@@ -154,9 +154,6 @@ object Dimens {
      */
     val codeGutterGap = md
 
-    /** Inline `code` chips get 2dp of horizontal breathing room. §8. */
-    val inlineCodePadding = 2.dp
-
     /** Images: full column width, editorial 4dp corners, 24dp of air, 8dp to caption. */
     val imageCorner = xs
     val imageSpacing = xl
@@ -192,10 +189,6 @@ object Dimens {
      */
     val appendIndicator = 20.dp
     val appendIndicatorStroke = 2.dp
-
-    /** Editorial link underline: 1dp thick, offset 3dp below the baseline. §8. */
-    val linkUnderline = 1.dp
-    val linkUnderlineOffset = 3.dp
 
     /**
      * A table column is measured from its own text (U11a) and then held between these two.

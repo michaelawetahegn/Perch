@@ -152,10 +152,6 @@ class EntryRepository(
         }.flow
     }
 
-    /** The unread inbox — [observeEntries] as home reads it by default. */
-    fun observeUnreadEntries(feedId: Long? = null): Flow<List<EntryListItem>> =
-        observeEntries(feedId, includeRead = false)
-
     /** Total unread, for the inbox badge. */
     fun observeTotalUnreadCount(): Flow<Int> =
         entryDao.observeUnreadCount().distinctUntilChanged()

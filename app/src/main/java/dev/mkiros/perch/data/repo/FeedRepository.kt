@@ -2,7 +2,6 @@ package dev.mkiros.perch.data.repo
 
 import dev.mkiros.perch.data.db.EntryDao
 import dev.mkiros.perch.data.db.FeedDao
-import dev.mkiros.perch.data.db.FeedReach
 import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.db.entity.FolderEntity
@@ -106,9 +105,10 @@ class FeedRepository(
 ) {
 
     /**
-     * How many sources are subscribed, reactively. An empty reading list means one thing
-     * with zero sources and another with forty (DESIGN.md §7), and this is how home
-     * tells them apart.
+     * How many sources are subscribed, reactively. Home tells an empty reading list with
+     * zero sources apart from one with forty (DESIGN.md §7) by counting `observeSources`
+     * itself; the only caller left here is `DebugSeeder` (`DebugSeeder.kt:48`), which asks
+     * whether a debug build has anything to seed.
      */
     fun observeSourceCount(): Flow<Int> = feedDao.observeCount().distinctUntilChanged()
 
@@ -123,9 +123,6 @@ class FeedRepository(
      * behind an entry, and an entry only carries its `feedId`.
      */
     suspend fun find(feedId: Long): FeedEntity? = feedDao.findById(feedId)
-
-    /** PLAN-7 §0.4: how far [feedId]'s stored history reaches, feed-only until a backfill runs. */
-    suspend fun reach(feedId: Long): FeedReach = entryDao.reach(feedId)
 
     // ---- subscribing -----------------------------------------------------------
 

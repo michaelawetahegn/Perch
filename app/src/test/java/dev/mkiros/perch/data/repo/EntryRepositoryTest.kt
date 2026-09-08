@@ -662,6 +662,31 @@ class EntryRepositoryTest {
         assertThat(reach.oldestKnownPublishedAt).isEqualTo(2_000L)
     }
 
+    /**
+     * PLAN-7 §0.4, Z02. The count is what the backfill offer compares against, so a
+     * source that has only ever been polled must still report everything it stored.
+     */
+    @Test
+    fun `a fresh source's reach is its feed's own oldest entry and count`() = runTest {
+        val feed = feeds.insert(feed("https://a.example/feed"))
+        insertEntry(feed, "a1")
+        insertEntry(feed, "a2")
+
+        val reach = repo.reach(feed)
+
+        assertThat(reach.entryCount).isEqualTo(2)
+    }
+
+    @Test
+    fun `a source with nothing stored yet has no reach to speak of`() = runTest {
+        val feed = feeds.insert(feed("https://a.example/feed"))
+
+        val reach = repo.reach(feed)
+
+        assertThat(reach.entryCount).isEqualTo(0)
+        assertThat(reach.oldestPublishedAt).isNull()
+    }
+
     // ---- a pasted link belongs to To-Read only (#31) ----------------------------
 
     /**

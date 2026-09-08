@@ -65,7 +65,6 @@ jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
 
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
 
 junit = { module = "junit:junit", version.ref = "junit" }

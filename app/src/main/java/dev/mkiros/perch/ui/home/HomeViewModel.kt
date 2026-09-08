@@ -514,16 +514,6 @@ class HomeViewModel(
         scope.value = newScope
     }
 
-    /** Filters the list to one source, or back to the unified inbox with null. */
-    fun selectSource(feedId: Long?) {
-        setScope(if (feedId == null) HomeScope.All else HomeScope.Source(feedId))
-    }
-
-    /** Filters the list to one folder's sources (U06). */
-    fun selectFolder(folderId: Long) {
-        setScope(HomeScope.Folder(folderId))
-    }
-
     /**
      * Narrows or widens home's window (U07). Written straight to DataStore rather than to
      * a local flow, so the dropdown, the widen affordance and the next launch all read the
