@@ -19,7 +19,7 @@ in one line in NOTES.md, and move on.
 | Module layout | single module `:app` |
 | minSdk / targetSdk / compileSdk | 26 / 35 / 35 |
 | Language | Kotlin, JVM target 17 |
-| Distribution | sideloaded debug APK: `app/build/outputs/apk/debug/app-debug.apk` |
+| Distribution | sideloaded release-signed APK: `app/build/outputs/apk/release/perch-<version>.apk` (U02) |
 
 No server, no accounts, no cloud sync, no analytics, no crash reporting. All state in
 Room/SQLite on-device. The app fetches feeds directly over OkHttp.
@@ -57,7 +57,8 @@ androidx.activity:activity-compose          1.9.3
 androidx.lifecycle:lifecycle-*              2.8.7   (runtime-ktx, viewmodel-compose, runtime-compose)
 androidx.navigation:navigation-compose      2.8.5
 androidx.compose:compose-bom                2024.12.01   (material3, ui, ui-tooling, material-icons-extended)
-androidx.room:room-{runtime,ktx,compiler}   2.6.1   (KSP)
+androidx.room:room-{runtime,ktx,paging,compiler}  2.6.1   (KSP)
+androidx.paging:paging-{runtime-ktx,compose}       3.3.5
 androidx.work:work-runtime-ktx              2.10.0
 androidx.datastore:datastore-preferences    1.1.1
 androidx.browser:browser                    1.8.0   (Custom Tabs for open-in-browser)
@@ -70,8 +71,14 @@ TEST: junit 4.13.2 · com.google.truth:truth 1.4.4 · app.cash.turbine:turbine 1
       org.robolectric:robolectric 4.14.1 · androidx.test:core 1.6.1 · androidx.test.ext:junit 1.2.1
       com.squareup.okhttp3:mockwebserver 4.12.0 · kotlinx-coroutines-test 1.9.0
       androidx.room:room-testing 2.6.1 · androidx.work:work-testing 2.10.0
+      androidx.paging:paging-testing 3.3.5 · androidx.compose.ui:ui-test-junit4 (BOM)
 UI FLOWS: Maestro (CLI, installed to ~/.maestro/bin)
 ```
+
+**Why Paging 3** (U07a, added in v0.2): all three entry lists page from Room. Without it
+each list loaded every matching row into memory to render a screenful, and the Feed grows
+without bound. `room-paging` gives the DAO a `PagingSource` from the same SQL the
+`Flow<List>` query already uses, so there is one query per list, not two hand-written ones.
 
 **Deliberate omissions, do not add:** Hilt/Dagger (manual DI via `AppContainer`),
 Retrofit (OkHttp is enough), WebView-based article rendering, Firebase, Compose
@@ -90,31 +97,49 @@ and no Robolectric. That is the backbone of the TDD loop.
 app/src/main/java/dev/mkiros/perch/
 ├─ PerchApp.kt                     Application; builds AppContainer; schedules work
 ├─ MainActivity.kt                 single activity, edge-to-edge, hosts NavHost
-├─ di/AppContainer.kt              manual DI: db, okhttp, repos, clock, dispatchers
+├─ di/AppContainer.kt              manual DI: db, okhttp, repos, clock, connectivity, settings
 ├─ data/
-│  ├─ db/  PerchDatabase.kt  FeedDao.kt  EntryDao.kt
-│  │       entity/{FeedEntity,EntryEntity}.kt  Converters.kt
-│  ├─ net/ HttpModule.kt  FeedFetcher.kt  FetchResult.kt      (conditional GET)
-│  ├─ parse/ FeedParser.kt  RssParser.kt  AtomParser.kt  RdfParser.kt
-│  │         ParsedFeed.kt  ParsedEntry.kt  DateParser.kt
-│  │         FeedDiscovery.kt  HtmlSanitizer.kt  ContentBlocks.kt
-│  ├─ opml/ OpmlImporter.kt  OpmlExporter.kt
-│  └─ repo/ FeedRepository.kt  EntryRepository.kt  RefreshCoordinator.kt
-│           SettingsRepository.kt   (DataStore)
-├─ work/ RefreshWorker.kt  WorkScheduler.kt
+│  ├─ db/  PerchDatabase.kt  FeedDao.kt  EntryDao.kt  FolderDao.kt
+│  │       EntryListItem.kt  EntryStateRow.kt  FeedReach.kt  FtsQuery.kt
+│  │       entity/{Feed,Entry,EntryFts,Folder,PendingEntryState}Entity.kt
+│  ├─ net/ PerchHttp.kt  FeedFetcher.kt  ConnectivityMonitor.kt   (conditional GET)
+│  ├─ parse/ FeedParser.kt  RssParser.kt  AtomParser.kt  RdfParser.kt  FeedXml.kt
+│  │         ParsedFeed.kt  ParsedEntry.kt  ParseResult.kt  DateParser.kt
+│  │         FeedDiscovery.kt  HtmlSanitizer.kt  ArticleBlock.kt
+│  │         ArticleLowering.kt  LeadImage.kt
+│  ├─ extract/ ArticleExtractor.kt  FullText.kt  PageContent.kt  PageMetadata.kt
+│  ├─ archive/ ArchiveDiscovery.kt  RobotsRules.kt        (v0.5 backfill)
+│  ├─ opml/ Opml.kt
+│  ├─ profile/ Profile.kt  ProfileJson.kt                 (v0.4 backup/restore)
+│  ├─ settings/ SettingsStore.kt                          (DataStore)
+│  └─ repo/ FeedRepository.kt  EntryRepository.kt  FolderRepository.kt
+│           ArticleTextRepository.kt  BackfillRepository.kt  SavedLinkRepository.kt
+│           OpmlRepository.kt  ProfileRepository.kt
+├─ work/ RefreshWorker.kt  BackfillWorker.kt  WorkScheduler.kt
+│        WorkManagerBackfillRunner.kt
 └─ ui/
-   ├─ theme/ Color.kt  Type.kt  Theme.kt  Dimens.kt
-   ├─ nav/   PerchNavHost.kt  Routes.kt
-   ├─ home/  HomeScreen.kt  HomeViewModel.kt  EntryRow.kt  SourceDrawer.kt
-   ├─ source/ AddSourceSheet.kt  SourceViewModel.kt  ManageSourceDialogs.kt
-   ├─ article/ ArticleScreen.kt  ArticleViewModel.kt  RichText.kt
-   ├─ settings/ SettingsScreen.kt  SettingsViewModel.kt
-   └─ components/ EmptyState.kt  ErrorBanner.kt  Loading.kt  UnreadBadge.kt
-app/src/test/java/dev/mkiros/perch/…      JVM + Robolectric unit tests (primary)
-app/src/androidTest/java/…                 minimal instrumentation smoke test only
+   ├─ theme/ Color.kt  Type.kt  Theme.kt  Dimens.kt  Brand.kt  CodeTheme.kt
+   ├─ brand/ PerchBrandMark.kt
+   ├─ nav/   PerchNavHost.kt  PerchBottomBar.kt  BackChain.kt
+   ├─ home/  HomeScreen.kt  HomeViewModel.kt  EntryRow.kt  DrawerSelection.kt
+   │         EntryActions.kt  FolderActions.kt  SourceActions.kt  SelectionBar.kt
+   │         PagedList.kt  RelativeTime.kt  TimeFilter.kt
+   │         BackfillOfferUi.kt  BackfillRunner.kt
+   ├─ source/ AddSourceSheet.kt  AddSourceViewModel.kt  PastedUrl.kt
+   ├─ article/ ArticleScreen.kt  ArticleViewModel.kt  ArticleBody.kt  RichText.kt
+   │           code/{CodeHighlighter,CodeLanguage}.kt
+   │           zoom/{ImageViewer,ZoomGeometry,ZoomState}.kt
+   ├─ collection/ CollectionScreen.kt  CollectionViewModel.kt
+   │              SaveLinkSheet.kt  SaveLinkViewModel.kt
+   ├─ search/ SearchSurface.kt  SearchViewModel.kt  SearchState.kt
+   └─ settings/ SettingsScreen.kt  SettingsViewModel.kt
+app/src/test/java/dev/mkiros/perch/…       JVM + Robolectric unit tests (primary)
+app/src/testDebug/java/…                   Compose UI tests, screenshots, live acceptance
+                                           (ui-test-manifest is debugImplementation, so
+                                           they cannot live in src/test) — NOTES.md
 app/src/debug/assets/seed/                 bundled fixture feeds for screenshots
-fixtures/feeds.txt  fixtures/snapshots/*.xml
-maestro/*.yaml
+fixtures/feeds.txt  fixtures/snapshots/*.xml  fixtures/articles/  fixtures/homepages/
+maestro/regression.yaml
 ```
 
 ## 4. Data model

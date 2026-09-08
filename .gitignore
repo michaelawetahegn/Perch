@@ -30,3 +30,6 @@ emulator.log
 # Keep the fixture corpus (it is the parser test contract), ignore scratch
 fixtures/tmp/
 screenshots/*.tmp.png
+
+# Kotlin build-tool scratch (K2 incremental state)
+.kotlin/

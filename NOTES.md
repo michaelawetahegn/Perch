@@ -11,7 +11,7 @@
   `debugImplementation`). An injected tap/long-press **never reaches a node inside a drawer sheet, bottom sheet or
   dropdown** — use `performSemanticsAction(OnClick/OnLongClick)`. `PullToRefreshBox` ignores a swipe unless its child
   scrolls — since V03 **every empty state is a `LazyColumn` with one `fillParentMaxSize` item**. Screenshots: go
-  through `Screenshots` (its KDoc says why **never `captureToImage()`** — CLAUDE.md is wrong).
+  through `Screenshots` (its KDoc says why **never `captureToImage()`**).
   **W05/#16: `shareIntent(title, link)` is pure**, and a *chooser* — assert `EXTRA_INTENT`, not the outer action.
   **S02/#33: a `ModalBottomSheet` has two exits, not one** — the scrim reaches `onDismissRequest`, a swipe (and the
   settle after the IME collapses) does not: it hides the sheet through `SheetState` first. Refusing a dismissal means

@@ -195,7 +195,7 @@ No task in this plan takes a device screenshot.
         before/after in the commit; issue #34 closed.
       - Rung: unit
 
-- [ ] **D02 — The docs and the build describe the app that exists. Issue #35.**
+- [x] **D02 — The docs and the build describe the app that exists. Issue #35.**
       `gh issue view 35 --json body`. Fix, each against the tree:
       - `SPEC.md:96-118` §3 package structure: rewrite from `find app/src/main -type d` — no
         `net/HttpModule.kt` (it is `data/net/PerchHttp.kt`), no `ui/components/`, no
@@ -217,6 +217,19 @@ No task in this plan takes a device screenshot.
       - Done: `./gradlew test` green (the Gradle edit must still build); every quoted line
         fixed; issue #35 closed.
       - Rung: build
+      - **Done 2026-09-07.** §3 rewritten from `find app/src/main -type d` plus the real file
+        lists (28 lines → 42): `data/{archive,extract,profile,settings}`, `ui/{brand,collection,
+        search,article/code,article/zoom}` added; `HttpModule.kt`, `Converters.kt`, `FetchResult.kt`,
+        `ContentBlocks.kt`, `RefreshCoordinator.kt`, `SettingsRepository.kt`, `Routes.kt`,
+        `SourceDrawer.kt`, `SourceViewModel.kt`, `ManageSourceDialogs.kt` and `ui/components/`
+        gone; `AppContainer` now reads "clock, connectivity, settings" (it holds no dispatchers);
+        `src/androidTest` replaced by `src/testDebug` with the `ui-test-manifest` reason. §2 gained
+        Paging 3 (runtime-ktx/compose 3.3.5, room-paging, paging-testing) with a **Why Paging 3**
+        paragraph from NOTES.md's U07a line, plus `ui-test-junit4`. §1 distribution is the
+        release-signed `perch-<version>.apk`. CLAUDE.md:135 and :177 fixed (Screenshots helper,
+        no `src/androidTest`); NOTES.md's "CLAUDE.md is wrong" clause deleted. `app/build.gradle.kts`
+        lost `testInstrumentationRunner` and all three `androidTestImplementation` lines.
+        `.gitignore` gained `.kotlin/`.
 
 - [ ] **D03 — Read later and Like survive a full-text load. TDD. Issue #36.**
       `gh issue view 36 --json body`. §0.5 carries the root cause and the fix shape; the RED

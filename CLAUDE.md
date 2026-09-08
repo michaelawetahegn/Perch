@@ -132,7 +132,8 @@ Do not skip ahead, do not do two tasks, do not refactor code the task doesn't to
 - **Screenshots are the most expensive tool you have.** Take them only for tasks whose
   Done-condition is visual (T03, T29). One affected screen per iteration. **Max 2
   critique-fix iterations**, then log residual polish to NOTES.md for T29 and move on.
-- Prefer Robolectric (`src/test`) over instrumentation (`src/androidTest`). The parser,
+- Prefer Robolectric (`src/test`) over Compose UI tests (`src/testDebug`). There is no
+  `src/androidTest` and nothing needs one. The parser,
   storage, repo, worker, and most UI logic are verifiable with **zero emulator**.
 - Run the narrowest Gradle task: `./gradlew :app:testDebugUnitTest --tests '*FooTest*'`
   before the full `./gradlew test`.
@@ -174,8 +175,10 @@ Do not skip ahead, do not do two tasks, do not refactor code the task doesn't to
 - **Keep the emulator running between sessions.** Do not kill it. If it is wedged:
   `./scripts/device.sh reboot`, then log it.
 - **Screenshots do not need the emulator.** Prefer Robolectric native graphics
-  (`@GraphicsMode(NATIVE)` + `captureToImage()`) — seconds, deterministic, JVM-only.
-  The device is only genuinely required for Maestro (T30).
+  (`@GraphicsMode(NATIVE)`) — seconds, deterministic, JVM-only — and always go through the
+  `Screenshots` helper (`app/src/testDebug/.../ui/screenshot/ScreenshotSupport.kt`), **never
+  `captureToImage()` directly**; its KDoc says why. The device is only genuinely required
+  for Maestro (T30).
 - 4 cores / **7 GB RAM** (lowered from 10 GB after the 2026-08-07 host freeze — see
   NOTES.md). **The memory settings in `gradle.properties` are a host-stability
   constraint, not a tuning knob: do not raise `-Xmx`, do not re-enable
