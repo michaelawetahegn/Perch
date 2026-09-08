@@ -53,14 +53,24 @@ object HtmlSanitizer {
     }
 
     /**
+     * [html] as plain text, whole. Null when there are no words left in it.
+     *
+     * The search index's body (S08, #28): SQLite's tokenizer would otherwise index tag
+     * names, class names and URLs, so a search for `class` or `https` would answer with the
+     * whole database. [summarize] is the same reduction, cut short.
+     */
+    fun flatten(html: String?): String? {
+        val raw = html?.takeIf { it.isNotBlank() } ?: return null
+        return runCatching { Jsoup.parse(raw).text() }.getOrNull()
+            ?.replace('\u00A0', ' ')?.trim()?.takeIf { it.isNotEmpty() }
+    }
+
+    /**
      * The first [maxChars] characters of [html] as plain text, cut on a word boundary.
      * Fed either raw or sanitized markup — it strips tags either way.
      */
     fun summarize(html: String?, maxChars: Int = SUMMARY_CHARS): String? {
-        val raw = html?.takeIf { it.isNotBlank() } ?: return null
-        val text = runCatching { Jsoup.parse(raw).text() }.getOrNull()
-            ?.replace('\u00A0', ' ')?.trim()?.takeIf { it.isNotEmpty() }
-            ?: return null
+        val text = flatten(html) ?: return null
         if (text.length <= maxChars) return text
 
         // One character of the budget belongs to the ellipsis.

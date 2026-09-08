@@ -81,12 +81,19 @@
   a large archive (measured live on `fzakaria.com`, 143/133 discovered). `BackfillOffer` carries
   both `newPostCount` (true) and `pageCount` (capped) so the offer never claims a small archive
   is the whole one. `quantpedia.com` excluded from live gate 1 — its own TLS cert has expired,
-  confirmed independently with `curl -v`, nothing Perch-side. Q6 (a guessed date renders like a
-  known one) is real work, not a one-line fix — filed as **#25** for v0.6. `./gradlew test`:
+  confirmed independently with `curl -v`, nothing Perch-side. `./gradlew test`:
   **1669** (976 debug + 693 release), 0 failures, grew monotonically from the 1524 v0.4.0 floor.
-- 2026-08-25 — **v0.5.0 released.** `perchVersionCode` 5→6, `perchVersionName` 0.4.0→0.5.0.
-  v0.4.0→v0.5.0 in-place upgrade verified through the emulator UI (Feed/Liked/To-Read all
-  intact across the DB v6 migration) — **the human's real phone is a separate device this
-  session cannot reach; that upgrade is still theirs to run.** README's screenshot strip
-  refreshed from live captures, `screenshots/drawer.png` in particular (showed pre-PLAN-5
-  expanded folders, now the collapsed resting state).
+- 2026-09-07 — **S08/#28: the search index is a standalone FTS4 table Perch writes itself.**
+  `entries_fts(title, body)`, `rowid = entries.id`, DB **v7**. Body is `HtmlSanitizer.flatten`ed
+  plain text (new fn; `summarize` now delegates to it) — never markup, or `class`/`https` match
+  everything. **Writes are Kotlin, deletes are a SQL trigger**: `EntryDao.index()` is called from
+  `upsertAll` (both branches) and `ArticleTextRepository.loadFullText`, but a source removal
+  reaches entries by `ON DELETE CASCADE` and never calls Kotlin, so `entries_fts_delete` fires
+  `AFTER DELETE ON entries`. The trigger needs **two** homes — `MIGRATION_6_7` *and* a `Callback`
+  on `build()`/`inMemory()` — because Room creates the table from the entity on a fresh install
+  and knows nothing about triggers. `MIGRATION_6_7` backfills in Kotlin (200-row pages), not
+  `INSERT … SELECT`: SQL cannot flatten HTML. `INSERT OR REPLACE` **does** work on an FTS4 table,
+  so re-indexing is one statement. `MIGRATION_6_7`'s `CREATE VIRTUAL TABLE` must be byte-for-byte
+  what `7.json` exports or Room fails validation on the next open.
+- 2026-08-25 — **v0.5.0 released** (`versionCode` 6). The v0.4→v0.5 upgrade was verified on the
+  emulator only: **the human's real phone is a separate device no session can reach.**

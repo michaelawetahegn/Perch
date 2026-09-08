@@ -384,7 +384,7 @@ a route, for reasons that apply identically here. Hoist the search state beside 
         comment naming both S06's and S07's commits and what each settled.
       - Rung: unit
 
-- [ ] **S08 — An index of every stored article that stays true. TDD. Issue #28 (1 of 3).**
+- [x] **S08 — An index of every stored article that stays true. TDD. Issue #28 (1 of 3).**
       `gh issue view 28 --json body` — the reader wants to find an article by remembering
       keywords. §0.8 carries every decision; **implement it, do not re-litigate the shape.**
       - `entries_fts(title, body)` FTS4, `rowid = entries.id`, **standalone — not

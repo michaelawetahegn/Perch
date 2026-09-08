@@ -73,6 +73,9 @@ class ArticleTextRepository(
             imageUrl = imageUrl,
         )
         entryDao.update(updated)
+        // The recovered article is usually the first real body this entry has ever had, so
+        // until this line the index only knew whatever stub the feed shipped (S08, #28).
+        entryDao.index(updated)
         return updated.takeIf { safeHtml != null }
     }
 

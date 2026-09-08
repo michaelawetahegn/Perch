@@ -7,9 +7,11 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import dev.mkiros.perch.data.db.entity.EntryEntity
+import dev.mkiros.perch.data.db.entity.EntryFtsEntity
 import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.db.entity.PendingEntryStateEntity
+import dev.mkiros.perch.data.parse.HtmlSanitizer
 
 /**
  * The single local store. Every column in SPEC.md §4 is a SQLite-native type, so there
@@ -25,6 +27,7 @@ import dev.mkiros.perch.data.db.entity.PendingEntryStateEntity
         FolderEntity::class,
         FeedEntity::class,
         EntryEntity::class,
+        EntryFtsEntity::class,
         PendingEntryStateEntity::class,
     ],
     version = PerchDatabase.VERSION,
@@ -42,7 +45,7 @@ abstract class PerchDatabase : RoomDatabase() {
         const val NAME = "perch.db"
 
         /** Bumping this requires a [MIGRATIONS] entry from `VERSION - 1`. */
-        const val VERSION = 6
+        const val VERSION = 7
 
         /**
          * Folders (U03). Creates the table, seeds Uncategorized as id 1, and files every
@@ -165,9 +168,37 @@ abstract class PerchDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Search (S08, #28). Adds the standalone FTS4 index
+         * ([dev.mkiros.perch.data.db.entity.EntryFtsEntity]), the trigger that keeps it
+         * from outliving its articles, and — the one statement that is not schema — a
+         * backfill of every row already on the phone.
+         *
+         * **The backfill is the point.** An upgrade whose index starts empty ships a search
+         * box that finds nothing until the next refresh, and a refresh only re-presents what
+         * a feed still lists: everything older than a source's current page would never be
+         * indexed at all. It runs in Kotlin rather than as one `INSERT … SELECT` because the
+         * body has to be flattened out of HTML first, which SQL cannot do (PLAN-9 §0.8) —
+         * an index built from markup answers `class`, `img` or `https` with the whole
+         * database.
+         */
+        val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(CREATE_ENTRIES_FTS)
+                createSearchIndexTrigger(db)
+                backfillSearchIndex(db)
+            }
+        }
+
         /** Every migration the app has ever shipped, in order. */
-        val MIGRATIONS: Array<Migration> =
-            arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+        val MIGRATIONS: Array<Migration> = arrayOf(
+            MIGRATION_1_2,
+            MIGRATION_2_3,
+            MIGRATION_3_4,
+            MIGRATION_4_5,
+            MIGRATION_5_6,
+            MIGRATION_6_7,
+        )
 
         /**
          * Puts Uncategorized in place on a fresh install, so that "every source belongs to
@@ -182,6 +213,70 @@ abstract class PerchDatabase : RoomDatabase() {
         private val SEED_SAVED_LINKS = object : Callback() {
             override fun onCreate(db: SupportSQLiteDatabase) = seedSavedLinks(db)
         }
+
+        /**
+         * The fresh-install twin of [MIGRATION_6_7]'s trigger. Room creates `entries_fts`
+         * from the entity on a new database but knows nothing about triggers, so without
+         * this a first install would accumulate index rows for articles whose source was
+         * deleted months ago — and answer searches with them.
+         */
+        private val CREATE_SEARCH_INDEX_TRIGGER = object : Callback() {
+            override fun onCreate(db: SupportSQLiteDatabase) = createSearchIndexTrigger(db)
+        }
+
+        /**
+         * Exactly what Room exports for [dev.mkiros.perch.data.db.entity.EntryFtsEntity] in
+         * `app/schemas/7.json`. A migration that creates the table any other way passes its
+         * own test and then fails Room's validation on the next open.
+         */
+        private const val CREATE_ENTRIES_FTS =
+            "CREATE VIRTUAL TABLE IF NOT EXISTS `entries_fts` " +
+                "USING FTS4(`title` TEXT NOT NULL, `body` TEXT NOT NULL)"
+
+        /**
+         * Deletes are SQL because they have to be: removing a source reaches its articles
+         * through `entries`' `ON DELETE CASCADE` (`FeedDao.deleteByIds`) and never passes
+         * through Kotlin, so a Kotlin-only index would leak every removed source's rows and
+         * go on returning them for ever.
+         */
+        private fun createSearchIndexTrigger(db: SupportSQLiteDatabase) = db.execSQL(
+            "CREATE TRIGGER IF NOT EXISTS `entries_fts_delete` AFTER DELETE ON `entries` " +
+                "BEGIN DELETE FROM `entries_fts` WHERE `rowid` = OLD.`id`; END",
+        )
+
+        /** Indexes every existing article, oldest row id first, a page at a time. */
+        private fun backfillSearchIndex(db: SupportSQLiteDatabase) {
+            var lastId = 0L
+            while (true) {
+                var seen = 0
+                db.query(
+                    "SELECT `id`, `title`, `contentHtml`, `summary` FROM `entries` " +
+                        "WHERE `id` > ? ORDER BY `id` LIMIT $BACKFILL_PAGE",
+                    arrayOf<Any>(lastId),
+                ).use { cursor ->
+                    while (cursor.moveToNext()) {
+                        val id = cursor.getLong(0)
+                        val body = HtmlSanitizer.flatten(cursor.getString(2))
+                            ?: cursor.getString(3).orEmpty()
+                        db.execSQL(
+                            "INSERT OR REPLACE INTO `entries_fts` (`rowid`, `title`, `body`) " +
+                                "VALUES (?, ?, ?)",
+                            arrayOf<Any>(id, cursor.getString(1), body),
+                        )
+                        lastId = id
+                        seen++
+                    }
+                }
+                if (seen < BACKFILL_PAGE) return
+            }
+        }
+
+        /**
+         * Rows read into memory at once during the backfill. The bodies are whole articles
+         * and the phone is mid-upgrade with the database locked, so this trades a handful of
+         * extra queries for a bound on how much of the archive is resident at any moment.
+         */
+        private const val BACKFILL_PAGE = 200
 
         private fun seedUncategorized(db: SupportSQLiteDatabase) = db.execSQL(
             "INSERT OR IGNORE INTO `folders` (`id`, `name`, `sortIndex`, `createdAt`) " +
@@ -204,6 +299,7 @@ abstract class PerchDatabase : RoomDatabase() {
                 .addMigrations(*MIGRATIONS)
                 .addCallback(SEED_UNCATEGORIZED)
                 .addCallback(SEED_SAVED_LINKS)
+                .addCallback(CREATE_SEARCH_INDEX_TRIGGER)
                 .build()
 
         /**
@@ -216,6 +312,7 @@ abstract class PerchDatabase : RoomDatabase() {
             Room.inMemoryDatabaseBuilder(context, PerchDatabase::class.java)
                 .addCallback(SEED_UNCATEGORIZED)
                 .addCallback(SEED_SAVED_LINKS)
+                .addCallback(CREATE_SEARCH_INDEX_TRIGGER)
                 .apply { if (allowMainThreadQueries) allowMainThreadQueries() }
                 .build()
     }

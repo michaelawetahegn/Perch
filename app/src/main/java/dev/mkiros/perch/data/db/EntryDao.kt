@@ -9,8 +9,10 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import dev.mkiros.perch.data.db.entity.EntryEntity
+import dev.mkiros.perch.data.db.entity.EntryFtsEntity
 import dev.mkiros.perch.data.db.entity.PendingEntryStateEntity
 import dev.mkiros.perch.data.db.entity.mergedWith
+import dev.mkiros.perch.data.db.entity.toFtsRow
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -415,6 +417,23 @@ abstract class EntryDao {
     @Update
     abstract suspend fun update(entry: EntryEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    protected abstract suspend fun replaceFtsRow(row: EntryFtsEntity)
+
+    /**
+     * Files [entry] in the search index, replacing whatever was there under its id (S08,
+     * #28).
+     *
+     * Call it wherever an article's title or body changes. Today that is [upsertAll], where
+     * every entry in the app arrives, and `ArticleTextRepository.loadFullText`, which is the
+     * one place a stub is replaced by the real article — index it there and a reader can
+     * find an article by a sentence they only ever saw after opening it.
+     *
+     * The matching delete is deliberately *not* here: see
+     * [dev.mkiros.perch.data.db.entity.EntryFtsEntity].
+     */
+    open suspend fun index(entry: EntryEntity) = replaceFtsRow(entry.toFtsRow())
+
     /**
      * Writes a parsed batch, matching on `(feedId, guid)`.
      *
@@ -476,10 +495,11 @@ abstract class EntryDao {
             }
             val merged = if (restored == null) row else row.mergedWith(restored)
             if (existing == null) {
-                insert(merged)
+                index(merged.copy(id = insert(merged)))
                 inserted++
             } else {
                 update(merged)
+                index(merged)
             }
             if (restored != null) {
                 consumed.getOrPut(restored.feedUrl) { mutableListOf() } += restored.guid
