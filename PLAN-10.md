@@ -761,7 +761,7 @@ No task in this plan takes a device screenshot.
         `./gradlew cleanTestDebugUnitTest cleanTestReleaseUnitTest test --no-build-cache`:
         **BUILD SUCCESSFUL in 3m 11s**, 1930 tests, 0 failures. No new issue: D27's five stand.
 
-- [ ] **D29 — Live acceptance for v0.6.1.**
+- [x] **D29 — Live acceptance for v0.6.1.**
       The real corpus, the real network. This version adds **no gate**: the fifteen from S12
       must pass unchanged, which is the proof the refactors changed nothing a reader sees.
       - `JAVA_HOME=$HOME/.jdks/temurin-17 PATH=$JAVA_HOME/bin:$PATH ./gradlew
@@ -776,6 +776,29 @@ No task in this plan takes a device screenshot.
       - Done: every gate's count pasted into the commit message; the default no-network
         `./gradlew test` still green.
       - Rung: maestro (live)
+
+- [ ] **D29a — The entry-actions sheet wraps its labels again, as it did in v0.6.0. TDD.**
+      Inserted by the watching session after reading D28's review (its edit was swept into
+      D29's commit; that is expected). D28 found the one behaviour delta of this plan and
+      recorded it in `TECH_DEBT.md:127` instead of reverting it — but §0.2 rule 1 says behaviour
+      is unchanged, so it is reverted here: D26 merged `FolderActions`' `DialogRow` into
+      `EntryActions.ActionRow` (`EntryActions.kt:157-175`), whose `Text` at `:167` now carries
+      the dialog's `maxLines = 1, overflow = TextOverflow.Ellipsis`. The four entry-actions rows
+      (`EntryActions.kt:87,100,109,126,136`) used to wrap; at a large font scale "Remove from
+      To-Read" now truncates. The folder dialog rows (`FolderActions.kt:50,57,172,184`) must
+      keep the single line they always had.
+      - `ActionRow` gains `maxLines: Int = Int.MAX_VALUE`; the folder-dialog call sites pass
+        `maxLines = 1`; the sheet's call sites pass nothing. No other change.
+      - RED first, in `HomeEntryActionsTest`: at a font scale large enough (`Density(fontScale =
+        2.5f)` via `CompositionLocalProvider(LocalDensity …)` or a narrow `Modifier.width`), the
+        label's text-layout has more than one line — assert through `SemanticsProperties`'s
+        `TextLayoutResult` (`getTextLayoutResult`), or that the rendered text does not end in
+        an ellipsis. A twin in `FolderDrawerTest` pins the dialog row at one line.
+      - Delete the `TECH_DEBT.md:127` entry; the delta no longer exists.
+      - Done: RED shown then GREEN; `./gradlew test` green and growing; the design screenshots
+        still byte-identical by D28's method (NOTES.md) — the default font scale wraps nothing,
+        so no shot should move.
+      - Rung: unit
 
 - [ ] **D30 — Release v0.6.1.** Bump `perchVersionCode` 7 → **8** and `perchVersionName`
       `0.6.0` → **`0.6.1`** at `app/build.gradle.kts:12-13`, **the one place they live**. §0.1
