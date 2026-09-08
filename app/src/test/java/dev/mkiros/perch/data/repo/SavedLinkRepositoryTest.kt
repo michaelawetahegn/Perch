@@ -94,6 +94,23 @@ class SavedLinkRepositoryTest {
     }
 
     @Test
+    fun `pasting a link that was removed from To-Read puts it back on the queue`() = runTest {
+        server.enqueue(article())
+        server.enqueue(article())
+
+        val id = repo.saveLink(server.url("/post").toString()).getOrThrow()
+        // The reader swipes it off To-Read, then pastes the same address again.
+        entries.setSaved(id, isSaved = false, savedAt = null)
+
+        val again = repo.saveLink(server.url("/post").toString())
+
+        assertThat(again.getOrThrow()).isEqualTo(id)
+        val row = entries.findById(id)!!
+        assertThat(row.isSaved).isTrue()
+        assertThat(row.savedAt).isEqualTo(now)
+    }
+
+    @Test
     fun `a link that is really a feed is not saved, and says so`() = runTest {
         server.enqueue(
             MockResponse()

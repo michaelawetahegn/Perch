@@ -253,7 +253,7 @@ No task in this plan takes a device screenshot.
         `BUILD SUCCESSFUL`. `./gradlew test` **BUILD SUCCESSFUL**, 1083 debug + 769 release =
         **1852** (floor 1848). No schema change — the columns and the DB version are untouched.
 
-- [ ] **D04 — Pasting a link you had removed puts it back on To-Read. TDD. Issue #37.**
+- [x] **D04 — Pasting a link you had removed puts it back on To-Read. TDD. Issue #37.**
       `gh issue view 37 --json body`. §0.5: `SavedLinkRepository.kt:97,104-106`; the RED goes
       beside `pasting the same link twice does not duplicate and does not error`
       (`SavedLinkRepositoryTest.kt:83`), which passes today only because it never un-saves.
@@ -261,6 +261,12 @@ No task in this plan takes a device screenshot.
       - Done: the RED output and the GREEN in the commit; `./gradlew test` green and growing;
         issue #37 closed.
       - Rung: unit
+      - **Done 2026-09-07.** RED (`:app:testDebugUnitTest --tests '*SavedLinkRepositoryTest*'`,
+        new `pasting a link that was removed from To-Read puts it back on the queue`):
+        `FAILED ... SavedLinkRepositoryTest.kt:97`, `8 tests completed, 1 failed`. GREEN: same
+        command `BUILD SUCCESSFUL`. `./gradlew test` **BUILD SUCCESSFUL**, 1084 debug + 770
+        release = **1854** (floor 1848). `upsertAll` untouched; the flag is set on the re-read
+        row via the existing `EntryDao.setSaved`.
 
 - [ ] **D05 — A cancelled refresh is not a failed source. TDD. Issue #38.**
       `gh issue view 38 --json body`. §0.5: `FeedRepository.kt:318`, `BackfillRepository.kt:117`;

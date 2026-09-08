@@ -104,6 +104,13 @@ class SavedLinkRepository(
         entryDao.upsertAll(listOf(entity))
         val saved = entryDao.findByGuid(savedFeedId, fetched.finalUrl)
             ?: error("upsertAll just wrote this row.")
+        // D04: `upsertAll` carries the existing row's reader flags forward (U04), because a
+        // *feed* must never overwrite what the reader did. A pasted link is the one caller
+        // where the incoming flag is the reader's intent: re-pasting a link they had taken
+        // off To-Read means putting it back. Set it here, on the row that came out.
+        if (!saved.isSaved) {
+            entryDao.setSaved(saved.id, isSaved = true, savedAt = now)
+        }
         return Result.success(saved.id)
     }
 
