@@ -24,7 +24,9 @@ data class ArchivePost(val url: String, val lastmod: Instant? = null)
  * knowing anything about the site. In preference order:
  *
  * 1. RFC 5005 `rel="prev-archive"`, followed from the feed the caller already has.
- * 2. `robots.txt`'s `Sitemap:` directive (RFC 9309 §2.2.3).
+ * 2. The [RobotsRules.sitemaps] the caller already read (RFC 9309 §2.2.3) — this class
+ *    never fetches `robots.txt` itself, because its `Disallow:` rules have a second
+ *    reader and one file should cost one fetch.
  * 3. The conventional `/sitemap.xml`, recursing into sitemap *index* files per the
  *    sitemaps.org protocol (bounded — see [MAX_SITEMAP_DEPTH] / [MAX_SITEMAPS]).
  *
@@ -46,13 +48,20 @@ class ArchiveDiscovery(
 
     /**
      * [siteUrl] is the site to look under. [feed] is the feed document the caller already
-     * fetched, if any — passing it lets RFC 5005 be tried without a second fetch.
+     * fetched, if any — passing it lets RFC 5005 be tried without a second fetch. [robots]
+     * is the site's `robots.txt` as the caller already read it ([RobotsRules.fetch]);
+     * [RobotsRules.NONE] means "no `Sitemap:` known", which falls through to the
+     * conventional path exactly as an absent file does.
      */
-    suspend fun discover(siteUrl: String, feed: FetchedPage? = null): List<ArchivePost> {
+    suspend fun discover(
+        siteUrl: String,
+        feed: FetchedPage? = null,
+        robots: RobotsRules = RobotsRules.NONE,
+    ): List<ArchivePost> {
         archivedFeedPosts(feed)?.let { if (it.isNotEmpty()) return it.toPosts() }
 
         val root = hostRoot(siteUrl) ?: return emptyList()
-        val sitemapUrls = sitemapsFromRobots(root).ifEmpty { listOf("$root/sitemap.xml") }
+        val sitemapUrls = robots.sitemaps.ifEmpty { listOf("$root/sitemap.xml") }
         val shape = learnPostShape(feed)
 
         val found = LinkedHashMap<String, Instant?>()
@@ -96,18 +105,7 @@ class ArchiveDiscovery(
         (feedParser.parse(page.bytes, page.contentType, page.finalUrl) as? ParseResult.Success)
             ?.feed?.entries.orEmpty()
 
-    // -- sitemaps.org: robots.txt, sitemap.xml, sitemap index recursion ----------------
-
-    private suspend fun sitemapsFromRobots(root: String): List<String> {
-        val page = fetcher.fetch("$root/robots.txt") ?: return emptyList()
-        return String(page.bytes, Charsets.UTF_8).lineSequence()
-            .mapNotNull { raw ->
-                val line = raw.trim()
-                if (!line.startsWith(SITEMAP_DIRECTIVE, ignoreCase = true)) return@mapNotNull null
-                line.substringAfter(':').trim().takeIf { it.isNotEmpty() }
-            }
-            .toList()
-    }
+    // -- sitemaps.org: sitemap.xml and sitemap index recursion -------------------------
 
     /**
      * Fetches [url] as either a flat sitemap (collecting post-shaped URLs into [found]) or
@@ -205,8 +203,6 @@ class ArchiveDiscovery(
     private fun Map<String, Instant?>.toPosts() = map { (url, lastmod) -> ArchivePost(url, lastmod) }
 
     private companion object {
-        const val SITEMAP_DIRECTIVE = "Sitemap:"
-
         /**
          * An RFC 5005 archive can in principle chain forever; real blogs page it in
          * batches of dozens of entries, so twenty hops reaches thousands of posts while

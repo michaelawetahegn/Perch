@@ -177,6 +177,24 @@ class BackfillRepositoryTest {
     }
 
     @Test
+    fun `a run reads robots-txt once, though two rules come out of it`() = runTest {
+        val feedId = addFeed(entryCount = 0, oldest = null, siteUrl = SITE.trimEnd('/'))
+        fetcher.pages[SITE + "robots.txt"] =
+            text("User-agent: *\nDisallow: /private/\nSitemap: ${SITE}sitemap.xml\n")
+        fetcher.pages[SITE + "sitemap.xml"] = sitemapOf(POST_1, POST_2)
+        fetcher.pages[POST_1] = article("First", "2020-01-01T00:00:00Z")
+        fetcher.pages[POST_2] = article("Second", "2020-02-02T00:00:00Z")
+
+        val result = repo().run(feedId)
+
+        assertThat(fetcher.requested.filter { it.endsWith("/robots.txt") }).hasSize(1)
+        // Both directives still land: the Sitemap: line found the sitemap, and nothing was
+        // disallowed, so the run is the same run it was when the file was read twice.
+        assertThat(result.stored).isEqualTo(2)
+        assertThat(result.skippedByRobots).isEqualTo(0)
+    }
+
+    @Test
     fun `one page failing to fetch does not abandon the rest`() = runTest {
         val feedId = addFeed(entryCount = 0, oldest = null, siteUrl = SITE.trimEnd('/'))
         fetcher.pages[SITE + "sitemap.xml"] = sitemapOf(POST_1, POST_2)

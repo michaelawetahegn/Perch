@@ -32,6 +32,8 @@ class ArchiveDiscoveryTest {
             ArchivePost("https://example.com/2026/07/27/a-post", Instant.parse("2026-07-27T00:00:00Z")),
             ArchivePost("https://example.com/2026/06/01/another-post", Instant.parse("2026-06-01T00:00:00Z")),
         )
+        // D17: the caller reads robots.txt and hands the rules in; discovery never fetches it.
+        assertThat(fetcher.requested).containsExactly(SITE + "sitemap.xml")
     }
 
     @Test
@@ -63,7 +65,7 @@ class ArchiveDiscoveryTest {
         )
         val discovery = ArchiveDiscovery(fetcher)
 
-        val posts = discovery.discover(SITE)
+        val posts = discovery.discover(SITE, robots = RobotsRules.fetch(fetcher, SITE))
 
         assertThat(posts.map { it.url }).containsExactly("https://example.com/2024/03/09/custom-post")
         assertThat(fetcher.requested).doesNotContain(SITE + "sitemap.xml")
@@ -74,7 +76,6 @@ class ArchiveDiscoveryTest {
         val gzUrl = "https://example.com/sitemap.xml.gz"
         val fetcher = MapPageFetcher(
             pages = mapOf(
-                SITE + "robots.txt" to text("Sitemap: $gzUrl\n"),
                 gzUrl to FetchedPage(
                     gzip(oneUrlSitemap("https://example.com/2023/05/17/gz-post")),
                     "application/gzip",
@@ -84,7 +85,7 @@ class ArchiveDiscoveryTest {
         )
         val discovery = ArchiveDiscovery(fetcher)
 
-        val posts = discovery.discover(SITE)
+        val posts = discovery.discover(SITE, robots = RobotsRules.parse("Sitemap: $gzUrl\n"))
 
         assertThat(posts.map { it.url }).containsExactly("https://example.com/2023/05/17/gz-post")
     }

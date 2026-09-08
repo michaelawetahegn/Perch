@@ -512,7 +512,7 @@ No task in this plan takes a device screenshot.
         issue #49 closed.
       - Rung: unit
 
-- [ ] **D17 — `robots.txt` once per backfill. Issue #50.**
+- [x] **D17 — `robots.txt` once per backfill. Issue #50.**
       `gh issue view 50 --json body`. `ArchiveDiscovery.sitemapsFromRobots` (`:113-122`) and
       `RobotsRules.parse` (`RobotsRules.kt:27-44`) each fetch `$root/robots.txt`
       (`BackfillRepository.kt:164-166` is the second). §0.6: `RobotsRules` learns `sitemaps`,

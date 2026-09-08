@@ -9,7 +9,6 @@ import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.extract.PageContentExtractor
 import dev.mkiros.perch.data.extract.toEntry
 import dev.mkiros.perch.data.parse.PageFetcher
-import dev.mkiros.perch.data.parse.hostRoot
 import java.time.Clock
 import java.time.Instant
 import kotlinx.coroutines.CancellationException
@@ -67,9 +66,18 @@ class BackfillRepository(
     suspend fun plan(feedId: Long): BackfillPlan? {
         val feed = feedDao.findById(feedId) ?: return null
         if (feed.isSynthetic) return null
+        return plan(feed, RobotsRules.fetch(fetcher, feed.siteUrl ?: feed.feedUrl))
+    }
 
+    /**
+     * The plan proper, over a `robots.txt` the caller has already read — the file carries
+     * both the `Sitemap:` discovery starts from and the `Disallow:` rules [run] skips by,
+     * so a run reads it once and hands the same rules to both.
+     */
+    private suspend fun plan(feed: FeedEntity, robots: RobotsRules): BackfillPlan {
+        val feedId = feed.id
         val feedPage = fetcher.fetch(feed.feedUrl)
-        val discovered = discovery.discover(feed.siteUrl ?: feed.feedUrl, feedPage)
+        val discovered = discovery.discover(feed.siteUrl ?: feed.feedUrl, feedPage, robots)
         val stored = entryDao.guidsForFeed(feedId).toHashSet()
         val fresh = discovered.filterNot { it.url in stored }
         val reach = entryDao.reach(feedId)
@@ -98,10 +106,12 @@ class BackfillRepository(
         onProgress: suspend (done: Int, total: Int) -> Unit = { _, _ -> },
     ): BackfillResult {
         val feed = feedDao.findById(feedId) ?: return EMPTY_RESULT
-        val plan = plan(feedId) ?: return EMPTY_RESULT
+        if (feed.isSynthetic) return EMPTY_RESULT
+
+        val robots = RobotsRules.fetch(fetcher, feed.siteUrl ?: feed.feedUrl)
+        val plan = plan(feed, robots)
         if (plan.toFetch.isEmpty()) return EMPTY_RESULT
 
-        val robots = robotsRules(feed)
         var stored = 0
         var skipped = 0
         var failed = 0
@@ -154,13 +164,6 @@ class BackfillRepository(
         lastmod != null -> lastmod.toEpochMilli() to false
         else -> Instant.EPOCH.toEpochMilli() to true
     }
-
-    private suspend fun robotsRules(feed: FeedEntity): RobotsRules {
-        val root = hostRoot(feed.siteUrl ?: feed.feedUrl) ?: return RobotsRules.NONE
-        val page = fetcher.fetch("$root/robots.txt") ?: return RobotsRules.NONE
-        return RobotsRules.parse(String(page.bytes, Charsets.UTF_8))
-    }
-
 
     companion object {
         /**

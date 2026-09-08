@@ -30,6 +30,7 @@ import androidx.test.core.app.ApplicationProvider
 import coil.Coil
 import com.google.common.truth.Truth.assertWithMessage
 import dev.mkiros.perch.data.archive.ArchiveDiscovery
+import dev.mkiros.perch.data.archive.RobotsRules
 import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.db.entity.FeedEntity
@@ -2017,7 +2018,9 @@ class LiveAcceptanceTest {
             ?: return@runBlocking ArchiveReport("$label: could not refetch its own feed").also {
                 it.failures += "gate 10: $label — ${feed.feedUrl} could not be refetched"
             }
-        val discovered = runCatching { ArchiveDiscovery(fetcher).discover(feed.siteUrl ?: feed.feedUrl, feedPage) }
+        val site = feed.siteUrl ?: feed.feedUrl
+        val robots = RobotsRules.fetch(fetcher, site)
+        val discovered = runCatching { ArchiveDiscovery(fetcher).discover(site, feedPage, robots) }
             .getOrNull()
             ?: return@runBlocking ArchiveReport("$label: ArchiveDiscovery threw").also {
                 it.failures += "gate 10: $label — ArchiveDiscovery.discover threw"
