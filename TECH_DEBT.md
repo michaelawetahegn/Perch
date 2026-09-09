@@ -122,6 +122,12 @@ Smaller than a session, recorded so a passing task can take them:
 - **`FeedRepository.observeSourceCount` and `FeedDao.observeCount` are release code with one
   debug caller** (`DebugSeeder.kt:48`). Not dead — D01's rule is satisfied — but the only thing
   that reads them ships in no release build, and no test names either.
+- **E01's settle write invalidates `entries` on every fling.** `ArticleViewModel.saveScrollPosition` →
+  `EntryDao.setScrollPosition` runs once per settled scroll, and Room's modification trigger fires even
+  when the value is unchanged, so every observed `entries` query and the Feed's `PagingSource` reload
+  beneath the reader once per gesture. Not visible, and opening an article already does this once
+  (mark read); skipping an unchanged position, or debouncing, is a behaviour change with its own test
+  (found by E03).
 
 **Closed by D28:** SPEC.md §3's package tree now lists the four files this plan created —
 `data/parse/ItemMapping.kt` (D18), `data/repo/FolderResolver.kt` (D19), `ui/home/EmptyState.kt`

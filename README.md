@@ -32,7 +32,7 @@ debug-signed build, whose one-time crossing its own release page explains.
 
 **Sources.** Paste a feed URL *or* a site's homepage — Perch resolves the homepage via `<link
 rel="alternate">`, then the conventional paths (`/feed`, `/rss.xml`, …), and shows you what it
-found first. RSS 2.0/0.9x, Atom 1.0 and RSS 1.0 (RDF). Folders, multi-select delete, OPML.
+found first. RSS 2.0/0.9x, Atom 1.0 and RSS 1.0 (RDF). Folders, multi-select delete and move, OPML.
 
 **One Feed.** Every source in a single stream, newest first, over a window you pick — Past 24
 Hours through All Time, each measured back from right now, not from a midnight. Each row says
@@ -51,8 +51,9 @@ only a headline is findable in full once you have opened it.
 
 **Reading.** Native Compose, not a WebView: paragraphs, headings, lists, quotes, tables with
 real rules, pinch-zoom images, and code blocks that scroll horizontally, syntax-highlighted in a
-dozen languages behind a pinned line-number gutter that never lands in what you copy. Feed HTML
-is sanitized against an allowlist on the way *into* the database.
+dozen languages behind a pinned line-number gutter that never lands in what you copy. An article
+reopens where you stopped, whether you went back or closed the app. Feed HTML is sanitized
+against an allowlist on the way *into* the database.
 
 **Full text.** When a feed ships a headline and a link, Perch fetches the page and runs a
 Readability-style extraction over it, through the same sanitizer as everything else — on open,

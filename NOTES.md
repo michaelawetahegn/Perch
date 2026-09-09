@@ -35,8 +35,11 @@
   the repo and is **not backed up**. Absent it, release silently debug-signs. `assembleRelease` runs `lintVitalRelease`.
 - **U03/D10: a test's database and container come from `PerchRule`**; its `@get:Rule(order = 1)` is load-bearing —
   higher order = *inner*, so the close stays inside the Compose environment (else a leaked scope bills the next test).
-  **U04: a fourth reader-owned flag needs two edits** — `EntryDao.upsertAll` (never Room `@Upsert`, it resolves on
-  the primary key, ours on `(feedId, guid)`) and `deleteReadOlderThan`.
+  **U04: another reader-owned column (four since E01's `scrollPosition`) needs two edits** — `EntryDao.upsertAll`
+  (never Room `@Upsert`, it resolves on the primary key, ours on `(feedId, guid)`) and `deleteReadOlderThan`.
+  **E01: `ArticleScreen`'s leaving write is `NonCancellable`** and outlives that close too — a test that shows the
+  screen leaves it first (`ArticleScreenTest.leaveArticle`: drop the screen, idle, queue a no-op write behind it on
+  Room's serial executor), or the *next* test fails with `UncaughtExceptionsBeforeTest`.
 - 2026-08-18 — **W02/#15: the window is a *rolling* one** (24 h / 7 / 30 / 365 days back from `clock.instant()`),
   label **"Past 24 Hours"**, **defaults to Today** — a UI test seeding anything older pins `TimeFilter.AllTime` via its
   own `SettingsStore`. U07's calendar window is dead; the zone now only decides what a human *reads*. **W03: the Feed is
@@ -87,12 +90,9 @@
   `WorkSchedulerTest > choosing manual cancels…` (3 of 5 runs by D15) waits on WorkManager's *own* task executor,
   which `SynchronousExecutor` does not cover, so a loaded host outruns the 20 s `awaitInRealTime`.
   `SettingsViewModelTest` (D23, 1 of 2 runs) failed inside `Dispatchers.setMain`/`resetMain`. If either hardens, fix it.
-- 2026-09-07 — **S12, live acceptance v6 (15 gates, ~90 s, not the 15–25 min the plan budgeted).**
-  Gates 13/14/15 take their keywords **out of the corpus that just arrived** — see the file's own
-  KDoc. A gate keyword must be ASCII-lettered and space-delimited or it tests typography, not
-  search: FTS4's `simple` tokenizer keeps every byte above 0x7F *inside* a word, `FtsQuery` splits
-  on it. Live run 1 caught what S09's unit tests could not — ` AND ` is an operator only under
-  SQLite's *enhanced* FTS syntax, so two-word search demanded a word nobody typed (SPEC §8a).
+- 2026-09-07 — **S12, live acceptance v6 (15 gates, ~90 s).** Gates 13/14/15 take their keywords **out of the corpus
+  that just arrived** (the file's KDoc). A gate keyword must be ASCII-lettered and space-delimited or it tests
+  typography, not search: FTS4's `simple` tokenizer keeps every byte above 0x7F *inside* a word, `FtsQuery` splits on it.
 - 2026-09-08 — **D28/D29a: the design screenshots are no committed baseline** — they render into gitignored
   `build/perch-screenshots`, which **keeps stale shots: `rm -rf` it and `--rerun`** or the diff shows phantom extras.
   The proof does it itself: `git worktree add /tmp/perch-<ref> <ref>`, copy `local.properties` in, `--tests
