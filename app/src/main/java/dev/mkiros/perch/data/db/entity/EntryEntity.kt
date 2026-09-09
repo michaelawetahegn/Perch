@@ -1,5 +1,6 @@
 package dev.mkiros.perch.data.db.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -71,4 +72,12 @@ data class EntryEntity(
     val bodyIsExcerpt: Boolean = false,
     val fullTextAt: Long? = null,
     val fetchedAt: Long,
+    /**
+     * The body offset, in pixels, the article reopens at (E01, #65): the reader's
+     * `ScrollState.value` when scrolling last settled or the screen was left. Reader-owned
+     * like the three flags above, so [dev.mkiros.perch.data.db.EntryDao.upsertAll] carries it
+     * across a refresh; device- and font-specific, so the profile (U14) does not export it.
+     */
+    @ColumnInfo(defaultValue = "0")
+    val scrollPosition: Int = 0,
 )

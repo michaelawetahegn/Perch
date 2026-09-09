@@ -204,6 +204,24 @@ class PerchDatabaseTest {
     }
 
     @Test
+    fun `an article remembers where the reader stopped, and a refetch keeps it`() = runTest {
+        val id = feeds.insert(feed(feedUrl = "https://a.example/feed"))
+        entries.upsertAll(listOf(entry(id, guid = "g1", title = "draft")))
+        val stored = entries.findByGuid(id, "g1")!!
+
+        entries.setScrollPosition(stored.id, 1_234)
+        assertThat(entries.findById(stored.id)?.scrollPosition).isEqualTo(1_234)
+
+        // The U04 trap: `upsertAll` rebuilds an existing row from the feed's copy, so a
+        // reader-owned column it does not carry across is silently reset on every refresh.
+        entries.upsertAll(listOf(entry(id, guid = "g1", title = "corrected")))
+
+        val after = entries.findByGuid(id, "g1")
+        assertThat(after?.title).isEqualTo("corrected")
+        assertThat(after?.scrollPosition).isEqualTo(1_234)
+    }
+
+    @Test
     fun `removing a feed removes its entries and leaves the others alone`() = runTest {
         val doomed = feeds.insert(feed(feedUrl = "https://a.example/feed"))
         val kept = feeds.insert(feed(feedUrl = "https://b.example/feed"))

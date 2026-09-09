@@ -41,11 +41,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -64,6 +67,8 @@ import dev.mkiros.perch.ui.home.copyLink
 import dev.mkiros.perch.ui.home.shareEntry
 import dev.mkiros.perch.ui.theme.ArticleType
 import dev.mkiros.perch.ui.theme.Dimens
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.filter
 
 /**
  * One entry, read in the app (DESIGN.md §8).
@@ -193,6 +198,7 @@ fun ArticleScreen(
                         }
                         Article(
                             state = current,
+                            onScrollSettled = viewModel::saveScrollPosition,
                             onOpenSource = onOpenSource,
                             onOpenLink = { url -> openInBrowser(context, url) },
                             onOpenImage = { image -> zoomed.value = ZoomedImage(image.url, image.alt) },
@@ -292,18 +298,38 @@ private fun ToggleAction(
     }
 }
 
+/**
+ * The body, opened where the reader last stopped (E01, #65).
+ *
+ * The position is pixels, seeded straight into the scroll state, so the restore happens at
+ * first layout with no effect and no wait; it is clamped to the body's height, so a page
+ * whose images are still arriving may land a little short — accepted (PLAN-11 §0.2). It is
+ * written back twice and never per frame: when a scroll settles (the `true → false` edge of
+ * `isScrollInProgress`, which a fling holds until it stops) and as the screen leaves.
+ */
 @Composable
 private fun Article(
     state: ArticleUiState.Loaded,
+    onScrollSettled: (Int) -> Unit,
     onOpenSource: (Long) -> Unit,
     onOpenLink: (String) -> Unit,
     onOpenImage: (ArticleBlock.Image) -> Unit,
 ) {
+    val scroll = rememberScrollState(initial = state.scrollPosition)
+    LaunchedEffect(scroll) {
+        snapshotFlow { scroll.isScrollInProgress }
+            .filter { !it }
+            .drop(1)
+            .collect { onScrollSettled(scroll.value) }
+    }
+    DisposableEffect(Unit) {
+        onDispose { onScrollSettled(scroll.value) }
+    }
     SelectionContainer {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(scroll),
         ) {
             Column(
                 modifier = Modifier

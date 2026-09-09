@@ -132,7 +132,7 @@ The review box (E03) stays second from last, as CLAUDE.md requires.
 
 ## The tasks
 
-- [ ] **E01 — An article reopens where the reader stopped. TDD. Schema 7 → 8. Issue #65.**
+- [x] **E01 — An article reopens where the reader stopped. TDD. Schema 7 → 8. Issue #65.**
       `gh issue view 65 --json body` — the reader's words: "when you go back or you close the
       app and then you come back to the article, you can start reading where you left off."
       Everything is decided in §0.2; this task is the execution, in this order:

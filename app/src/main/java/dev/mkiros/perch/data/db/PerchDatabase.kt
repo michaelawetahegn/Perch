@@ -45,7 +45,7 @@ abstract class PerchDatabase : RoomDatabase() {
         const val NAME = "perch.db"
 
         /** Bumping this requires a [MIGRATIONS] entry from `VERSION - 1`. */
-        const val VERSION = 7
+        const val VERSION = 8
 
         /**
          * Folders (U03). Creates the table, seeds Uncategorized as id 1, and files every
@@ -190,6 +190,21 @@ abstract class PerchDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Reading position (E01, #65). One additive column, the shape of [MIGRATION_5_6]:
+         * `entries.scrollPosition`, the body offset an article reopens at. Nothing to
+         * backfill — every article already on the phone starts at the top, where it opened
+         * before. `NOT NULL DEFAULT 0` is what Room exports for the entity's
+         * `@ColumnInfo(defaultValue = "0")`, and the export is validated on the next open.
+         */
+        val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE `entries` ADD COLUMN `scrollPosition` INTEGER NOT NULL DEFAULT 0",
+                )
+            }
+        }
+
         /** Every migration the app has ever shipped, in order. */
         val MIGRATIONS: Array<Migration> = arrayOf(
             MIGRATION_1_2,
@@ -198,6 +213,7 @@ abstract class PerchDatabase : RoomDatabase() {
             MIGRATION_4_5,
             MIGRATION_5_6,
             MIGRATION_6_7,
+            MIGRATION_7_8,
         )
 
         /**

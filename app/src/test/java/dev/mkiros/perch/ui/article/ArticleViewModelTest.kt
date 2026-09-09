@@ -211,6 +211,28 @@ class ArticleViewModelTest {
         assertThat(fetcher.requested).hasSize(after)
     }
 
+    // ---- the reading position (E01, #65) -------------------------------------------------
+
+    @Test
+    fun `where the reader stopped is written through the repository`() {
+        val id = seedEntry()
+        val viewModel = articleViewModel(id)
+
+        viewModel.saveScrollPosition(1_234)
+
+        assertThat(stored(id) { it.scrollPosition == 1_234 }.scrollPosition).isEqualTo(1_234)
+    }
+
+    @Test
+    fun `an article opens carrying the position it was left at`() {
+        val id = seedEntry()
+        runBlocking { perch.database.entryDao().setScrollPosition(id, 640) }
+
+        val viewModel = articleViewModel(id)
+
+        assertThat(loaded(viewModel).scrollPosition).isEqualTo(640)
+    }
+
     // ---- harness -------------------------------------------------------------------------
 
     /** Constructed and *loaded* — the `init` read is Room's, so it is waited out here once. */

@@ -20,6 +20,7 @@ import java.util.Locale
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
 
 /** What the article screen has to show. */
@@ -57,6 +58,9 @@ sealed interface ArticleUiState {
      * @param canLoadFullText whether *Load full article* is offered: true whenever this
      *   body did **not** come from an extraction. The trigger is a heuristic and will
      *   sometimes decide a stub is an article, so the reader is never stuck with one.
+     * @param scrollPosition the body offset, in pixels, the reader last stopped at (E01,
+     *   #65) — read once on open; the screen owns it from there and writes it back
+     *   through [saveScrollPosition].
      */
     data class Loaded(
         val title: String,
@@ -70,6 +74,7 @@ sealed interface ArticleUiState {
         val isLiked: Boolean = false,
         val isFetchingFullText: Boolean = false,
         val canLoadFullText: Boolean = false,
+        val scrollPosition: Int = 0,
     ) : ArticleUiState
 }
 
@@ -166,7 +171,20 @@ class ArticleViewModel(
             isLiked = entry.isStarred,
             isFetchingFullText = false,
             canLoadFullText = entry.fullTextAt == null && entry.link != null,
+            scrollPosition = entry.scrollPosition,
         )
+    }
+
+    /**
+     * Remembers where the reader stopped (E01, #65), so the next open resumes there.
+     *
+     * The screen calls this when scrolling settles and once more as it leaves. The leaving
+     * write races [onCleared]: a child of [viewModelScope] would be cancelled with the
+     * scope before Room ran it, so it runs [NonCancellable] instead. It writes only its own
+     * column, so nothing on screen needs echoing — the position lives in the scroll state.
+     */
+    fun saveScrollPosition(scrollPosition: Int) {
+        viewModelScope.launch(NonCancellable) { entries.setScrollPosition(entryId, scrollPosition) }
     }
 
     private inline fun update(block: (ArticleUiState.Loaded) -> ArticleUiState.Loaded) {

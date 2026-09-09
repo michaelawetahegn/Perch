@@ -221,6 +221,11 @@ class EntryRepository(
         )
     }
 
+    /** Remembers where the reader stopped in an article's body, in pixels (E01, #65). */
+    suspend fun setScrollPosition(entryId: Long, scrollPosition: Int) {
+        entryDao.setScrollPosition(id = entryId, scrollPosition = scrollPosition)
+    }
+
     /** *Liked* — the `isStarred` column, which has had no UI since T12, finally used. */
     suspend fun setLiked(entryId: Long, isLiked: Boolean) {
         entryDao.setStarred(

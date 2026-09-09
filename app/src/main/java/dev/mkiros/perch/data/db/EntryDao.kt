@@ -357,6 +357,10 @@ abstract class EntryDao {
     @Query("UPDATE entries SET isStarred = :isStarred, starredAt = :starredAt WHERE id = :id")
     abstract suspend fun setStarred(id: Long, isStarred: Boolean, starredAt: Long?)
 
+    /** The body offset an article reopens at (E01, #65) — a column-list `UPDATE`, like the two above. */
+    @Query("UPDATE entries SET scrollPosition = :scrollPosition WHERE id = :id")
+    abstract suspend fun setScrollPosition(id: Long, scrollPosition: Int)
+
     /**
      * The three columns a full-text fetch owns, and nothing else (D03, #36).
      *
@@ -582,6 +586,7 @@ abstract class EntryDao {
                     savedAt = existing.savedAt,
                     isStarred = existing.isStarred,
                     starredAt = existing.starredAt,
+                    scrollPosition = existing.scrollPosition,
                     contentHtml = if (keepExtracted) existing.contentHtml else entry.contentHtml,
                     fullTextAt = if (keepExtracted) existing.fullTextAt else null,
                 )

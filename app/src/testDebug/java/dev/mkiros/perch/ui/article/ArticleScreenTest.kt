@@ -4,10 +4,12 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import androidx.activity.ComponentActivity
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -15,6 +17,8 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeUp
 import androidx.test.core.app.ApplicationProvider
 import androidx.core.content.IntentCompat
 import com.google.common.truth.Truth.assertThat
@@ -31,6 +35,7 @@ import java.time.Instant
 import java.time.ZoneOffset
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import org.junit.After
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -396,6 +401,33 @@ class ArticleScreenTest {
         compose.onNodeWithContentDescription("Remove from Liked").assertExists()
     }
 
+    // ---- E01 (issue #65): an article reopens where the reader stopped ----------------
+
+    /**
+     * The reader's words: "when you go back or you close the app and then you come back to
+     * the article, you can start reading where you left off." Leaving is what writes the
+     * position, so the screen is disposed — not just navigated away from — and shown again
+     * through a fresh view model, the way a second visit really arrives.
+     */
+    @Test
+    fun `leaving an article partway and reopening it resumes where the reader stopped`() {
+        val entryId = seedEntry(
+            feedId = seedFeed(title = "Null Program"),
+            title = "A long read",
+            contentHtml = (1..30).joinToString("") { "<p>Paragraph $it of a long article.</p>" },
+        )
+
+        showArticle(entryId)
+        scrollingBody().performTouchInput { swipeUp() }
+        await { entry(entryId).scrollPosition > 0 }
+        val stopped = entry(entryId).scrollPosition
+        leaveArticle()
+
+        showArticle(entryId)
+
+        assertThat(restoredOffset()).isEqualTo(stopped.toFloat())
+    }
+
     @Test
     fun `an entry that no longer exists says so instead of showing a blank page`() {
         showArticle(entryId = 404L)
@@ -404,6 +436,14 @@ class ArticleScreenTest {
     }
 
     // ---- harness ---------------------------------------------------------------
+
+    /**
+     * The screen on show, or null between visits. Content is set once per test and reads
+     * this, so a test can leave an article (disposing the screen, which is what writes the
+     * reading position) and come back to it through a fresh view model, as navigation does.
+     */
+    private val visit = mutableStateOf<ArticleViewModel?>(null)
+    private var contentSet = false
 
     private fun showArticle(entryId: Long, onOpenSource: (Long) -> Unit = {}) {
         val viewModel = ArticleViewModel(
@@ -416,13 +456,45 @@ class ArticleScreenTest {
             entryId = entryId,
             zone = ZoneOffset.UTC,
         )
-        compose.setContent {
-            PerchTheme(dynamicColor = false) {
-                ArticleScreen(viewModel = viewModel, onBack = {}, onOpenSource = onOpenSource)
+        if (!contentSet) {
+            contentSet = true
+            compose.setContent {
+                PerchTheme(dynamicColor = false) {
+                    visit.value?.let { shown ->
+                        ArticleScreen(viewModel = shown, onBack = {}, onOpenSource = onOpenSource)
+                    }
+                }
             }
         }
+        visit.value = viewModel
         await { viewModel.state.value !is ArticleUiState.Loading }
     }
+
+    /**
+     * Leaves the article, and waits for the leaving write to land.
+     *
+     * Disposing the screen is what writes the reading position (E01), and the write is
+     * deliberately `NonCancellable` — so at the end of a test it would otherwise outlive
+     * [PerchRule]'s close and reach a closed connection pool, which JUnit reports against
+     * whichever test runs next (`UncaughtExceptionsBeforeTest`). Idling the main looper gets
+     * the write submitted; the no-op update behind it is queued on Room's *serial*
+     * transaction executor, so returning from it means the real write has completed.
+     */
+    @After
+    fun leaveArticle() {
+        visit.value = null
+        compose.waitForIdle()
+        runBlocking { perch.database.entryDao().setScrollPosition(id = 0L, scrollPosition = 0) }
+    }
+
+    /** The body's own scrolling container — the one vertical scroller on the screen. */
+    private fun scrollingBody() =
+        compose.onNode(SemanticsMatcher.keyIsDefined(SemanticsProperties.VerticalScrollAxisRange))
+
+    /** Where the body is scrolled to, read back from the scroller's semantics. */
+    private fun restoredOffset(): Float =
+        scrollingBody().fetchSemanticsNode()
+            .config[SemanticsProperties.VerticalScrollAxisRange].value()
 
     /**
      * Taps by the node's own click semantics rather than a synthesised touch — the same

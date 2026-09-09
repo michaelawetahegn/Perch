@@ -203,7 +203,8 @@ data class EntryEntity(
   val fetchedAt: Long,
   val bodyIsExcerpt: Boolean = false,  // v4/U10; contentHtml came from a feed excerpt, not the full article
   val fullTextAt: Long? = null,        // v4/U10; when Perch fetched the article off its own page
-)
+  val scrollPosition: Int = 0,         // v8/PLAN-11 E01; body offset (px) the article reopens at — reader-owned,
+)                                      // kept across a refetch like the three flags; not in the profile
 
 @Entity(tableName = "pending_entry_state", primaryKeys = ["feedUrl", "guid"])
 data class PendingEntryStateEntity(     // v5/U14; reader state a profile restore carried for an
@@ -239,7 +240,8 @@ v0.1 is installed for daily use, so every schema change ships a real `Migration`
 read-later and the liked/saved timestamps (U04); version 4 adds `bodyIsExcerpt`/`fullTextAt` for
 full-text extraction (U10); version 5 adds `pending_entry_state` for profile restore (U14); version 6
 adds `feeds.isSynthetic` and seeds the saved-links feed for pasted links (PLAN-6 Y02); version 7 adds
-the `entries_fts` search index and its delete trigger (PLAN-9 S08). Current version: 7.
+the `entries_fts` search index and its delete trigger (PLAN-9 S08); version 8 adds
+`entries.scrollPosition` — the body offset an article reopens at (PLAN-11 E01). Current version: 8.
 
 **`entries_fts` (v7/PLAN-9 §0.8)** is a standalone `FTS4(title, body)` whose `rowid` is
 `entries.id` — deliberately **not** `@Fts4(contentEntity = …)`, whose sync triggers Room does not
