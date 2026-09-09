@@ -2,6 +2,7 @@ package dev.mkiros.perch.data.repo
 
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
+import dev.mkiros.perch.data.db.EntryDao
 import dev.mkiros.perch.data.db.FeedDao
 import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.FolderEntity
@@ -127,9 +128,29 @@ class FolderRepositoryTest {
         val feedId = addSource("https://example.com/feed.xml", FolderEntity.UNCATEGORIZED_ID)
         val before = feedDao.findById(feedId)
 
-        repo.moveSource(feedId, graphics)
+        repo.moveSources(setOf(feedId), graphics)
 
         assertThat(feedDao.findById(feedId)).isEqualTo(before?.copy(folderId = graphics))
+    }
+
+    /**
+     * E02/#66: SQLite binds every id of an `IN (…)` as its own host variable and stops at
+     * 999, so a batch wider than [EntryDao.MAX_IDS_PER_STATEMENT] must be chunked, and the
+     * chunking lives in the DAO so no caller can forget it.
+     */
+    @Test
+    fun `moving more sources than one statement can hold files every one of them`() = runTest {
+        val graphics = repo.createFolder("Graphics")
+        val ids = (1..EntryDao.MAX_IDS_PER_STATEMENT + 1).map {
+            addSource("https://example.com/$it/feed.xml", FolderEntity.UNCATEGORIZED_ID)
+        }
+        val stays = addSource("https://stays.example/feed.xml", FolderEntity.UNCATEGORIZED_ID)
+
+        repo.moveSources(ids.toSet(), graphics)
+
+        val byId = feedDao.getAll().associateBy { it.id }
+        assertThat(ids.map { byId.getValue(it).folderId }.distinct()).containsExactly(graphics)
+        assertThat(byId.getValue(stays).folderId).isEqualTo(FolderEntity.UNCATEGORIZED_ID)
     }
 
     @Test

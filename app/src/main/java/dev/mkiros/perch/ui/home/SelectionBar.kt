@@ -37,10 +37,12 @@ import dev.mkiros.perch.ui.theme.Dimens
  * mode legible as a *mode*: the drawer stops being a place to navigate to and becomes a
  * place to act on, and the only two ways out of it are the close action and back.
  *
- * Rename and move appear only at exactly one selected row. They are U06's actions, which
- * used to live behind the long press that now starts a selection — a batch rename means
- * nothing, but a reader who long-pressed one source to rename it must still be one tap
- * away from doing so.
+ * Rename appears only at exactly one selected row. It is U06's action, which used to live
+ * behind the long press that now starts a selection — a batch rename means nothing, but a
+ * reader who long-pressed one source to rename it must still be one tap away from doing so.
+ *
+ * Move appears for a source selection of any size (E02/#66): filing a ticked batch under
+ * one folder is the whole point of ticking it, and the dialog is the same one at any count.
  *
  * Backfill (PLAN-7 §0.3, Z03) is the same shape as rename: one source only, because the
  * offer names one archive's page count and a batch of them has no single number to state.
@@ -93,13 +95,15 @@ fun SelectionBar(
                 onClick = onRename,
             )
         }
-        if (single && selection is DrawerSelection.Sources) {
+        if (selection is DrawerSelection.Sources) {
             BarAction(
                 icon = Icons.AutoMirrored.Filled.DriveFileMove,
                 label = stringResource(R.string.selection_move),
                 testTag = SelectionTestTags.MOVE,
                 onClick = onMove,
             )
+        }
+        if (single && selection is DrawerSelection.Sources) {
             BarAction(
                 icon = Icons.Default.History,
                 label = stringResource(R.string.selection_backfill),

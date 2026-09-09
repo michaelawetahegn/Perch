@@ -98,8 +98,19 @@ abstract class FolderDao {
     @Query("DELETE FROM folders WHERE id = :id")
     abstract suspend fun deleteById(id: Long)
 
-    @Query("UPDATE feeds SET folderId = :folderId WHERE id = :feedId")
-    abstract suspend fun setFolder(feedId: Long, folderId: Long)
+    /**
+     * Files every one of [feedIds] under [folderId], leaving the rest of each row alone.
+     * Chunked at [EntryDao.MAX_IDS_PER_STATEMENT] like `EntryDao.setRead`, and for the
+     * same reason: SQLite stops at 999 bound variables, and a reader reorganising a big
+     * import ticks as many rows as they like (E02/#66).
+     */
+    @Transaction
+    open suspend fun setFolderForAll(feedIds: List<Long>, folderId: Long) {
+        feedIds.chunked(EntryDao.MAX_IDS_PER_STATEMENT).forEach { setFolderForChunk(it, folderId) }
+    }
+
+    @Query("UPDATE feeds SET folderId = :folderId WHERE id IN (:feedIds)")
+    protected abstract suspend fun setFolderForChunk(feedIds: List<Long>, folderId: Long)
 
     /**
      * Unread entries per folder, counted by SQLite.

@@ -7,8 +7,10 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.filterToOne
 import androidx.compose.ui.test.hasClickAction
@@ -365,6 +367,67 @@ class DrawerMultiSelectTest {
 
         assertThat(entryTitles()).containsExactly("Stays")
         compose.onNodeWithTag(SelectionTestTags.BAR).assertDoesNotExist()
+    }
+
+    // ---- E02/#66: a batch moves together -------------------------------------------
+
+    @Test
+    fun `selecting two sources offers to move them`() {
+        seedFeed(title = "GPUOpen")
+        seedFeed(title = "nullprogram.com")
+
+        showHome()
+        longPress("GPUOpen")
+        tapRow("nullprogram.com")
+
+        compose.onNodeWithTag(SelectionTestTags.MOVE).assertIsDisplayed()
+        // Rename and backfill stay single: a batch rename means nothing, and the backfill
+        // offer names one archive's page count (PLAN-7 §0.3).
+        compose.onNodeWithTag(SelectionTestTags.RENAME).assertDoesNotExist()
+        compose.onNodeWithTag(SelectionTestTags.BACKFILL).assertDoesNotExist()
+    }
+
+    @Test
+    fun `moving a batch files every ticked source under the chosen folder`() {
+        val graphics = seedFolder("Graphics")
+        seedFeed(title = "GPUOpen")
+        seedFeed(title = "nullprogram.com")
+
+        showHome()
+        longPress("GPUOpen")
+        tapRow("nullprogram.com")
+        tap(SelectionTestTags.MOVE)
+
+        compose.onNodeWithText("Move 2 sources to").assertIsDisplayed()
+        // Both ticked rows live in Uncategorized, so that row is the batch's current one.
+        compose.onNodeWithTag(FolderActionTestTags.folderChoice(FolderEntity.UNCATEGORIZED_ID))
+            .assertIsSelected()
+        tap(FolderActionTestTags.folderChoice(graphics))
+        awaitDb { folderIdOf("GPUOpen") == graphics && folderIdOf("nullprogram.com") == graphics }
+
+        assertThat(feedTitles()).containsExactly("GPUOpen", "nullprogram.com")
+        compose.onNodeWithTag(SelectionTestTags.BAR).assertDoesNotExist()
+    }
+
+    @Test
+    fun `a batch from different folders marks no folder as current`() {
+        val graphics = seedFolder("Graphics")
+        seedFeed(title = "GPUOpen")
+        seedFeed(title = "nullprogram.com", folderId = graphics)
+
+        showHome()
+        // Expanded before the selection starts: the chevron stays live mid-selection, but
+        // expanding through `tapRow` would first have to find the row.
+        openDrawer()
+        tapFolderExpand(graphics)
+        longPress("GPUOpen")
+        tapRow("nullprogram.com", folderId = graphics)
+        tap(SelectionTestTags.MOVE)
+
+        compose.onNodeWithText("Move 2 sources to").assertIsDisplayed()
+        compose.onNodeWithTag(FolderActionTestTags.folderChoice(FolderEntity.UNCATEGORIZED_ID))
+            .assertIsNotSelected()
+        compose.onNodeWithTag(FolderActionTestTags.folderChoice(graphics)).assertIsNotSelected()
     }
 
     // ---- the back chain's first rung -------------------------------------------------

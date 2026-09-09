@@ -163,7 +163,7 @@ The review box (E03) stays second from last, as CLAUDE.md requires.
         §0.2's stated limit; pushed.
       - Rung: unit
 
-- [ ] **E02 — Ticked sources move together. TDD. Issue #66.**
+- [x] **E02 — Ticked sources move together. TDD. Issue #66.**
       `gh issue view 66 --json body` — the reader's words: "there's only the delete option when
       you select multiple items. You should be able to move multiple sources at once to a new
       folder." Everything is decided in §0.3; this task is the execution:

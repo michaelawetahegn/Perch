@@ -900,7 +900,7 @@ class LiveAcceptanceTest {
         report.named = folderIds.size
         feeds.forEachIndexed { index, feed ->
             val slot = index % (folderIds.size + 1)
-            if (slot < folderIds.size) perch.container.folders.moveSource(feed.id, folderIds[slot])
+            if (slot < folderIds.size) perch.container.folders.moveSources(setOf(feed.id), folderIds[slot])
         }
         val before = folderMap(perch.database)
 
@@ -1916,11 +1916,11 @@ class LiveAcceptanceTest {
         val openers = freshestFirst.take(minOf(named.size - 1, OPENER_POOL))
 
         openers.forEachIndexed { index, (feed, _) ->
-            perch.container.folders.moveSource(feed.id, named[index].id)
+            perch.container.folders.moveSources(setOf(feed.id), named[index].id)
         }
-        freshestFirst.map { (feed, _) -> feed }
-            .filterNot { feed -> openers.any { it.first.id == feed.id } }
-            .forEach { perch.container.folders.moveSource(it.id, named.last().id) }
+        val rest = freshestFirst.map { (feed, _) -> feed.id }
+            .filterNot { id -> openers.any { it.first.id == id } }
+        perch.container.folders.moveSources(rest.toSet(), named.last().id)
 
         return "staged: " + openers.mapIndexed { index, (feed, rows) ->
             val newest = rows.maxOfOrNull { it.publishedAt } ?: 0L

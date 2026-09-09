@@ -22,6 +22,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -142,15 +144,18 @@ fun DeleteFolderDialog(
 }
 
 /**
- * Where a source lives (U06). Every folder is a row, the current one is ticked, and
- * "New folder" is the last row rather than a separate trip through the drawer — filing
- * something somewhere that does not exist yet is the common case, not the exception.
+ * Where a source, or a ticked batch of them, lives (U06, E02/#66). Every folder is a row,
+ * the current one is ticked — [currentFolderId] is the folder every source in the batch
+ * shares, or null when they differ, and then no row is marked — and "New folder" is the
+ * last row rather than a separate trip through the drawer: filing something somewhere
+ * that does not exist yet is the common case, not the exception. The caller words the
+ * [title], because only it knows whether it is naming one source or counting several.
  */
 @Composable
 fun MoveSourceDialog(
-    sourceTitle: String,
+    title: String,
     folders: List<FolderUiItem>,
-    currentFolderId: Long,
+    currentFolderId: Long?,
     onMove: (Long) -> Unit,
     onNewFolder: () -> Unit,
     onDismiss: () -> Unit,
@@ -159,7 +164,7 @@ fun MoveSourceDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = stringResource(R.string.folder_move_title, sourceTitle),
+                text = title,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -180,6 +185,9 @@ fun MoveSourceDialog(
                         label = folder.name,
                         testTag = FolderActionTestTags.folderChoice(folder.id),
                         onClick = { onMove(folder.id) },
+                        // The tick is also the row's semantics, so a screen reader — and a
+                        // test — can tell the current folder from the rest.
+                        modifier = Modifier.semantics { selected = folder.id == currentFolderId },
                         tint = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
                     )

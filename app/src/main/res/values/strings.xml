@@ -74,6 +74,10 @@
     <string name="folder_delete_body">Its sources move to Uncategorized. Nothing is unfollowed.</string>
     <string name="folder_delete_confirm">Delete</string>
     <string name="folder_move_title">Move %1$s to</string>
+    <plurals name="folder_move_sources_title">
+        <item quantity="one">Move %1$d source to</item>
+        <item quantity="other">Move %1$d sources to</item>
+    </plurals>
     <string name="folder_new">New folder…</string>
 
     <!-- Drawer: rename a source (DESIGN.md §5, U06; reached from U09a's selection bar) -->

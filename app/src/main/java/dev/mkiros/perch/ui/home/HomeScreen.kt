@@ -73,6 +73,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -82,6 +83,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -170,15 +172,17 @@ fun HomeScreen(
     // snapshot of a row that a refresh rewrites underneath us, and resolving it against
     // the current state means a source that disappears takes its dialog with it.
     var renamingId by rememberSaveable { mutableStateOf<Long?>(null) }
-    var movingId by rememberSaveable { mutableStateOf<Long?>(null) }
+    // The batch a move dialog is about (E02/#66), resolved the same way; empty means no
+    // dialog, and a source that disappears drops out of the batch rather than blocking it.
+    var movingIds by rememberSaveable(stateSaver = IdSetSaver) { mutableStateOf(emptySet<Long>()) }
     // Folder dialogs, held the same way and for the same reason.
     var folderActionsForId by rememberSaveable { mutableStateOf<Long?>(null) }
     var renamingFolderId by rememberSaveable { mutableStateOf<Long?>(null) }
     var deletingFolderId by rememberSaveable { mutableStateOf<Long?>(null) }
     var creatingFolder by rememberSaveable { mutableStateOf(false) }
-    // Non-null while "New folder…" was reached from a source's move dialog: the folder is
-    // created and the source filed into it in one gesture, never two.
-    var creatingFolderFor by rememberSaveable { mutableStateOf<Long?>(null) }
+    // Non-empty while "New folder…" was reached from a move dialog: the folder is created
+    // and the whole batch filed into it in one gesture, never two.
+    var creatingFolderFor by rememberSaveable(stateSaver = IdSetSaver) { mutableStateOf(emptySet<Long>()) }
     // Which row's long-press sheet is up (U09), held as an id for the same reason the
     // source dialogs are: a refresh rewrites the row underneath us.
     var entryActionsForId by rememberSaveable { mutableStateOf<Long?>(null) }
@@ -235,7 +239,7 @@ fun HomeScreen(
 
     /**
      * The one selected row's id. Only ever read behind `count == 1`, which is the only
-     * state in which the bar offers rename or move at all.
+     * state in which the bar offers rename or backfill at all.
      */
     fun theOne(): Long = selection.value.ids.first()
 
@@ -249,7 +253,7 @@ fun HomeScreen(
     }
 
     fun moveSelection() {
-        if (selection.value is DrawerSelection.Sources) movingId = theOne()
+        (selection.value as? DrawerSelection.Sources)?.let { movingIds = it.ids }
         leaveSelection()
     }
 
@@ -498,20 +502,25 @@ fun HomeScreen(
             )
         }
 
-        sourceOf(movingId)?.let { source ->
+        val moving = uiState.sources.filter { it.id in movingIds }
+        if (moving.isNotEmpty()) {
+            val batch = moving.map { it.id }.toSet()
             MoveSourceDialog(
-                sourceTitle = source.title,
+                title = moving.singleOrNull()?.let { stringResource(R.string.folder_move_title, it.title) }
+                    ?: pluralStringResource(R.plurals.folder_move_sources_title, moving.size, moving.size),
                 folders = uiState.folders,
-                currentFolderId = source.folderId,
+                // The folder they all share, or none: a batch from two folders has no
+                // "current" row to tick.
+                currentFolderId = moving.map { it.folderId }.distinct().singleOrNull(),
                 onMove = { folderId ->
-                    movingId = null
-                    viewModel.moveSource(source.id, folderId)
+                    movingIds = emptySet()
+                    viewModel.moveSources(batch, folderId)
                 },
                 onNewFolder = {
-                    movingId = null
-                    creatingFolderFor = source.id
+                    movingIds = emptySet()
+                    creatingFolderFor = batch
                 },
-                onDismiss = { movingId = null },
+                onDismiss = { movingIds = emptySet() },
             )
         }
 
@@ -621,16 +630,17 @@ fun HomeScreen(
             )
         }
 
-        creatingFolderFor?.let { feedId ->
+        if (creatingFolderFor.isNotEmpty()) {
+            val batch = creatingFolderFor
             FolderNameDialog(
                 title = stringResource(R.string.folder_new_title),
                 onConfirm = { name ->
-                    creatingFolderFor = null
+                    creatingFolderFor = emptySet()
                     viewModel.createFolder(name) { folderId ->
-                        viewModel.moveSource(feedId, folderId)
+                        viewModel.moveSources(batch, folderId)
                     }
                 },
-                onDismiss = { creatingFolderFor = null },
+                onDismiss = { creatingFolderFor = emptySet() },
             )
         }
     }
@@ -1456,3 +1466,9 @@ private const val UNAVAILABLE_ALPHA = 0.38f
 private const val SKELETON_ROWS = 6
 private const val TITLE_BAR_FRACTION = 0.85f
 private const val META_BAR_FRACTION = 0.4f
+
+/**
+ * A set of row ids across process death, the way `DrawerSelection.Saver` keeps one: as a
+ * list, which the bundle can hold and a set cannot be.
+ */
+private val IdSetSaver = listSaver<Set<Long>, Long>(save = { it.toList() }, restore = { it.toSet() })

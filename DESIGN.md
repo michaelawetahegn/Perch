@@ -175,7 +175,8 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
 - **Multi-select in the drawer (U09a).** A long press on a source or a folder header
   starts a selection; every row of *that kind* gains a checkbox, the "All sources" row and
   the drawer's three navigation items are replaced by a contextual bar — close · *N
-  selected* · delete, plus rename (and move, for a source) at exactly one ticked row — and
+  selected* · delete, plus move for any number of ticked sources (E02) and rename at
+  exactly one ticked row — and
   tapping toggles rows until the reader leaves. A selection is **homogeneous**: one
   started on a source takes only sources, one started on a folder takes only folders, and
   the rule is drawn as well as enforced — rows of the other kind keep their ordinary icon

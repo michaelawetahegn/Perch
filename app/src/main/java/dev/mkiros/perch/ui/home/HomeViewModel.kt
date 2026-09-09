@@ -621,8 +621,8 @@ class HomeViewModel(
         _sourceDeletePrompt.value = null
     }
 
-    fun moveSource(feedId: Long, folderId: Long) {
-        viewModelScope.launch { folders.moveSource(feedId, folderId) }
+    fun moveSources(feedIds: Set<Long>, folderId: Long) {
+        viewModelScope.launch { folders.moveSources(feedIds, folderId) }
     }
 
     /**

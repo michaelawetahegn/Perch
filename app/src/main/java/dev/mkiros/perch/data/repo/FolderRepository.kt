@@ -115,12 +115,13 @@ class FolderRepository(
         // before its folder exists is a constraint failure rather than a lost row.
         folderDao.insertAll(undo.folders)
         undo.memberships.forEach { (folderId, feedIds) ->
-            feedIds.forEach { folderDao.setFolder(it, folderId) }
+            folderDao.setFolderForAll(feedIds, folderId)
         }
     }
 
-    /** Files one source under [folderId], leaving the rest of the row alone. */
-    suspend fun moveSource(feedId: Long, folderId: Long) = folderDao.setFolder(feedId, folderId)
+    /** Files every one of [feedIds] under [folderId], leaving the rest of each row alone. */
+    suspend fun moveSources(feedIds: Set<Long>, folderId: Long) =
+        folderDao.setFolderForAll(feedIds.toList(), folderId)
 
     private fun String.clean(): String =
         trim().also { require(it.isNotEmpty()) { "a folder name cannot be blank" } }

@@ -609,7 +609,7 @@ abstract class EntryDao {
         return inserted
     }
 
-    private companion object {
+    internal companion object {
         /** SQLite's 999-variable ceiling, less headroom for the other bound arguments. */
         const val MAX_IDS_PER_STATEMENT = 900
     }

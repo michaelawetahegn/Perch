@@ -415,7 +415,7 @@ class DesignScreenshotTest {
             val folderId = perch.container.folders.createFolder(name)
             hosts.forEach { host ->
                 byHost.entries.firstOrNull { it.key.contains(host) }?.let { (_, feed) ->
-                    perch.container.folders.moveSource(feed.id, folderId)
+                    perch.container.folders.moveSources(setOf(feed.id), folderId)
                 }
             }
         }
