@@ -17,8 +17,8 @@ and what each failure mode actually means.
 
 ## If your prompt was "Read CLAUDE.md and continue", you are a loop session
 
-**As of v0.6.1 there is no active plan** — see the section below before doing anything
-else. Everything in this section applies the moment a `PLAN-11.md` exists, and not before.
+**The active plan is `PLAN-11.md` (v0.7.0)** — see the section below. Everything in this
+section applies to you.
 
 `loop.sh` starts every session with exactly that prompt. If it is yours, you are **the
 worker, not the orchestrator**. A `loop.sh` in `pgrep` is **your own driver** — not someone
@@ -37,33 +37,31 @@ is expected to end in a commit and a push; that is the only way progress exists 
 So: go to the cold start below, do the single next unchecked task, verify it, commit, push,
 close its issue, stop.
 
-## There is no active plan — v0.6.1 shipped on 2026-09-08
+## The active plan is `PLAN-11.md` — v0.7.0, two reader features
 
 Finished plans live in `docs/plans/` — v0.1 (T01–T32), v0.2 (U01–U16), v0.3 (V01–V16),
 v0.4 (W01–W12), all four of v0.5's slices (X01–X04, Y01–Y05, Z01–Z05, R00–R03), v0.6
-(S01–S13) and v0.6.1 (`PLAN-10-v0.6.1.md`, D01–D30) are **complete, frozen, and history only**; never reopen a box in
-any of them.
+(S01–S13) and v0.6.1 (D01–D30) are **complete, frozen, and history only**; never reopen a box
+in any of them.
 
-**There is no active plan, so there is no next task to pick up.** A session that reads this,
-finds every box checked and has no instruction beyond "continue" is **not** a worker: say
-that the plan is finished and stop — do not invent work, do not start a refactor. When the
-human asks for the next batch, read `docs/RALPH.md` and open a `PLAN-11.md` at the repository
-root; that becomes the active plan and every rule below applies to it. Wherever these standing
-orders say "PLAN.md", read the active plan.
+**`PLAN-11.md` at the repository root is the active plan**, opened 2026-09-08: E01 saves the
+reading position of an article (#65, schema 7 → 8), E02 moves a ticked batch of sources at once
+(#66), E03 is the review pass, E04 releases **v0.7.0** (`versionCode` 9). Four sessions; the
+human set a hard deadline, so every task is sized to one `./gradlew test`. Wherever these
+standing orders say "PLAN.md", read `PLAN-11.md`.
 
-**The next version's raw material is already filed.** Issues **#60–#64** are what D27's bounded
-re-survey found and left undone (one is a real if invisible bug, #60); `TECH_DEBT.md` holds
-everything v0.6.1 deliberately did not touch because it would need a behaviour change or a
-human decision. Between them they are a plan's worth of work; neither is a licence to start.
+**Issues #60–#64 and `TECH_DEBT.md` are the raw material for the version after this one** —
+not this plan's, and not a licence to start anything a PLAN-11 box does not name.
 
-**Each plan's §0 is authoritative for its own version** and deliberately overrides older
-text in SPEC.md, DESIGN.md and earlier plans. Where they conflict, the newest §0 wins and
-the task updates the older doc in the same commit — do not "fix" §0 to match the older text.
+**Each plan's §0 is authoritative for its own version** and deliberately overrides older text in
+SPEC.md, DESIGN.md and earlier plans. Where they conflict, the newest §0 wins and the task
+updates the older doc in the same commit — do not "fix" §0 to match the older text.
 `docs/plans/PLAN-4-v0.4.md` §0, `docs/plans/PLAN-6-v0.5-slice2.md` §0,
-`docs/plans/PLAN-7-v0.5-slice3.md` §0, `docs/plans/PLAN-9-v0.6.md` §0 and `docs/plans/PLAN-10-v0.6.1.md` §0 all
-still bind for everything a future plan's §0 does not restate. In particular **`docs/plans/PLAN-10-v0.6.1.md`
-§0.2's rule stands: prefer deleting to adding**, and an improvement that needs a behaviour
-change to justify it goes into `TECH_DEBT.md`, not into the code.
+`docs/plans/PLAN-7-v0.5-slice3.md` §0, `docs/plans/PLAN-9-v0.6.md` §0 and
+`docs/plans/PLAN-10-v0.6.1.md` §0 all still bind for everything `PLAN-11.md` §0 does not
+restate. In particular **`docs/plans/PLAN-10-v0.6.1.md` §0.2's rule stands: prefer deleting to
+adding**, and an improvement that needs a behaviour change to justify it goes into
+`TECH_DEBT.md`, not into the code.
 
 **The hard constraint the human set in v0.5 still binds: no site-specific parsing.** The parser
 must stay generalised and extensible, so that supporting one site means similar sites parse

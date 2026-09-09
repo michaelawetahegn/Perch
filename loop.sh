@@ -14,8 +14,8 @@ cd "$(dirname "$0")"
 # ── knobs ────────────────────────────────────────────────────────────────────
 # The active plan. v0.1 (T01–T32) and v0.2 (U01–U16) are complete and archived in
 # docs/plans/. v0.5 shipped as four slices (PLAN-5/6/7/8) and v0.6 as PLAN-9, all archived;
-# PLAN-10 is v0.6.1 — the tech-debt pass: bugs a test can show, duplication, dead code.
-PLAN=${PLAN:-PLAN-10.md}
+# PLAN-10 (v0.6.1) is archived too; PLAN-11 is v0.7.0 — reading position (#65), batch move (#66).
+PLAN=${PLAN:-PLAN-11.md}
 PROMPT="Read CLAUDE.md and continue"
 LOG=${LOG:-"loop-$(basename "$PLAN" .md | tr 'A-Z' 'a-z').log"}
 SLEEP_BETWEEN=${SLEEP_BETWEEN:-30}        # pause between normal sessions (s)
