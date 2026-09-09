@@ -75,8 +75,8 @@
   **SPEC.md §4/§8a**. What is only here: **`MIGRATION_6_7`'s `CREATE VIRTUAL TABLE` must be
   byte-for-byte what `7.json` exports** or Room fails validation on the *next* open, not on the
   migration — a test that only runs the migration will not catch it.
-- 2026-09-08 — **v0.6.1 released** (`versionCode` 8, DB 7 — unchanged from v0.6.0); test floor
-  **1932** (1126 debug + 806 release). APK `app/build/outputs/apk/release/perch-0.6.1.apk`. In-place
+- 2026-09-08 — **v0.7.0 released** (`versionCode` 9, DB 7 → 8 via `MIGRATION_7_8`); test floor
+  **1950** (1137 debug + 813 release). APK `app/build/outputs/apk/release/perch-0.7.0.apk`. In-place
   upgrades are verified on the **emulator only**; the human's real phone no session can reach. An
   upgrade check needs a seeded install and **there is no first-run seeder** (the Maestro flow's "a
   clean install seeds itself" comment is stale): add a source through the UI, and set the range to

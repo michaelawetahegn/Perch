@@ -208,7 +208,7 @@ The review box (E03) stays second from last, as CLAUDE.md requires.
         `./gradlew test` green; any new issue linked; pushed.
       - Rung: unit
 
-- [ ] **E04 — Release v0.7.0.** Bump `perchVersionCode` 8 → **9** and `perchVersionName`
+- [x] **E04 — Release v0.7.0.** Bump `perchVersionCode` 8 → **9** and `perchVersionName`
       `0.6.1` → **`0.7.0`** at `app/build.gradle.kts:12-13`, **the one place they live**. §0.1
       settles the digit; it is not this task's judgement call.
       - **Live acceptance first, bounded:** `./gradlew :app:testDebugUnitTest -Pperch.live=true
