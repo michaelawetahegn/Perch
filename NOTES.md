@@ -74,9 +74,9 @@
   **SPEC.md §4/§8a**. What is only here: **`MIGRATION_6_7`'s `CREATE VIRTUAL TABLE` must be
   byte-for-byte what `7.json` exports** or Room fails validation on the *next* open, not on the
   migration — a test that only runs the migration will not catch it.
-- 2026-09-08 — **v0.7.0 released** (`versionCode` 9, DB 7 → 8 via `MIGRATION_7_8`); test floor
-  **1950** (1137 debug + 813 release). APK `app/build/outputs/apk/release/perch-0.7.0.apk`. In-place
-  upgrades are verified on the **emulator only**; the human's real phone no session can reach. An
+- 2026-09-14 — **v0.8.0 released** (`versionCode` 10, DB 8 → 10 via `MIGRATION_8_9` + `MIGRATION_9_10`); test
+  floor **2067** (1200 debug + 867 release). APK `app/build/outputs/apk/release/perch-0.8.0.apk`. In-place
+  upgrades are verified on the **emulator only** (it holds v0.8.0 now); the human's real phone no session can reach. An
   upgrade check needs a seeded install and **there is no first-run seeder** (the Maestro flow's "a
   clean install seeds itself" comment is stale): add a source through the UI, and set the range to
   All Time or a fresh install looks empty. `adb shell input text` drops everything past ~15
@@ -94,6 +94,4 @@
   a 44-image body composes every figure and the first sits below the fold; an injected tap at its centre landed outside
   the viewport. `performScrollTo()` before the click (F15) — gate 7 prints again, 0 failures, `39/39` on gate 1.
   `showArticle` also waits for the full-text fetch to come *and go* (§0.7), since a successful extraction replaces
-  every block. **F15 review:** no doc described v0.7.0 after this commit; schemas `9.json` = `8.json` + version,
-  `10.json`'s `archive_posts` create SQL is byte-for-byte `MIGRATION_9_10`'s; no test weakened (the one count
-  change is 42 → 43 fixtures for Bellingcat); the remaining small debts are `TECH_DEBT.md` "## Next plan".
+  every block. What F15 left undone is `TECH_DEBT.md` "## Next plan"; nothing is open on the tracker.

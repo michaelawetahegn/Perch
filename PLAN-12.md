@@ -565,7 +565,7 @@ review box (F15) is second from last, as CLAUDE.md requires.
         `./gradlew test` green; any new issue linked; pushed.
       - Rung: unit
 
-- [ ] **F16 — Release v0.8.0.** Bump `perchVersionCode` 9 → **10** and `perchVersionName`
+- [x] **F16 — Release v0.8.0.** Bump `perchVersionCode` 9 → **10** and `perchVersionName`
       `0.7.0` → **`0.8.0`** at `app/build.gradle.kts:12-13`, **the one place they live**. §0.1
       settles the digit; it is not this task's judgement call.
       - **Live acceptance first, bounded:** `./gradlew :app:testDebugUnitTest -Pperch.live=true

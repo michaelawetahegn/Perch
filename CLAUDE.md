@@ -17,8 +17,8 @@ and what each failure mode actually means.
 
 ## If your prompt was "Read CLAUDE.md and continue", you are a loop session
 
-**The active plan is `PLAN-12.md` (v0.8.0)** — see the section below. Everything in this
-section applies to you.
+**As of v0.8.0 there is no active plan** — see the section below before doing anything
+else. Everything in this section applies the moment a `PLAN-13.md` exists, and not before.
 
 `loop.sh` starts every session with exactly that prompt. If it is yours, you are **the
 worker, not the orchestrator**. A `loop.sh` in `pgrep` is **your own driver** — not someone
@@ -37,21 +37,25 @@ is expected to end in a commit and a push; that is the only way progress exists 
 So: go to the cold start below, do the single next unchecked task, verify it, commit, push,
 close its issue, stop.
 
-## The active plan is `PLAN-12.md` — v0.8.0, the reader's four reports and the tech-debt five
+## There is no active plan — v0.8.0 shipped on 2026-09-14
 
 Finished plans live in `docs/plans/` — v0.1 (T01–T32), v0.2 (U01–U16), v0.3 (V01–V16),
 v0.4 (W01–W12), all four of v0.5's slices (X01–X04, Y01–Y05, Z01–Z05, R00–R03), v0.6
-(S01–S13), v0.6.1 (D01–D30) and v0.7.0 (E01–E04) are **complete, frozen, and history only**;
-never reopen a box in any of them.
+(S01–S13), v0.6.1 (D01–D30), v0.7.0 (E01–E04) and now **v0.8.0 (`PLAN-12.md`, F01–F16 — still
+at the repository root until the next plan archives it)** are **complete, frozen, and history
+only**; never reopen a box in any of them. F04's box reads `[BLOCKED: …]` on purpose: the rule
+landed and #70 closed, and F15 found the failing live gate was the test harness, not the app.
 
-**`PLAN-12.md` at the repository root is the active plan**, opened 2026-09-14: F01–F02 stop
-the backfill duplicating every post and merge the duplicates already on the phone (#69, schema
-8 → 9); F03–F05 fix rendering — images inside role-named containers, promotional blocks, and
-captions (#70, #67); F06 is the one v0.7.0 review finding (#71); F07–F09 turn the 40-post
-archive cliff into a remembered plan you keep scrolling into (#68, schema 9 → 10); F10–F14 are
-the five tech-debt issues v0.6.1 filed (#60–#64); F15 is the review pass; F16 releases
-**v0.8.0** (`versionCode` 10). Sixteen sessions. Wherever these standing orders say "PLAN.md",
-read `PLAN-12.md`.
+**There is no active plan, so there is no next task to pick up.** A session that reads this,
+finds every box checked and has no instruction beyond "continue" is **not** a worker: say
+that the plan is finished and stop — do not invent work, do not start a refactor. When the
+human asks for the next batch, read `docs/RALPH.md` and open a `PLAN-13.md` at the repository
+root; that becomes the active plan and every rule below applies to it. Wherever these standing
+orders say "PLAN.md", read the active plan.
+
+**Nothing is filed for the next version.** v0.8.0 closed every open issue (#60–#64, #67–#71);
+what F15 left is `TECH_DEBT.md` "## Next plan" — a handful of small items, none a session on
+its own, and none a licence to start. The next plan begins with what the human reports next.
 
 **Bellingcat is in the corpus as of the planning commit** (`fixtures/feeds.txt`, `snapshots/`,
 `manifest.tsv`, and two unlisted page fixtures under `fixtures/articles/`); `PLAN-12.md` §0.3
@@ -63,8 +67,8 @@ SPEC.md, DESIGN.md and earlier plans. Where they conflict, the newest §0 wins a
 updates the older doc in the same commit — do not "fix" §0 to match the older text.
 `docs/plans/PLAN-4-v0.4.md` §0, `docs/plans/PLAN-6-v0.5-slice2.md` §0,
 `docs/plans/PLAN-7-v0.5-slice3.md` §0, `docs/plans/PLAN-9-v0.6.md` §0,
-`docs/plans/PLAN-10-v0.6.1.md` §0 and `docs/plans/PLAN-11-v0.7.0.md` §0 all still bind for
-everything `PLAN-12.md` §0 does not restate. In particular **`docs/plans/PLAN-10-v0.6.1.md`
+`docs/plans/PLAN-10-v0.6.1.md` §0, `docs/plans/PLAN-11-v0.7.0.md` §0 and `PLAN-12.md` §0 all
+still bind for everything a future plan's §0 does not restate. In particular **`docs/plans/PLAN-10-v0.6.1.md`
 §0.2's rule stands: prefer deleting to adding**, and an improvement that needs a behaviour
 change to justify it goes into `TECH_DEBT.md`, not into the code.
 
