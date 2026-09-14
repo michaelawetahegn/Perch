@@ -225,6 +225,18 @@ abstract class EntryDao {
     @Query("SELECT * FROM entries WHERE feedId = :feedId AND guid = :guid")
     abstract suspend fun findByGuid(feedId: Long, guid: String): EntryEntity?
 
+    /**
+     * The row [upsertAll] lands on (PLAN-12 §0.2, #69): matched on guid first, then on link,
+     * so a page the backfill stored under its address and the same post the feed lists under
+     * a `?p=` guid are one row. The `ORDER BY` prefers the guid match when both exist.
+     */
+    @Query(
+        "SELECT * FROM entries WHERE feedId = :feedId " +
+            "AND (guid = :guid OR (:link IS NOT NULL AND link = :link)) " +
+            "ORDER BY (guid = :guid) DESC LIMIT 1",
+    )
+    abstract suspend fun findByGuidOrLink(feedId: Long, guid: String, link: String?): EntryEntity?
+
     @Query("SELECT COUNT(*) FROM entries")
     abstract suspend fun countAll(): Int
 
@@ -245,12 +257,12 @@ abstract class EntryDao {
     abstract suspend fun reach(feedId: Long): FeedReach
 
     /**
-     * Every guid already stored for [feedId] — what [dev.mkiros.perch.data.repo.BackfillRepository]
-     * checks a candidate URL against before fetching it (`(feedId, guid)`, guid = final URL,
-     * PLAN-7 §0.3), without a lookup per candidate.
+     * Every guid and link already stored for [feedId] — what
+     * [dev.mkiros.perch.data.repo.BackfillRepository] checks a candidate URL against before
+     * fetching it (PLAN-7 §0.3, PLAN-12 §0.2), without a lookup per candidate.
      */
-    @Query("SELECT guid FROM entries WHERE feedId = :feedId")
-    abstract suspend fun guidsForFeed(feedId: Long): List<String>
+    @Query("SELECT guid, link FROM entries WHERE feedId = :feedId")
+    abstract suspend fun identitiesForFeed(feedId: Long): List<EntryIdentity>
 
     // ---- read state -----------------------------------------------------------
 
@@ -532,7 +544,10 @@ abstract class EntryDao {
     open suspend fun index(entry: EntryEntity) = replaceFtsRow(entry.toFtsRow())
 
     /**
-     * Writes a parsed batch, matching on `(feedId, guid)`.
+     * Writes a parsed batch, matching on `(feedId, guid)`, then on `(feedId, link)` — a
+     * backfilled page and a feed item are the same article (PLAN-12 §0.2, #69). A row matched
+     * through its link keeps the guid it already has: identity stays with whichever path found
+     * the article first, and `pending_entry_state` (keyed by guid, U14) is untouched.
      *
      * Room's `@Upsert` is not usable here: it recovers from the conflict by updating on
      * the *primary key*, which for a freshly parsed entry is still 0, so the row would
@@ -572,7 +587,7 @@ abstract class EntryDao {
                     .also { parked[entry.feedId] = it }
             }
             val restored = byGuid[entry.guid]
-            val existing = findByGuid(entry.feedId, entry.guid)
+            val existing = findByGuidOrLink(entry.feedId, entry.guid, entry.link)
             val row = if (existing == null) {
                 entry
             } else {
@@ -580,6 +595,7 @@ abstract class EntryDao {
                     (entry.contentHtml?.length ?: 0) <= (existing.contentHtml?.length ?: 0)
                 entry.copy(
                     id = existing.id,
+                    guid = existing.guid,
                     isRead = existing.isRead,
                     readAt = existing.readAt,
                     isSaved = existing.isSaved,

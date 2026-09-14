@@ -8,7 +8,9 @@ import dev.mkiros.perch.data.db.FeedDao
 import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.extract.PageContentExtractor
 import dev.mkiros.perch.data.extract.toEntry
+import dev.mkiros.perch.data.db.EntryIdentity
 import dev.mkiros.perch.data.parse.PageFetcher
+import dev.mkiros.perch.data.parse.urlKey
 import java.time.Clock
 import java.time.Instant
 import kotlinx.coroutines.CancellationException
@@ -47,6 +49,10 @@ data class BackfillResult(
  * property is what makes a cancelled run resumable and a repeated one a no-op: there is no
  * separate "resume point" to track, only what is and is not in `entries` yet.
  *
+ * A candidate is compared, as a [urlKey], against every stored guid *and* link (PLAN-12
+ * §0.2, #69): the feed poll keeps WordPress's `?p=N` guid and the page's address as the link,
+ * so a guid-only check fetched every post the feed had already given us a second time.
+ *
  * Every page fetch reuses [PageContentExtractor] — the one function PLAN-6 Y03 lifted out
  * of [ArticleTextRepository], the same one [SavedLinkRepository] calls. No second metadata
  * or extraction path (PLAN-7 §0.2).
@@ -78,8 +84,8 @@ class BackfillRepository(
         val feedId = feed.id
         val feedPage = fetcher.fetch(feed.feedUrl)
         val discovered = discovery.discover(feed.siteUrl ?: feed.feedUrl, feedPage, robots)
-        val stored = entryDao.guidsForFeed(feedId).toHashSet()
-        val fresh = discovered.filterNot { it.url in stored }
+        val stored = entryDao.identitiesForFeed(feedId).urlKeys()
+        val fresh = discovered.filterNot { urlKey(it.url) in stored }
         val reach = entryDao.reach(feedId)
 
         return BackfillPlan(
@@ -135,6 +141,12 @@ class BackfillRepository(
 
     private suspend fun fetchAndStore(feedId: Long, post: ArchivePost): Boolean {
         val fetched = fetcher.fetch(post.url) ?: return false
+        // The plan matched the sitemap's spelling; a redirect may land on an address the feed
+        // already stored under another one. `upsertAll` would merge it, but there is no point
+        // extracting a page whose row exists.
+        if (fetched.finalUrl != post.url && entryDao.findByGuidOrLink(feedId, fetched.finalUrl, fetched.finalUrl) != null) {
+            return true
+        }
         val document = PageContentExtractor.parse(fetched.bytes, fetched.finalUrl) ?: return false
         val content = PageContentExtractor.extract(document, fetched.finalUrl)
         val (publishedAt, estimated) = backfillDate(content.metadata.publishedAt, post.lastmod)
@@ -184,5 +196,9 @@ class BackfillRepository(
         const val DEFAULT_DELAY_MILLIS = 500L
 
         private val EMPTY_RESULT = BackfillResult(attempted = 0, stored = 0, skippedByRobots = 0, failed = 0)
+
+        /** The [urlKey] of every guid and every non-null link — the set a candidate is looked up in. */
+        internal fun List<EntryIdentity>.urlKeys(): HashSet<String> =
+            flatMapTo(HashSet()) { listOfNotNull(it.guid, it.link).map(::urlKey) }
     }
 }

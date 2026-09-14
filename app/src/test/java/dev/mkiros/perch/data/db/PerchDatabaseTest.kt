@@ -221,6 +221,32 @@ class PerchDatabaseTest {
         assertThat(after?.scrollPosition).isEqualTo(1_234)
     }
 
+    /**
+     * F01 (#69), the poll direction: a page the archive backfill stored (guid = link = its
+     * address) that the feed later lists under a `?p=` guid is the same article. The row that
+     * was there first keeps its guid — `pending_entry_state` is keyed by it — and its reader
+     * state.
+     */
+    @Test
+    fun `upsertAll of a feed item whose link matches a backfilled row's guid updates that row instead of inserting`() = runTest {
+        val id = feeds.insert(feed(feedUrl = "https://a.example/feed"))
+        val post = "https://a.example/2020/01/01/post-one"
+        entries.insert(testEntry(id, title = "Backfilled", guid = post, link = post, readAt = 4_242L, savedAt = 7_007L))
+
+        val inserted = entries.upsertAll(
+            listOf(testEntry(id, title = "From the feed", guid = "https://a.example/?p=1", link = post)),
+        )
+
+        assertThat(inserted).isEqualTo(0)
+        assertThat(entries.countAll()).isEqualTo(1)
+        val row = entries.findByGuid(id, post)
+        assertThat(row?.title).isEqualTo("From the feed")
+        assertThat(row?.isRead).isTrue()
+        assertThat(row?.readAt).isEqualTo(4_242L)
+        assertThat(row?.isSaved).isTrue()
+        assertThat(row?.savedAt).isEqualTo(7_007L)
+    }
+
     @Test
     fun `removing a feed removes its entries and leaves the others alone`() = runTest {
         val doomed = feeds.insert(feed(feedUrl = "https://a.example/feed"))

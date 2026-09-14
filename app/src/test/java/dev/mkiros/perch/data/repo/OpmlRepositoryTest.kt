@@ -97,17 +97,17 @@ class OpmlRepositoryTest {
     }
 
     /**
-     * U13's contract, over the real corpus rather than a toy: the 42 sources Perch is
+     * U13's contract, over the real corpus rather than a toy: the 43 sources Perch is
      * actually built against, split across four folders with a handful left unfiled,
      * exported, and imported into an empty library. Membership is compared source by
      * source — a round trip that reproduces the folders but shuffles who is in them is
      * the failure this exists to catch.
      */
     @Test
-    fun `the 42-source manifest survives the round trip with its folders and membership`() = runTest {
+    fun `the 43-source manifest survives the round trip with its folders and membership`() = runTest {
         val addresses = File(repoRoot(), "fixtures/manifest.tsv").readLines()
             .filter { it.isNotBlank() }.map { it.split('\t')[1] }
-        assertThat(addresses).hasSize(42)
+        assertThat(addresses).hasSize(43)
 
         val names = listOf("Systems", "Security", "Graphics", "AI/LLM")
         addresses.forEachIndexed { index, address ->
@@ -126,7 +126,7 @@ class OpmlRepositoryTest {
         val imported = fresh.repo().import(exported)
 
         assertThat(imported)
-            .isEqualTo(OpmlImportResult.Imported(added = 42, duplicates = 0, invalid = 0, folders = 4))
+            .isEqualTo(OpmlImportResult.Imported(added = 43, duplicates = 0, invalid = 0, folders = 4))
         assertThat(fresh.membership()).isEqualTo(before)
         assertThat(fresh.feedDao().sourceSet()).isEqualTo(feeds.sourceSet())
         fresh.close()

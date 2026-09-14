@@ -43,6 +43,8 @@ import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.parse.ArticleBlock
 import dev.mkiros.perch.data.parse.ArticleLowering
 import dev.mkiros.perch.data.parse.HtmlSanitizer
+import dev.mkiros.perch.data.parse.urlKey
+import dev.mkiros.perch.data.repo.BackfillRepository
 import dev.mkiros.perch.data.repo.OpmlImportResult
 import dev.mkiros.perch.data.repo.PerchPaging
 import dev.mkiros.perch.data.repo.SourceResolution
@@ -2025,8 +2027,8 @@ class LiveAcceptanceTest {
             ?: return@runBlocking ArchiveReport("$label: ArchiveDiscovery threw").also {
                 it.failures += "gate 10: $label — ArchiveDiscovery.discover threw"
             }
-        val stored = perch.database.entryDao().guidsForFeed(feed.id).toHashSet()
-        val fresh = discovered.filterNot { it.url in stored }
+        val stored = with(BackfillRepository) { perch.database.entryDao().identitiesForFeed(feed.id).urlKeys() }
+        val fresh = discovered.filterNot { urlKey(it.url) in stored }
 
         val report = ArchiveReport(
             "$label: feed carried ${reach.entryCount} entries; discovery found " +

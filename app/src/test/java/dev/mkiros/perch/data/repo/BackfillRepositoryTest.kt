@@ -91,6 +91,37 @@ class BackfillRepositoryTest {
         assertThat(plan.toFetch.map { it.url }).containsExactly(POST_2)
     }
 
+    /**
+     * F01 (#69): the feed poll stores WordPress's `<guid isPermaLink="false">…/?p=N</guid>` as
+     * the entry's identity and the page's address only as its `link`; the sitemap names the
+     * address. Matching the candidate on guid alone fetched the post a second time.
+     */
+    @Test
+    fun `a post the feed stored under a ?p= guid is not fetched again from the sitemap`() = runTest {
+        val feedId = addFeed(entryCount = 0, oldest = null, siteUrl = SITE.trimEnd('/'))
+        storeExisting(feedId, guid = "$SITE?p=123", link = POST_1)
+        fetcher.pages[SITE + "sitemap.xml"] = sitemapOf(POST_1)
+        fetcher.pages[POST_1] = article("First Post", "2020-01-01T00:00:00Z")
+
+        val plan = repo().plan(feedId)!!
+        assertThat(plan.toFetch).isEmpty()
+
+        repo().run(feedId)
+        assertThat(entries.countAll()).isEqualTo(1)
+    }
+
+    /** The same post, spelt as a sitemap tends to spell it — trailing slash, tracking query. */
+    @Test
+    fun `a stored link and a sitemap URL that differ only in a trailing slash and utm query are one post`() = runTest {
+        val feedId = addFeed(entryCount = 0, oldest = null, siteUrl = SITE.trimEnd('/'))
+        storeExisting(feedId, guid = "$SITE?p=123", link = POST_1)
+        fetcher.pages[SITE + "sitemap.xml"] = sitemapOf("$POST_1/?utm_source=sitemap")
+
+        val plan = repo().plan(feedId)!!
+
+        assertThat(plan.toFetch).isEmpty()
+    }
+
     @Test
     fun `plan bounds toFetch at MAX_PAGES but reports the uncapped count`() = runTest {
         val feedId = addFeed(entryCount = 0, oldest = null)
@@ -137,7 +168,7 @@ class BackfillRepositoryTest {
 
         assertThat(result.stored).isEqualTo(2)
         assertThat(entries.countAll()).isEqualTo(2)
-        val stored = entries.guidsForFeed(feedId)
+        val stored = entries.identitiesForFeed(feedId).map { it.guid }
         assertThat(stored).containsExactly(POST_1, POST_2)
         val row = entries.findByGuid(feedId, POST_1)!!
         assertThat(row.isRead).isFalse()
@@ -172,7 +203,7 @@ class BackfillRepositoryTest {
 
         assertThat(result.skippedByRobots).isEqualTo(1)
         assertThat(result.stored).isEqualTo(1)
-        assertThat(entries.guidsForFeed(feedId)).containsExactly(POST_2)
+        assertThat(entries.identitiesForFeed(feedId).map { it.guid }).containsExactly(POST_2)
         assertThat(fetcher.requested).doesNotContain(POST_1)
     }
 
@@ -205,7 +236,7 @@ class BackfillRepositoryTest {
 
         assertThat(result.failed).isEqualTo(1)
         assertThat(result.stored).isEqualTo(1)
-        assertThat(entries.guidsForFeed(feedId)).containsExactly(POST_2)
+        assertThat(entries.identitiesForFeed(feedId).map { it.guid }).containsExactly(POST_2)
     }
 
     @Test
@@ -367,10 +398,15 @@ class BackfillRepositoryTest {
         return feedId
     }
 
-    private suspend fun storeExisting(feedId: Long, guid: String, publishedAt: Instant = Instant.ofEpochMilli(now)) {
+    private suspend fun storeExisting(
+        feedId: Long,
+        guid: String,
+        link: String? = guid,
+        publishedAt: Instant = Instant.ofEpochMilli(now),
+    ) {
         entries.insert(
             EntryEntity(
-                feedId = feedId, guid = guid, title = guid, link = guid, author = null,
+                feedId = feedId, guid = guid, title = guid, link = link, author = null,
                 publishedAt = publishedAt.toEpochMilli(), publishedIsEstimated = false, summary = null,
                 contentHtml = null, imageUrl = null, readAt = null, fetchedAt = now,
             ),

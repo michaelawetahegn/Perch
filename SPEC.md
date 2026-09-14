@@ -270,7 +270,9 @@ document yields Failure or a partial feed — never an exception escaping the ca
 mis-declared bytes must not crash (jsoup byte-stream parse handles this).
 
 **GUID fallback chain:** `<guid>`/`<id>` → `<link>` → `sha256(title + publishedRaw)`.
-Stable across refetches — this is what prevents duplicate entries.
+Stable across refetches — this is what prevents duplicate entries. On write, an entry is
+matched on `(feedId, guid)`, then on `(feedId, link)` — a backfilled page and a feed item
+are the same article (PLAN-12 §0.2); the row found first keeps its guid.
 
 **Date fallback chain:** RFC-822 (all the broken real-world variants: missing
 leading zero, `GMT`/`UT`/`EST`/`+0000`/`Z`, weekday mismatch) → ISO-8601/RFC-3339

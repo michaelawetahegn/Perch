@@ -279,7 +279,7 @@ review box (F15) is second from last, as CLAUDE.md requires.
 
 ## The tasks
 
-- [ ] **F01 — One article, one row: the backfill and the feed agree on identity. TDD. Issue #69.**
+- [x] **F01 — One article, one row: the backfill and the feed agree on identity. TDD. Issue #69.**
       `gh issue view 69 --json body` — the reader's words: "it creates duplicate entries after
       pulling older posts from the archive. Reproduce this before you fix the bug."
       Everything is decided in §0.2 parts 1–3; this task is the execution, in this order:
