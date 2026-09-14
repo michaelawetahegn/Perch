@@ -27,7 +27,7 @@
   `deleteFolder`; a test that taps "All sources" first tests the workaround, not the bug.
 - 2026-08-07 — **Live acceptance** (`acceptance/LiveAcceptanceTest`, `testDebug`): `./gradlew :app:testDebugUnitTest
   -Pperch.live=true --tests '*LiveAcceptance*'`. **V12/#8: gate 1 has no quota** — every source in `feeds.txt` bar
-  `EXCLUDED_SOURCES` must pull (38/38 today), so a break arrives as a URL, and an exclusion carries the measurement
+  `EXCLUDED_SOURCES` must pull (39/39 today), so a break arrives as a URL, and an exclusion carries the measurement
   that settled it. **SPEC §6's 8 MiB cap stays 8 MiB**: `danluu` (11.1 MB) and `projectzero` (13.2 MB) are out of
   scope, not evidence against it. **Not ours:** the LLVM feed omits spaces around inline `<code>`/`<a>`.
 - 2026-08-07 — **U02: losing `~/.perch/perch-release.jks` or `signing.properties` makes every future install a data
@@ -36,7 +36,8 @@
 - **U03/D10: a test's database and container come from `PerchRule`**; its `@get:Rule(order = 1)` is load-bearing —
   higher order = *inner*, so the close stays inside the Compose environment (else a leaked scope bills the next test).
   **U04: another reader-owned column (four since E01's `scrollPosition`) needs two edits** — `EntryDao.upsertAll`
-  (never Room `@Upsert`, it resolves on the primary key, ours on `(feedId, guid)`) and `deleteReadOlderThan`.
+  (never Room `@Upsert`, it resolves on the primary key, ours on `(feedId, guid)` then `(feedId, link)` since F01 —
+  a link match keeps the existing row's guid) and `deleteReadOlderThan`.
   **E01: `ArticleScreen`'s leaving write is `NonCancellable`** and outlives that close too — a test that shows the
   screen leaves it first (`ArticleScreenTest.leaveArticle`: drop the screen, idle, queue a no-op write behind it on
   Room's serial executor), or the *next* test fails with `UncaughtExceptionsBeforeTest`.
@@ -66,8 +67,8 @@
   Which queries filter `feeds.isSynthetic` (the seeded `perch:saved-links` row): **SPEC.md §4**.
   `ArchiveDiscovery`/`BackfillRepository` discovery order: RFC 5005 `prev-archive` → `robots.txt
   Sitemap:` → `/sitemap.xml`; post-vs-page is a dated URL path *or* a shape learned from the feed's
-  own entry links, never a table of engines. `plan()` sorts by `lastmod` before `.take(MAX_PAGES=40)`
-  because discovery order is sitemap *document* order (`fzakaria.com`, 143/133 live).
+  own entry links, never a table of engines. Since F07 what discovery finds lives in `archive_posts`; `plan()`
+  reads the next `MAX_PAGES=40` unfetched rows newest-first and rediscovers only after 7 days (`fzakaria.com`, 141/151 live).
   `quantpedia.com` excluded from live gate 1 — its TLS cert has expired, nothing Perch-side.
 - 2026-09-07 — **S08/#28: the search index.** Shape, write path and query contract are in
   **SPEC.md §4/§8a**. What is only here: **`MIGRATION_6_7`'s `CREATE VIRTUAL TABLE` must be
@@ -89,9 +90,10 @@
   `build/perch-screenshots`, which **keeps stale shots: `rm -rf` it and `--rerun`** or the diff shows phantom extras.
   The proof does it itself: `git worktree add /tmp/perch-<ref> <ref>`, copy `local.properties` in, `--tests
   '*ScreenshotTest*'` both sides, `md5sum` both dirs, `git worktree remove`. **35/35** twice, v0.6.0 and D29a.
-- 2026-09-14 — **F04: live gate 7 still fails after the §0.7 harness fix — two runs, BLOCKED, not chased.** Every
-  other gate prints (5b: `www.bellingcat.com 100.0% 10/10`, F03's images are back). `showArticle` now also waits for
-  the full-text fetch to come *and go* (it asks `FullText.needsExtraction` as the view-model does; the flag rises after
-  `Loading` ends). Still `onAllNodesWithTag(IMAGE)[0].performClick()` succeeds and no `article:image-viewer` node
-  follows. The handler opens the viewer unconditionally (`ArticleBody` `onOpenImage`), so the tap is not reaching it —
-  suspect the first IMAGE node of a 44-image body is composed ahead of the fold. Next owner (F15/F16): `performScrollTo` first.
+- 2026-09-14 — **F04/F15: live gate 7 was the harness, not the app.** The article body is a plain vertical scroll, so
+  a 44-image body composes every figure and the first sits below the fold; an injected tap at its centre landed outside
+  the viewport. `performScrollTo()` before the click (F15) — gate 7 prints again, 0 failures, `39/39` on gate 1.
+  `showArticle` also waits for the full-text fetch to come *and go* (§0.7), since a successful extraction replaces
+  every block. **F15 review:** no doc described v0.7.0 after this commit; schemas `9.json` = `8.json` + version,
+  `10.json`'s `archive_posts` create SQL is byte-for-byte `MIGRATION_9_10`'s; no test weakened (the one count
+  change is 42 → 43 fixtures for Bellingcat); the remaining small debts are `TECH_DEBT.md` "## Next plan".

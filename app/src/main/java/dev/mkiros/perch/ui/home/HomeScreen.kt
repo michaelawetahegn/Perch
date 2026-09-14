@@ -1490,9 +1490,10 @@ private fun FeedEmptyState(
     )
 }
 
-/** Material's disabled-content opacity: the one number a reader already knows (V10). */
 /** F08: one key, so the archive footer coming and going is never mistaken for a row insertion. */
 private const val ARCHIVE_FOOTER_KEY = "backfill:archive"
+
+/** Material's disabled-content opacity: the one number a reader already knows (V10). */
 private const val UNAVAILABLE_ALPHA = 0.38f
 
 private const val SKELETON_ROWS = 6

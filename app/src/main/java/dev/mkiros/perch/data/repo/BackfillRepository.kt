@@ -5,12 +5,12 @@ import dev.mkiros.perch.data.archive.ArchivePost
 import dev.mkiros.perch.data.archive.RobotsRules
 import dev.mkiros.perch.data.db.ArchivePostDao
 import dev.mkiros.perch.data.db.EntryDao
+import dev.mkiros.perch.data.db.EntryIdentity
 import dev.mkiros.perch.data.db.FeedDao
 import dev.mkiros.perch.data.db.entity.ArchivePostEntity
 import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.extract.PageContentExtractor
 import dev.mkiros.perch.data.extract.toEntry
-import dev.mkiros.perch.data.db.EntryIdentity
 import dev.mkiros.perch.data.parse.PageFetcher
 import dev.mkiros.perch.data.parse.urlKey
 import dev.mkiros.perch.rethrowCancellation

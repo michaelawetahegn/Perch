@@ -66,7 +66,9 @@ it on the queue as a real, readable entry.
 **A source's back catalogue.** When a feed only shows its newest handful, Perch can discover
 the rest — an RFC 5005 archive link, a sitemap, or both — parse by standards alone, and offer
 to fetch what the feed itself doesn't carry. No site is special-cased: the same discovery works
-on anything that publishes the standards it looks for.
+on anything that publishes the standards it looks for. What discovery finds is remembered, so
+the end of a source's All Time list offers the next forty posts — tap, or pull up past the
+end — and a 12,000-post archive is something you keep scrolling into rather than a cliff.
 
 **Keeping.** Three independent flags per entry — read, **liked** and **saved for later** —
 each with its own destination in the bottom bar, each surviving a refresh and a reinstall.
@@ -76,8 +78,9 @@ flag to one JSON file; importing it merges and is idempotent.
 
 **Quietly.** Conditional GET (`ETag` / `If-Modified-Since`), so a quiet feed costs a 304 and
 nothing else. Background refresh on an interval you set, network-constrained, via WorkManager.
-Paged lists. Material 3 in light and dark from one seed colour. Entries dedupe on `(feedId,
-guid)`; a refresh never resurrects something you have read.
+Paged lists. Material 3 in light and dark from one seed colour. Entries dedupe on the feed's
+guid *or* the article's URL, so a backfilled page and a feed item are one row; a refresh never
+resurrects something you have read.
 
 ## Build
 
@@ -97,7 +100,7 @@ echo "sdk.dir=/path/to/Android/Sdk" > local.properties
 
 Find its layer below, write the failing test beside the code it covers, then run the narrowest
 task — `./gradlew :app:testDebugUnitTest --tests '*YourTest*'` — before the full suite. Parser
-work answers to `fixtures/`: 39 feeds, 4 homepages and 23 article pages the corpus tests hold as
+work answers to `fixtures/`: 40 feeds, 4 homepages and 25 article pages the corpus tests hold as
 a standing contract. Add a fixture; never weaken a test.
 
 ```

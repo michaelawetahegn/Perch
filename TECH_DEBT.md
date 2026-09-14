@@ -97,47 +97,29 @@ Format: one bullet per item, the anchor, why it was left, what doing it would ch
 
 ## Next plan
 
-**Taken up by `PLAN-12.md` (2026-09-14):** the five issues below are F10–F14, and E03's
-scroll-write finding was filed as **#71** and closed by F06. Everything else in this file is
-still waiting.
+**PLAN-12 (v0.8.0, 2026-09-14) took everything D27 filed:** #60–#64 are F10–F14, E03's
+scroll-write finding was filed as **#71** and closed by F06, and the two smaller items recorded
+beside them — the back arrow drawn twice, `STOP_TIMEOUT_MS` declared three times — went with
+F14 and F13. F15's review of `git diff v0.7.0..HEAD` re-ran D27's greps: no hostname literal
+under `data/`, no `FeedEntity(`/`EntryEntity(` literal outside `support/Entities.kt`, one
+`MIN_COLOURS`, one `STOP_TIMEOUT_MS`, one back arrow, no test deleted, ignored or loosened.
+What is left, none of it a session on its own:
 
-D27 re-ran the six surveys against `ece0ddd`, the tree as D01–D26 left it, using greps rather
-than a full read. **The pass held**: no function or constant in `app/src/main` is without a
-caller, no hostname literal is under `data/`, no `Color(0x`/`N.dp`/`N.sp` is outside `ui/theme/`,
-nothing in `data/`, `work/` or `model/` imports `ui`, and no doc names a file that does not
-exist. Five findings are worth a session; each is an issue with its anchors and its fix shape.
-
-- **#60 — the ViewModel `runCatching`s still swallow cancellation.** `AddSourceViewModel.kt:128`
-  and `:152`, `ArticleViewModel.kt:144`, `SettingsViewModel.kt:274`. D05 rethrew
-  `CancellationException` in the two repositories and D06 in the five ViewModel `catch` blocks;
-  these four `runCatching`s were in neither task. **No reader-visible failure was found** — all
-  four run in `viewModelScope`, so only `onCleared()` cancels them — so this is the rule being
-  finished, not a bug report.
-- **#61 — one seeder, not twelve.** 25 private `seedFeed`/`seedEntry`/`seedFolder` declarations
-  across 12 test files, **322 lines**; ten of them still spell a `FeedEntity`/`EntryEntity`
-  literal out instead of calling D09's `testFeed`/`testEntry`. They belong on `PerchRule`, which
-  already owns the database.
-- **#62 — `capture(name)` is copied into six screenshot tests**, byte-identical in three, and
-  `const val MIN_COLOURS = 8` is declared four times. `Screenshots` (`ScreenshotSupport.kt`)
-  should own it. Thresholds must not move — the design screenshots are the pixel gate.
-- **#63 — `SettingsViewModel`'s four transfer actions repeat one shape**, twice each
-  (`:167-178`/`:219-230` export, `:189-200`/`:241-252` import). D06 widening the catches made the
-  duplication exact.
-- **#64 — the new-folder dialog's call site exists twice**, identically: `HomeScreen.kt:582-591`
-  and `AddSourceSheet.kt:84-93`, each with its own `creatingFolder` flag.
-
-Smaller than a session, recorded so a passing task can take them:
-
-- **The back arrow is drawn twice.** `SettingsScreen.kt:147-154` and `ArticleScreen.kt:97-104`
-  are an identical `navigationIcon = { IconButton(onClick = onBack) { Icon(ArrowBack, …) } }`.
 - **`EntryStateRow` and `PendingEntryStateEntity` declare the same eight fields** in the same
   order (`EntryStateRow.kt:9-16`, `PendingEntryStateEntity.kt:23-30`). Sharing them means an
   interface over an entity Room owns, so it waits for someone touching the schema anyway.
-- **`private const val STOP_TIMEOUT_MS = 5_000L` is declared three times** —
-  `HomeViewModel.kt:741`, `SettingsViewModel.kt:279`, `AddSourceViewModel.kt:169`.
 - **`FeedRepository.observeSourceCount` and `FeedDao.observeCount` are release code with one
   debug caller** (`DebugSeeder.kt:48`). Not dead — D01's rule is satisfied — but the only thing
   that reads them ships in no release build, and no test names either.
+- **`EntryDao.findByGuid` is release code with test-only callers** since F01 moved `upsertAll`
+  onto `findByGuidOrLink`: `PerchMigration8To9Test` and `LiveAcceptanceTest` still read it.
+  Same standing as `observeSourceCount`; the tests could ask `findByGuidOrLink(feedId, guid,
+  null)` instead and the query could go.
+- **Two lists of lazy-image attributes.** `HtmlSanitizer.LAZY_SRC` (F03: `data-src`,
+  `data-lazy-src`, `data-original`, and a lazy attribute beats `src`) and
+  `LeadImage.LAZY_SRC_ATTRS` (`src` first, then the same three). One list means `LeadImage`
+  preferring the lazy attribute over `src` for thumbnails — a behaviour change under PLAN-10
+  §0.2's rule, so it waits for a decision; the corpus would show whether any thumbnail moves.
 
 **Closed by D28:** SPEC.md §3's package tree now lists the four files this plan created —
 `data/parse/ItemMapping.kt` (D18), `data/repo/FolderResolver.kt` (D19), `ui/home/EmptyState.kt`

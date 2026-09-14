@@ -539,7 +539,7 @@ review box (F15) is second from last, as CLAUDE.md requires.
         above F13's count; issue #64 closed; pushed.
       - Rung: unit
 
-- [ ] **F15 — The review pass. The whole of v0.8.0, read at once.**
+- [x] **F15 — The review pass. The whole of v0.8.0, read at once.**
       Read `git diff v0.7.0..HEAD` — **the whole of it** — and answer, in the commit message and
       in NOTES.md where it outlives the plan:
       1. Does any doc still describe v0.7.0? README.md, SPEC.md (§1 version, §3 tree — `UrlKey.kt`,

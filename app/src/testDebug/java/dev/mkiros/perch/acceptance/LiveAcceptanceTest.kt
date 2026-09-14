@@ -1440,7 +1440,10 @@ class LiveAcceptanceTest {
             return null
         }
         showArticle(scene, "u15-image-viewer-dark", ThemeMode.Dark, sample)
-        compose.onAllNodesWithTag(ArticleTestTags.IMAGE)[0].performClick()
+        // F15: the body is a plain vertical scroll, so a 44-image article composes every
+        // figure at once and the first sits below the fold — an injected tap at its centre
+        // lands outside the viewport. Bring it in before tapping.
+        compose.onAllNodesWithTag(ArticleTestTags.IMAGE)[0].performScrollTo().performClick()
         compose.waitForIdle()
         compose.onNodeWithTag(ArticleTestTags.IMAGE_VIEWER).performTouchInput { doubleClick() }
         compose.waitForIdle()
@@ -1466,7 +1469,10 @@ class LiveAcceptanceTest {
     ) {
         if (sample == null) return
         showArticle(scene, "v15-viewer-cutout-dark", ThemeMode.Dark, sample)
-        compose.onAllNodesWithTag(ArticleTestTags.IMAGE)[0].performClick()
+        // F15: the body is a plain vertical scroll, so a 44-image article composes every
+        // figure at once and the first sits below the fold — an injected tap at its centre
+        // lands outside the viewport. Bring it in before tapping.
+        compose.onAllNodesWithTag(ArticleTestTags.IMAGE)[0].performScrollTo().performClick()
         compose.waitForIdle()
         compose.applyWindowInsets(cutoutPx = CUTOUT_PX)
 

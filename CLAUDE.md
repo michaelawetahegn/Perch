@@ -116,7 +116,7 @@ Do not skip ahead, do not do two tasks, do not refactor code the task doesn't to
   Commit even for a BLOCKED task (the PLAN/NOTES edit is the commit).
 - **Never weaken a test to make it pass.** Especially `FeedCorpusTest` (T09) — it is
   the standing contract. If it legitimately must change, say why in the commit.
-- **v0.5.0 is installed on the human's real phone.** Every schema change ships a real Room
+- **v0.7.0 is installed on the human's real phone.** Every schema change ships a real Room
   `Migration` plus its `app/schemas/N.json`. `fallbackToDestructiveMigration()` never
   comes back — it would silently erase someone's read state, likes, and to-read queue.
 - **Versioning: MINOR for features, PATCH for fixes.** While Perch is 0.x, a release

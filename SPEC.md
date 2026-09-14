@@ -97,18 +97,19 @@ and no Robolectric. That is the backbone of the TDD loop.
 app/src/main/java/dev/mkiros/perch/
 ├─ PerchApp.kt                     Application; builds AppContainer; schedules work
 ├─ MainActivity.kt                 single activity, edge-to-edge, hosts NavHost
+├─ Cancellation.kt                 Result.rethrowCancellation(): every runCatching calls it
 ├─ di/AppContainer.kt              manual DI: db, okhttp, repos, clock, connectivity, settings
 ├─ model/ TimeFilter.kt  ThemeMode.kt  RefreshInterval.kt   the types every layer shares:
 │         BackfillRunner.kt  RefreshScheduler.kt            ui → data/work → model, never back
 ├─ data/
 │  ├─ db/  PerchDatabase.kt  FeedDao.kt  EntryDao.kt  FolderDao.kt  ArchivePostDao.kt
-│  │       EntryListItem.kt  EntryStateRow.kt  FeedReach.kt  FtsQuery.kt
+│  │       EntryListItem.kt  EntryStateRow.kt  EntryIdentity.kt  FeedReach.kt  FtsQuery.kt
 │  │       entity/{Feed,Entry,EntryFts,Folder,PendingEntryState,ArchivePost}Entity.kt
 │  ├─ net/ PerchHttp.kt  FeedFetcher.kt  ConnectivityMonitor.kt   (conditional GET)
 │  ├─ parse/ FeedParser.kt  RssParser.kt  AtomParser.kt  RdfParser.kt  FeedXml.kt
 │  │         ParsedFeed.kt  ParsedEntry.kt  ParseResult.kt  DateParser.kt
 │  │         FeedDiscovery.kt  HtmlSanitizer.kt  ArticleBlock.kt
-│  │         ArticleLowering.kt  LeadImage.kt  PastedUrl.kt  ItemMapping.kt
+│  │         ArticleLowering.kt  LeadImage.kt  PastedUrl.kt  ItemMapping.kt  UrlKey.kt
 │  ├─ extract/ ArticleExtractor.kt  FullText.kt  PageContent.kt  PageMetadata.kt
 │  ├─ archive/ ArchiveDiscovery.kt  RobotsRules.kt        (v0.5 backfill)
 │  ├─ opml/ Opml.kt
@@ -125,7 +126,7 @@ app/src/main/java/dev/mkiros/perch/
    ├─ nav/   PerchNavHost.kt  PerchBottomBar.kt  BackChain.kt
    ├─ home/  HomeScreen.kt  HomeViewModel.kt  EntryRow.kt  DrawerSelection.kt
    │         EntryActions.kt  FolderActions.kt  SourceActions.kt  SelectionBar.kt
-   │         PagedList.kt  EmptyState.kt  RelativeTime.kt  BackfillOfferUi.kt
+   │         PagedList.kt  EmptyState.kt  RelativeTime.kt  BackfillOfferUi.kt  PullUp.kt
    ├─ source/ AddSourceSheet.kt  AddSourceViewModel.kt  UrlForm.kt
    ├─ article/ ArticleScreen.kt  ArticleViewModel.kt  ArticleBody.kt  RichText.kt
    │           code/{CodeHighlighter,CodeLanguage}.kt
@@ -311,7 +312,11 @@ overall `MIN` with a `~` only when a source has no known date at all.
 Sanitized allowlist: `p br h1–h6 ul ol li blockquote pre code em strong b i a img
 figure figcaption hr table thead tbody tr th td sub sup` + `a[href]` `img[src|alt]`.
 Everything else stripped. Relative URLs resolved against the entry link. No scripts,
-no iframes, no styles, no tracking pixels (`img` ≤ 1px dropped).
+no iframes, no styles, no tracking pixels (`img` ≤ 1px dropped). Three rules run before the
+allowlist, while the attributes they read still exist (v0.8.0, #70/#67): a lazy-loaded
+`data-src`/`srcset` is promoted into `src`; a block whose class names a promotion, holds a
+link or button and carries under 400 characters is dropped; an image's `aria-describedby`
+target, or the one caption-classed sibling after it, becomes its `<figcaption>`.
 
 **`ArticleBlock` — the canonical block model.** Forty-two sources ship forty-two
 HTML dialects. Sanitized HTML is *not* the rendering input; it is lowered one more
