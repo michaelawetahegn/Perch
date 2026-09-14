@@ -119,7 +119,7 @@ app/src/main/java/dev/mkiros/perch/
 │           OpmlRepository.kt  ProfileRepository.kt  FolderResolver.kt
 ├─ work/ RefreshWorker.kt  BackfillWorker.kt  WorkScheduler.kt
 │        WorkManagerBackfillRunner.kt
-└─ ui/
+└─ ui/  ViewModels.kt                 the one STOP_TIMEOUT_MS every ViewModel shares
    ├─ theme/ Color.kt  Type.kt  Theme.kt  Dimens.kt  Brand.kt  CodeTheme.kt
    ├─ brand/ PerchBrandMark.kt
    ├─ nav/   PerchNavHost.kt  PerchBottomBar.kt  BackChain.kt

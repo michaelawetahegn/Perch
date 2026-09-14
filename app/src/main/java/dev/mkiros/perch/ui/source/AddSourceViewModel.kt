@@ -11,6 +11,7 @@ import dev.mkiros.perch.data.repo.FolderRepository
 import dev.mkiros.perch.data.repo.SourceResolution
 import dev.mkiros.perch.di.AppContainer
 import dev.mkiros.perch.rethrowCancellation
+import dev.mkiros.perch.ui.STOP_TIMEOUT_MS
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -167,9 +168,6 @@ class AddSourceViewModel(
     }
 
     companion object {
-        /** Five seconds outlives a rotation, so the folder query is not rebuilt. */
-        private const val STOP_TIMEOUT_MS = 5_000L
-
         fun factory(container: AppContainer) = viewModelFactory {
             initializer {
                 AddSourceViewModel(

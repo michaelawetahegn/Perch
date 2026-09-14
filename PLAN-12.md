@@ -512,7 +512,7 @@ review box (F15) is second from last, as CLAUDE.md requires.
         green at or above F11's count; issue #62 closed; pushed.
       - Rung: unit
 
-- [ ] **F13 — `SettingsViewModel`'s four transfer actions share two helpers. Issue #63.**
+- [x] **F13 — `SettingsViewModel`'s four transfer actions share two helpers. Issue #63.**
       `gh issue view 63 --json body`. Today: `exportOpml` `:167`, `importOpml` `:189`,
       `exportProfile` `:219`, `importProfile` `:242`, each with its own `withContext(Dispatchers.IO)`
       and `if (e is CancellationException) throw e`. The two helper signatures are in the issue.

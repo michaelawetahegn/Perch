@@ -17,7 +17,7 @@ import dev.mkiros.perch.model.RefreshInterval
 import dev.mkiros.perch.model.RefreshScheduler
 import dev.mkiros.perch.model.ThemeMode
 import dev.mkiros.perch.rethrowCancellation
-import kotlinx.coroutines.CancellationException
+import dev.mkiros.perch.ui.STOP_TIMEOUT_MS
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -155,28 +155,9 @@ class SettingsViewModel(
         }
     }
 
-    /**
-     * Writes every subscription as OPML through [write], on the I/O dispatcher.
-     *
-     * D06/#39: [write] is the *screen's* half — a `ContentResolver` and a document `Uri`
-     * the reader picked, possibly some time ago — so it can fail in more ways than
-     * `IOException` names. A revoked grant raises `SecurityException`; uncaught, it left
-     * `viewModelScope` and killed the process instead of the transfer. Every reason a
-     * document could not be written is [SettingsMessage.TransferFailed], which is what a
-     * reader can act on; cancellation is not one of them and is rethrown.
-     */
-    fun exportOpml(write: suspend (String) -> Unit) {
-        viewModelScope.launch {
-            val text = opml.export()
-            _message.value = try {
-                withContext(Dispatchers.IO) { write(text) }
-                SettingsMessage.Exported
-            } catch (e: Exception) {
-                if (e is CancellationException) throw e
-                SettingsMessage.TransferFailed
-            }
-        }
-    }
+    /** Writes every subscription as OPML through [write]; see [export]. */
+    fun exportOpml(write: suspend (String) -> Unit) =
+        export(opml::export, write, SettingsMessage.Exported)
 
     /**
      * Imports whatever [read] yields, then triggers the one refresh SPEC.md §9 asks for.
@@ -184,18 +165,10 @@ class SettingsViewModel(
      * The refresh is deliberately not awaited and cannot fail the import: the rows are
      * already in the database, the reader is already being told how many landed, and forty
      * fetches must not hold a snackbar hostage.
-     *
-     * Whatever [read] throws is contained, for the reasons [exportOpml] gives.
      */
     fun importOpml(read: suspend () -> String) {
         viewModelScope.launch {
-            val text = try {
-                withContext(Dispatchers.IO) { read() }
-            } catch (e: Exception) {
-                if (e is CancellationException) throw e
-                _message.value = SettingsMessage.TransferFailed
-                return@launch
-            }
+            val text = readOrReport(read) ?: return@launch
             when (val result = opml.import(text)) {
                 is OpmlImportResult.Malformed ->
                     _message.value = SettingsMessage.ImportRejected(result.message)
@@ -213,22 +186,9 @@ class SettingsViewModel(
         }
     }
 
-    /**
-     * Writes the whole reading identity through [write], on the I/O dispatcher (U14).
-     * Contains whatever [write] throws, for the reasons [exportOpml] gives.
-     */
-    fun exportProfile(write: suspend (String) -> Unit) {
-        viewModelScope.launch {
-            val text = profile.export()
-            _message.value = try {
-                withContext(Dispatchers.IO) { write(text) }
-                SettingsMessage.ProfileExported
-            } catch (e: Exception) {
-                if (e is CancellationException) throw e
-                SettingsMessage.TransferFailed
-            }
-        }
-    }
+    /** Writes the whole reading identity through [write] (U14); see [export]. */
+    fun exportProfile(write: suspend (String) -> Unit) =
+        export(profile::export, write, SettingsMessage.ProfileExported)
 
     /**
      * Restores whatever [read] yields, then refreshes.
@@ -237,18 +197,10 @@ class SettingsViewModel(
      * entry state is parked until the articles it describes arrive, and this is what makes
      * them arrive. It still cannot fail the restore — the rows are already written and the
      * next scheduled pass would collect them anyway.
-     *
-     * Whatever [read] throws is contained, for the reasons [exportOpml] gives.
      */
     fun importProfile(read: suspend () -> String) {
         viewModelScope.launch {
-            val text = try {
-                withContext(Dispatchers.IO) { read() }
-            } catch (e: Exception) {
-                if (e is CancellationException) throw e
-                _message.value = SettingsMessage.TransferFailed
-                return@launch
-            }
+            val text = readOrReport(read) ?: return@launch
             when (val result = profile.import(text)) {
                 is ProfileImportResult.Malformed ->
                     _message.value = SettingsMessage.ProfileRejected(result.message)
@@ -270,6 +222,43 @@ class SettingsViewModel(
     }
 
     /**
+     * The export half of every transfer: renders [text], hands it to [write] on the I/O
+     * dispatcher, and reports [ok] — or [SettingsMessage.TransferFailed].
+     *
+     * D06/#39: [write] is the *screen's* half — a `ContentResolver` and a document `Uri`
+     * the reader picked, possibly some time ago — so it can fail in more ways than
+     * `IOException` names. A revoked grant raises `SecurityException`; uncaught, it left
+     * `viewModelScope` and killed the process instead of the transfer. Every reason a
+     * document could not be written is [SettingsMessage.TransferFailed], which is what a
+     * reader can act on; cancellation is not one of them and is rethrown. [readOrReport]
+     * contains a failing `read` for the same reasons.
+     */
+    private fun export(
+        text: suspend () -> String,
+        write: suspend (String) -> Unit,
+        ok: SettingsMessage,
+    ) {
+        viewModelScope.launch {
+            val document = text()
+            _message.value = runCatching { withContext(Dispatchers.IO) { write(document) } }
+                .rethrowCancellation()
+                .fold({ ok }, { SettingsMessage.TransferFailed })
+        }
+    }
+
+    /**
+     * The import half's preamble: [read] on the I/O dispatcher, or `null` after reporting
+     * [SettingsMessage.TransferFailed] — for the reasons [export] gives.
+     */
+    private suspend fun readOrReport(read: suspend () -> String): String? =
+        runCatching { withContext(Dispatchers.IO) { read() } }
+            .rethrowCancellation()
+            .getOrElse {
+                _message.value = SettingsMessage.TransferFailed
+                null
+            }
+
+    /**
      * The post-import poll. Its failures belong to the drawer's `⚠`, not to a snackbar; a
      * cancellation belongs to whoever cancelled, and unwinds.
      */
@@ -280,8 +269,6 @@ class SettingsViewModel(
     }
 
     companion object {
-        private const val STOP_TIMEOUT_MS = 5_000L
-
         fun factory(container: AppContainer) = viewModelFactory {
             initializer {
                 SettingsViewModel(

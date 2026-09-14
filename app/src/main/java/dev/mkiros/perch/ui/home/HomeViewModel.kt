@@ -25,6 +25,7 @@ import dev.mkiros.perch.model.BackfillProgress
 import dev.mkiros.perch.model.BackfillRunner
 import dev.mkiros.perch.model.TimeFilter
 import dev.mkiros.perch.rethrowCancellation
+import dev.mkiros.perch.ui.STOP_TIMEOUT_MS
 import java.time.Clock
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -784,9 +785,6 @@ class HomeViewModel(
     }
 
     companion object {
-        /** Five seconds outlives a rotation, so the query is not torn down and rebuilt. */
-        private const val STOP_TIMEOUT_MS = 5_000L
-
         fun factory(container: AppContainer) = viewModelFactory {
             initializer {
                 HomeViewModel(
