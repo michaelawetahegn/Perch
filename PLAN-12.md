@@ -309,7 +309,7 @@ review box (F15) is second from last, as CLAUDE.md requires.
         pushed.
       - Rung: unit
 
-- [ ] **F02 — The duplicates already on the phone are merged away. Schema 8 → 9. Issue #69.**
+- [x] **F02 — The duplicates already on the phone are merged away. Schema 8 → 9. Issue #69.**
       §0.2's cleanup, verbatim. `MIGRATION_8_9` appended to `MIGRATIONS`
       (`PerchDatabase.kt:210-217`), `VERSION = 9`, `9.json` exported and committed.
       **RED first:** `PerchMigration8To9Test` seeds a v8 file with (a) a feed row `guid=?p=1,

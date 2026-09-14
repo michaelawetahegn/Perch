@@ -241,7 +241,8 @@ read-later and the liked/saved timestamps (U04); version 4 adds `bodyIsExcerpt`/
 full-text extraction (U10); version 5 adds `pending_entry_state` for profile restore (U14); version 6
 adds `feeds.isSynthetic` and seeds the saved-links feed for pasted links (PLAN-6 Y02); version 7 adds
 the `entries_fts` search index and its delete trigger (PLAN-9 S08); version 8 adds
-`entries.scrollPosition` — the body offset an article reopens at (PLAN-11 E01). Current version: 8.
+`entries.scrollPosition` — the body offset an article reopens at (PLAN-11 E01); version 9 merges the
+duplicate rows #69 created; no shape change (PLAN-12 F02). Current version: 9.
 
 **`entries_fts` (v7/PLAN-9 §0.8)** is a standalone `FTS4(title, body)` whose `rowid` is
 `entries.id` — deliberately **not** `@Fts4(contentEntity = …)`, whose sync triggers Room does not

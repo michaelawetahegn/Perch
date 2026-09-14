@@ -45,7 +45,7 @@ abstract class PerchDatabase : RoomDatabase() {
         const val NAME = "perch.db"
 
         /** Bumping this requires a [MIGRATIONS] entry from `VERSION - 1`. */
-        const val VERSION = 8
+        const val VERSION = 9
 
         /**
          * Folders (U03). Creates the table, seeds Uncategorized as id 1, and files every
@@ -205,6 +205,53 @@ abstract class PerchDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * The duplicates #69 left behind (F02, PLAN-12 §0.2). Before F01 the archive backfill
+         * stored a post the feed had already given us as a second row: the feed's row under
+         * its `?p=N` guid, the backfill's copy under the page address as both guid and link.
+         * Data only — the shape does not change, so `9.json` differs from `8.json` in its
+         * version alone.
+         *
+         * For every same-feed pair sharing a non-null link where exactly one row's guid *is*
+         * that link, the other (feed) row is the keeper: the reader-owned flags are OR'd into
+         * it, each `*At` carried from the copy only where the keeper had none, `scrollPosition`
+         * is the larger, and the copy is deleted. `pending_entry_state` is keyed by guid and
+         * the keeper's guid never changes, so it needs nothing. Neither does `entries_fts`:
+         * the `entries_fts_delete` trigger from [MIGRATION_6_7] drops the copy's row.
+         */
+        val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    UPDATE `entries` SET
+                        `isRead` = MAX(`isRead`, (SELECT c.`isRead` FROM `entries` c $COPY_OF_THIS_ROW)),
+                        `readAt` = COALESCE(`readAt`, (SELECT c.`readAt` FROM `entries` c $COPY_OF_THIS_ROW)),
+                        `isSaved` = MAX(`isSaved`, (SELECT c.`isSaved` FROM `entries` c $COPY_OF_THIS_ROW)),
+                        `savedAt` = COALESCE(`savedAt`, (SELECT c.`savedAt` FROM `entries` c $COPY_OF_THIS_ROW)),
+                        `isStarred` = MAX(`isStarred`, (SELECT c.`isStarred` FROM `entries` c $COPY_OF_THIS_ROW)),
+                        `starredAt` = COALESCE(`starredAt`, (SELECT c.`starredAt` FROM `entries` c $COPY_OF_THIS_ROW)),
+                        `scrollPosition` = MAX(`scrollPosition`, (SELECT c.`scrollPosition` FROM `entries` c $COPY_OF_THIS_ROW))
+                    WHERE `link` IS NOT NULL AND `guid` != `link`
+                        AND EXISTS (SELECT 1 FROM `entries` c $COPY_OF_THIS_ROW)
+                    """.trimIndent(),
+                )
+                db.execSQL(
+                    """
+                    DELETE FROM `entries` WHERE `link` IS NOT NULL AND `guid` = `link`
+                        AND EXISTS (
+                            SELECT 1 FROM `entries` k
+                            WHERE k.`feedId` = `entries`.`feedId` AND k.`link` = `entries`.`link`
+                                AND k.`guid` != k.`link`
+                        )
+                    """.trimIndent(),
+                )
+            }
+        }
+
+        /** [MIGRATION_8_9]'s correlated lookup: the backfill copy of the row being updated. */
+        private const val COPY_OF_THIS_ROW =
+            "WHERE c.`feedId` = `entries`.`feedId` AND c.`link` = `entries`.`link` AND c.`guid` = c.`link`"
+
         /** Every migration the app has ever shipped, in order. */
         val MIGRATIONS: Array<Migration> = arrayOf(
             MIGRATION_1_2,
@@ -214,6 +261,7 @@ abstract class PerchDatabase : RoomDatabase() {
             MIGRATION_5_6,
             MIGRATION_6_7,
             MIGRATION_7_8,
+            MIGRATION_8_9,
         )
 
         /**
