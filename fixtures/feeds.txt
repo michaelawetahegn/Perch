@@ -54,3 +54,8 @@ https://epchan.blogspot.com/feeds/posts/default
 https://alphaarchitect.com/feed/
 https://allocatesmartly.com/feed/
 https://gwern.net
+
+# ── Investigative journalism ─────────────────────────────────────────────────
+# Added by PLAN-12 (#70): a WordPress newsroom with full content:encoded, a 12,000-post
+# sitemap archive (#68) and `?p=N` guids that differ from its links (#69).
+https://www.bellingcat.com/feed/

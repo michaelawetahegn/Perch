@@ -10,7 +10,8 @@ Finished plans live here. The **active** plan stays at the repository root, beca
 
 **v0.5 was four sequential plans rather than one**, run as four separate loops in order —
 `PLAN-5` → `PLAN-6` → `PLAN-7` → `PLAN-8`, with only the release slice bumping the version.
-v0.6 is back to one plan, `PLAN-9`; v0.6.1 is the tech-debt pass, `PLAN-10`; v0.7.0 is `PLAN-11`. The next plan is `PLAN-12`. Two loops must never run at once: they would fight over
+v0.6 is back to one plan, `PLAN-9`; v0.6.1 is the tech-debt pass, `PLAN-10`; v0.7.0 is `PLAN-11`; v0.8.0 is `PLAN-12`, **active at the
+repository root** since 2026-09-14. The next plan is `PLAN-13`. Two loops must never run at once: they would fight over
 commits (`RALPH.md` §4).
 
 | Plan | Version | Tasks | What it was |
@@ -26,6 +27,7 @@ commits (`RALPH.md` §4).
 | [`PLAN-9-v0.6.md`](PLAN-9-v0.6.md) | v0.6.0 | S01–S13 | The reader's batch: search across everything stored (#28), deleting a source from where you are reading it (#29, #30), a pasted link that stays out of the Feed (#31), a byline that wraps (#32), a link sheet that waits (#33), and a guessed date that says so (#25). |
 | [`PLAN-10-v0.6.1.md`](PLAN-10-v0.6.1.md) | v0.6.1 | D01–D30 | The tech-debt pass: four bugs a failing test could show, dead code, duplicated logic in data and UI, a test suite with one harness instead of twenty-two, docs that describe the app that exists. |
 | [`PLAN-11-v0.7.0.md`](PLAN-11-v0.7.0.md) | v0.7.0 | E01–E04 | Two reader requests: an article reopens where you stopped reading (#65), and ticked sources move to a folder together (#66). |
+| [`../../PLAN-12.md`](../../PLAN-12.md) (active) | v0.8.0 | F01–F16 | The reader's four reports — no duplicate rows after a backfill (#69), Bellingcat's images and banners (#70), captions as captions (#67), an archive you keep scrolling into (#68) — plus the tech-debt five (#60–#64) and the v0.7.0 review finding (#71). |
 
 [`bootstrap-prompt.md`](bootstrap-prompt.md) is the original prompt that produced
 `SPEC.md`, `DESIGN.md`, `PLAN-1` and `loop.sh` in a single session, before any code

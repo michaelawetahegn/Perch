@@ -85,6 +85,10 @@ Format: one bullet per item, the anchor, why it was left, what doing it would ch
 
 ## Next plan
 
+**Taken up by `PLAN-12.md` (2026-09-14):** the five issues below are F10–F14, and E03's
+scroll-write finding at the end of this section was filed as **#71** and is F06. Everything
+else in this file is still waiting.
+
 D27 re-ran the six surveys against `ece0ddd`, the tree as D01–D26 left it, using greps rather
 than a full read. **The pass held**: no function or constant in `app/src/main` is without a
 caller, no hostname literal is under `data/`, no `Color(0x`/`N.dp`/`N.sp` is outside `ui/theme/`,
