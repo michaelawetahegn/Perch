@@ -183,7 +183,7 @@ fun HomeScreen(
     var folderActionsForId by rememberSaveable { mutableStateOf<Long?>(null) }
     var renamingFolderId by rememberSaveable { mutableStateOf<Long?>(null) }
     var deletingFolderId by rememberSaveable { mutableStateOf<Long?>(null) }
-    var creatingFolder by rememberSaveable { mutableStateOf(false) }
+    val newFolder = rememberNewFolderRequest()
     // Non-empty while "New folder…" was reached from a move dialog: the folder is created
     // and the whole batch filed into it in one gesture, never two.
     var creatingFolderFor by rememberSaveable(stateSaver = IdSetSaver) { mutableStateOf(emptySet<Long>()) }
@@ -359,7 +359,7 @@ fun HomeScreen(
                 onBackfillSelection = ::backfillSelection,
                 onDeleteSelection = ::deleteSelection,
                 onAddSource = ::addSource,
-                onNewFolder = { creatingFolder = true },
+                onNewFolder = newFolder::open,
                 onOpenSettings = {
                     scope.launch { drawerState.close() }
                     onOpenSettings()
@@ -627,16 +627,7 @@ fun HomeScreen(
             )
         }
 
-        if (creatingFolder) {
-            FolderNameDialog(
-                title = stringResource(R.string.folder_new_title),
-                onConfirm = { name ->
-                    creatingFolder = false
-                    viewModel.createFolder(name)
-                },
-                onDismiss = { creatingFolder = false },
-            )
-        }
+        NewFolderDialog(newFolder, onCreate = viewModel::createFolder)
 
         // Resolved against the rows that are actually loaded rather than against the whole
         // list, which no longer exists in one place (U07a). That is not a narrowing: the

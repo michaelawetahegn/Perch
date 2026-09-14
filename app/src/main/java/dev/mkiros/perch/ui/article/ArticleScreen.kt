@@ -21,7 +21,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Favorite
@@ -66,6 +65,7 @@ import dev.mkiros.perch.ui.article.zoom.ZoomedImage
 import dev.mkiros.perch.ui.home.copyLink
 import dev.mkiros.perch.ui.home.shareEntry
 import dev.mkiros.perch.ui.theme.ArticleType
+import dev.mkiros.perch.ui.theme.BackArrow
 import dev.mkiros.perch.ui.theme.Dimens
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
@@ -99,15 +99,7 @@ fun ArticleScreen(
             topBar = {
                 TopAppBar(
                     title = {},
-                    navigationIcon = {
-                        IconButton(onClick = onBack) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = stringResource(R.string.action_back),
-                                modifier = Modifier.size(Dimens.icon),
-                            )
-                        }
-                    },
+                    navigationIcon = { BackArrow(onBack) },
                     actions = {
                         val loaded = state as? ArticleUiState.Loaded
                         if (loaded != null) {

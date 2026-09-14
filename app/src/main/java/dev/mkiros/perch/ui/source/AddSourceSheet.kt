@@ -16,7 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -26,7 +25,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.mkiros.perch.R
 import dev.mkiros.perch.data.db.entity.FolderEntity
-import dev.mkiros.perch.ui.home.FolderNameDialog
+import dev.mkiros.perch.ui.home.NewFolderDialog
+import dev.mkiros.perch.ui.home.rememberNewFolderRequest
 import dev.mkiros.perch.ui.theme.Dimens
 
 /**
@@ -54,7 +54,7 @@ fun AddSourceSheet(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val folders by viewModel.folders.collectAsStateWithLifecycle()
     val sheetState = rememberModalBottomSheetState()
-    var creatingFolder by rememberSaveable { mutableStateOf(false) }
+    val newFolder = rememberNewFolderRequest()
 
     DismissWhenDone(
         resultId = state.addedFeedId,
@@ -76,21 +76,12 @@ fun AddSourceSheet(
             folders = folders.map { it.id to it.name },
             onUrlChange = viewModel::onUrlChange,
             onFolderChange = viewModel::onFolderChange,
-            onNewFolder = { creatingFolder = true },
+            onNewFolder = newFolder::open,
             onSubmit = viewModel::submit,
         )
     }
 
-    if (creatingFolder) {
-        FolderNameDialog(
-            title = stringResource(R.string.folder_new_title),
-            onConfirm = { name ->
-                creatingFolder = false
-                viewModel.createFolder(name)
-            },
-            onDismiss = { creatingFolder = false },
-        )
-    }
+    NewFolderDialog(newFolder, onCreate = viewModel::createFolder)
 }
 
 /**

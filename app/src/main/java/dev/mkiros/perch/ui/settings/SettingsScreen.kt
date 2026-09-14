@@ -10,17 +10,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -46,6 +41,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.mkiros.perch.R
 import dev.mkiros.perch.model.RefreshInterval
 import dev.mkiros.perch.model.ThemeMode
+import dev.mkiros.perch.ui.theme.BackArrow
 import dev.mkiros.perch.ui.theme.Dimens
 import java.io.IOException
 
@@ -144,15 +140,7 @@ fun SettingsScreen(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.settings_title)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.action_back),
-                            modifier = Modifier.size(Dimens.icon),
-                        )
-                    }
-                },
+                navigationIcon = { BackArrow(onBack) },
             )
         },
     ) { innerPadding ->

@@ -525,7 +525,7 @@ review box (F15) is second from last, as CLAUDE.md requires.
         F12's count; issue #63 closed; pushed.
       - Rung: unit
 
-- [ ] **F14 — The new-folder dialog has one call site. Issue #64.**
+- [x] **F14 — The new-folder dialog has one call site. Issue #64.**
       `gh issue view 64 --json body`. Today the *pair* is `HomeScreen.kt:182` + `:591` and
       `AddSourceSheet.kt:57` + `:84` (each `var creatingFolder by rememberSaveable` and the
       ten-line `if`). **Not** the other two `FolderNameDialog(` sites in `HomeScreen` (`:568`

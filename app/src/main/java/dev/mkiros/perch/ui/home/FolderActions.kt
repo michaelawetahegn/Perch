@@ -17,6 +17,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -111,6 +114,39 @@ fun FolderNameDialog(
             }
         },
         dismissButton = { CancelButton(FolderActionTestTags.CANCEL, onDismiss) },
+    )
+}
+
+/**
+ * "New folder…" as one gesture rather than a flag and ten lines at every call site (#64):
+ * the sheet and the drawer both raise it, and both file the answer through their own
+ * view-model's `createFolder`. Held in `rememberSaveable` so the open dialog survives a
+ * rotation exactly as the two flags it replaces did.
+ */
+@Stable
+class NewFolderRequest internal constructor(private val pending: MutableState<Boolean>) {
+    val isPending: Boolean get() = pending.value
+    fun open() { pending.value = true }
+    fun close() { pending.value = false }
+}
+
+@Composable
+fun rememberNewFolderRequest(): NewFolderRequest {
+    val pending = rememberSaveable { mutableStateOf(false) }
+    return remember { NewFolderRequest(pending) }
+}
+
+/** [FolderNameDialog] titled for creation, shown while [request] is pending; [onCreate] gets the name. */
+@Composable
+fun NewFolderDialog(request: NewFolderRequest, onCreate: (String) -> Unit) {
+    if (!request.isPending) return
+    FolderNameDialog(
+        title = stringResource(R.string.folder_new_title),
+        onConfirm = { name ->
+            request.close()
+            onCreate(name)
+        },
+        onDismiss = request::close,
     )
 }
 
