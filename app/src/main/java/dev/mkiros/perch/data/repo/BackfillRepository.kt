@@ -3,8 +3,10 @@ package dev.mkiros.perch.data.repo
 import dev.mkiros.perch.data.archive.ArchiveDiscovery
 import dev.mkiros.perch.data.archive.ArchivePost
 import dev.mkiros.perch.data.archive.RobotsRules
+import dev.mkiros.perch.data.db.ArchivePostDao
 import dev.mkiros.perch.data.db.EntryDao
 import dev.mkiros.perch.data.db.FeedDao
+import dev.mkiros.perch.data.db.entity.ArchivePostEntity
 import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.extract.PageContentExtractor
 import dev.mkiros.perch.data.extract.toEntry
@@ -18,11 +20,11 @@ import kotlinx.coroutines.CancellationException
 /** What [BackfillRepository.plan] found, before anything is fetched. */
 data class BackfillPlan(
     val feedId: Long,
-    /** New posts this run would fetch — already deduped against what is stored, capped
-     *  at [BackfillRepository.MAX_PAGES]. What the reader is told *will* happen. */
+    /** The next batch: the newest [BackfillRepository.MAX_PAGES] remembered posts no run has
+     *  dealt with yet. What the reader is told *will* happen. */
     val toFetch: List<ArchivePost>,
-    /** How many not-yet-stored posts discovery found, uncapped — what [isWorthwhile] and
-     *  the offer's "N more posts" both read. */
+    /** How many remembered posts no run has dealt with yet, uncapped — what [isWorthwhile],
+     *  the offer's "N more posts" and the end-of-list footer all read. */
     val newPostCount: Int,
     /** PLAN-7 §0.3: earned, not constant — true only when the archive plainly holds
      *  materially more than the feed already gave us. */
@@ -45,9 +47,16 @@ data class BackfillResult(
  * Never automatic: [plan] is a read-only preview a caller (Z03's UI, or the worker below)
  * decides whether to act on. [run] is always safe to call again — it starts from [plan]
  * every time, and `(feedId, guid)` idempotency (guid = final URL, the same convention Y03
- * set) means a post already stored the run before is skipped, not refetched. That single
- * property is what makes a cancelled run resumable and a repeated one a no-op: there is no
- * separate "resume point" to track, only what is and is not in `entries` yet.
+ * set) means a post already stored the run before is skipped, not refetched.
+ *
+ * **The plan is remembered** (PLAN-12 §0.4, #68). Discovery runs once per source and again
+ * only when what it remembered is older than [REDISCOVER_AFTER_MILLIS]; everything it finds
+ * lands in `archive_posts` and is never deleted by a later discovery. The cursor into the
+ * archive is that table's `fetchedAt` stamp, not the `entries` table: a run stamps every
+ * page it fetched, found already stored, or gave up on for good, so retention pruning an
+ * article the reader has read cannot make a later batch download it again. What is left
+ * unstamped is the next batch — [MAX_PAGES] at a time, newest first — which is what lets
+ * the reader keep scrolling into a 12,000-post archive forty posts at a time.
  *
  * A candidate is compared, as a [urlKey], against every stored guid *and* link (PLAN-12
  * §0.2, #69): the feed poll keeps WordPress's `?p=N` guid and the page's address as the link,
@@ -60,6 +69,7 @@ data class BackfillResult(
 class BackfillRepository(
     private val feedDao: FeedDao,
     private val entryDao: EntryDao,
+    private val archivePostDao: ArchivePostDao,
     private val fetcher: PageFetcher,
     private val clock: Clock,
     private val discovery: ArchiveDiscovery = ArchiveDiscovery(fetcher),
@@ -82,22 +92,47 @@ class BackfillRepository(
      */
     private suspend fun plan(feed: FeedEntity, robots: RobotsRules): BackfillPlan {
         val feedId = feed.id
-        val feedPage = fetcher.fetch(feed.feedUrl)
-        val discovered = discovery.discover(feed.siteUrl ?: feed.feedUrl, feedPage, robots)
-        val stored = entryDao.identitiesForFeed(feedId).urlKeys()
-        val fresh = discovered.filterNot { urlKey(it.url) in stored }
+        if (needsDiscovery(feedId)) discover(feed, robots)
         val reach = entryDao.reach(feedId)
+        val newPostCount = archivePostDao.countUnfetched(feedId)
 
         return BackfillPlan(
             feedId = feedId,
-            // Newest first, unknown lastmod sorted last (Instant.MIN is smaller than any real
-            // timestamp) — discovery order is sitemap *document* order, not date order, and a
-            // capped `.take` over it would hand back an arbitrary 40 rather than the newest 40.
-            // sortedByDescending is stable, so a cancel-and-resume run does not reshuffle ties.
-            toFetch = fresh.sortedByDescending { it.lastmod ?: Instant.MIN }.take(MAX_PAGES),
-            newPostCount = fresh.size,
-            isWorthwhile = fresh.isNotEmpty() && fresh.size >= reach.entryCount * MATERIALLY_MORE_FACTOR,
+            toFetch = archivePostDao.unfetched(feedId, MAX_PAGES).map { it.toArchivePost() },
+            newPostCount = newPostCount,
+            isWorthwhile = newPostCount > 0 && newPostCount >= reach.entryCount * MATERIALLY_MORE_FACTOR,
         )
+    }
+
+    private suspend fun needsDiscovery(feedId: Long): Boolean {
+        val newest = archivePostDao.newestDiscoveredAt(feedId) ?: return true
+        return clock.millis() - newest > REDISCOVER_AFTER_MILLIS
+    }
+
+    /**
+     * Runs discovery and remembers what it found. Every post is added and none removed — a
+     * sitemap that shrinks does not forget history — and a post the feed already gave us
+     * (matched as a [urlKey] against every stored guid and link) is stamped fetched on the
+     * spot, so the first plan after adding a source already has its feed items marked.
+     */
+    private suspend fun discover(feed: FeedEntity, robots: RobotsRules) {
+        val feedId = feed.id
+        val now = clock.millis()
+        val feedPage = fetcher.fetch(feed.feedUrl)
+        val discovered = discovery.discover(feed.siteUrl ?: feed.feedUrl, feedPage, robots)
+        val stored = entryDao.identitiesForFeed(feedId).urlKeys()
+        archivePostDao.upsertIgnore(
+            discovered.map {
+                ArchivePostEntity(
+                    feedId = feedId,
+                    url = it.url,
+                    lastmod = it.lastmod?.toEpochMilli(),
+                    discoveredAt = now,
+                    fetchedAt = null,
+                )
+            },
+        )
+        archivePostDao.markFetched(feedId, discovered.filter { urlKey(it.url) in stored }.map { it.url }, now)
     }
 
     /**
@@ -105,6 +140,12 @@ class BackfillRepository(
      * skipping anything `robots.txt` disallows. [isCancelled] is polled between pages, not
      * mid-fetch — a reader who asks Perch to stop gets to keep whatever already landed
      * (§0.3), not a half-written row.
+     *
+     * Each page's stamp is written as it is dealt with, never in one batch at the end, so a
+     * cancelled run keeps its place too. A page that could not be fetched is left unstamped
+     * for a later batch to retry; one `robots.txt` forbids is stamped, because asking again
+     * will get the same answer and an unstamped forbidden page would hold its slot in the
+     * batch for ever.
      */
     suspend fun run(
         feedId: Long,
@@ -117,26 +158,32 @@ class BackfillRepository(
         val robots = RobotsRules.fetch(fetcher, feed.siteUrl ?: feed.feedUrl)
         val plan = plan(feed, robots)
         if (plan.toFetch.isEmpty()) return EMPTY_RESULT
+        val stored = entryDao.identitiesForFeed(feedId).urlKeys()
 
-        var stored = 0
+        var storedCount = 0
         var skipped = 0
         var failed = 0
         for ((index, post) in plan.toFetch.withIndex()) {
             if (isCancelled()) break
-            if (robots.disallows(post.url)) {
-                skipped++
-            } else {
-                if (index > 0) delay(politeDelayMillis)
-                val ok = runCatching { fetchAndStore(feedId, post) }
-                    // A cancelled fetch is the reader stopping us, not a page that failed:
-                    // it belongs to the caller, not to this run's tally.
-                    .onFailure { if (it is CancellationException) throw it }
-                    .getOrDefault(false)
-                if (ok) stored++ else failed++
+            val done = when {
+                robots.disallows(post.url) -> { skipped++; true }
+                // The feed listed it since discovery: nothing to fetch, but the batch moves on.
+                urlKey(post.url) in stored -> true
+                else -> {
+                    if (index > 0) delay(politeDelayMillis)
+                    val ok = runCatching { fetchAndStore(feedId, post) }
+                        // A cancelled fetch is the reader stopping us, not a page that failed:
+                        // it belongs to the caller, not to this run's tally.
+                        .onFailure { if (it is CancellationException) throw it }
+                        .getOrDefault(false)
+                    if (ok) storedCount++ else failed++
+                    ok
+                }
             }
+            if (done) archivePostDao.markFetched(feedId, listOf(post.url), clock.millis())
             onProgress(index + 1, plan.toFetch.size)
         }
-        return BackfillResult(attempted = plan.toFetch.size, stored = stored, skippedByRobots = skipped, failed = failed)
+        return BackfillResult(attempted = plan.toFetch.size, stored = storedCount, skippedByRobots = skipped, failed = failed)
     }
 
     private suspend fun fetchAndStore(feedId: Long, post: ArchivePost): Boolean {
@@ -195,10 +242,16 @@ class BackfillRepository(
         /** Politeness: a pause between each page fetch, never parallel (§0.3). */
         const val DEFAULT_DELAY_MILLIS = 500L
 
+        /** A remembered plan older than this is discovered again (PLAN-12 §0.4). */
+        const val REDISCOVER_AFTER_MILLIS = 7 * 24 * 60 * 60 * 1000L
+
         private val EMPTY_RESULT = BackfillResult(attempted = 0, stored = 0, skippedByRobots = 0, failed = 0)
 
         /** The [urlKey] of every guid and every non-null link — the set a candidate is looked up in. */
         internal fun List<EntryIdentity>.urlKeys(): HashSet<String> =
             flatMapTo(HashSet()) { listOfNotNull(it.guid, it.link).map(::urlKey) }
+
+        private fun ArchivePostEntity.toArchivePost() =
+            ArchivePost(url = url, lastmod = lastmod?.let(Instant::ofEpochMilli))
     }
 }

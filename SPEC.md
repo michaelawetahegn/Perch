@@ -101,9 +101,9 @@ app/src/main/java/dev/mkiros/perch/
 ├─ model/ TimeFilter.kt  ThemeMode.kt  RefreshInterval.kt   the types every layer shares:
 │         BackfillRunner.kt  RefreshScheduler.kt            ui → data/work → model, never back
 ├─ data/
-│  ├─ db/  PerchDatabase.kt  FeedDao.kt  EntryDao.kt  FolderDao.kt
+│  ├─ db/  PerchDatabase.kt  FeedDao.kt  EntryDao.kt  FolderDao.kt  ArchivePostDao.kt
 │  │       EntryListItem.kt  EntryStateRow.kt  FeedReach.kt  FtsQuery.kt
-│  │       entity/{Feed,Entry,EntryFts,Folder,PendingEntryState}Entity.kt
+│  │       entity/{Feed,Entry,EntryFts,Folder,PendingEntryState,ArchivePost}Entity.kt
 │  ├─ net/ PerchHttp.kt  FeedFetcher.kt  ConnectivityMonitor.kt   (conditional GET)
 │  ├─ parse/ FeedParser.kt  RssParser.kt  AtomParser.kt  RdfParser.kt  FeedXml.kt
 │  │         ParsedFeed.kt  ParsedEntry.kt  ParseResult.kt  DateParser.kt
@@ -217,6 +217,16 @@ data class PendingEntryStateEntity(     // v5/U14; reader state a profile restor
   val isStarred: Boolean,
   val starredAt: Long?,
 )
+
+@Entity(tableName = "archive_posts", primaryKeys = ["feedId", "url"],
+        foreignKeys = [… CASCADE on feedId …])
+data class ArchivePostEntity(           // v10/PLAN-12 F07 (#68); the remembered archive plan —
+  val feedId: Long,                     // every post discovery found, as the sitemap spelt it;
+  val url: String,                      // never deleted by a later discovery. `fetchedAt` is the
+  val lastmod: Long?,                   // cursor: stamped when a run fetched it, found it stored,
+  val discoveredAt: Long,               // or gave up on it for good; what is left unstamped is the
+  val fetchedAt: Long?,                 // next batch of MAX_PAGES. Not carried by a profile.
+)
 ```
 
 `feeds` also carries `val isSynthetic: Boolean = false` (v6/PLAN-6 Y02) — true only for the one seeded
@@ -242,7 +252,8 @@ full-text extraction (U10); version 5 adds `pending_entry_state` for profile res
 adds `feeds.isSynthetic` and seeds the saved-links feed for pasted links (PLAN-6 Y02); version 7 adds
 the `entries_fts` search index and its delete trigger (PLAN-9 S08); version 8 adds
 `entries.scrollPosition` — the body offset an article reopens at (PLAN-11 E01); version 9 merges the
-duplicate rows #69 created; no shape change (PLAN-12 F02). Current version: 9.
+duplicate rows #69 created; no shape change (PLAN-12 F02); version 10 adds `archive_posts`, the remembered
+archive plan (PLAN-12 F07). Current version: 10.
 
 **`entries_fts` (v7/PLAN-9 §0.8)** is a standalone `FTS4(title, body)` whose `rowid` is
 `entries.id` — deliberately **not** `@Fts4(contentEntity = …)`, whose sync triggers Room does not

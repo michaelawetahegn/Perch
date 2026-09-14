@@ -103,7 +103,13 @@ class AppContainer(
 
     /** Z02: fills a subscribed source's history in behind its feed (PLAN-7 §0.3, issue #21). */
     val backfill: BackfillRepository by lazy {
-        BackfillRepository(feedDao = database.feedDao(), entryDao = database.entryDao(), fetcher = fetcher, clock = clock)
+        BackfillRepository(
+            feedDao = database.feedDao(),
+            entryDao = database.entryDao(),
+            archivePostDao = database.archivePostDao(),
+            fetcher = fetcher,
+            clock = clock,
+        )
     }
 
     /** Y03: a pasted link, saved without ever subscribing to its site (PLAN-6 §0.3/§0.4). */

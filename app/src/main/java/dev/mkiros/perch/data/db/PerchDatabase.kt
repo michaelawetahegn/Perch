@@ -6,6 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import dev.mkiros.perch.data.db.entity.ArchivePostEntity
 import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.db.entity.EntryFtsEntity
 import dev.mkiros.perch.data.db.entity.FeedEntity
@@ -29,6 +30,7 @@ import dev.mkiros.perch.data.parse.HtmlSanitizer
         EntryEntity::class,
         EntryFtsEntity::class,
         PendingEntryStateEntity::class,
+        ArchivePostEntity::class,
     ],
     version = PerchDatabase.VERSION,
     exportSchema = true,
@@ -41,11 +43,13 @@ abstract class PerchDatabase : RoomDatabase() {
 
     abstract fun entryDao(): EntryDao
 
+    abstract fun archivePostDao(): ArchivePostDao
+
     companion object {
         const val NAME = "perch.db"
 
         /** Bumping this requires a [MIGRATIONS] entry from `VERSION - 1`. */
-        const val VERSION = 9
+        const val VERSION = 10
 
         /**
          * Folders (U03). Creates the table, seeds Uncategorized as id 1, and files every
@@ -248,6 +252,27 @@ abstract class PerchDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * The remembered archive plan (F07, PLAN-12 §0.4, #68). One new table, the shape of
+         * [MIGRATION_4_5]: not a single statement against an existing one. The table arrives
+         * empty because there is nothing to park — the next `BackfillRepository.plan()` for a
+         * source discovers its archive and fills it. Exactly what Room exports for
+         * [dev.mkiros.perch.data.db.entity.ArchivePostEntity] in `app/schemas/10.json`, foreign
+         * key included: removing a source takes its remembered archive with it.
+         */
+        val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `archive_posts` (" +
+                        "`feedId` INTEGER NOT NULL, `url` TEXT NOT NULL, `lastmod` INTEGER, " +
+                        "`discoveredAt` INTEGER NOT NULL, `fetchedAt` INTEGER, " +
+                        "PRIMARY KEY(`feedId`, `url`), " +
+                        "FOREIGN KEY(`feedId`) REFERENCES `feeds`(`id`) " +
+                        "ON UPDATE NO ACTION ON DELETE CASCADE )",
+                )
+            }
+        }
+
         /** [MIGRATION_8_9]'s correlated lookup: the backfill copy of the row being updated. */
         private const val COPY_OF_THIS_ROW =
             "WHERE c.`feedId` = `entries`.`feedId` AND c.`link` = `entries`.`link` AND c.`guid` = c.`link`"
@@ -262,6 +287,7 @@ abstract class PerchDatabase : RoomDatabase() {
             MIGRATION_6_7,
             MIGRATION_7_8,
             MIGRATION_8_9,
+            MIGRATION_9_10,
         )
 
         /**

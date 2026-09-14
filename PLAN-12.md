@@ -406,7 +406,7 @@ review box (F15) is second from last, as CLAUDE.md requires.
         deleted; issue #71 closed; pushed.
       - Rung: unit
 
-- [ ] **F07 — The archive plan is remembered: `archive_posts`. TDD. Schema 9 → 10. Issue #68 (part 1 of 3).**
+- [x] **F07 — The archive plan is remembered: `archive_posts`. TDD. Schema 9 → 10. Issue #68 (part 1 of 3).**
       `gh issue view 68 --json body,comments` — the reader's words: "if you import a blog in the
       beginning and the app realizes there are 12,000 posts, then that should be cached".
       §0.4's table and its four rules are the decision; this task is the data layer only —

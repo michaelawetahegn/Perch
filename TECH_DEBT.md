@@ -10,6 +10,12 @@ Format: one bullet per item, the anchor, why it was left, what doing it would ch
 
 ## Behaviour changes waiting for a decision
 
+- **A page that is gone for good is retried every batch.** `PageFetcher.fetch` answers null for
+  a 404 and a 503 alike, so `BackfillRepository.run` (PLAN-12 F07) cannot stamp a 4xx as dealt
+  with the way §0.4 asks; it leaves every failed fetch unstamped for a later batch to retry. One
+  dead URL costs one slot per batch; forty dead URLs at the top of an archive would stall it.
+  Fixing it means widening `PageFetcher`'s contract (status code or a typed failure) through all
+  six of its implementations and callers — a behaviour change to every discovery path.
 - **Imports and folder deletes are not transactional.** `OpmlRepository.import`,
   `ProfileRepository.import` and `FolderRepository.deleteFolders` loop over single-row DAO calls
   with no `@Transaction`; a throw mid-way commits half an import, and a partial folder delete

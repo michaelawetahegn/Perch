@@ -46,6 +46,7 @@ class BackfillWorkerTest {
         backfill = BackfillRepository(
             feedDao = feeds,
             entryDao = entries,
+            archivePostDao = db.archivePostDao(),
             fetcher = PageFetcher { null },
             clock = Clock.fixed(Instant.ofEpochMilli(now), ZoneOffset.UTC),
             delay = { },

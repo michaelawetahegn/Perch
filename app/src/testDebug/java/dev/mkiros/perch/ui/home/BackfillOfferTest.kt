@@ -415,6 +415,7 @@ class BackfillOfferTest {
             backfill = BackfillRepository(
                 feedDao = perch.database.feedDao(),
                 entryDao = perch.database.entryDao(),
+                archivePostDao = perch.database.archivePostDao(),
                 fetcher = fetcher,
                 clock = clock,
             ),

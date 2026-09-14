@@ -2,6 +2,7 @@ package dev.mkiros.perch.data.repo
 
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
+import dev.mkiros.perch.data.db.ArchivePostDao
 import dev.mkiros.perch.data.db.EntryDao
 import dev.mkiros.perch.data.db.FeedDao
 import dev.mkiros.perch.data.db.PerchDatabase
@@ -34,16 +35,21 @@ class BackfillRepositoryTest {
     private lateinit var db: PerchDatabase
     private lateinit var feeds: FeedDao
     private lateinit var entries: EntryDao
+    private lateinit var archive: ArchivePostDao
     private lateinit var fetcher: MapPageFetcher
     private lateinit var delays: MutableList<Long>
 
     private val now = Instant.parse("2026-08-24T12:00:00Z").toEpochMilli()
+
+    /** What the repository's clock reads; a test moves it to age the remembered plan. */
+    private var clockMillis = now
 
     @Before
     fun setUp() {
         db = PerchDatabase.inMemory(ApplicationProvider.getApplicationContext())
         feeds = db.feedDao()
         entries = db.entryDao()
+        archive = db.archivePostDao()
         fetcher = MapPageFetcher(stampFinalUrl = true)
         delays = mutableListOf()
     }
@@ -54,6 +60,7 @@ class BackfillRepositoryTest {
     private fun repo() = BackfillRepository(
         feedDao = feeds,
         entryDao = entries,
+        archivePostDao = archive,
         fetcher = fetcher,
         clock = fixedClock(),
         delay = { delays += it },
@@ -358,6 +365,119 @@ class BackfillRepositoryTest {
         assertThat(backfilled.publishedAt).isLessThan(today.publishedAt)
     }
 
+    // ---- the remembered plan (PLAN-12 §0.4, #68) -------------------------------------
+
+    @Test
+    fun `plan discovers once and reads the table after`() = runTest {
+        val feedId = addFeed(entryCount = 0, oldest = null)
+        fetcher.pages[SITE + "sitemap.xml"] = sitemapOf(POST_1, POST_2)
+
+        val first = repo().plan(feedId)!!
+        val second = repo().plan(feedId)!!
+
+        assertThat(fetcher.requested.count { it == SITE + "sitemap.xml" }).isEqualTo(1)
+        assertThat(second.toFetch.map { it.url }).isEqualTo(first.toFetch.map { it.url })
+        assertThat(second.newPostCount).isEqualTo(2)
+    }
+
+    @Test
+    fun `plan rediscovers when the stored plan is older than seven days`() = runTest {
+        val feedId = addFeed(entryCount = 0, oldest = null)
+        fetcher.pages[SITE + "sitemap.xml"] = sitemapOf(POST_1)
+        repo().plan(feedId)
+        fetcher.pages[SITE + "sitemap.xml"] = sitemapOf(POST_1, POST_2)
+
+        clockMillis = now + BackfillRepository.REDISCOVER_AFTER_MILLIS - 1
+        assertThat(repo().plan(feedId)!!.newPostCount).isEqualTo(1)
+
+        clockMillis = now + BackfillRepository.REDISCOVER_AFTER_MILLIS + 1
+        val rediscovered = repo().plan(feedId)!!
+
+        assertThat(fetcher.requested.count { it == SITE + "sitemap.xml" }).isEqualTo(2)
+        assertThat(rediscovered.newPostCount).isEqualTo(2)
+    }
+
+    @Test
+    fun `discovery stamps posts the feed already stored as fetched`() = runTest {
+        val feedId = addFeed(entryCount = 0, oldest = null)
+        storeExisting(feedId, guid = "$SITE?p=123", link = POST_1)
+        fetcher.pages[SITE + "sitemap.xml"] = sitemapOf("$POST_1/?utm_source=sitemap", POST_2)
+
+        val plan = repo().plan(feedId)!!
+
+        assertThat(plan.toFetch.map { it.url }).containsExactly(POST_2)
+        assertThat(plan.newPostCount).isEqualTo(1)
+        assertThat(fetchedAtOf(feedId, "$POST_1/?utm_source=sitemap")).isEqualTo(now)
+        assertThat(fetchedAtOf(feedId, POST_2)).isNull()
+    }
+
+    @Test
+    fun `run stamps every page it fetched or skipped, and a fetch failure leaves the stamp empty`() = runTest {
+        val feedId = addFeed(entryCount = 0, oldest = null)
+        storeExisting(feedId, guid = POST_2, link = POST_2)
+        fetcher.pages[SITE + "sitemap.xml"] = sitemapOf(POST_1, POST_2, POST_3)
+        fetcher.pages[POST_1] = article("First", "2020-01-01T00:00:00Z")
+        // POST_2 is already stored, so the run skips it; POST_3 never answers.
+
+        val result = repo().run(feedId)
+
+        assertThat(result.stored).isEqualTo(1)
+        assertThat(result.failed).isEqualTo(1)
+        assertThat(fetchedAtOf(feedId, POST_1)).isEqualTo(now)
+        assertThat(fetchedAtOf(feedId, POST_2)).isEqualTo(now)
+        assertThat(fetchedAtOf(feedId, POST_3)).isNull()
+        assertThat(archive.countUnfetched(feedId)).isEqualTo(1)
+    }
+
+    @Test
+    fun `newPostCount is what is left unfetched, and toFetch is the newest forty of it`() = runTest {
+        val feedId = addFeed(entryCount = 0, oldest = null)
+        val many = (1..(BackfillRepository.MAX_PAGES + 5)).map { i ->
+            "https://example.com/2020/01/$i/post-$i" to Instant.parse("2010-01-01T00:00:00Z").plusSeconds(i * 86_400L).toString()
+        }
+        fetcher.pages[SITE + "sitemap.xml"] = sitemapOf(many)
+        many.forEach { (url, _) -> fetcher.pages[url] = article("Post", "2020-01-01T00:00:00Z") }
+        val newestFive = many.takeLast(5).map { it.first }.reversed()
+
+        val before = repo().plan(feedId)!!
+        assertThat(before.newPostCount).isEqualTo(many.size)
+        assertThat(before.toFetch.map { it.url }.take(5)).isEqualTo(newestFive)
+
+        repo().run(feedId)
+        val after = repo().plan(feedId)!!
+
+        assertThat(after.newPostCount).isEqualTo(5)
+        assertThat(after.toFetch.map { it.url }).isEqualTo(many.take(5).map { it.first }.reversed())
+        assertThat(entries.countAll()).isEqualTo(BackfillRepository.MAX_PAGES)
+    }
+
+    @Test
+    fun `retention pruning does not resurrect a fetched page`() = runTest {
+        val feedId = addFeed(entryCount = 0, oldest = null)
+        fetcher.pages[SITE + "sitemap.xml"] = sitemapOf(POST_1)
+        fetcher.pages[POST_1] = article("Old", "2020-01-01T00:00:00Z")
+        repo().run(feedId)
+        val stored = entries.findByGuid(feedId, POST_1)!!
+        entries.update(stored.copy(isRead = true, readAt = now))
+        assertThat(entries.deleteReadOlderThan(feedId, publishedBefore = now, fetchedBefore = now + 1)).isEqualTo(1)
+        assertThat(entries.countAll()).isEqualTo(0)
+
+        val plan = repo().plan(feedId)!!
+
+        assertThat(plan.toFetch).isEmpty()
+        assertThat(plan.newPostCount).isEqualTo(0)
+        assertThat(fetcher.requested.count { it == POST_1 }).isEqualTo(1)
+    }
+
+    /** The stamp on one remembered row, read raw — the DAO has no production reason to look a row up. */
+    private fun fetchedAtOf(feedId: Long, url: String): Long? =
+        db.openHelper.readableDatabase
+            .query("SELECT fetchedAt FROM archive_posts WHERE feedId = ? AND url = ?", arrayOf(feedId, url))
+            .use { cursor ->
+                check(cursor.moveToFirst()) { "no archive row for $url" }
+                if (cursor.isNull(0)) null else cursor.getLong(0)
+            }
+
     // ---- reach (§0.4) --------------------------------------------------------------
 
     @Test
@@ -374,7 +494,7 @@ class BackfillRepositoryTest {
 
     // ---- harness --------------------------------------------------------------------
 
-    private fun fixedClock() = Clock.fixed(Instant.ofEpochMilli(now), ZoneOffset.UTC)
+    private fun fixedClock() = Clock.fixed(Instant.ofEpochMilli(clockMillis), ZoneOffset.UTC)
 
     private suspend fun addFeed(entryCount: Int, oldest: Instant?, siteUrl: String = SITE.trimEnd('/')): Long {
         val feedId = feeds.insert(
