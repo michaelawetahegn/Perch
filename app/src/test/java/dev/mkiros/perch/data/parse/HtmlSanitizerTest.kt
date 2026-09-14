@@ -89,6 +89,44 @@ class HtmlSanitizerTest {
         assertThat(out).contains("Text")
     }
 
+    /**
+     * F03/#70: a lazy-loaded image's `src` is a placeholder and the picture is in a
+     * `data-*` attribute. The page path promoted it (`ArticleExtractor`); the feed path
+     * did not, so the same markup in `content:encoded` lost every figure.
+     */
+    @Test
+    fun `a lazy image's data-src becomes its src`() {
+        val out = sanitize(
+            """
+            <p>Text</p>
+            <img src="data:image/gif;base64,R0lGOD" data-src="/img/real.jpg" width="800" height="600" alt="real">
+            <img data-lazy-src="https://cdn.example/b.jpg" alt="also real">
+            """
+        )
+
+        assertThat(out).contains("https://birdwire.example/img/real.jpg")
+        assertThat(out).contains("https://cdn.example/b.jpg")
+        assertThat(out).doesNotContain("data:")
+    }
+
+    @Test
+    fun `an image with only a srcset takes the widest candidate`() {
+        val out = sanitize(
+            """
+            <p>Text</p>
+            <img srcset="/img/a-300.jpg 300w, /img/a-1200.jpg 1200w, /img/a-768.jpg 768w" alt="a">
+            <img src="/img/b.jpg" srcset="/img/b-2000.jpg 2000w" alt="b">
+            """
+        )
+
+        assertThat(out).contains("https://birdwire.example/img/a-1200.jpg")
+        assertThat(out).doesNotContain("a-300")
+        assertThat(out).doesNotContain("a-768")
+        // A real `src` is the publisher's choice; the srcset is only a fallback for its absence.
+        assertThat(out).contains("https://birdwire.example/img/b.jpg")
+        assertThat(out).doesNotContain("b-2000")
+    }
+
     // ---- what must survive --------------------------------------------------------
 
     @Test

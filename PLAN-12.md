@@ -326,7 +326,7 @@ review box (F15) is second from last, as CLAUDE.md requires.
         pushed.
       - Rung: unit
 
-- [ ] **F03 — An image inside a container named for its role survives extraction, and the feed path
+- [x] **F03 — An image inside a container named for its role survives extraction, and the feed path
       resolves lazy sources. TDD. Issue #70 (part 1 of 2).**
       `gh issue view 70 --json body` — the reader's words: "some of the images aren't even pulled".
       §0.3 rule 3 is the decision; §0.3's first paragraph is the diagnosis (it is **not** lazy

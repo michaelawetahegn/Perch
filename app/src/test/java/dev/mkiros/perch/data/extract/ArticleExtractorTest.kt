@@ -187,6 +187,60 @@ class ArticleExtractorTest {
         assertThat(doc.select("img").attr("abs:src")).isEqualTo("https://example.com/posts/img/diagram.png")
     }
 
+    /**
+     * #70: Bellingcat wraps every figure in `<div class="media">`, and `media` is one of
+     * the extractor's chrome tokens, so the unlikely-candidate sweep deleted each image
+     * *with its container* and the reader got an article with no pictures. A container
+     * named for its role that is mostly an image is the content, not the chrome.
+     */
+    @Test
+    fun `a container named media keeps the image it wraps`() {
+        val paragraphs = (1..10).joinToString("\n") { "<p>Paragraph $it, ${"long enough to score, ".repeat(4)}</p>" }
+        val html = """
+            <html><body><article>
+              ${paragraphs.substringBefore("<p>Paragraph 6")}
+              <div class="media"><img src="https://x/a.jpg" alt="a figure"></div>
+              ${"<p>Paragraph 6" + paragraphs.substringAfter("<p>Paragraph 6")}
+            </article></body></html>
+        """.trimIndent()
+
+        val extracted = requireNotNull(ArticleExtractor.extract(html, "https://example.com/post/"))
+
+        assertThat(Jsoup.parse(extracted).select("img[src=https://x/a.jpg]")).hasSize(1)
+    }
+
+    /**
+     * The same defect measured on the page the reader reported. The reference is the page
+     * with every `<div class="media">` unwrapped — the markup a theme without that wrapper
+     * would have shipped — and the claim is that the wrapper changes nothing about which
+     * images survive. What the reference drops (a related-articles thumbnail, the
+     * scroll-driven interactive's step icons) the extraction may drop too; what it keeps
+     * the extraction must keep. The count is pinned so the assertion cannot pass on nothing.
+     */
+    @Test
+    fun `a container named media around every figure changes nothing about which images survive`() {
+        val fixture = ArticleFixtures.bellingcat
+        val unwrapped = Jsoup.parse(fixture.html(), fixture.url)
+            .apply { select("div.media").forEach { it.unwrap() } }
+            .outerHtml()
+        val reference = images(requireNotNull(ArticleExtractor.extract(unwrapped, fixture.url)), fixture.url)
+        assertThat(reference).hasSize(EXPECTED_BELLINGCAT_IMAGES)
+
+        val kept = images(requireNotNull(ArticleExtractor.extract(fixture.html(), fixture.url)), fixture.url)
+
+        assertThat(kept).containsExactlyElementsIn(reference)
+    }
+
+    /**
+     * The distinct figure URLs in [html], icons aside: the 27-pixel glyph in the donate
+     * block is F04's to remove, and this count must not move when it does.
+     */
+    private fun images(html: String, baseUrl: String): Set<String> =
+        Jsoup.parse(html, baseUrl).select("img")
+            .filter { img -> listOf("width", "height").none { (img.attr(it).toIntOrNull() ?: Int.MAX_VALUE) <= ICON_PX } }
+            .map { it.attr("abs:src") }
+            .toSet()
+
     /** Prose from the extracted subtree, normalised the way the reader would see it. */
     private fun extractedText(fixture: ArticleFixture): String? =
         ArticleExtractor.extract(fixture.html(), fixture.url)
@@ -212,5 +266,11 @@ class ArticleExtractorTest {
 
         /** 6 header cells + 37 CVEs × 6 columns, as harvested. */
         const val EXPECTED_ZDI_CELLS = 228
+
+        /** An image declared this small or smaller is an icon or a pixel, not a figure. */
+        const val ICON_PX = 48
+
+        /** Distinct figure URLs the Bellingcat body keeps without its `media` wrappers. */
+        const val EXPECTED_BELLINGCAT_IMAGES = 8
     }
 }

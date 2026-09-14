@@ -1,5 +1,6 @@
 package dev.mkiros.perch.data.extract
 
+import dev.mkiros.perch.data.parse.HtmlSanitizer
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -316,22 +317,22 @@ object ArticleExtractor {
         }
     }
 
+    /**
+     * A name says chrome and nothing that sounds like an article — unless the container is
+     * mostly a picture (F03, #70): a `media`/`thumb`/`gallery` wrapper holding a real image
+     * and under [FIGURE_TEXT_CEILING] of text *is* the content, whatever it is called. */
     private fun Element.namesChrome(): Boolean {
         val name = "${className()} ${id()}"
         if (name.isBlank()) return false
-        return NEGATIVE.containsMatchIn(name) && !POSITIVE.containsMatchIn(name)
+        if (!NEGATIVE.containsMatchIn(name) || POSITIVE.containsMatchIn(name)) return false
+        return text().length >= FIGURE_TEXT_CEILING || select("img").none { !HtmlSanitizer.isTrackingPixel(it) }
     }
 
-    /**
-     * Rewrites every URL absolute, and promotes the lazy-loading attributes that CMSes put
-     * a real image behind — a `src` of a 1×1 spacer with the picture in `data-src` is the
-     * normal shape on a WordPress page, and taking it at face value loses every figure.
-     */
+    /** Every URL absolute, once the sanitizer's one lazy-source rule has filled `src` (F03). */
     private fun absolutise(article: Element) {
         for (img in article.select("img")) {
-            LAZY_SRC.firstOrNull { img.hasAttr(it) && img.attr("abs:$it").isNotBlank() }
-                ?.let { img.attr("src", img.attr("abs:$it")) }
-                ?: img.attr("abs:src").takeIf { it.isNotBlank() }?.let { img.attr("src", it) }
+            HtmlSanitizer.promoteLazySource(img)
+            img.attr("abs:src").takeIf { it.isNotBlank() }?.let { img.attr("src", it) }
         }
         for (anchor in article.select("a[href]")) {
             anchor.attr("abs:href").takeIf { it.isNotBlank() }?.let { anchor.attr("href", it) }
@@ -374,11 +375,10 @@ object ArticleExtractor {
     private const val MIN_TABLE_COLUMNS = 2
     private const val LINKY = 0.5
     private const val CHROME_TEXT_CEILING = 200
+    private const val FIGURE_TEXT_CEILING = 400
 
     /** A page that yields less than this is a page we failed to read, not a short article. */
     const val MIN_PROSE_CHARS = 200
-
-    private val LAZY_SRC = listOf("data-src", "data-lazy-src", "data-original", "data-srcset")
 
     private val POSITIVE = Regex(
         "article|body|content|entry|hentry|main|page|post|text|blog|story|column|prose",

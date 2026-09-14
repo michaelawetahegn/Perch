@@ -36,7 +36,8 @@ object HtmlSanitizer {
         val dirty = runCatching { Jsoup.parse(raw, baseUrl.orEmpty()) }.getOrNull() ?: return null
 
         dirty.select(DROP_WHOLESALE).remove()
-        dirty.select("img").filter { it.isTrackingPixel() }.forEach { it.remove() }
+        dirty.select("img").forEach { promoteLazySource(it) }
+        dirty.select("img").filter { isTrackingPixel(it) }.forEach { it.remove() }
         dirty.select("pre").forEach { it.normalizeLanguage() }
 
         val clean = runCatching { Cleaner(SAFELIST).clean(dirty) }.getOrNull() ?: return null
@@ -105,9 +106,42 @@ object HtmlSanitizer {
     /**
      * A 1×1 image is a read receipt, not content. Publishers ship them from mail and
      * analytics vendors in otherwise ordinary paragraphs.
+     *
+     * Shared with `ArticleExtractor`, whose chrome sweep must not mistake one for a figure.
      */
-    private fun Element.isTrackingPixel(): Boolean =
-        listOf("width", "height").any { attr(it).trim().toIntOrNull()?.let { px -> px <= 1 } == true }
+    internal fun isTrackingPixel(img: Element): Boolean =
+        listOf("width", "height").any { img.attr(it).trim().toIntOrNull()?.let { px -> px <= 1 } == true }
+
+    /**
+     * Puts the picture a lazy-loading CMS hid behind a `data-*` attribute into `src`, so
+     * the [Cleaner] — which keeps `src` and nothing else — keeps the picture (F03, #70).
+     *
+     * A present lazy attribute wins over `src` outright rather than only when `src` looks
+     * like a placeholder: the placeholder is usually a real URL to a spacer GIF, which no
+     * rule can tell from a picture. Failing that, an image with no usable `src` — absent,
+     * blank, or a `data:` URI the allowlist would refuse anyway — takes the widest
+     * candidate of its `srcset`. An image with a real `src` and a `srcset` is left alone;
+     * the publisher chose that size.
+     *
+     * This is the one copy: `ArticleExtractor.absolutise` calls it for the page path, and
+     * [sanitize]'s pre-[Cleaner] pass calls it for the feed path.
+     */
+    internal fun promoteLazySource(img: Element) {
+        val lazy = LAZY_SRC.firstNotNullOfOrNull { img.attr(it).trim().takeIf { url -> url.isNotEmpty() } }
+        val src = img.attr("src").trim()
+        val usable = src.isNotEmpty() && !src.startsWith("data:", ignoreCase = true)
+        val promoted = lazy
+            ?: if (usable) return
+            else LAZY_SRCSET.firstNotNullOfOrNull { widestCandidate(img.attr(it)) }
+        promoted?.let { img.attr("src", it) }
+    }
+
+    /** The URL of the widest (or densest) candidate in a `srcset`, or null if it has none. */
+    private fun widestCandidate(srcset: String): String? = srcset.split(",")
+        .map { it.trim().split(WHITESPACE, limit = 2) }
+        .filter { it.first().isNotEmpty() }
+        .maxByOrNull { it.getOrNull(1)?.trimEnd('w', 'x')?.toDoubleOrNull() ?: 1.0 }
+        ?.first()
 
     /**
      * Elements whose *content* must go with them. jsoup unwraps a disallowed element and
@@ -124,6 +158,11 @@ object HtmlSanitizer {
     private val LANGUAGE_CLASS = Regex(
         "(?:language|lang|highlight-source|brush)[-:]([A-Za-z0-9+#._-]+)",
     )
+
+    /** Where a lazy-loading CMS puts the real picture, in the order the corpus meets them. */
+    private val LAZY_SRC = listOf("data-src", "data-lazy-src", "data-original")
+    private val LAZY_SRCSET = listOf("data-srcset", "srcset")
+    private val WHITESPACE = Regex("\\s+")
 
     private const val DROP_WHOLESALE =
         "script, style, noscript, iframe, frame, object, embed, applet, svg, math, " +

@@ -48,6 +48,12 @@ Format: one bullet per item, the anchor, why it was left, what doing it would ch
 - **`unitTests.all` forwards `-Pperch.live` to every unit-test task** and disables up-to-date
   checks for all of them (`app/build.gradle.kts:97-104`), so one live run invalidates the whole
   suite rather than `LiveAcceptanceTest` alone.
+- **`scroll` in `ArticleExtractor.NEGATIVE` drops a scroll-driven interactive whole.** F03
+  (2026-09-14): Bellingcat's Kinahan page wraps a 10-paragraph, 1.6 k-character narrative and
+  13 images in `<div class="scrolly_container">`, and the token — meant for scroll-to-top
+  widgets — names the whole thing chrome; it is well over `FIGURE_TEXT_CEILING`, so rule 3
+  does not rescue it. Readability's own unlikely-candidate list has no `scroll`. Dropping the
+  token changes which subtrees every corpus page keeps; needs a corpus run and a decision.
 
 ## Deliberate, and staying that way
 
