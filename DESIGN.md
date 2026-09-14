@@ -238,6 +238,12 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
   exists only under All Time, only for one source, and only while N > 0; in All sources
   and in a folder the list ends exactly as it always did, and once the archive is spent the
   end marker stands alone. The drawer's *Fetch older posts* remains the second way in.
+  **The gesture (F09)** is the mirror of pull-to-refresh: at the end of the list, dragging
+  further up past **72dp** turns the row's text into *Release to load older posts*, and
+  lifting the finger there does what the button does. A shorter pull, a fling that merely
+  arrives at the end, or a scroll with no finger down (accessibility, a test) does nothing;
+  while a batch runs the pull is inert like the button. The arithmetic is the pure
+  `PullUpState` (`ui/home/PullUp.kt`); the list's nested-scroll connection only feeds it.
 
 - **The entry row (U08, W04),** built to `design/reference/feed-row-reference.jpg`: title
   (`titleMedium` w600, ≤3 lines) over two `labelMedium` lines — `Source · Category` in

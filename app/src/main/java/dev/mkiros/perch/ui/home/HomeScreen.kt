@@ -72,6 +72,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -82,6 +83,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -473,31 +475,50 @@ fun HomeScreen(
                             onAddSource = ::addSource,
                             onWiden = viewModel::widenTimeFilter,
                         )
-                        else -> PagedEntryList(
-                            entries = entries,
-                            nowMillis = uiState.nowMillis,
-                            rowTag = HomeTestTags.ENTRY,
-                            onOpenEntry = onOpenEntry,
-                            modifier = Modifier.testTag(HomeTestTags.ENTRY_LIST),
-                            listState = listState,
-                            onLongPress = { entryActionsForId = it },
+                        else -> {
                             // §0.4/F08: the reach sentence's own guard — one source, All
                             // Time — and only while the remembered archive holds more.
-                            trailingContent = (uiState.scope as? HomeScope.Source)
+                            val archiveSource = (uiState.scope as? HomeScope.Source)
                                 ?.takeIf { uiState.timeFilter == TimeFilter.AllTime && archiveRemaining > 0 }
-                                ?.let { source ->
+                            val isFetching = backfillProgress?.isRunning == true
+                            // §0.4/F09: the mirror of pull-to-refresh at the bottom. The
+                            // connection reads the latest guard through updated state; the
+                            // arithmetic is PullUpState's own.
+                            val thresholdPx = with(LocalDensity.current) { PullUpState.THRESHOLD.toPx() }
+                            val pullUp = remember(thresholdPx) { PullUpState(thresholdPx) }
+                            val pullUpEnabled by rememberUpdatedState(archiveSource != null && !isFetching)
+                            val loadOlder by rememberUpdatedState<() -> Unit> {
+                                archiveSource?.let { viewModel.loadOlder(it.id) }
+                            }
+                            val pullUpConnection = remember(pullUp, listState) {
+                                pullUp.connection(atEnd = { pullUpEnabled && !listState.canScrollForward })
+                            }
+                            pullUp.ReleaseOn(listState.interactionSource, onFire = loadOlder)
+                            PagedEntryList(
+                                entries = entries,
+                                nowMillis = uiState.nowMillis,
+                                rowTag = HomeTestTags.ENTRY,
+                                onOpenEntry = onOpenEntry,
+                                modifier = Modifier
+                                    .testTag(HomeTestTags.ENTRY_LIST)
+                                    .nestedScroll(pullUpConnection),
+                                listState = listState,
+                                onLongPress = { entryActionsForId = it },
+                                trailingContent = archiveSource?.let { source ->
                                     {
                                         item(key = ARCHIVE_FOOTER_KEY) {
                                             ArchiveFooter(
                                                 remaining = archiveRemaining,
                                                 batchSize = BackfillRepository.MAX_PAGES,
-                                                isFetching = backfillProgress?.isRunning == true,
+                                                isFetching = isFetching,
                                                 onLoad = { viewModel.loadOlder(source.id) },
+                                                armed = pullUp.isArmed,
                                             )
                                         }
                                     }
                                 },
-                        )
+                            )
+                        }
                     }
                 }
             }

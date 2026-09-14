@@ -454,7 +454,7 @@ review box (F15) is second from last, as CLAUDE.md requires.
         (left open); pushed.
       - Rung: unit
 
-- [ ] **F09 — Pulling up past the end loads older posts. TDD, two attempts. Issue #68 (part 3 of 3).**
+- [x] **F09 — Pulling up past the end loads older posts. TDD, two attempts. Issue #68 (part 3 of 3).**
       The reader's follow-up comment: "hitting the bottom and then dragging up should do the
       same thing that reloading does on other apps". §0.4's *gesture* paragraph is the decision,
       including the pure `PullUpState`, the 72 dp threshold, the label change, and the BLOCKED

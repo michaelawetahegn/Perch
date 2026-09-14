@@ -21,6 +21,8 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeUp
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.entity.FolderEntity
@@ -362,6 +364,35 @@ class BackfillOfferTest {
         assertThat(runner.enqueued).containsExactly(feedId)
 
         // The fake runner only records the enqueue; the batch itself is the real run.
+        runBlocking { backfill.run(feedId) }
+        runner.push(feedId, BackfillProgress(BackfillRepository.MAX_PAGES, BackfillRepository.MAX_PAGES, BackfillRunState.SUCCEEDED))
+        awaitViewModel { viewModel.sourceReach.value?.entryCount == 10 + BackfillRepository.MAX_PAGES }
+
+        scrollToArchiveFooter()
+        compose.onNodeWithTag(BackfillTestTags.ARCHIVE_REMAINING).assertTextEquals(remaining(50))
+    }
+
+    /**
+     * PLAN-12 F09/#68 — the reader's follow-up: "hitting the bottom and then dragging up
+     * should do the same thing that reloading does on other apps". At the end of the list a
+     * drag past the threshold is the button: the same batch runs, and forty more rows land.
+     */
+    @Test
+    fun `dragging up past the end of All Time loads the next batch`() {
+        val fetcher = MapPageFetcher()
+        val feedId = seedFeed(entryCount = 10, title = "GPUOpen")
+        val archive = archivePages(90)
+        fetcher.pages[SITE + "sitemap.xml"] = sitemapOf(*(existingLinks(10) + archive.keys).toTypedArray())
+        fetcher.pages += archive
+
+        showHome(fetcher)
+        tapRow("GPUOpen")
+        scrollToArchiveFooter()
+
+        compose.onNodeWithTag(HomeTestTags.ENTRY_LIST).performTouchInput { swipeUp() }
+        compose.waitForIdle()
+
+        assertThat(runner.enqueued).containsExactly(feedId)
         runBlocking { backfill.run(feedId) }
         runner.push(feedId, BackfillProgress(BackfillRepository.MAX_PAGES, BackfillRepository.MAX_PAGES, BackfillRunState.SUCCEEDED))
         awaitViewModel { viewModel.sourceReach.value?.entryCount == 10 + BackfillRepository.MAX_PAGES }

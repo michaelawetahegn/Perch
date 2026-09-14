@@ -165,6 +165,7 @@ fun ArchiveFooter(
     batchSize: Int,
     isFetching: Boolean,
     onLoad: () -> Unit,
+    armed: Boolean = false,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -174,7 +175,11 @@ fun ArchiveFooter(
             .testTag(BackfillTestTags.ARCHIVE_FOOTER),
     ) {
         Text(
-            text = pluralStringResource(R.plurals.archive_footer_remaining, remaining, remaining),
+            text = if (armed) {
+                stringResource(R.string.archive_footer_release)
+            } else {
+                pluralStringResource(R.plurals.archive_footer_remaining, remaining, remaining)
+            },
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f).testTag(BackfillTestTags.ARCHIVE_REMAINING),

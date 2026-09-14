@@ -172,6 +172,8 @@
     </plurals>
     <string name="archive_footer_load">Load %1$d more</string>
     <string name="archive_footer_fetching">Fetching…</string>
+    <!-- F09: the footer's label once a pull up past the end has passed the threshold. -->
+    <string name="archive_footer_release">Release to load older posts</string>
 
     <!-- Save a link (Y04, PLAN-6 §0.4): one article, saved without subscribing to its site. -->
     <string name="save_link_action">Save a link</string>
