@@ -116,6 +116,7 @@ class ArticleViewModel(
                 publishedIsEstimated = entry.publishedIsEstimated,
             )
             _state.value = loaded(entry)
+            writtenScrollPosition = entry.scrollPosition
             entries.setRead(entryId, isRead = true)
 
             // U10. The body is already on screen, so this is never a wait the reader is
@@ -182,10 +183,20 @@ class ArticleViewModel(
      * write races [onCleared]: a child of [viewModelScope] would be cancelled with the
      * scope before Room ran it, so it runs [NonCancellable] instead. It writes only its own
      * column, so nothing on screen needs echoing — the position lives in the scroll state.
+     *
+     * A position already written is not written again (F06, #71): Room invalidates `entries`
+     * on every `UPDATE` whether or not a value changed, and every observed query — the Feed's
+     * paging beneath the reader included — reloads on each. A fling that settles where the
+     * last one did, or the first settle after open at the stored offset, now touches nothing.
      */
     fun saveScrollPosition(scrollPosition: Int) {
+        if (scrollPosition == writtenScrollPosition) return
+        writtenScrollPosition = scrollPosition
         viewModelScope.launch(NonCancellable) { entries.setScrollPosition(entryId, scrollPosition) }
     }
+
+    /** The last offset handed to the repository, seeded from the row on open (F06). */
+    private var writtenScrollPosition = 0
 
     private inline fun update(block: (ArticleUiState.Loaded) -> ArticleUiState.Loaded) {
         val current = _state.value as? ArticleUiState.Loaded ?: return

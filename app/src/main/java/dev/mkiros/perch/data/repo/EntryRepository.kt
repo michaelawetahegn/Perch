@@ -52,7 +52,7 @@ object PerchPaging {
  * here is either a reactive count or list (the UI must move on its own) or a state flip
  * stamped from an injected [Clock] so tests can assert *when*.
  */
-class EntryRepository(
+open class EntryRepository(
     private val entryDao: EntryDao,
     private val clock: Clock,
 ) {
@@ -221,8 +221,12 @@ class EntryRepository(
         )
     }
 
-    /** Remembers where the reader stopped in an article's body, in pixels (E01, #65). */
-    suspend fun setScrollPosition(entryId: Long, scrollPosition: Int) {
+    /**
+     * Remembers where the reader stopped in an article's body, in pixels (E01, #65).
+     *
+     * `open`, like the class, so a test can count how often the reader reaches it (F06, #71).
+     */
+    open suspend fun setScrollPosition(entryId: Long, scrollPosition: Int) {
         entryDao.setScrollPosition(id = entryId, scrollPosition = scrollPosition)
     }
 

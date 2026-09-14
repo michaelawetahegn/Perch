@@ -3,8 +3,10 @@ package dev.mkiros.perch.ui.article
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.parse.ArticleBlock
 import dev.mkiros.perch.data.parse.FetchedPage
-import dev.mkiros.perch.data.repo.ArticleTextRepository
+import dev.mkiros.perch.data.db.EntryDao
 import dev.mkiros.perch.data.db.entity.EntryEntity
+import dev.mkiros.perch.data.repo.ArticleTextRepository
+import dev.mkiros.perch.data.repo.EntryRepository
 import dev.mkiros.perch.support.MapPageFetcher
 import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.support.awaitInRealTime
@@ -233,6 +235,43 @@ class ArticleViewModelTest {
         assertThat(loaded(viewModel).scrollPosition).isEqualTo(640)
     }
 
+    // ---- every settled scroll at the same offset writes once (F06, #71) ------------------
+
+    @Test
+    fun `two settles at the same offset reach the repository once`() {
+        val id = seedEntry()
+        val viewModel = articleViewModel(id)
+
+        viewModel.saveScrollPosition(400)
+        viewModel.saveScrollPosition(400)
+
+        assertThat(stored(id) { it.scrollPosition == 400 }.scrollPosition).isEqualTo(400)
+        assertThat(entries.scrollWrites).isEqualTo(1)
+    }
+
+    @Test
+    fun `a settle at a new offset reaches the repository again`() {
+        val id = seedEntry()
+        val viewModel = articleViewModel(id)
+
+        viewModel.saveScrollPosition(400)
+        viewModel.saveScrollPosition(401)
+
+        assertThat(stored(id) { it.scrollPosition == 401 }.scrollPosition).isEqualTo(401)
+        assertThat(entries.scrollWrites).isEqualTo(2)
+    }
+
+    @Test
+    fun `the first settle after open at the stored position writes nothing`() {
+        val id = seedEntry()
+        runBlocking { perch.database.entryDao().setScrollPosition(id, 640) }
+        val viewModel = articleViewModel(id)
+
+        viewModel.saveScrollPosition(640)
+
+        assertThat(entries.scrollWrites).isEqualTo(0)
+    }
+
     // ---- harness -------------------------------------------------------------------------
 
     /** Constructed and *loaded* — the `init` read is Room's, so it is waited out here once. */
@@ -241,8 +280,26 @@ class ArticleViewModelTest {
             awaitInRealTime("the article to load") { viewModel.state.value is ArticleUiState.Loaded }
         }
 
+    /**
+     * The container's own repository, counting one thing (F06, #71): the count moves on the
+     * calling thread, before Room is reached, so it is exact the moment an action returns.
+     */
+    private val entries: CountingEntries by lazy {
+        CountingEntries(perch.database.entryDao(), clock)
+    }
+
+    private class CountingEntries(entryDao: EntryDao, clock: Clock) : EntryRepository(entryDao, clock) {
+        var scrollWrites = 0
+            private set
+
+        override suspend fun setScrollPosition(entryId: Long, scrollPosition: Int) {
+            scrollWrites++
+            super.setScrollPosition(entryId, scrollPosition)
+        }
+    }
+
     private fun newViewModel(entryId: Long) = ArticleViewModel(
-        entries = perch.container.entries,
+        entries = entries,
         feeds = perch.container.feeds,
         articleText = ArticleTextRepository(
             entryDao = perch.database.entryDao(),

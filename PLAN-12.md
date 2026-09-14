@@ -395,7 +395,7 @@ review box (F15) is second from last, as CLAUDE.md requires.
         the commit, the tests, and §0.3's statement of what the heuristic cannot see; pushed.
       - Rung: unit
 
-- [ ] **F06 — Every settled scroll at the same offset writes once. TDD. Issue #71.**
+- [x] **F06 — Every settled scroll at the same offset writes once. TDD. Issue #71.**
       `gh issue view 71 --json body`. `ArticleViewModel.saveScrollPosition` (E01, `ArticleViewModel.kt`,
       grep the name) remembers the last value it wrote, seeded from `Loaded.scrollPosition`, and
       returns early on an equal value. **RED:** `ArticleViewModelTest` — two settles at 400 reach

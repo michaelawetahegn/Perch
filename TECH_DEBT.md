@@ -92,8 +92,8 @@ Format: one bullet per item, the anchor, why it was left, what doing it would ch
 ## Next plan
 
 **Taken up by `PLAN-12.md` (2026-09-14):** the five issues below are F10–F14, and E03's
-scroll-write finding at the end of this section was filed as **#71** and is F06. Everything
-else in this file is still waiting.
+scroll-write finding was filed as **#71** and closed by F06. Everything else in this file is
+still waiting.
 
 D27 re-ran the six surveys against `ece0ddd`, the tree as D01–D26 left it, using greps rather
 than a full read. **The pass held**: no function or constant in `app/src/main` is without a
@@ -132,12 +132,6 @@ Smaller than a session, recorded so a passing task can take them:
 - **`FeedRepository.observeSourceCount` and `FeedDao.observeCount` are release code with one
   debug caller** (`DebugSeeder.kt:48`). Not dead — D01's rule is satisfied — but the only thing
   that reads them ships in no release build, and no test names either.
-- **E01's settle write invalidates `entries` on every fling.** `ArticleViewModel.saveScrollPosition` →
-  `EntryDao.setScrollPosition` runs once per settled scroll, and Room's modification trigger fires even
-  when the value is unchanged, so every observed `entries` query and the Feed's `PagingSource` reload
-  beneath the reader once per gesture. Not visible, and opening an article already does this once
-  (mark read); skipping an unchanged position, or debouncing, is a behaviour change with its own test
-  (found by E03).
 
 **Closed by D28:** SPEC.md §3's package tree now lists the four files this plan created —
 `data/parse/ItemMapping.kt` (D18), `data/repo/FolderResolver.kt` (D19), `ui/home/EmptyState.kt`
