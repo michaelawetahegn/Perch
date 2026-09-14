@@ -60,7 +60,7 @@ class TableScreenshotTest {
 
         for (mode in listOf(ThemeMode.Dark, ThemeMode.Light)) {
             show(blocks, mode)
-            capture("u11a-advisory-${mode.name.lowercase()}")
+            Screenshots.captureAndAssert(compose, "u11a-advisory-${mode.name.lowercase()}")
         }
     }
 
@@ -68,7 +68,7 @@ class TableScreenshotTest {
     fun `a narrow table keeps its columns tight in both themes`() {
         for (mode in listOf(ThemeMode.Dark, ThemeMode.Light)) {
             show(narrow(), mode)
-            capture("u11a-narrow-${mode.name.lowercase()}")
+            Screenshots.captureAndAssert(compose, "u11a-narrow-${mode.name.lowercase()}")
         }
     }
 
@@ -80,7 +80,7 @@ class TableScreenshotTest {
             .performSemanticsAction(SemanticsActions.ScrollBy) { it(SCROLL_BY, 0f) }
         compose.waitForIdle()
 
-        capture("u11a-advisory-dark-scrolled")
+        Screenshots.captureAndAssert(compose, "u11a-advisory-dark-scrolled")
     }
 
     // ---- content ----------------------------------------------------------------
@@ -145,17 +145,6 @@ class TableScreenshotTest {
         compose.waitForIdle()
     }
 
-    private fun capture(name: String) {
-        val shot = Screenshots.capture(
-            compose,
-            compose.activity,
-            Screenshots.dir("build/perch-screenshots"),
-            name,
-        )
-        assertThat(shot.file.length()).isGreaterThan(0L)
-        assertThat(shot.distinctColours).isGreaterThan(MIN_COLOURS)
-    }
-
     private fun fixtures(): File {
         var dir: File? = File(System.getProperty("user.dir") ?: ".").absoluteFile
         while (dir != null) {
@@ -171,6 +160,5 @@ class TableScreenshotTest {
         const val LEAD_PARAGRAPHS = 2
         const val WIDE_COLUMNS = 6
         const val SCROLL_BY = 300f
-        const val MIN_COLOURS = 8
     }
 }

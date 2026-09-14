@@ -211,7 +211,7 @@ class LiveAcceptanceTest {
             System.getProperty(LIVE_PROPERTY) == "true",
         )
         val failures = mutableListOf<String>()
-        val dir = Screenshots.dir(SCREENSHOT_DIR)
+        val dir = Screenshots.dir(Screenshots.DIR)
         dir.listFiles()?.forEach { it.delete() }
 
         val pull = pullEveryFeed()
@@ -1357,7 +1357,8 @@ class LiveAcceptanceTest {
             listOf(ThemeMode.Light, ThemeMode.Dark).forEach { mode ->
                 val suffix = if (mode == ThemeMode.Light) "light" else "dark"
                 showArticle(scene, "$name-$suffix", mode, sample)
-                captures.gate3 += line(capture("$name-$suffix"), sample)
+                val shot = Screenshots.captureAndAssert(compose, "$name-$suffix")
+                captures.gate3 += line(shot, sample)
             }
         }
 
@@ -1414,7 +1415,8 @@ class LiveAcceptanceTest {
             }
             compose.onAllNodesWithTag(ArticleTestTags.CODE)[0].performScrollTo()
             compose.waitForIdle()
-            captures.gate7 += line(capture("u15-code-$suffix"), sample)
+            val shot = Screenshots.captureAndAssert(compose, "u15-code-$suffix")
+            captures.gate7 += line(shot, sample)
         }
     }
 
@@ -1442,7 +1444,8 @@ class LiveAcceptanceTest {
         compose.waitForIdle()
         compose.onNodeWithTag(ArticleTestTags.IMAGE_VIEWER).performTouchInput { doubleClick() }
         compose.waitForIdle()
-        captures.gate7 += line(capture("u15-image-viewer-dark"), sample)
+        val shot = Screenshots.captureAndAssert(compose, "u15-image-viewer-dark")
+        captures.gate7 += line(shot, sample)
         return sample
     }
 
@@ -1475,7 +1478,8 @@ class LiveAcceptanceTest {
             captures.failures += "gate 7: under a ${CUTOUT_PX}px cutout the viewer's close " +
                 "affordance sits at %.0fpx, inside it — V04's contract".format(top)
         }
-        captures.gate7 += "  ${capture("v15-viewer-cutout-dark").file.name} — image viewer " +
+        val shot = Screenshots.captureAndAssert(compose, "v15-viewer-cutout-dark")
+        captures.gate7 += "  ${shot.file.name} — image viewer " +
             "under a ${CUTOUT_PX}px cutout, close at %.0fpx".format(top)
     }
 
@@ -1534,7 +1538,8 @@ class LiveAcceptanceTest {
             captures.failures += "gate 7: not one row on the home shot resolved a thumbnail, " +
                 "so the shot is not the mixed list clause (7) asks for"
         }
-        captures.gate7 += "  ${capture("u15-home-dark").file.name} — home, one stream " +
+        val home = Screenshots.captureAndAssert(compose, "u15-home-dark")
+        captures.gate7 += "  ${home.file.name} — home, one stream " +
             "carrying $sections categories across the first page, $images thumbnails and " +
             "$marks V07 placeholders on screen"
 
@@ -1559,14 +1564,16 @@ class LiveAcceptanceTest {
                     "#23's pasted article — ${e.message}"
             }
         }
-        captures.gate7 += "  ${capture("u15-to-read-dark").file.name} — To-Read, " +
+        val toRead = Screenshots.captureAndAssert(compose, "u15-to-read-dark")
+        captures.gate7 += "  ${toRead.file.name} — To-Read, " +
             "$SAVED_FOR_THE_SHOT saved plus “${paste.title}” pasted (#23)"
 
         compose.onNodeWithTag(NavTestTags.tab(PerchTab.Liked)).performClick()
         compose.awaitInRealTime("the liked list to load") {
             compose.onAllNodesWithTag(CollectionTestTags.ENTRY).fetchSemanticsNodes().isNotEmpty()
         }
-        captures.gate7 += "  ${capture("u15-liked-dark").file.name} — Liked, $SAVED_FOR_THE_SHOT liked"
+        val liked = Screenshots.captureAndAssert(compose, "u15-liked-dark")
+        captures.gate7 += "  ${liked.file.name} — Liked, $SAVED_FOR_THE_SHOT liked"
 
         compose.onNodeWithTag(NavTestTags.tab(PerchTab.Feed)).performClick()
         compose.awaitInRealTime("the Feed to come back") {
@@ -1582,7 +1589,8 @@ class LiveAcceptanceTest {
     private fun captureTheDrawerCollapsed(captures: Captures) {
         compose.onNodeWithContentDescription("Open sources").performClick()
         compose.waitForIdle()
-        captures.gate7 += "  ${capture("v16-drawer-collapsed-dark").file.name} — the drawer's " +
+        val shot = Screenshots.captureAndAssert(compose, "v16-drawer-collapsed-dark")
+        captures.gate7 += "  ${shot.file.name} — the drawer's " +
             "resting state, folders collapsed (PLAN-5 X01)"
     }
 
@@ -1633,7 +1641,8 @@ class LiveAcceptanceTest {
             captures.failures += "gate 7: long-pressing “${source.title}” did not open the " +
                 "selection bar, so the drawer shot is not mid-selection at all"
         }
-        captures.gate7 += "  ${capture("v15-drawer-selection-dark").file.name} — drawer " +
+        val shot = Screenshots.captureAndAssert(compose, "v15-drawer-selection-dark")
+        captures.gate7 += "  ${shot.file.name} — drawer " +
             "mid-source-selection on “${source.title}”, “${folder.name}” refused"
         // Left open and left in selection: this is the last shot the shell is used for.
     }
@@ -1664,7 +1673,8 @@ class LiveAcceptanceTest {
         }
         scene.value = Scene.Offer("v16-backfill-offer-dark", ThemeMode.Dark, plan.newPostCount, plan.toFetch.size)
         compose.waitForIdle()
-        captures.gate7 += "  ${capture("v16-backfill-offer-dark").file.name} — fzakaria.com " +
+        val shot = Screenshots.captureAndAssert(compose, "v16-backfill-offer-dark")
+        captures.gate7 += "  ${shot.file.name} — fzakaria.com " +
             "offering its archive: ${plan.newPostCount} more posts, ${plan.toFetch.size} pages offered"
     }
 
@@ -1706,7 +1716,8 @@ class LiveAcceptanceTest {
             captures.failures += "gate 7: tapping “${top.sourceTitle}” in the byline left the " +
                 "Feed titled “$title” — V08 scopes the list to the source the reader tapped"
         }
-        captures.gate7 += "  ${capture("v15-scoped-source-dark").file.name} — the Feed scoped " +
+        val shot = Screenshots.captureAndAssert(compose, "v15-scoped-source-dark")
+        captures.gate7 += "  ${shot.file.name} — the Feed scoped " +
             "to “${top.sourceTitle}” from the article's byline"
     }
 
@@ -1746,7 +1757,8 @@ class LiveAcceptanceTest {
             return
         }
         val rows = compose.onAllNodesWithTag(SearchTestTags.RESULT).fetchSemanticsNodes().size
-        captures.search += "  ${capture("s12-search-dark").file.name} — searching the live " +
+        val shot = Screenshots.captureAndAssert(compose, "s12-search-dark")
+        captures.search += "  ${shot.file.name} — searching the live " +
             "corpus for “$word”, $rows results on screen"
     }
 
@@ -1780,7 +1792,8 @@ class LiveAcceptanceTest {
                 "a byline, so the shot says nothing about how one wraps"
             return
         }
-        captures.byline += "  ${capture("s12-byline-long-dark").file.name} — “${feed.title}” " +
+        val shot = Screenshots.captureAndAssert(compose, "s12-byline-long-dark")
+        captures.byline += "  ${shot.file.name} — “${feed.title}” " +
             "(${feed.title.length} characters, the longest source name in the live library) " +
             "over a ${entry.title.length}-character headline"
     }
@@ -1963,12 +1976,6 @@ class LiveAcceptanceTest {
             if (current.isFetchingFullText) fetchSeen = true
             !current.isFetchingFullText && (fetchSeen || !current.canLoadFullText)
         }
-    }
-
-    private fun capture(name: String): Screenshots.Shot {
-        val shot = Screenshots.capture(compose, compose.activity, Screenshots.dir(SCREENSHOT_DIR), name)
-        check(shot.distinctColours > MIN_COLOURS) { "${shot.file.name} rendered a blank slab" }
-        return shot
     }
 
     private fun line(shot: Screenshots.Shot, sample: Sample) =
@@ -2560,11 +2567,9 @@ class LiveAcceptanceTest {
         const val BODY_SAMPLE = 10
         const val BUSIEST_SHOWN = 5
 
-        const val SCREENSHOT_DIR = "build/perch-screenshots"
         const val HEADLINE_ECHO = 60
         const val TABLE_LABEL = 44
         const val TABLE_ROWS = 10
-        const val MIN_COLOURS = 8
 
         fun percent(part: Int, whole: Int): Double = if (whole == 0) 100.0 else part * 100.0 / whole
     }

@@ -117,7 +117,7 @@ class LauncherIconTest {
     @Test
     fun `the counter is still open where the icon is smallest`() {
         val small = themed(SMALL_ICON_PX)
-        val file = File(Screenshots.dir("build/perch-screenshots"), "launcher-monochrome-48dp.png")
+        val file = File(Screenshots.dir(Screenshots.DIR), "launcher-monochrome-48dp.png")
         file.outputStream().use { small.bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
 
         // The same claim where a reader meets it. 48px is an adaptive icon at 48dp on an
@@ -153,7 +153,7 @@ class LauncherIconTest {
     @Test
     fun `the mark survives the circle squircle and rounded-square masks`() {
         val icon = launcherIcon()
-        val dir = Screenshots.dir("build/perch-screenshots")
+        val dir = Screenshots.dir(Screenshots.DIR)
 
         masks().forEach { (name, mask) ->
             val shot = maskedIcon(icon, mask)

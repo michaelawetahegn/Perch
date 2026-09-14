@@ -495,7 +495,7 @@ class BackfillOfferTest {
         viewModel.sourceAdded(feedId)
         awaitViewModel { viewModel.backfillOffer.value != null }
 
-        Screenshots.capture(compose, compose.activity, Screenshots.dir(SCREENSHOT_DIR), "backfill-offer")
+        Screenshots.capture(compose, compose.activity, Screenshots.dir(Screenshots.DIR), "backfill-offer")
     }
 
     @Test
@@ -512,7 +512,7 @@ class BackfillOfferTest {
         runner.push(feedId, BackfillProgress(4, 12, BackfillRunState.RUNNING))
         compose.waitForIdle()
 
-        Screenshots.capture(compose, compose.activity, Screenshots.dir(SCREENSHOT_DIR), "backfill-progress")
+        Screenshots.capture(compose, compose.activity, Screenshots.dir(Screenshots.DIR), "backfill-progress")
     }
 
     // ---- harness -------------------------------------------------------------------------
@@ -680,7 +680,6 @@ class BackfillOfferTest {
         const val POST_1 = "https://example.com/2020/01/01/post-one"
         const val POST_2 = "https://example.com/2020/02/02/post-two"
         const val POST_3 = "https://example.com/2020/03/03/post-three"
-        const val SCREENSHOT_DIR = "build/perch-screenshots"
 
         /** The links [seedFeed]'s entries carry — a sitemap that lists them is one the feed already covered. */
         fun existingLinks(count: Int): List<String> = (0 until count).map { "https://example.com/existing-$it" }

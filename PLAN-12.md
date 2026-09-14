@@ -500,7 +500,7 @@ review box (F15) is second from last, as CLAUDE.md requires.
         closed; pushed.
       - Rung: unit
 
-- [ ] **F12 — `Screenshots.captureAndAssert` owns the capture wrapper. Issue #62.**
+- [x] **F12 — `Screenshots.captureAndAssert` owns the capture wrapper. Issue #62.**
       `gh issue view 62 --json body`. Today: `private fun capture(` in `CodeScreenshotTest.kt:162`,
       `TableScreenshotTest.kt:148`, `ImageViewerScreenshotTest.kt:163`, `DesignScreenshotTest.kt:388`,
       `BrandScreenshotTest.kt:207`, `LiveAcceptanceTest.kt:1320` and `:1951`; `MIN_COLOURS =`

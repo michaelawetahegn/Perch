@@ -119,7 +119,7 @@ class DesignScreenshotTest {
         sortIntoFolders()
         showHome(ThemeMode.Dark)
 
-        capture("home-dark")
+        Screenshots.captureAndAssert(compose, "home-dark", minBytes = 10_000L)
     }
 
     @Test
@@ -128,7 +128,7 @@ class DesignScreenshotTest {
         sortIntoFolders()
         showHome(ThemeMode.Light)
 
-        capture("home-light")
+        Screenshots.captureAndAssert(compose, "home-light", minBytes = 10_000L)
     }
 
     /**
@@ -141,7 +141,7 @@ class DesignScreenshotTest {
         seed()
         showHome(ThemeMode.Dark)
 
-        capture("time-range-closed")
+        Screenshots.captureAndAssert(compose, "time-range-closed", minBytes = 10_000L)
     }
 
     @Test
@@ -152,7 +152,7 @@ class DesignScreenshotTest {
             .performSemanticsAction(SemanticsActions.OnClick)
         compose.waitForIdle()
 
-        capture("time-range-open")
+        Screenshots.captureAndAssert(compose, "time-range-open", minBytes = 10_000L)
     }
 
     /**
@@ -170,7 +170,7 @@ class DesignScreenshotTest {
         compose.waitForIdle()
         expandInDrawer(folderIdOf("Systems"))
 
-        capture("drawer")
+        Screenshots.captureAndAssert(compose, "drawer", minBytes = 10_000L)
     }
 
     /**
@@ -203,7 +203,7 @@ class DesignScreenshotTest {
         }
         compose.onNodeWithTag(SelectionTestTags.COUNT).assertTextEquals("3 selected")
 
-        capture("drawer-selection")
+        Screenshots.captureAndAssert(compose, "drawer-selection", minBytes = 10_000L)
     }
 
     @Test
@@ -211,7 +211,7 @@ class DesignScreenshotTest {
         seed()
         showArticle(firstReadableEntryOf("nullprogram.com"))
 
-        capture("article")
+        Screenshots.captureAndAssert(compose, "article", minBytes = 10_000L)
     }
 
     /**
@@ -225,7 +225,7 @@ class DesignScreenshotTest {
     fun `an article whose byline is too long for one line`() {
         showArticle(seedLongBylineEntry())
 
-        capture("article-long-byline")
+        Screenshots.captureAndAssert(compose, "article-long-byline", minBytes = 10_000L)
     }
 
     @Test
@@ -237,7 +237,7 @@ class DesignScreenshotTest {
         compose.onNodeWithText("Add source").performSemanticsAction(SemanticsActions.OnClick)
         compose.waitForIdle()
 
-        capture("add-source")
+        Screenshots.captureAndAssert(compose, "add-source", minBytes = 10_000L)
     }
 
     /** Y04/#23: the sheet a tap on To-Read's link icon opens. */
@@ -250,7 +250,7 @@ class DesignScreenshotTest {
         compose.onNodeWithTag(CollectionTestTags.SAVE_LINK).performSemanticsAction(SemanticsActions.OnClick)
         compose.waitForIdle()
 
-        capture("save-link")
+        Screenshots.captureAndAssert(compose, "save-link", minBytes = 10_000L)
     }
 
     /**
@@ -280,7 +280,7 @@ class DesignScreenshotTest {
             compose.onAllNodesWithTag(CollectionTestTags.ENTRY).fetchSemanticsNodes().isNotEmpty()
         }
 
-        capture("to-read-pasted-link")
+        Screenshots.captureAndAssert(compose, "to-read-pasted-link", minBytes = 10_000L)
     }
 
     /**
@@ -298,7 +298,7 @@ class DesignScreenshotTest {
             compose.onAllNodesWithTag(CollectionTestTags.ENTRY).fetchSemanticsNodes().isNotEmpty()
         }
 
-        capture("to-read-dark")
+        Screenshots.captureAndAssert(compose, "to-read-dark", minBytes = 10_000L)
     }
 
     /**
@@ -317,14 +317,14 @@ class DesignScreenshotTest {
 
         compose.onNodeWithTag(HomeTestTags.TITLE).assertTextEquals("null program")
 
-        capture("feed-scoped-to-source")
+        Screenshots.captureAndAssert(compose, "feed-scoped-to-source", minBytes = 10_000L)
     }
 
     @Test
     fun `the first launch with no sources`() {
         showHome(ThemeMode.Light)
 
-        capture("empty-state")
+        Screenshots.captureAndAssert(compose, "empty-state", minBytes = 10_000L)
     }
 
     /**
@@ -339,7 +339,7 @@ class DesignScreenshotTest {
         seed()
         showSearch(query = "")
 
-        capture("search-prompt")
+        Screenshots.captureAndAssert(compose, "search-prompt", minBytes = 10_000L)
     }
 
     @Test
@@ -347,24 +347,11 @@ class DesignScreenshotTest {
         seed()
         showSearch(query = "the")
 
-        capture("search-results")
+        Screenshots.captureAndAssert(compose, "search-results", minBytes = 10_000L)
     }
 
     // ---- harness ---------------------------------------------------------------
 
-    /**
-     * Writes the whole screen to `build/perch-screenshots/<name>.png` and asserts it is
-     * worth looking at. The size floor is T29's Done-condition; the distinct-colour check
-     * is what actually catches the failure that matters, a capture of a blank slab where
-     * the screen never composed. The drawing itself is [Screenshots.capture], which T32
-     * shares.
-     *
-     * **It writes under `build/`, never into the tracked `screenshots/` gallery.** It used
-     * to write straight into `screenshots/`, so a plain `./gradlew test` silently modified
-     * two checked-in PNGs and the next `git add -A` swept that binary churn into whatever
-     * commit happened to be next. The README gallery is refreshed deliberately at release
-     * time by copying from here — never as a side effect of running the suite.
-     */
     /** A drawer row by its label. The same name is in the app bar and in the list too. */
     private fun drawerRow(label: String) =
         compose.onAllNodesWithText(label)
@@ -381,14 +368,6 @@ class DesignScreenshotTest {
                 .performSemanticsAction(SemanticsActions.OnClick)
             compose.waitForIdle()
         }
-    }
-
-    private fun capture(name: String) {
-        val shot =
-            Screenshots.capture(compose, compose.activity, Screenshots.dir("build/perch-screenshots"), name)
-
-        assertThat(shot.file.length()).isGreaterThan(10_000L)
-        assertThat(shot.distinctColours).isGreaterThan(8)
     }
 
     /** Fills the database from the T28 seed assets, the same way a debug install does. */

@@ -62,7 +62,7 @@ class CodeScreenshotTest {
 
         for (mode in listOf(ThemeMode.Dark, ThemeMode.Light)) {
             show(blocks, mode)
-            capture("u11-c-${mode.name.lowercase()}")
+            Screenshots.captureAndAssert(compose, "u11-c-${mode.name.lowercase()}")
         }
     }
 
@@ -70,7 +70,7 @@ class CodeScreenshotTest {
     fun `a kotlin post renders its highlighted code in both themes`() {
         for (mode in listOf(ThemeMode.Dark, ThemeMode.Light)) {
             show(kotlinPost(), mode)
-            capture("u11-kotlin-${mode.name.lowercase()}")
+            Screenshots.captureAndAssert(compose, "u11-kotlin-${mode.name.lowercase()}")
         }
     }
 
@@ -86,7 +86,7 @@ class CodeScreenshotTest {
 
         assertThat(xOf(ArticleTestTags.CODE_TEXT)).isLessThan(codeBefore)
         assertThat(xOf(ArticleTestTags.CODE_GUTTER)).isEqualTo(gutterBefore)
-        capture("u11-kotlin-dark-scrolled")
+        Screenshots.captureAndAssert(compose, "u11-kotlin-dark-scrolled")
     }
 
     // ---- content ----------------------------------------------------------------
@@ -159,18 +159,6 @@ class CodeScreenshotTest {
         compose.waitForIdle()
     }
 
-    private fun capture(name: String) {
-        val shot = Screenshots.capture(
-            compose,
-            compose.activity,
-            Screenshots.dir("build/perch-screenshots"),
-            name,
-        )
-        assertThat(shot.file.length()).isGreaterThan(0L)
-        // A slab of one background colour means the article never composed.
-        assertThat(shot.distinctColours).isGreaterThan(MIN_COLOURS)
-    }
-
     private fun xOf(tag: String): Float =
         compose.onNodeWithTag(tag).fetchSemanticsNode().positionInRoot.x
 
@@ -186,7 +174,6 @@ class CodeScreenshotTest {
     private companion object {
         const val POST_BLOCKS = 12
         const val SCROLL_BY = 240f
-        const val MIN_COLOURS = 8
 
         val KOTLIN_SAMPLE = """
             private fun stringEnd(code: String, from: Int, quote: Char): Int {

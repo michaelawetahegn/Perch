@@ -76,11 +76,11 @@ class ImageViewerScreenshotTest {
 
         compose.onNodeWithTag(ArticleTestTags.IMAGE).performClick()
         compose.waitForIdle()
-        capture("image-viewer-fit-dark")
+        Screenshots.captureAndAssert(compose, "image-viewer-fit-dark")
 
         compose.onNodeWithTag(ArticleTestTags.IMAGE_VIEWER).performTouchInput { doubleClick() }
         compose.waitForIdle()
-        capture("image-viewer-zoomed-dark")
+        Screenshots.captureAndAssert(compose, "image-viewer-zoomed-dark")
     }
 
     /**
@@ -96,7 +96,7 @@ class ImageViewerScreenshotTest {
         compose.onNodeWithTag(ArticleTestTags.IMAGE).performClick()
         compose.applyWindowInsets(cutoutPx = CUTOUT_PX)
 
-        capture("image-viewer-cutout-dark")
+        Screenshots.captureAndAssert(compose, "image-viewer-cutout-dark")
     }
 
     @Test
@@ -106,7 +106,7 @@ class ImageViewerScreenshotTest {
         compose.onNodeWithTag(ArticleTestTags.IMAGE).performClick()
         compose.waitForIdle()
 
-        capture("image-viewer-fit-light")
+        Screenshots.captureAndAssert(compose, "image-viewer-fit-light")
     }
 
     // ---- harness ----------------------------------------------------------------
@@ -160,17 +160,6 @@ class ImageViewerScreenshotTest {
         ),
     )
 
-    private fun capture(name: String) {
-        val shot = Screenshots.capture(
-            compose,
-            compose.activity,
-            Screenshots.dir("build/perch-screenshots"),
-            name,
-        )
-        assertThat(shot.file.length()).isGreaterThan(0L)
-        assertThat(shot.distinctColours).isGreaterThan(MIN_COLOURS)
-    }
-
     /** A pale wide schematic, drawn rather than downloaded — Coil never leaves the JVM. */
     private fun schematic() = StubImage(WIDTH, HEIGHT) {
         val paint = Paint().apply { isAntiAlias = true }
@@ -193,7 +182,6 @@ class ImageViewerScreenshotTest {
 
     private companion object {
         const val IMAGE_URL = "https://example.com/run-queue.png"
-        const val MIN_COLOURS = 8
         const val WIDTH = 1600
         const val HEIGHT = 900
         const val MARGIN = 60f

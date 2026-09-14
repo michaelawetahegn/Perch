@@ -93,7 +93,7 @@ class BrandScreenshotTest {
         openDrawer()
 
         compose.onNodeWithContentDescription(PERCH).assertIsDisplayed()
-        capture("brand-drawer-dark")
+        Screenshots.captureAndAssert(compose, "brand-drawer-dark", minBytes = 10_000L)
     }
 
     @Test
@@ -103,7 +103,7 @@ class BrandScreenshotTest {
         openDrawer()
 
         compose.onNodeWithContentDescription(PERCH).assertIsDisplayed()
-        capture("brand-drawer-light")
+        Screenshots.captureAndAssert(compose, "brand-drawer-light", minBytes = 10_000L)
     }
 
     @Test
@@ -111,7 +111,7 @@ class BrandScreenshotTest {
         showHome(ThemeMode.Dark)
 
         compose.onNodeWithTag(BrandTestTags.MARK).assertIsDisplayed()
-        capture("brand-empty-dark")
+        Screenshots.captureAndAssert(compose, "brand-empty-dark", minBytes = 10_000L)
     }
 
     @Test
@@ -119,7 +119,7 @@ class BrandScreenshotTest {
         showHome(ThemeMode.Light)
 
         compose.onNodeWithTag(BrandTestTags.MARK).assertIsDisplayed()
-        capture("brand-empty-light")
+        Screenshots.captureAndAssert(compose, "brand-empty-light", minBytes = 10_000L)
     }
 
     /**
@@ -175,7 +175,7 @@ class BrandScreenshotTest {
         val shot = Screenshots.capture(
             compose,
             compose.activity,
-            Screenshots.dir("build/perch-screenshots"),
+            Screenshots.dir(Screenshots.DIR),
             "wordmark-full",
         )
         val full = checkNotNull(BitmapFactory.decodeFile(shot.file.path))
@@ -202,18 +202,6 @@ class BrandScreenshotTest {
     private fun openDrawer() {
         compose.onNodeWithContentDescription("Open sources").performClick()
         compose.waitForIdle()
-    }
-
-    private fun capture(name: String) {
-        val shot = Screenshots.capture(
-            compose,
-            compose.activity,
-            Screenshots.dir("build/perch-screenshots"),
-            name,
-        )
-
-        assertThat(shot.file.length()).isGreaterThan(10_000L)
-        assertThat(shot.distinctColours).isGreaterThan(8)
     }
 
     private fun seed() = runBlocking {
