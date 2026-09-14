@@ -16,6 +16,7 @@ import dev.mkiros.perch.di.AppContainer
 import dev.mkiros.perch.model.RefreshInterval
 import dev.mkiros.perch.model.RefreshScheduler
 import dev.mkiros.perch.model.ThemeMode
+import dev.mkiros.perch.rethrowCancellation
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -268,10 +269,13 @@ class SettingsViewModel(
         }
     }
 
-    /** The post-import poll. Its failures belong to the drawer's `⚠`, not to a snackbar. */
+    /**
+     * The post-import poll. Its failures belong to the drawer's `⚠`, not to a snackbar; a
+     * cancellation belongs to whoever cancelled, and unwinds.
+     */
     private fun refreshImported() {
         viewModelScope.launch {
-            runCatching { feeds.refreshAll() }
+            runCatching { feeds.refreshAll() }.rethrowCancellation()
         }
     }
 

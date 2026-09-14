@@ -473,7 +473,7 @@ review box (F15) is second from last, as CLAUDE.md requires.
         F08's button, saying so.
       - Rung: unit
 
-- [ ] **F10 — The four ViewModel `runCatching`s rethrow cancellation. TDD. Issue #60.**
+- [x] **F10 — The four ViewModel `runCatching`s rethrow cancellation. TDD. Issue #60.**
       `gh issue view 60 --json body` — the fix shape and the RED shape are both in the body.
       Sites today: `AddSourceViewModel.kt:128` and `:152`, `ArticleViewModel.kt:149`,
       `SettingsViewModel.kt:274` (the last is also F13's file — F10 runs first, F13 keeps the

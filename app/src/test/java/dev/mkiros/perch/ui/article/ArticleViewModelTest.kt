@@ -1,5 +1,6 @@
 package dev.mkiros.perch.ui.article
 
+import androidx.lifecycle.viewModelScope
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.parse.ArticleBlock
 import dev.mkiros.perch.data.parse.FetchedPage
@@ -7,6 +8,7 @@ import dev.mkiros.perch.data.db.EntryDao
 import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.repo.ArticleTextRepository
 import dev.mkiros.perch.data.repo.EntryRepository
+import dev.mkiros.perch.support.LaunchedJobs
 import dev.mkiros.perch.support.MapPageFetcher
 import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.support.awaitInRealTime
@@ -17,6 +19,7 @@ import java.time.Instant
 import java.time.ZoneOffset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -130,6 +133,26 @@ class ArticleViewModelTest {
         // Offered once, and only once: the body now came from an extraction.
         assertThat(loaded(viewModel).canLoadFullText).isFalse()
         assertThat(stored(id).fullTextAt).isEqualTo(now.toEpochMilli())
+    }
+
+    /**
+     * F10/#60. A load the caller stopped is not "an extraction no better than the body":
+     * the coroutine must unwind at the cancellation, not carry on to write that the fetch
+     * is over. The seam is [MapPageFetcher.cancelOn] — the `CancellationException` comes
+     * up out of the fetch while the ViewModel is still alive to record something.
+     */
+    @Test
+    fun `a full-text load cancelled at the fetch does not write that the fetch ended`() {
+        val id = seedEntry()
+        fetcher.cancelOn = LINK
+        val viewModel = articleViewModel(id)
+
+        val launched = LaunchedJobs(viewModel.viewModelScope)
+        viewModel.loadFullArticle()
+        runBlocking { launched.current.joinAll() }
+
+        assertThat(loaded(viewModel).isFetchingFullText).isTrue()
+        assertThat(loaded(viewModel).canLoadFullText).isTrue()
     }
 
     /**

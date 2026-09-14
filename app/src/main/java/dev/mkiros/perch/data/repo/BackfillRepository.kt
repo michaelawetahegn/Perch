@@ -13,9 +13,9 @@ import dev.mkiros.perch.data.extract.toEntry
 import dev.mkiros.perch.data.db.EntryIdentity
 import dev.mkiros.perch.data.parse.PageFetcher
 import dev.mkiros.perch.data.parse.urlKey
+import dev.mkiros.perch.rethrowCancellation
 import java.time.Clock
 import java.time.Instant
-import kotlinx.coroutines.CancellationException
 
 /** What [BackfillRepository.plan] found, before anything is fetched. */
 data class BackfillPlan(
@@ -174,7 +174,7 @@ class BackfillRepository(
                     val ok = runCatching { fetchAndStore(feedId, post) }
                         // A cancelled fetch is the reader stopping us, not a page that failed:
                         // it belongs to the caller, not to this run's tally.
-                        .onFailure { if (it is CancellationException) throw it }
+                        .rethrowCancellation()
                         .getOrDefault(false)
                     if (ok) storedCount++ else failed++
                     ok

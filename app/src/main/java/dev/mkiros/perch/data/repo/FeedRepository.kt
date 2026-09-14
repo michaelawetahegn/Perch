@@ -14,9 +14,9 @@ import dev.mkiros.perch.data.parse.HtmlSanitizer
 import dev.mkiros.perch.data.parse.ParseResult
 import dev.mkiros.perch.data.parse.ParsedEntry
 import dev.mkiros.perch.data.parse.ParsedFeed
+import dev.mkiros.perch.rethrowCancellation
 import java.time.Clock
 import java.time.Duration
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -319,7 +319,7 @@ class FeedRepository(
     private suspend fun refreshOne(feed: FeedEntity): FeedRefreshOutcome {
         val startedAt = clock.millis()
         val outcome = runCatching { fetchAndStore(feed, startedAt) }
-            .onFailure { if (it is CancellationException) throw it }
+            .rethrowCancellation()
             .getOrElse { FeedRefreshOutcome.Failed(it.message ?: it.javaClass.simpleName) }
         if (outcome is FeedRefreshOutcome.Failed) recordFailure(feed, outcome.message, startedAt)
         return outcome

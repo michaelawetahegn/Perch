@@ -24,8 +24,8 @@ import dev.mkiros.perch.di.AppContainer
 import dev.mkiros.perch.model.BackfillProgress
 import dev.mkiros.perch.model.BackfillRunner
 import dev.mkiros.perch.model.TimeFilter
+import dev.mkiros.perch.rethrowCancellation
 import java.time.Clock
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -441,7 +441,7 @@ class HomeViewModel(
      */
     private suspend fun plan(backfill: BackfillRepository, feedId: Long): BackfillPlan? =
         runCatching { backfill.plan(feedId) }
-            .onFailure { if (it is CancellationException) throw it }
+            .rethrowCancellation()
             .getOrNull()
 
     fun declineBackfillOffer() {

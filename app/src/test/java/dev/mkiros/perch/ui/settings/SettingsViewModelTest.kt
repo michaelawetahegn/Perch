@@ -1,16 +1,26 @@
 package dev.mkiros.perch.ui.settings
 
+import androidx.lifecycle.viewModelScope
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.entity.FeedEntity
+import dev.mkiros.perch.data.net.FeedFetcher
+import dev.mkiros.perch.data.repo.FeedRepository
+import dev.mkiros.perch.support.AWAIT_TIMEOUT_MS
+import dev.mkiros.perch.support.LaunchedJobs
 import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.support.awaitInRealTime
 import java.io.IOException
+import java.time.Clock
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
+import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -92,6 +102,57 @@ class SettingsViewModelTest {
         val message = awaitMessage { it is SettingsMessage.Imported }
         assertThat((message as SettingsMessage.Imported).added).isEqualTo(1)
         assertThat(runBlocking { perch.database.feedDao().findByUrl(feedUrl) }).isNotNull()
+    }
+
+    /**
+     * F10/#60. The post-import refresh is silent by design, but it must not be silent about
+     * a cancellation: a job the caller stopped unwinds, it does not finish as if it had run.
+     * The seam is D05's — the `CancellationException` comes up out of the fetch — held at
+     * the fetch until the refresh is the one job the import left running, so it can be
+     * watched end.
+     */
+    @Test
+    fun `the post-import refresh unwinds on a cancellation instead of finishing as if it had run`() {
+        val reachedTheFetch = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        viewModel = SettingsViewModel(
+            settings = perch.container.settings,
+            opml = perch.container.opml,
+            profile = perch.container.profile,
+            feeds = FeedRepository(
+                feedDao = perch.database.feedDao(),
+                entryDao = perch.database.entryDao(),
+                fetcher = FeedFetcher(
+                    OkHttpClient.Builder()
+                        .addInterceptor {
+                            reachedTheFetch.countDown()
+                            release.await()
+                            throw CancellationException("the refresh was cancelled")
+                        }
+                        .build(),
+                ),
+                clock = Clock.systemUTC(),
+            ),
+            scheduler = {},
+        )
+
+        try {
+            val launched = LaunchedJobs(viewModel.viewModelScope)
+            viewModel.importOpml { opmlNaming(feedUrl) }
+            awaitMessage { it is SettingsMessage.Imported }
+            assertThat(reachedTheFetch.await(AWAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS)).isTrue()
+            awaitInRealTime("the refresh to be the one job still running") {
+                launched.current.count { it.isActive } == 1
+            }
+            val refresh = launched.current.single { it.isActive }
+
+            release.countDown()
+            runBlocking { refresh.join() }
+
+            assertThat(refresh.isCancelled).isTrue()
+        } finally {
+            release.countDown()
+        }
     }
 
     @Test

@@ -12,6 +12,7 @@ import dev.mkiros.perch.data.repo.ArticleTextRepository
 import dev.mkiros.perch.data.repo.EntryRepository
 import dev.mkiros.perch.data.repo.FeedRepository
 import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.rethrowCancellation
 import dev.mkiros.perch.ui.home.RelativeTime
 import java.time.Instant
 import java.time.ZoneId
@@ -147,7 +148,9 @@ class ArticleViewModel(
 
     private suspend fun fetchFullText() {
         update { it.copy(isFetchingFullText = true) }
-        val recovered = runCatching { articleText.loadFullText(entryId) }.getOrNull()
+        val recovered = runCatching { articleText.loadFullText(entryId) }
+            .rethrowCancellation()
+            .getOrNull()
         // A failed or thinner extraction returns null and changes nothing, which is the
         // point: the reader keeps whatever the feed gave them, and the "Read on the web"
         // fallback is still there under an empty body.

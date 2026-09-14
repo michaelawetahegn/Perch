@@ -10,6 +10,7 @@ import dev.mkiros.perch.data.repo.FeedRepository
 import dev.mkiros.perch.data.repo.FolderRepository
 import dev.mkiros.perch.data.repo.SourceResolution
 import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.rethrowCancellation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -126,6 +127,7 @@ class AddSourceViewModel(
         _state.update { it.copy(isBusy = true, error = null) }
         viewModelScope.launch {
             val outcome = runCatching { feeds.resolve(normalizePastedUrl(pasted)) }
+                .rethrowCancellation()
                 .getOrElse { SourceResolution.Unreachable(it.message.orEmpty()) }
             _state.update { state ->
                 when (outcome) {
@@ -149,7 +151,7 @@ class AddSourceViewModel(
         _state.update { it.copy(isBusy = true, error = null) }
         viewModelScope.launch {
             val folderId = _state.value.folderId
-            val added = runCatching { feeds.add(resolved, folderId) }
+            val added = runCatching { feeds.add(resolved, folderId) }.rethrowCancellation()
             _state.update { state ->
                 added.fold(
                     onSuccess = { AddSourceUiState(addedFeedId = it) },
