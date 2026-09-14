@@ -93,6 +93,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import dev.mkiros.perch.R
+import dev.mkiros.perch.data.repo.BackfillRepository
 import dev.mkiros.perch.model.BackfillProgress
 import dev.mkiros.perch.model.TimeFilter
 import dev.mkiros.perch.ui.brand.PerchMark
@@ -164,6 +165,7 @@ fun HomeScreen(
     val backfillOffer by viewModel.backfillOffer.collectAsStateWithLifecycle()
     val backfillProgress by viewModel.backfillProgress.collectAsStateWithLifecycle()
     val sourceReach by viewModel.sourceReach.collectAsStateWithLifecycle()
+    val archiveRemaining by viewModel.archiveRemaining.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -479,6 +481,22 @@ fun HomeScreen(
                             modifier = Modifier.testTag(HomeTestTags.ENTRY_LIST),
                             listState = listState,
                             onLongPress = { entryActionsForId = it },
+                            // §0.4/F08: the reach sentence's own guard — one source, All
+                            // Time — and only while the remembered archive holds more.
+                            trailingContent = (uiState.scope as? HomeScope.Source)
+                                ?.takeIf { uiState.timeFilter == TimeFilter.AllTime && archiveRemaining > 0 }
+                                ?.let { source ->
+                                    {
+                                        item(key = ARCHIVE_FOOTER_KEY) {
+                                            ArchiveFooter(
+                                                remaining = archiveRemaining,
+                                                batchSize = BackfillRepository.MAX_PAGES,
+                                                isFetching = backfillProgress?.isRunning == true,
+                                                onLoad = { viewModel.loadOlder(source.id) },
+                                            )
+                                        }
+                                    }
+                                },
                         )
                     }
                 }
@@ -1461,6 +1479,8 @@ private fun FeedEmptyState(
 }
 
 /** Material's disabled-content opacity: the one number a reader already knows (V10). */
+/** F08: one key, so the archive footer coming and going is never mistaken for a row insertion. */
+private const val ARCHIVE_FOOTER_KEY = "backfill:archive"
 private const val UNAVAILABLE_ALPHA = 0.38f
 
 private const val SKELETON_ROWS = 6

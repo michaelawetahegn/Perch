@@ -19,6 +19,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import dev.mkiros.perch.R
+import dev.mkiros.perch.data.repo.BackfillRepository
 import dev.mkiros.perch.model.BackfillProgress
 import dev.mkiros.perch.ui.theme.Dimens
 
@@ -147,6 +148,53 @@ fun ReachSentence(oldestPublishedAt: Long, oldestKnownPublishedAt: Long?, nowMil
     )
 }
 
+/**
+ * PLAN-12 §0.4/F08 (#68): the end of a source's All Time list, once the remembered archive
+ * still holds something. One row — how much is left, and a button for the next batch of
+ * [BackfillRepository.MAX_PAGES] — so "All Time" stops being a forty-post cliff and becomes
+ * a list the reader keeps scrolling into. The button is the drawer's *Fetch older posts*
+ * without the dialog: the archive plan already named its numbers, and the reader standing at
+ * the bottom of the list has already said what they want.
+ *
+ * Disabled with *Fetching…* while a run is on: WorkManager's `KEEP` policy would let a
+ * second tap join the same run silently, and a button that does nothing must say so.
+ */
+@Composable
+fun ArchiveFooter(
+    remaining: Int,
+    batchSize: Int,
+    isFetching: Boolean,
+    onLoad: () -> Unit,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Dimens.screenHorizontal, vertical = Dimens.sm)
+            .testTag(BackfillTestTags.ARCHIVE_FOOTER),
+    ) {
+        Text(
+            text = pluralStringResource(R.plurals.archive_footer_remaining, remaining, remaining),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f).testTag(BackfillTestTags.ARCHIVE_REMAINING),
+        )
+        TextButton(
+            onClick = onLoad,
+            enabled = !isFetching,
+            modifier = Modifier.testTag(BackfillTestTags.ARCHIVE_LOAD),
+        ) {
+            Text(
+                if (isFetching) {
+                    stringResource(R.string.archive_footer_fetching)
+                } else {
+                    stringResource(R.string.archive_footer_load, minOf(batchSize, remaining))
+                },
+            )
+        }
+    }
+}
+
 object BackfillTestTags {
     const val OFFER_DIALOG = "backfill:offer"
     const val OFFER_BODY = "backfill:offer:body"
@@ -157,4 +205,7 @@ object BackfillTestTags {
     const val PROGRESS_STOP = "backfill:progress:stop"
     const val PROGRESS_DISMISS = "backfill:progress:dismiss"
     const val REACH_SENTENCE = "backfill:reach"
+    const val ARCHIVE_FOOTER = "backfill:archive"
+    const val ARCHIVE_REMAINING = "backfill:archive:remaining"
+    const val ARCHIVE_LOAD = "backfill:archive:load"
 }

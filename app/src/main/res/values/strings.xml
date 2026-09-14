@@ -164,6 +164,14 @@
     <string name="backfill_progress_stop">Stop fetching</string>
     <!-- §0.4: All Time's honest reach, for one scoped source. %1$s is a formatted date. -->
     <string name="backfill_reach_sentence">Reaches back to %1$s</string>
+    <!-- PLAN-12 §0.4/F08 (#68): the end of a source's All Time list — what the remembered
+         archive still holds, and the button that fetches the next batch of it. -->
+    <plurals name="archive_footer_remaining">
+        <item quantity="one">%1$d older post in this source\'s archive</item>
+        <item quantity="other">%1$d older posts in this source\'s archive</item>
+    </plurals>
+    <string name="archive_footer_load">Load %1$d more</string>
+    <string name="archive_footer_fetching">Fetching…</string>
 
     <!-- Save a link (Y04, PLAN-6 §0.4): one article, saved without subscribing to its site. -->
     <string name="save_link_action">Save a link</string>

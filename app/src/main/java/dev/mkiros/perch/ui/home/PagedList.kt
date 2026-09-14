@@ -54,6 +54,10 @@ import dev.mkiros.perch.ui.theme.Dimens
  *    the reader, so search has nothing to animate.
  *
  * The list's own test tag rides on [modifier], since only two of the three want one.
+ *
+ * [trailingContent] (PLAN-12 §0.4, F08) is whatever one surface wants to say *after* its
+ * last row and *before* [pagedFooter] — the Feed's archive footer, scoped to one source.
+ * To-Read, Liked and search pass nothing and end exactly as they did.
  */
 @Composable
 internal fun PagedEntryList(
@@ -65,6 +69,7 @@ internal fun PagedEntryList(
     listState: LazyListState = rememberLazyListState(),
     onLongPress: ((Long) -> Unit)? = null,
     animate: Boolean = true,
+    trailingContent: (LazyListScope.() -> Unit)? = null,
 ) {
     LazyColumn(state = listState, modifier = modifier.fillMaxSize()) {
         items(count = entries.itemCount, key = entries.itemKey { it.id }) { index ->
@@ -85,6 +90,7 @@ internal fun PagedEntryList(
                 }
             }
         }
+        trailingContent?.invoke(this)
         pagedFooter(entries)
     }
 }

@@ -6,16 +6,20 @@ import androidx.compose.material3.DrawerState
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.filterToOne
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToIndex
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
@@ -23,6 +27,7 @@ import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.parse.FetchedPage
 import dev.mkiros.perch.data.parse.PageFetcher
 import dev.mkiros.perch.data.repo.BackfillRepository
+import dev.mkiros.perch.data.repo.PerchPaging
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.model.BackfillProgress
 import dev.mkiros.perch.model.BackfillRunState
@@ -66,9 +71,11 @@ class BackfillOfferTest {
     val compose = createAndroidComposeRule<ComponentActivity>()
 
     private lateinit var viewModel: HomeViewModel
+    private lateinit var backfill: BackfillRepository
     private val runner = FakeBackfillRunner()
     private lateinit var drawerState: DrawerState
     private lateinit var selection: MutableState<DrawerSelection>
+    private lateinit var homeScope: MutableState<HomeScope>
 
     private val now = Instant.parse("2026-08-24T12:00:00Z")
     private val clock = Clock.fixed(now, ZoneOffset.UTC)
@@ -328,6 +335,121 @@ class BackfillOfferTest {
         compose.onNodeWithTag(BackfillTestTags.REACH_SENTENCE).assertDoesNotExist()
     }
 
+    // ---- §0.4's footer: the end of All Time offers the next forty (F08/#68) -------------
+
+    /**
+     * PLAN-12 F08/#68 — the reader: "if you keep scrolling down into the older history, then
+     * it should start retrieving posts in batches". The sitemap lists 100 posts, ten of which
+     * the feed already gave us, so the footer names 90 and offers the next 40 — and after
+     * that batch has really run (the repository over the stubbed network, not a fake answer)
+     * it names 50.
+     */
+    @Test
+    fun `the bottom of a source's All Time list names the archive and loads forty more`() {
+        val fetcher = MapPageFetcher()
+        val feedId = seedFeed(entryCount = 10, title = "GPUOpen")
+        val archive = archivePages(90)
+        fetcher.pages[SITE + "sitemap.xml"] = sitemapOf(*(existingLinks(10) + archive.keys).toTypedArray())
+        fetcher.pages += archive
+
+        showHome(fetcher)
+        tapRow("GPUOpen")
+        scrollToArchiveFooter()
+
+        compose.onNodeWithTag(BackfillTestTags.ARCHIVE_REMAINING).assertTextEquals(remaining(90))
+        compose.onNodeWithTag(BackfillTestTags.ARCHIVE_LOAD).assertTextEquals(loadLabel(BackfillRepository.MAX_PAGES))
+        tap(BackfillTestTags.ARCHIVE_LOAD)
+        assertThat(runner.enqueued).containsExactly(feedId)
+
+        // The fake runner only records the enqueue; the batch itself is the real run.
+        runBlocking { backfill.run(feedId) }
+        runner.push(feedId, BackfillProgress(BackfillRepository.MAX_PAGES, BackfillRepository.MAX_PAGES, BackfillRunState.SUCCEEDED))
+        awaitViewModel { viewModel.sourceReach.value?.entryCount == 10 + BackfillRepository.MAX_PAGES }
+
+        scrollToArchiveFooter()
+        compose.onNodeWithTag(BackfillTestTags.ARCHIVE_REMAINING).assertTextEquals(remaining(50))
+    }
+
+    /** WorkManager's KEEP policy would let a second tap join the same run silently — so there is no second tap. */
+    @Test
+    fun `the footer is disabled while a batch runs`() {
+        val fetcher = MapPageFetcher()
+        val feedId = seedFeed(entryCount = 10, title = "GPUOpen")
+        val archive = archivePages(90)
+        fetcher.pages[SITE + "sitemap.xml"] = sitemapOf(*(existingLinks(10) + archive.keys).toTypedArray())
+        fetcher.pages += archive
+
+        showHome(fetcher)
+        tapRow("GPUOpen")
+        scrollToArchiveFooter()
+        tap(BackfillTestTags.ARCHIVE_LOAD)
+
+        assertThat(runner.enqueued).containsExactly(feedId)
+        compose.onNodeWithTag(BackfillTestTags.ARCHIVE_LOAD)
+            .assertIsNotEnabled()
+            .assertTextEquals(string(dev.mkiros.perch.R.string.archive_footer_fetching))
+        compose.onNodeWithTag(BackfillTestTags.PROGRESS_STRIP).assertIsDisplayed()
+    }
+
+    /** §0.4: scoped to one source only, and only under All Time — the reach sentence's own guard. */
+    @Test
+    fun `the footer is absent in the All-sources scope, in a folder scope, and outside All Time`() {
+        val fetcher = MapPageFetcher()
+        seedFeed(entryCount = 10, title = "GPUOpen")
+        val archive = archivePages(90)
+        fetcher.pages[SITE + "sitemap.xml"] = sitemapOf(*(existingLinks(10) + archive.keys).toTypedArray())
+        fetcher.pages += archive
+
+        showHome(fetcher)
+        tapRow("GPUOpen")
+        scrollToArchiveFooter()
+
+        setScope(HomeScope.All)
+        compose.onNodeWithTag(BackfillTestTags.ARCHIVE_FOOTER).assertDoesNotExist()
+        setScope(HomeScope.Folder(FolderEntity.UNCATEGORIZED_ID))
+        compose.onNodeWithTag(BackfillTestTags.ARCHIVE_FOOTER).assertDoesNotExist()
+
+        tapRow("GPUOpen")
+        scrollToArchiveFooter()
+        viewModel.selectTimeFilter(TimeFilter.PastYear)
+        awaitViewModel { viewModel.uiState.value.timeFilter == TimeFilter.PastYear }
+        compose.onNodeWithTag(BackfillTestTags.ARCHIVE_FOOTER).assertDoesNotExist()
+    }
+
+    /** With nothing left unfetched the slot is empty and `pagedFooter`'s own marker stands. */
+    @Test
+    fun `the footer is absent when nothing is left`() {
+        val fetcher = MapPageFetcher()
+        val count = PerchPaging.PAGE_SIZE + 5
+        seedFeed(entryCount = count, title = "GPUOpen")
+        fetcher.pages[SITE + "sitemap.xml"] = sitemapOf(*existingLinks(count).toTypedArray())
+
+        showHome(fetcher)
+        tapRow("GPUOpen")
+        // The plan has looked at the archive — and found nothing the feed had not covered.
+        awaitViewModel { SITE + "sitemap.xml" in fetcher.requested }
+        scrollToEnd()
+
+        compose.onNodeWithTag(PagedListTestTags.END).assertIsDisplayed()
+        compose.onNodeWithTag(BackfillTestTags.ARCHIVE_FOOTER).assertDoesNotExist()
+    }
+
+    /** §0.4: not through `sourceAdded` — its `isWorthwhile` gate would refuse a second batch. */
+    @Test
+    fun `loadOlder enqueues the runner and marks the feed running without an offer`() {
+        val fetcher = MapPageFetcher()
+        val feedId = seedFeed(entryCount = 10, title = "GPUOpen")
+
+        showHome(fetcher)
+        viewModel.loadOlder(feedId)
+        compose.waitForIdle()
+
+        assertThat(runner.enqueued).containsExactly(feedId)
+        assertThat(viewModel.backfillOffer.value).isNull()
+        compose.onNodeWithTag(BackfillTestTags.OFFER_DIALOG).assertDoesNotExist()
+        compose.onNodeWithTag(BackfillTestTags.PROGRESS_STRIP).assertIsDisplayed()
+    }
+
     // ---- screenshots (Z03's Done-condition: opened and looked at) ---------------------
 
     @Test
@@ -409,20 +531,65 @@ class BackfillOfferTest {
         compose.waitForIdle()
     }
 
+    private fun setScope(scope: HomeScope) {
+        compose.runOnUiThread { homeScope.value = scope }
+        compose.waitForIdle()
+    }
+
+    private fun exists(tag: String): Boolean =
+        compose.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty()
+
+    /**
+     * The footer sits after every loaded page, so reaching it is the same walk
+     * `PagedFeedTest` makes: scroll to it, let the next page land, scroll again. Until the
+     * plan has answered there is no footer to scroll to, and the attempt simply retries.
+     */
+    private fun scrollToArchiveFooter() {
+        compose.awaitInRealTime("the archive footer") {
+            runCatching {
+                compose.onNodeWithTag(HomeTestTags.ENTRY_LIST)
+                    .performScrollToNode(hasTestTag(BackfillTestTags.ARCHIVE_FOOTER))
+            }
+            compose.waitForIdle()
+            exists(BackfillTestTags.ARCHIVE_FOOTER)
+        }
+    }
+
+    private fun scrollToEnd() {
+        var row = 0
+        compose.awaitInRealTime("the end of the list") {
+            val moved = runCatching {
+                compose.onNodeWithTag(HomeTestTags.ENTRY_LIST).performScrollToIndex(row)
+            }.isSuccess
+            if (moved) row++
+            compose.waitForIdle()
+            exists(PagedListTestTags.END)
+        }
+    }
+
+    private fun string(id: Int, vararg args: Any): String =
+        ApplicationProvider.getApplicationContext<Context>().getString(id, *args)
+
+    private fun remaining(count: Int): String = ApplicationProvider.getApplicationContext<Context>()
+        .resources.getQuantityString(dev.mkiros.perch.R.plurals.archive_footer_remaining, count, count)
+
+    private fun loadLabel(count: Int): String = string(dev.mkiros.perch.R.string.archive_footer_load, count)
+
     private fun showHome(fetcher: PageFetcher) {
-        val home = showHomeScreen(
-            perch, compose, clock, settings,
-            backfill = BackfillRepository(
-                feedDao = perch.database.feedDao(),
-                entryDao = perch.database.entryDao(),
-                archivePostDao = perch.database.archivePostDao(),
-                fetcher = fetcher,
-                clock = clock,
-            ),
+        backfill = BackfillRepository(
+            feedDao = perch.database.feedDao(),
+            entryDao = perch.database.entryDao(),
+            archivePostDao = perch.database.archivePostDao(),
+            fetcher = fetcher,
+            clock = clock,
+            // F08 runs a real forty-page batch on the test thread: no politeness pause.
+            delay = {},
         )
+        val home = showHomeScreen(perch, compose, clock, settings, backfill = backfill)
         viewModel = home.viewModel
         drawerState = home.drawerState
         selection = home.selection
+        homeScope = home.homeScope
     }
 
     private fun seedFeed(entryCount: Int = 0, title: String = "A blog"): Long = runBlocking {
@@ -495,6 +662,22 @@ class BackfillOfferTest {
         const val POST_2 = "https://example.com/2020/02/02/post-two"
         const val POST_3 = "https://example.com/2020/03/03/post-three"
         const val SCREENSHOT_DIR = "build/perch-screenshots"
+
+        /** The links [seedFeed]'s entries carry — a sitemap that lists them is one the feed already covered. */
+        fun existingLinks(count: Int): List<String> = (0 until count).map { "https://example.com/existing-$it" }
+
+        /** [count] archive posts, each with a page the extractor will store as an entry. */
+        fun archivePages(count: Int): Map<String, FetchedPage> = (1..count).associate { n ->
+            val url = "https://example.com/2020/01/$n/post-$n"
+            url to FetchedPage(
+                """
+                <html><head><meta property="og:title" content="Post $n"></head>
+                <body><article><p>${"Real prose, with commas and length. ".repeat(30)}</p></article></body></html>
+                """.trimIndent().toByteArray(),
+                "text/html",
+                url,
+            )
+        }
 
         fun sitemapOf(vararg urls: String) = FetchedPage(
             """

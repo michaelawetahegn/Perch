@@ -228,6 +228,17 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
   it hides some of them behind a horizontal scroll while doing it. The empty bucket's
   "Show Past Week instead" moves this control's own selection; the two never disagree.
 
+- **The end of All Time, scoped to one source (PLAN-12 §0.4, F08/#68),** is not a cliff.
+  Below the last row, before the list's own "That's everything", one quiet `bodySmall` row
+  states what the remembered archive still holds — *N older posts in this source's archive*
+  — with a text button, **Load 40 more** (the batch is the backfill's forty-page budget;
+  the label is `min(40, N)`), that starts the next batch straight into the progress strip:
+  no dialog, because the numbers were already named. While a batch runs the button reads
+  *Fetching…* and is disabled — a second tap would silently join the same run. The row
+  exists only under All Time, only for one source, and only while N > 0; in All sources
+  and in a folder the list ends exactly as it always did, and once the archive is spent the
+  end marker stands alone. The drawer's *Fetch older posts* remains the second way in.
+
 - **The entry row (U08, W04),** built to `design/reference/feed-row-reference.jpg`: title
   (`titleMedium` w600, ≤3 lines) over two `labelMedium` lines — `Source · Category` in
   `onSurfaceVariant` with the category itself dimmed to `outline`, and the time on its own

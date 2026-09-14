@@ -96,3 +96,4 @@
   follows. The handler opens the viewer unconditionally (`ArticleBody` `onOpenImage`), so the tap is not reaching it —
   suspect the first IMAGE node of a 44-image body is composed ahead of the fold. Next owner (F15/F16): `performScrollTo` first.
 
+- 2026-09-14 — **F08: `HomeViewModel.plan()` is a fifth `runCatching`, already rethrowing cancellation** — F10's helper should absorb it. It exists because a test ending while a VM `plan()` is mid-query leaked Room's closed-pool exception into the *next* test (`UncaughtExceptionsBeforeTest`); the guard is what stops it.

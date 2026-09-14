@@ -433,7 +433,7 @@ review box (F15) is second from last, as CLAUDE.md requires.
         `PerchDatabaseMigrationTest` green; issue #68 commented (left open); pushed.
       - Rung: unit
 
-- [ ] **F08 — The end of All Time offers the next forty. TDD. Issue #68 (part 2 of 3).**
+- [x] **F08 — The end of All Time offers the next forty. TDD. Issue #68 (part 2 of 3).**
       The reader's words: "if you keep scrolling down into the older history, then it should
       start retrieving posts in batches". §0.4's *trigger* paragraph is the decision: `loadOlder`,
       the footer slot, the guard, the strings, the disabled state, scoped to one source.

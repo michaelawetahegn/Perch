@@ -12,6 +12,7 @@ import dev.mkiros.perch.data.db.FeedReach
 import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.net.ConnectivityMonitor
+import dev.mkiros.perch.data.repo.BackfillPlan
 import dev.mkiros.perch.data.repo.BackfillRepository
 import dev.mkiros.perch.data.repo.EntryRepository
 import dev.mkiros.perch.data.repo.FeedRepository
@@ -24,12 +25,14 @@ import dev.mkiros.perch.model.BackfillProgress
 import dev.mkiros.perch.model.BackfillRunner
 import dev.mkiros.perch.model.TimeFilter
 import java.time.Clock
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
@@ -369,6 +372,17 @@ class HomeViewModel(
     private val _sourceReach = MutableStateFlow<FeedReach?>(null)
     val sourceReach: StateFlow<FeedReach?> = _sourceReach.asStateFlow()
 
+    /**
+     * PLAN-12 §0.4/F08 (#68): how many of the scoped source's remembered archive posts no
+     * run has fetched yet — what the end-of-list footer names — paired with the source it
+     * was counted for, so a count from the source the reader just left is never shown under
+     * the one they moved to. Null outside a source scope and until the plan has answered.
+     */
+    private val _archiveRemaining = MutableStateFlow<Pair<Long, Int>?>(null)
+    val archiveRemaining: StateFlow<Int> = combine(scope, _archiveRemaining) { s, remaining ->
+        remaining?.takeIf { it.first == s.feedId }?.second ?: 0
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), 0)
+
     init {
         // Recomputed on a scope change and every time the watched run's progress moves —
         // the second is what keeps the reach sentence honest once a backfill actually
@@ -377,6 +391,17 @@ class HomeViewModel(
             combine(scope, backfillProgress) { s, _ -> s }.collect { s ->
                 _sourceReach.value = (s as? HomeScope.Source)?.let { entries.reach(it.id) }
             }
+        }
+        // The remembered plan is read when the reader scopes to a source and again when a
+        // run ends — not on every page the run lands, since `plan()` reads `robots.txt` as
+        // well as the table. Its first call on a source is the one that discovers.
+        viewModelScope.launch {
+            combine(scope, backfillProgress) { s, progress -> s.feedId to (progress?.isRunning == true) }
+                .distinctUntilChanged()
+                .collectLatest { (feedId, _) ->
+                    val backfill = backfill ?: return@collectLatest
+                    _archiveRemaining.value = feedId?.let { id -> plan(backfill, id)?.let { id to it.newPostCount } }
+                }
         }
     }
 
@@ -389,7 +414,7 @@ class HomeViewModel(
     fun sourceAdded(feedId: Long) {
         val backfill = backfill ?: return
         viewModelScope.launch {
-            val plan = backfill.plan(feedId) ?: return@launch
+            val plan = plan(backfill, feedId) ?: return@launch
             if (plan.isWorthwhile) _backfillOffer.value = BackfillOffer(feedId, plan.newPostCount, plan.toFetch.size)
         }
     }
@@ -402,13 +427,35 @@ class HomeViewModel(
     fun requestBackfill(feedId: Long) {
         val backfill = backfill ?: return
         viewModelScope.launch {
-            val plan = backfill.plan(feedId) ?: return@launch
+            val plan = plan(backfill, feedId) ?: return@launch
             if (plan.toFetch.isNotEmpty()) _backfillOffer.value = BackfillOffer(feedId, plan.newPostCount, plan.toFetch.size)
         }
     }
 
+    /**
+     * The three readers of the archive plan — the add-source offer, the drawer's ask and
+     * F08's footer — share one answer to a plan that cannot be read: nothing to offer, not
+     * a crash. The plan talks to the network and the database from a coroutine nothing
+     * else supervises; a store closed under it (every test's teardown) or a query that
+     * failed must end in "no offer", with only a real cancellation allowed through.
+     */
+    private suspend fun plan(backfill: BackfillRepository, feedId: Long): BackfillPlan? =
+        runCatching { backfill.plan(feedId) }
+            .onFailure { if (it is CancellationException) throw it }
+            .getOrNull()
+
     fun declineBackfillOffer() {
         _backfillOffer.value = null
+    }
+
+    /**
+     * PLAN-12 §0.4/F08 (#68): the next batch, asked for from the bottom of the list. Straight
+     * to the runner and the progress strip — no dialog, and not through [sourceAdded], whose
+     * `isWorthwhile` gate would refuse a second batch of a source it already offered once.
+     */
+    fun loadOlder(feedId: Long) {
+        _runningBackfillId.value = feedId
+        backfillRunner.enqueue(feedId)
     }
 
     /** Starts the offered run as work ([dev.mkiros.perch.work.BackfillWorker], Z02), so it
