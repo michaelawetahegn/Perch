@@ -41,6 +41,7 @@ object HtmlSanitizer {
         dirty.select(DROP_WHOLESALE).remove()
         dirty.select("img").forEach { promoteLazySource(it) }
         dirty.select("img").filter { isTrackingPixel(it) }.forEach { it.remove() }
+        dirty.select("img").forEach { captionFromDescription(it) }
         dirty.select("pre").forEach { it.normalizeLanguage() }
 
         val clean = runCatching { Cleaner(SAFELIST).clean(dirty) }.getOrNull() ?: return null
@@ -131,6 +132,58 @@ object HtmlSanitizer {
             element.text().length < SHORT_BLOCK_CEILING
 
     /**
+     * Wraps [img] and the text that describes it into the `<figure><figcaption>` this
+     * pipeline already renders as a caption (F05, #67). A page has two ways of saying "this
+     * text is under that picture": WAI-ARIA's `aria-describedby`, which WordPress's legacy
+     * `[caption]` shortcode emits, and — with no ARIA — a container holding exactly this
+     * one image and, after it, exactly one `p`/`span`/`small`/`div` whose class names it a
+     * caption ([CAPTION_CLASS]). **Nothing looser**: `style` is gone before anything reads
+     * the result, so "a different font and colour under an image" cannot be seen, and an
+     * emphasised paragraph after a lead image is as often a pull-quote or an editor's note.
+     * An image already inside a `<figure>` is the publisher's own figure and is left alone.
+     */
+    private fun captionFromDescription(img: Element) {
+        if (img.parents().any { it.tagName() == "figure" }) return
+        val caption = describedBy(img) ?: captionSibling(img) ?: return
+        // Wrapped in place rather than built and swapped in: a wrapper made from nothing
+        // carries an empty base URI, and the image under it would lose its relative `src`.
+        val figure = img.wrap("<figure></figure>").parent() ?: return
+        val figcaption = figure.appendElement("figcaption")
+        caption.childNodes().toList().forEach { figcaption.appendChild(it) }
+        caption.remove()
+    }
+
+    /**
+     * The element [img]'s `aria-describedby` names, if it is a description worth showing:
+     * present, holding words, not itself a picture, and not a container the image sits in.
+     */
+    private fun describedBy(img: Element): Element? = img.attr("aria-describedby").trim()
+        .split(WHITESPACE).filter { it.isNotEmpty() }
+        .firstNotNullOfOrNull { id -> img.ownerDocument()?.getElementById(id) }
+        ?.takeIf { it !== img && !img.parents().contains(it) && it.selectFirst("img") == null && it.text().isNotBlank() }
+
+    /**
+     * The one caption-classed element after [img] in its container, or null. The container
+     * is the nearest ancestor holding more than the image alone — a CMS that links a figure
+     * to its full-size file wraps it as `<a><img></a>` first — reached within [ANCESTOR_REACH].
+     */
+    private fun captionSibling(img: Element): Element? {
+        var container = img.parent() ?: return null
+        var climbed = 0
+        while (container.children().size == 1 && container.tagName() != "body" && climbed < ANCESTOR_REACH) {
+            container = container.parent() ?: return null
+            climbed++
+        }
+        if (container.select("img").size != 1) return null
+        val siblings = container.children()
+        val holdingImage = siblings.indexOfFirst { it === img || img.parents().contains(it) }
+        val candidates = siblings.drop(holdingImage + 1).filter {
+            it.tagName() in CAPTION_TAGS && CAPTION_CLASS.containsMatchIn(it.className())
+        }
+        return candidates.singleOrNull()?.takeIf { it.text().isNotBlank() }
+    }
+
+    /**
      * Puts the picture a lazy-loading CMS hid behind a `data-*` attribute into `src`, so
      * the [Cleaner] — which keeps `src` and nothing else — keeps the picture (F03, #70).
      *
@@ -195,6 +248,10 @@ object HtmlSanitizer {
             "support-us|cta|call-to-action"
 
     private val PROMOTIONAL = Regex("\\b(?:$PROMOTIONAL_TOKENS)\\b", RegexOption.IGNORE_CASE)
+
+    /** The class tokens that name a caption sitting beside its image, whole tokens only (F05). */
+    private val CAPTION_CLASS = Regex("\\b(?:caption|credit|cutline)\\b", RegexOption.IGNORE_CASE)
+    private val CAPTION_TAGS = setOf("p", "span", "small", "div")
 
     /** Where a lazy-loading CMS puts the real picture, in the order the corpus meets them. */
     private val LAZY_SRC = listOf("data-src", "data-lazy-src", "data-original")

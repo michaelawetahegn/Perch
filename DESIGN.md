@@ -346,7 +346,9 @@ mono one — see §3.
   every number, which is what keeps the code's left edge still at 9→10 and 99→100.
 - **Images**: full text-column width, 4dp corners (editorial, not app-y), intrinsic
   aspect ratio reserved *before* load so nothing reflows. `figcaption` → Caption style
-  directly beneath, 8dp gap. A failed load collapses to nothing — never a broken glyph,
+  directly beneath, 8dp gap — and any image described through `aria-describedby` or a
+  `caption`/`credit`/`cutline`-classed sibling, which the sanitizer rewrites into that same
+  `figure` before anything renders (PLAN-12 F05). A failed load collapses to nothing — never a broken glyph,
   never a grey box mid-sentence. 24dp above and below.
   **Tapping a figure opens it full screen** (U12): the article goes to a near-opaque
   scrim, the image fades up to fit the width, and pinch, double-tap and pan take over.

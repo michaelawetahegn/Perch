@@ -134,6 +134,35 @@ class ArticleLoweringTest {
         assertThat(image.caption?.marks).containsExactly(RichSpan.Mark(SpanStyle.Em, 2, 6))
     }
 
+    /**
+     * F05/#67: the two halves together. WordPress's legacy caption shortcode is a `div` (in
+     * [ArticleLowering.UNWRAP]) holding an `img` and a `p`, so on its own the lowering can
+     * only flatten it to an Image followed by a Paragraph; the sanitizer's pre-pass rewrites
+     * it to the `<figure>` this lowering already understands.
+     */
+    @Test
+    fun `a wordpress caption div lowers to one Image carrying its caption`() {
+        val html = """
+            <div id="attachment_3218477" style="width: 312px" class="wp-caption alignright">
+              <img aria-describedby="caption-attachment-3218477" class=" wp-image-3218477"
+                   src="https://gijn.org/wp-content/uploads/2026/09/Zubaida-Ibrahim-771x618.png"
+                   alt="Zubaida records an interview" width="302" height="242">
+              <p id="caption-attachment-3218477" class="wp-caption-text">Zubaida Baba Ibrahim records an
+                 interview with Nigerians who fled insecurity in northwestern Nigeria and relocated across
+                 the border to Maradi in the Niger Republic. Image: Courtesy of Ibrahim</p>
+            </div>
+        """.trimIndent()
+
+        val image = lower(HtmlSanitizer.sanitize(html, "https://gijn.org/stories/investigating-inside-conflict-zones-africa/"))
+            .single() as ArticleBlock.Image
+
+        assertThat(image.url).isEqualTo("https://gijn.org/wp-content/uploads/2026/09/Zubaida-Ibrahim-771x618.png")
+        assertThat(image.caption?.text).isEqualTo(
+            "Zubaida Baba Ibrahim records an interview with Nigerians who fled insecurity in northwestern " +
+                "Nigeria and relocated across the border to Maradi in the Niger Republic. Image: Courtesy of Ibrahim",
+        )
+    }
+
     @Test
     fun `an image inside a paragraph ends the paragraph rather than nesting`() {
         val blocks = lower("<p>Before <img src=\"https://x.example/a.png\"> after</p>")

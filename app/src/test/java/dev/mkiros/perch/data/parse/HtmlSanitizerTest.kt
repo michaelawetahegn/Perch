@@ -2,6 +2,7 @@ package dev.mkiros.perch.data.parse
 
 import com.google.common.truth.Truth.assertThat
 import java.io.File
+import org.jsoup.Jsoup
 import org.junit.Test
 
 /**
@@ -284,6 +285,81 @@ class HtmlSanitizerTest {
     }
 
     // ---- a real blob from the corpus ---------------------------------------------
+
+    // ---- captions (F05, #67) --------------------------------------------------------
+
+    /**
+     * F05/#67: GIJN's captions are WordPress's legacy shortcode — no `<figure>`, only a
+     * `div.wp-caption` holding an `img[aria-describedby]` and the `p` it names — so the
+     * caption lowered to an ordinary paragraph and read as body text. WAI-ARIA is the
+     * standard; the rewrite turns the described image into the figure the CMS meant.
+     */
+    @Test
+    fun `an image whose aria-describedby names a paragraph becomes a figure with that paragraph as its figcaption`() {
+        val out = sanitize(
+            """
+            <p>Access is negotiated through local trust.</p>
+            <div id="attachment_3218477" style="width: 312px" class="wp-caption alignright">
+              <img loading="lazy" aria-describedby="caption-attachment-3218477" class=" wp-image-3218477"
+                   src="https://gijn.org/wp-content/uploads/2026/09/Zubaida-Ibrahim-771x618.png"
+                   alt="Zubaida records an interview" width="302" height="242">
+              <p id="caption-attachment-3218477" class="wp-caption-text">Zubaida Baba Ibrahim records
+                 an interview. Image: <em>Courtesy of Ibrahim</em></p>
+            </div>
+            <p>Dembélé faced a similar situation in Menaka.</p>
+            """.trimIndent(),
+        )!!
+
+        val figures = Jsoup.parse(out).select("figure")
+        assertThat(figures).hasSize(1)
+        assertThat(figures.single().select("img[src$=Zubaida-Ibrahim-771x618.png]")).hasSize(1)
+        assertThat(figures.single().selectFirst("figcaption")!!.text())
+            .isEqualTo("Zubaida Baba Ibrahim records an interview. Image: Courtesy of Ibrahim")
+        assertThat(figures.single().selectFirst("figcaption em")!!.text()).isEqualTo("Courtesy of Ibrahim")
+        // The described paragraph moved into the figure; it is not also left behind as prose.
+        assertThat(Jsoup.parse(out).select("p").eachText())
+            .containsExactly("Access is negotiated through local trust.", "Dembélé faced a similar situation in Menaka.")
+    }
+
+    /** The same shape without ARIA: the caption is named only by a class token on the sibling. */
+    @Test
+    fun `a container of one image and one caption-classed paragraph becomes a figure`() {
+        val out = sanitize(
+            """
+            <div class="image-block">
+              <img src="/harbour.jpg" alt="The harbour">
+              <p class="photo-credit">The harbour at dawn. Photo: A. Reader</p>
+            </div>
+            <p>The tide was out.</p>
+            """.trimIndent(),
+        )!!
+
+        val figure = Jsoup.parse(out).selectFirst("figure")!!
+        assertThat(figure.select("img[src=https://birdwire.example/harbour.jpg]")).hasSize(1)
+        assertThat(figure.selectFirst("figcaption")!!.text()).isEqualTo("The harbour at dawn. Photo: A. Reader")
+        assertThat(Jsoup.parse(out).select("p").eachText()).containsExactly("The tide was out.")
+    }
+
+    /**
+     * Nothing looser: "a different font and colour under an image" cannot be seen once `style`
+     * is gone, and an emphasised paragraph after a lead image is as often a pull-quote or an
+     * editor's note as a caption. Without ARIA or a caption-classed sibling it stays prose.
+     */
+    @Test
+    fun `an italic paragraph after an image stays a paragraph`() {
+        val out = sanitize(
+            """
+            <p><img src="/lead.jpg" alt="Lead"></p>
+            <p><em>Editor's note: this story is the second in a series.</em></p>
+            <p>Access is negotiated through local trust.</p>
+            """.trimIndent(),
+        )!!
+
+        val doc = Jsoup.parse(out)
+        assertThat(doc.select("figure")).isEmpty()
+        assertThat(doc.select("img")).hasSize(1)
+        assertThat(doc.select("p em").eachText()).containsExactly("Editor's note: this story is the second in a series.")
+    }
 
     @Test
     fun `a real content encoded blob keeps its prose and loses its markup cruft`() {

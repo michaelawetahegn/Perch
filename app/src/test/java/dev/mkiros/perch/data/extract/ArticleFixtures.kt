@@ -180,6 +180,23 @@ object ArticleFixtures {
     )
 
     /**
+     * GIJN's conflict-zones guide (F05, #67): WordPress with the legacy `[caption]` shortcode,
+     * so every figure is a `div.wp-caption` holding an `img[aria-describedby]` and the
+     * `p.wp-caption-text` it names — no `<figure>` anywhere. Its chrome is the republish
+     * box and the "Read Next" rail. **Unlisted in any feed** — `gijn.org` answers 403 to every
+     * non-browser client, so this page, saved from a browser-agent fetch, is the whole of
+     * GIJN's presence in the corpus (PLAN-12 §0.3).
+     */
+    val gijn: ArticleFixture = ArticleFixture(
+        slug = "gijn-conflict-zones",
+        url = "https://gijn.org/stories/investigating-inside-conflict-zones-africa/",
+        cms = "WordPress",
+        mid = "Mumin says he has even abandoned investigations when the risks to sources or colleagues became too high.",
+        last = "protects the people who helped reveal it, and remains safe enough to keep reporting.",
+        excludes = listOf("Republish this article", "Read Next"),
+    )
+
+    /**
      * Seven more excerpt-only sources, chosen for CMS spread rather than for difficulty.
      * The last of them arrived the other way round: the Hugging Face blog was harvested by
      * W06 because it *failed*, and W07's two-pass rule is what let it join the contract.
@@ -246,6 +263,7 @@ object ArticleFixtures {
         ),
         squarespaceTable,
         bellingcat,
+        gijn,
     )
 
     /**

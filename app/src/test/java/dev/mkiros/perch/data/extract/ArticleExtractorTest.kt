@@ -232,6 +232,25 @@ class ArticleExtractorTest {
     }
 
     /**
+     * #67, on the page the reader reported: three legacy-shortcode captions, each a
+     * `div.wp-caption` with an `img[aria-describedby]` and the `p.wp-caption-text` it names.
+     * Extracted, sanitized and lowered, each caption must ride under its image, and none may
+     * be left standing as a paragraph of body text.
+     */
+    @Test
+    fun `a wordpress caption page lowers its captions under their images, not as paragraphs`() {
+        val fixture = ArticleFixtures.gijn
+        val html = requireNotNull(ArticleExtractor.extract(fixture.html(), fixture.url))
+        val blocks = flatten(ArticleLowering.toBlocks(HtmlSanitizer.sanitize(html, fixture.url)))
+
+        assertThat(blocks.filterIsInstance<ArticleBlock.Image>().count { it.caption != null }).isAtLeast(3)
+        assertThat(
+            blocks.filterIsInstance<ArticleBlock.Paragraph>().map { it.text.text }
+                .filter { it.startsWith("Zubaida Baba Ibrahim records") },
+        ).isEmpty()
+    }
+
+    /**
      * The distinct figure URLs in [html], icons aside: the 27-pixel glyph in the donate
      * block is F04's to remove, and this count must not move when it does.
      */

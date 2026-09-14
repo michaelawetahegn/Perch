@@ -374,7 +374,7 @@ review box (F15) is second from last, as CLAUDE.md requires.
         closed naming both commits; pushed.
       - Rung: unit + one bounded live run
 
-- [ ] **F05 — A caption reads as a caption. TDD. Issue #67.**
+- [x] **F05 — A caption reads as a caption. TDD. Issue #67.**
       `gh issue view 67 --json body` — the reader's words: "recognizing texts that are under
       images … likely subtext under an image instead of normal text". §0.3 rule 1 is the
       decision, and the two things to say back on the issue (what can be seen, what cannot).
