@@ -48,8 +48,6 @@
 - 2026-08-08 — **U09: the bottom bar and `NavHost` are siblings**; **Feed's `DrawerState`/`LazyListState` are
   hoisted into `PerchNavHost`** (state remembered inside Feed dies on a tab switch); back policy is the pure
   `nextBackStep(BackState)` in `BackChain.kt`. **U09a:** the selection `BackHandler` must live *inside* `ModalDrawerSheet` — the root one wins otherwise.
-- 2026-08-08 — **U10: `ArticleLowering` deletes truncation markers as chrome**, so `FullText` looks
-  for "Continue reading" in the *unlowered* text; an extraction only ever replaces a body it beats.
 - 2026-08-08 — **U14 (profile).** `pending_entry_state`, keyed `(feedUrl, guid)`, **no FK to `feeds`** — its job is
   outliving a source that does not exist yet. `EntryDao.upsertAll` consumes parked rows, so a restore's flag turns
   **on** and never off (idempotent). Codec is `org.json` — its tests need Robolectric.
@@ -83,17 +81,18 @@
   All Time or a fresh install looks empty. `adb shell input text` drops everything past ~15
   characters — type a URL in short chunks, submit with `input keyevent 66`; never tap a button at
   its dump bounds while the IME is up (uiautomator does not dump it) — `keyevent 111` hides it.
-- 2026-09-08 — **D21: `SettingsStore` persists an enum by its bare `name`**, so moving one to
-  `model/` is invisible to an installed reader; `SettingsStoreTest` pins that with a base64
-  preferences file **captured from 8e9a5b8** — only regenerate it from a build that wrote it.
 - 2026-09-08 — **Two full-suite-only flakes; both are green alone and on a re-run, so re-run before diagnosing.**
   `WorkSchedulerTest > choosing manual cancels…` (3 of 5 runs by D15) waits on WorkManager's *own* task executor,
   which `SynchronousExecutor` does not cover, so a loaded host outruns the 20 s `awaitInRealTime`.
   `SettingsViewModelTest` (D23, 1 of 2 runs) failed inside `Dispatchers.setMain`/`resetMain`. If either hardens, fix it.
-- 2026-09-07 — **S12, live acceptance v6 (15 gates, ~90 s).** Gates 13/14/15 take their keywords **out of the corpus
-  that just arrived** (the file's KDoc). A gate keyword must be ASCII-lettered and space-delimited or it tests
-  typography, not search: FTS4's `simple` tokenizer keeps every byte above 0x7F *inside* a word, `FtsQuery` splits on it.
 - 2026-09-08 — **D28/D29a: the design screenshots are no committed baseline** — they render into gitignored
   `build/perch-screenshots`, which **keeps stale shots: `rm -rf` it and `--rerun`** or the diff shows phantom extras.
   The proof does it itself: `git worktree add /tmp/perch-<ref> <ref>`, copy `local.properties` in, `--tests
   '*ScreenshotTest*'` both sides, `md5sum` both dirs, `git worktree remove`. **35/35** twice, v0.6.0 and D29a.
+- 2026-09-14 — **F04: live gate 7 still fails after the §0.7 harness fix — two runs, BLOCKED, not chased.** Every
+  other gate prints (5b: `www.bellingcat.com 100.0% 10/10`, F03's images are back). `showArticle` now also waits for
+  the full-text fetch to come *and go* (it asks `FullText.needsExtraction` as the view-model does; the flag rises after
+  `Loading` ends). Still `onAllNodesWithTag(IMAGE)[0].performClick()` succeeds and no `article:image-viewer` node
+  follows. The handler opens the viewer unconditionally (`ArticleBody` `onOpenImage`), so the tap is not reaching it —
+  suspect the first IMAGE node of a 44-image body is composed ahead of the fold. Next owner (F15/F16): `performScrollTo` first.
+

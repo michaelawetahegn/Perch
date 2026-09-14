@@ -350,7 +350,7 @@ review box (F15) is second from last, as CLAUDE.md requires.
         (left open for F04); pushed.
       - Rung: unit
 
-- [ ] **F04 — A call-to-action block is not article text. TDD. Issue #70 (part 2 of 2).**
+- [BLOCKED: gate 7 — the rule itself landed (sanitizer pre-pass + extractor, 2004 tests green, #70 closed); live acceptance still fails at the image viewer with the §0.7 harness fix applied, two runs, see NOTES.md 2026-09-14] **F04 — A call-to-action block is not article text. TDD. Issue #70 (part 2 of 2).**
       The reader's words: "some of the donation banners and stuff are displayed as text".
       §0.3 rule 2 is the decision, including both guards and the 400-character ceiling.
       1. **RED:** `HtmlSanitizerTest` — `a donate block with a button and a sentence is dropped`

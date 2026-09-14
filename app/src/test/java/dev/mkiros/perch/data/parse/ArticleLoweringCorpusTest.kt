@@ -61,6 +61,35 @@ class ArticleLoweringCorpusTest {
         ).isEqualTo("0/$total blocks unsupported: []")
     }
 
+    /**
+     * #70's second half (F04): Bellingcat repeats its donation plea inside every body, as a
+     * class-named `div` with a heading, a sentence and a button. It must not reach the reader
+     * as text — from any of the ten items, not just the meatiest.
+     */
+    @Test
+    fun `no bellingcat item lowers its donation plea into text`() {
+        val snapshot = File(repoRoot(), "fixtures/snapshots/bellingcat-com.xml")
+        val feed = (FeedParser().parse(snapshot.readBytes(), null, feedUrls()["bellingcat-com"]) as ParseResult.Success).feed
+        assertThat(feed.entries.size).isAtLeast(10)
+
+        val offenders = feed.entries.filter { entry ->
+            val blocks = ArticleLowering.toBlocks(HtmlSanitizer.sanitize(entry.contentHtml, entry.link))
+            flatten(blocks).any { block -> texts(block).any { "Your donations" in it } }
+        }
+
+        assertThat(offenders.map { it.title }).isEmpty()
+    }
+
+    private fun texts(block: ArticleBlock): List<String> = when (block) {
+        is ArticleBlock.Paragraph -> listOf(block.text.text)
+        is ArticleBlock.Heading -> listOf(block.text.text)
+        is ArticleBlock.ListBlock -> block.items.map { it.text }
+        is ArticleBlock.Image -> listOfNotNull(block.caption?.text)
+        is ArticleBlock.Table -> (block.header + block.rows.flatten()).map { it.text }
+        is ArticleBlock.Code -> listOf(block.text)
+        else -> emptyList()
+    }
+
     /** Quote is the one block that holds blocks; its contents are held to the same rules. */
     private fun flatten(blocks: List<ArticleBlock>): List<ArticleBlock> =
         blocks.flatMap { if (it is ArticleBlock.Quote) listOf(it) + flatten(it.blocks) else listOf(it) }

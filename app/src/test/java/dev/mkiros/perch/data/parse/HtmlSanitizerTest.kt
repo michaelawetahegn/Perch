@@ -239,6 +239,50 @@ class HtmlSanitizerTest {
         assertThat(HtmlSanitizer.summarize("<p> </p><img src=\"/a.png\">")).isNull()
     }
 
+    // ---- promotional blocks (F04, #70) ------------------------------------------
+
+    @Test
+    fun `a donate block with a button and a sentence is dropped`() {
+        // Bellingcat's Gutenberg shape: no aside, no role, no form — only class tokens name it.
+        val out = sanitize(
+            """
+            <p>The visas were issued in 2019.</p>
+            <div class="wp-block-bellingcat-donate-block"><div>
+              <div class="wp-block-image alignleft"><figure><div class="media">
+                <img src="/q.png" alt="" width="27" height="27"></div></figure></div>
+              <h2>Support Bellingcat</h2>
+              <p>Your donations directly contribute to our ability to publish investigations.</p>
+              <div class="wp-block-buttons"><div class="wp-block-button">
+                <a class="wp-block-button__link" href="https://bellingcat.com/donate">Donate</a>
+              </div></div>
+            </div></div>
+            <p>The cartel's members arrived on them.</p>
+            """.trimIndent(),
+        )!!
+
+        assertThat(out).doesNotContain("Support")
+        assertThat(out).doesNotContain("Your donations")
+        assertThat(out).doesNotContain("q.png")
+        assertThat(out).contains("<p>The visas were issued in 2019.</p>")
+        assertThat(out).contains("<p>The cartel's members arrived on them.</p>")
+    }
+
+    @Test
+    fun `a section whose id merely contains donation but holds real prose survives`() {
+        val paragraph = "<p>" + "Every year the records are audited by an outside firm. ".repeat(4) + "</p>"
+        val out = sanitize("""<section id="donation-records">$paragraph$paragraph$paragraph</section>""")!!
+
+        assertThat(out).contains("audited by an outside firm")
+        assertThat(Regex("<p>").findAll(out).count()).isEqualTo(3)
+    }
+
+    @Test
+    fun `a promo paragraph with no link survives`() {
+        val out = sanitize("""<p class="promo">Our next issue ships in March.</p>""")!!
+
+        assertThat(out).isEqualTo("<p>Our next issue ships in March.</p>")
+    }
+
     // ---- a real blob from the corpus ---------------------------------------------
 
     @Test

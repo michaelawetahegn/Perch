@@ -1948,6 +1948,21 @@ class LiveAcceptanceTest {
         compose.awaitInRealTime("“${sample.title}” to load") {
             viewModel.state.value !is ArticleUiState.Loading
         }
+        // F04/§0.7: the body on screen is not yet the body the reader gets. The view-model
+        // kicks off the full-text fetch *after* `Loading` ends (a read-mark write sits
+        // between), and a successful extraction replaces every block — so a tap aimed at
+        // an image from the feed body lands on nothing. Ask the same question the
+        // view-model asks, and if a fetch is coming, wait for it to have come and gone.
+        val entry = runBlocking { perch.container.entries.find(sample.entryId) } ?: return
+        val fetchComing = entry.fullTextAt == null &&
+            FullText.needsExtraction(entry.contentHtml, entry.bodyIsExcerpt)
+        if (!fetchComing) return
+        var fetchSeen = false
+        compose.awaitInRealTime("“${sample.title}” to finish fetching its full text") {
+            val current = viewModel.state.value as? ArticleUiState.Loaded ?: return@awaitInRealTime false
+            if (current.isFetchingFullText) fetchSeen = true
+            !current.isFetchingFullText && (fetchSeen || !current.canLoadFullText)
+        }
     }
 
     private fun capture(name: String): Screenshots.Shot {

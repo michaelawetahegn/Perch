@@ -35,6 +35,9 @@ object HtmlSanitizer {
         val raw = html?.takeIf { it.isNotBlank() } ?: return null
         val dirty = runCatching { Jsoup.parse(raw, baseUrl.orEmpty()) }.getOrNull() ?: return null
 
+        // Before DROP_WHOLESALE: a `<button>` is one of the two things that make a block a
+        // plea rather than prose, and the wholesale pass would take it first.
+        dirty.select("[class], [id]").filter { isPromotional(it) }.forEach { it.remove() }
         dirty.select(DROP_WHOLESALE).remove()
         dirty.select("img").forEach { promoteLazySource(it) }
         dirty.select("img").filter { isTrackingPixel(it) }.forEach { it.remove() }
@@ -113,6 +116,21 @@ object HtmlSanitizer {
         listOf("width", "height").any { img.attr(it).trim().toIntOrNull()?.let { px -> px <= 1 } == true }
 
     /**
+     * A call-to-action block is not article text (F04, #70): its `class`/`id` tokens name it
+     * ([PROMOTIONAL_TOKENS]) **and** it holds a link or a button **and** it carries fewer
+     * than [SHORT_BLOCK_CEILING] characters of text. All three, so a `<div
+     * id="donation-records">` wrapping three real paragraphs survives, and so does a naked
+     * `<p class="promo">` with nothing to tap. Only class tokens ever name Bellingcat's
+     * block — no `<aside>`, no `role`, no `<form>` — which is why this runs here, the last
+     * point on the feed path where those attributes still exist, and why `ArticleExtractor`
+     * asks the same question before its own image exemption.
+     */
+    internal fun isPromotional(element: Element): Boolean =
+        PROMOTIONAL.containsMatchIn("${element.className()} ${element.id()}") &&
+            element.selectFirst("a, button") != null &&
+            element.text().length < SHORT_BLOCK_CEILING
+
+    /**
      * Puts the picture a lazy-loading CMS hid behind a `data-*` attribute into `src`, so
      * the [Cleaner] — which keeps `src` and nothing else — keeps the picture (F03, #70).
      *
@@ -158,6 +176,25 @@ object HtmlSanitizer {
     private val LANGUAGE_CLASS = Regex(
         "(?:language|lang|highlight-source|brush)[-:]([A-Za-z0-9+#._-]+)",
     )
+
+    /**
+     * Under this much text, a named block is judged by what it holds rather than what it
+     * says: a chrome-named container that is mostly a picture is a figure (F03), and a
+     * promotion-named one that is mostly a button is a plea (F04). A block above it is
+     * prose whatever its name.
+     */
+    internal const val SHORT_BLOCK_CEILING: Int = 400
+
+    /**
+     * The one list of tokens that name a promotional block, as an alternation. [PROMOTIONAL]
+     * binds it to whole tokens here; `ArticleExtractor.NEGATIVE` reads the same string so
+     * the extractor's scoring agrees with the sanitizer's removal.
+     */
+    internal const val PROMOTIONAL_TOKENS: String =
+        "donat\\w*|promo\\w*|banner|newsletter|subscribe|subscription|appeal|membership|" +
+            "support-us|cta|call-to-action"
+
+    private val PROMOTIONAL = Regex("\\b(?:$PROMOTIONAL_TOKENS)\\b", RegexOption.IGNORE_CASE)
 
     /** Where a lazy-loading CMS puts the real picture, in the order the corpus meets them. */
     private val LAZY_SRC = listOf("data-src", "data-lazy-src", "data-original")

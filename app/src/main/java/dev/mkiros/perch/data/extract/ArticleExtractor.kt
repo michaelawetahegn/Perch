@@ -320,12 +320,16 @@ object ArticleExtractor {
     /**
      * A name says chrome and nothing that sounds like an article — unless the container is
      * mostly a picture (F03, #70): a `media`/`thumb`/`gallery` wrapper holding a real image
-     * and under [FIGURE_TEXT_CEILING] of text *is* the content, whatever it is called. */
+     * and under [HtmlSanitizer.SHORT_BLOCK_CEILING] of text *is* the content, whatever it is
+     * called. A promotional block is asked first (F04): Bellingcat's donate plea carries an
+     * icon, and the icon must not buy it the figure exemption. */
     private fun Element.namesChrome(): Boolean {
         val name = "${className()} ${id()}"
         if (name.isBlank()) return false
+        if (HtmlSanitizer.isPromotional(this)) return true
         if (!NEGATIVE.containsMatchIn(name) || POSITIVE.containsMatchIn(name)) return false
-        return text().length >= FIGURE_TEXT_CEILING || select("img").none { !HtmlSanitizer.isTrackingPixel(it) }
+        return text().length >= HtmlSanitizer.SHORT_BLOCK_CEILING ||
+            select("img").none { !HtmlSanitizer.isTrackingPixel(it) }
     }
 
     /** Every URL absolute, once the sanitizer's one lazy-source rule has filled `src` (F03). */
@@ -375,7 +379,6 @@ object ArticleExtractor {
     private const val MIN_TABLE_COLUMNS = 2
     private const val LINKY = 0.5
     private const val CHROME_TEXT_CEILING = 200
-    private const val FIGURE_TEXT_CEILING = 400
 
     /** A page that yields less than this is a page we failed to read, not a short article. */
     const val MIN_PROSE_CHARS = 200
@@ -385,11 +388,16 @@ object ArticleExtractor {
         RegexOption.IGNORE_CASE,
     )
 
+    /**
+     * Readability's list, plus the sanitizer's promotional tokens (F04) bound to whole
+     * tokens — `cta` must not match inside `octagon` the way `media` matches `multimedia`.
+     */
     private val NEGATIVE = Regex(
         "combx|comment|contact|foot|footer|footnote|masthead|media|meta|outbrain|promo|" +
             "related|scroll|share|shoutbox|sidebar|sponsor|shopping|tags|tool|widget|nav|" +
             "menu|banner|cookie|consent|newsletter|subscribe|social|breadcrumb|pagination|" +
-            "pager|popup|modal|skip|toolbar|byline|author-bio|disqus|hidden|sr-only",
+            "pager|popup|modal|skip|toolbar|byline|author-bio|disqus|hidden|sr-only|" +
+            "\\b(?:${HtmlSanitizer.PROMOTIONAL_TOKENS})\\b",
         RegexOption.IGNORE_CASE,
     )
 }

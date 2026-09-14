@@ -161,8 +161,8 @@ object ArticleFixtures {
     /**
      * The Bellingcat page #70 is about (F03): a Gutenberg post whose every image sits in a
      * `<div class="media">`, and `media` is a chrome token. The site has no cookie banner;
-     * its chrome is the nav, the footer's own menu and the related-posts rail. (The donation
-     * plea in the footer is repeated inside the body — that one is F04's.)
+     * its chrome is the nav, the footer's own menu and the related-posts rail. The donation
+     * plea in the footer is repeated inside the body as a class-named block (F04).
      */
     val bellingcat: ArticleFixture = ArticleFixture(
         slug = "bellingcat-kinahan-visas",
@@ -175,6 +175,7 @@ object ArticleFixtures {
             "Investigations Resources Ukraine Workshops",
             "Who We Are General Information Our Team Awards",
             "Related articles",
+            "Support Bellingcat",
         ),
     )
 
