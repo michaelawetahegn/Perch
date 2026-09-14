@@ -25,8 +25,6 @@ import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.repo.ArticleTextRepository
 import dev.mkiros.perch.support.PerchRule
-import dev.mkiros.perch.support.testEntry
-import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.theme.Dimens
 import dev.mkiros.perch.ui.theme.PerchTheme
@@ -58,13 +56,17 @@ class ArticleScreenTest {
     private val now = Instant.parse("2026-08-07T12:00:00Z")
     private val clock = Clock.fixed(now, ZoneOffset.UTC)
 
+    /** The bylines below assert the date, so the seed says it rather than taking the rule's. */
+    private val fourDaysAgo = now.minusSeconds(4 * DAY).toEpochMilli()
+
     @get:Rule(order = 1)
     val perch = PerchRule(clock = clock)
 
     @Test
     fun `the article shows its headline, its byline, and its body`() {
-        val feedId = seedFeed(title = "Null Program")
-        val entryId = seedEntry(
+        val feedId = perch.seedFeed(title = "Null Program")
+        val entryId = perch.seedEntry(
+            publishedAt = fourDaysAgo,
             feedId = feedId,
             title = "An Async Runtime in C",
             author = "Chris Wellons",
@@ -85,8 +87,12 @@ class ArticleScreenTest {
 
     @Test
     fun `a source the reader renamed appears in the byline under that name`() {
-        val feedId = seedFeed(title = "nullprogram.com", customTitle = "Chris Wellons")
-        val entryId = seedEntry(feedId = feedId, title = "Practical libc-free threading")
+        val feedId = perch.seedFeed(title = "nullprogram.com", customTitle = "Chris Wellons")
+        val entryId = perch.seedEntry(
+            feedId = feedId,
+            title = "Practical libc-free threading",
+            publishedAt = fourDaysAgo,
+        )
 
         showArticle(entryId)
 
@@ -105,8 +111,8 @@ class ArticleScreenTest {
      */
     @Test
     fun `tapping the source name asks for that source's list`() {
-        val feedId = seedFeed(title = "Null Program")
-        val entryId = seedEntry(feedId = feedId, title = "An Async Runtime in C")
+        val feedId = perch.seedFeed(title = "Null Program")
+        val entryId = perch.seedEntry(feedId = feedId, title = "An Async Runtime in C")
         val opened = mutableListOf<Long>()
 
         showArticle(entryId, onOpenSource = { opened += it })
@@ -117,8 +123,8 @@ class ArticleScreenTest {
 
     @Test
     fun `the source name is a button with a hit area a thumb can find`() {
-        val feedId = seedFeed(title = "Null Program")
-        val entryId = seedEntry(feedId = feedId, title = "An Async Runtime in C")
+        val feedId = perch.seedFeed(title = "Null Program")
+        val entryId = perch.seedEntry(feedId = feedId, title = "An Async Runtime in C")
 
         showArticle(entryId)
 
@@ -132,8 +138,9 @@ class ArticleScreenTest {
     /** A feed that shipped no title has nothing to tap, and the line just starts later. */
     @Test
     fun `a source with no name at all leaves the byline without a first segment`() {
-        val feedId = seedFeed(title = "")
-        val entryId = seedEntry(
+        val feedId = perch.seedFeed(title = "")
+        val entryId = perch.seedEntry(
+            publishedAt = fourDaysAgo,
             feedId = feedId,
             title = "An Async Runtime in C",
             author = "Chris Wellons",
@@ -156,8 +163,9 @@ class ArticleScreenTest {
      */
     @Test
     fun `a byline whose date was guessed marks it with a tilde`() {
-        val feedId = seedFeed(title = "Null Program")
-        val entryId = seedEntry(
+        val feedId = perch.seedFeed(title = "Null Program")
+        val entryId = perch.seedEntry(
+            publishedAt = fourDaysAgo,
             feedId = feedId,
             title = "An Async Runtime in C",
             author = "Chris Wellons",
@@ -172,8 +180,8 @@ class ArticleScreenTest {
 
     @Test
     fun `a byline whose date came from the article carries no tilde`() {
-        val feedId = seedFeed(title = "Null Program")
-        val entryId = seedEntry(feedId = feedId, title = "An Async Runtime in C")
+        val feedId = perch.seedFeed(title = "Null Program")
+        val entryId = perch.seedEntry(feedId = feedId, title = "An Async Runtime in C", publishedAt = fourDaysAgo)
 
         showArticle(entryId)
 
@@ -194,8 +202,8 @@ class ArticleScreenTest {
      */
     @Test
     fun `a long byline stacks the source above the rest instead of wrapping around it`() {
-        val feedId = seedFeed(title = "Global Investigative Journalism Network")
-        val entryId = seedEntry(
+        val feedId = perch.seedFeed(title = "Global Investigative Journalism Network")
+        val entryId = perch.seedEntry(
             feedId = feedId,
             title = "Investigating Inside Conflict Zones in Africa",
             author = "Benon Herbert Oluka and Rowan Philp",
@@ -211,8 +219,8 @@ class ArticleScreenTest {
 
     @Test
     fun `opening an entry marks it read`() {
-        val feedId = seedFeed(title = "Null Program")
-        val entryId = seedEntry(feedId = feedId, title = "An Async Runtime in C")
+        val feedId = perch.seedFeed(title = "Null Program")
+        val entryId = perch.seedEntry(feedId = feedId, title = "An Async Runtime in C")
         assertThat(entry(entryId).isRead).isFalse()
 
         showArticle(entryId)
@@ -224,8 +232,8 @@ class ArticleScreenTest {
 
     @Test
     fun `open in browser hands the entry's link to the system`() {
-        val feedId = seedFeed(title = "Null Program")
-        val entryId = seedEntry(
+        val feedId = perch.seedFeed(title = "Null Program")
+        val entryId = perch.seedEntry(
             feedId = feedId,
             title = "An Async Runtime in C",
             link = "https://nullprogram.com/blog/2026/08/03/",
@@ -241,8 +249,8 @@ class ArticleScreenTest {
 
     @Test
     fun `sharing an article hands the system a send carrying its link`() {
-        val feedId = seedFeed(title = "Null Program")
-        val entryId = seedEntry(
+        val feedId = perch.seedFeed(title = "Null Program")
+        val entryId = perch.seedEntry(
             feedId = feedId,
             title = "An Async Runtime in C",
             link = "https://nullprogram.com/blog/2026/08/03/",
@@ -263,8 +271,8 @@ class ArticleScreenTest {
 
     @Test
     fun `copy link puts the entry's link on the clipboard`() {
-        val feedId = seedFeed(title = "Null Program")
-        val entryId = seedEntry(
+        val feedId = perch.seedFeed(title = "Null Program")
+        val entryId = perch.seedEntry(
             feedId = feedId,
             title = "An Async Runtime in C",
             link = "https://nullprogram.com/blog/2026/08/03/",
@@ -279,8 +287,8 @@ class ArticleScreenTest {
 
     @Test
     fun `an entry with no body offers its summary and a way to read it on the web`() {
-        val feedId = seedFeed(title = "Null Program")
-        val entryId = seedEntry(
+        val feedId = perch.seedFeed(title = "Null Program")
+        val entryId = perch.seedEntry(
             feedId = feedId,
             title = "An Async Runtime in C",
             summary = "Coroutines without a language runtime, in about 200 lines.",
@@ -301,8 +309,8 @@ class ArticleScreenTest {
 
     @Test
     fun `a summary the body already opens with is not repeated as a standfirst`() {
-        val feedId = seedFeed(title = "Null Program")
-        val entryId = seedEntry(
+        val feedId = perch.seedFeed(title = "Null Program")
+        val entryId = perch.seedEntry(
             feedId = feedId,
             title = "An Async Runtime in C",
             summary = "Coroutines without a language runtime",
@@ -325,8 +333,8 @@ class ArticleScreenTest {
      */
     @Test
     fun `a summary running past the body's first block is still not repeated`() {
-        val feedId = seedFeed(title = "Embedded in Academia")
-        val entryId = seedEntry(
+        val feedId = perch.seedFeed(title = "Embedded in Academia")
+        val entryId = perch.seedEntry(
             feedId = feedId,
             title = "Bugfinding for LLVM's AArch64 Backend",
             summary = "Overview [Co-authored by Ryan Berger.] An optimizing compiler has " +
@@ -346,8 +354,8 @@ class ArticleScreenTest {
 
     @Test
     fun `a summary that adds something to the body runs as a standfirst`() {
-        val feedId = seedFeed(title = "Null Program")
-        val entryId = seedEntry(
+        val feedId = perch.seedFeed(title = "Null Program")
+        val entryId = perch.seedEntry(
             feedId = feedId,
             title = "An Async Runtime in C",
             summary = "Why the obvious approach deadlocks.",
@@ -364,7 +372,7 @@ class ArticleScreenTest {
 
     @Test
     fun `the like toggle files the entry under Liked and flips its own label`() {
-        val entryId = seedEntry(seedFeed(title = "Null Program"), title = "An Async Runtime in C")
+        val entryId = perch.seedEntry(perch.seedFeed(title = "Null Program"), title = "An Async Runtime in C")
         showArticle(entryId)
 
         // Off: the outlined glyph, and the verb is the direction it is about to go.
@@ -377,7 +385,7 @@ class ArticleScreenTest {
 
     @Test
     fun `the save toggle files the entry under To-Read and flips its own label`() {
-        val entryId = seedEntry(seedFeed(title = "Null Program"), title = "An Async Runtime in C")
+        val entryId = perch.seedEntry(perch.seedFeed(title = "Null Program"), title = "An Async Runtime in C")
         showArticle(entryId)
 
         compose.onNodeWithContentDescription("Save for later").assertExists()
@@ -393,7 +401,7 @@ class ArticleScreenTest {
      */
     @Test
     fun `a liked entry opens with its toggle already on`() {
-        val entryId = seedEntry(seedFeed(title = "Null Program"), title = "An Async Runtime in C")
+        val entryId = perch.seedEntry(perch.seedFeed(title = "Null Program"), title = "An Async Runtime in C")
         runBlocking { perch.container.entries.setLiked(entryId, isLiked = true) }
 
         showArticle(entryId)
@@ -411,8 +419,8 @@ class ArticleScreenTest {
      */
     @Test
     fun `leaving an article partway and reopening it resumes where the reader stopped`() {
-        val entryId = seedEntry(
-            feedId = seedFeed(title = "Null Program"),
+        val entryId = perch.seedEntry(
+            feedId = perch.seedFeed(title = "Null Program"),
             title = "A long read",
             contentHtml = (1..30).joinToString("") { "<p>Paragraph $it of a long article.</p>" },
         )
@@ -517,40 +525,6 @@ class ArticleScreenTest {
 
     private fun entry(entryId: Long): EntryEntity = runBlocking {
         perch.database.entryDao().observeAll().first().first { it.id == entryId }
-    }
-
-    private fun seedFeed(title: String, customTitle: String? = null): Long = runBlocking {
-        perch.database.feedDao().insert(
-            testFeed(
-                title = title,
-                customTitle = customTitle,
-            ),
-        )
-    }
-
-    private fun seedEntry(
-        feedId: Long,
-        title: String,
-        author: String? = null,
-        summary: String? = "A short summary.",
-        contentHtml: String? = "<p>The body of the post.</p>",
-        link: String? = "https://example.com/post",
-        publishedIsEstimated: Boolean = false,
-    ): Long = runBlocking {
-        perch.database.entryDao().insert(
-            testEntry(
-                feedId = feedId,
-                title = title,
-                link = link,
-                author = author,
-                publishedAt = now.minusSeconds(4 * DAY).toEpochMilli(),
-                publishedIsEstimated = publishedIsEstimated,
-                summary = summary,
-                contentHtml = contentHtml,
-                isRead = false,
-                fetchedAt = now.toEpochMilli(),
-            ),
-        )
     }
 
     private companion object {

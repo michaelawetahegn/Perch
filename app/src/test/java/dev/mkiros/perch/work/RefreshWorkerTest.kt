@@ -8,7 +8,7 @@ import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.EntryDao
 import dev.mkiros.perch.data.db.FeedDao
 import dev.mkiros.perch.data.db.PerchDatabase
-import dev.mkiros.perch.data.db.entity.FeedEntity
+import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.data.net.FeedFetcher
 import dev.mkiros.perch.data.repo.FeedRepository
 import java.time.Clock
@@ -170,16 +170,11 @@ class RefreshWorkerTest {
         failures: Int = 0,
         lastFetchedAt: Long? = null,
     ): Long = feeds.insert(
-        FeedEntity(
+        testFeed(
+            title = path,
             feedUrl = server.url(path).toString(),
             siteUrl = null,
-            title = path,
-            customTitle = null,
-            faviconUrl = null,
-            etag = null,
-            lastModified = null,
             lastFetchedAt = lastFetchedAt,
-            lastSuccessAt = null,
             lastError = if (failures > 0) "Nope." else null,
             consecutiveFailures = failures,
             addedAt = now,

@@ -14,9 +14,9 @@ import androidx.compose.ui.test.performTextReplacement
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.PerchDatabase
-import dev.mkiros.perch.data.db.entity.EntryEntity
-import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.repo.EntryRepository
+import dev.mkiros.perch.support.testEntry
+import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.theme.PerchTheme
 import kotlinx.coroutines.runBlocking
@@ -223,32 +223,15 @@ class SearchSurfaceTest {
         )
     }
 
-    private fun feed(url: String, title: String) = FeedEntity(
-        feedUrl = url,
-        siteUrl = url,
-        title = title,
-        customTitle = null,
-        faviconUrl = null,
-        etag = null,
-        lastModified = null,
-        lastFetchedAt = null,
-        lastSuccessAt = null,
-        lastError = null,
-        addedAt = 0L,
-    )
+    private fun feed(url: String, title: String) = testFeed(title = title, feedUrl = url, siteUrl = url)
 
-    private fun entry(feedId: Long, guid: String, title: String, html: String) = EntryEntity(
+    private fun entry(feedId: Long, guid: String, title: String, html: String) = testEntry(
         feedId = feedId,
         guid = guid,
         title = title,
         link = "https://example.com/$guid",
-        author = null,
         publishedAt = 1_700_000_000_000L,
-        publishedIsEstimated = false,
-        summary = null,
         contentHtml = html,
-        imageUrl = null,
-        readAt = null,
         fetchedAt = 0L,
     )
 }

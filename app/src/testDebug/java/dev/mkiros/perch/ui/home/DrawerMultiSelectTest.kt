@@ -27,8 +27,6 @@ import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.model.TimeFilter
 import dev.mkiros.perch.support.PerchRule
-import dev.mkiros.perch.support.testEntry
-import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.screenshot.showHome as showHomeScreen
 import java.time.Clock
@@ -80,8 +78,8 @@ class DrawerMultiSelectTest {
 
     @Test
     fun `long-pressing a source enters selection mode holding that source`() {
-        val gpuopen = seedFeed(title = "GPUOpen")
-        seedFeed(title = "nullprogram.com")
+        val gpuopen = perch.seedFeed(title = "GPUOpen")
+        perch.seedFeed(title = "nullprogram.com")
 
         showHome()
         longPress("GPUOpen")
@@ -94,8 +92,8 @@ class DrawerMultiSelectTest {
 
     @Test
     fun `tapping rows adds and removes them from the selection`() {
-        val gpuopen = seedFeed(title = "GPUOpen")
-        val nullprogram = seedFeed(title = "nullprogram.com")
+        val gpuopen = perch.seedFeed(title = "GPUOpen")
+        val nullprogram = perch.seedFeed(title = "nullprogram.com")
 
         showHome()
         longPress("GPUOpen")
@@ -111,7 +109,7 @@ class DrawerMultiSelectTest {
 
     @Test
     fun `unticking the last row leaves selection mode`() {
-        seedFeed(title = "GPUOpen")
+        perch.seedFeed(title = "GPUOpen")
 
         showHome()
         longPress("GPUOpen")
@@ -123,7 +121,7 @@ class DrawerMultiSelectTest {
 
     @Test
     fun `the close action leaves selection and gives the drawer back`() {
-        seedFeed(title = "GPUOpen")
+        perch.seedFeed(title = "GPUOpen")
 
         showHome()
         longPress("GPUOpen")
@@ -137,8 +135,8 @@ class DrawerMultiSelectTest {
 
     @Test
     fun `a selection started on a source will not take a folder`() {
-        val graphics = seedFolder("Graphics")
-        seedFeed(title = "GPUOpen", folderId = graphics)
+        val graphics = perch.seedFolder("Graphics")
+        perch.seedFeed(title = "GPUOpen", folderId = graphics)
 
         showHome()
         longPress("GPUOpen", folderId = graphics)
@@ -155,8 +153,8 @@ class DrawerMultiSelectTest {
 
     @Test
     fun `a selection started on a folder will not take a source`() {
-        val graphics = seedFolder("Graphics")
-        val gpuopen = seedFeed(title = "GPUOpen", folderId = graphics)
+        val graphics = perch.seedFolder("Graphics")
+        val gpuopen = perch.seedFeed(title = "GPUOpen", folderId = graphics)
 
         showHome()
         // Expanded before selection starts: mid-folder-selection the chevron is a
@@ -180,8 +178,8 @@ class DrawerMultiSelectTest {
      */
     @Test
     fun `mid-source-selection a folder header is drawn as unavailable`() {
-        val graphics = seedFolder("Graphics")
-        seedFeed(title = "GPUOpen", folderId = graphics)
+        val graphics = perch.seedFolder("Graphics")
+        perch.seedFeed(title = "GPUOpen", folderId = graphics)
 
         showHome()
         longPress("GPUOpen", folderId = graphics)
@@ -192,9 +190,9 @@ class DrawerMultiSelectTest {
 
     @Test
     fun `mid-folder-selection only Uncategorized is drawn as unavailable`() {
-        val graphics = seedFolder("Graphics")
-        seedFeed(title = "GPUOpen", folderId = graphics)
-        seedFeed(title = "nullprogram.com")
+        val graphics = perch.seedFolder("Graphics")
+        perch.seedFeed(title = "GPUOpen", folderId = graphics)
+        perch.seedFeed(title = "nullprogram.com")
 
         showHome()
         longPressFolder(graphics)
@@ -206,9 +204,9 @@ class DrawerMultiSelectTest {
 
     @Test
     fun `outside selection every folder header is available`() {
-        val graphics = seedFolder("Graphics")
-        seedFeed(title = "GPUOpen", folderId = graphics)
-        seedFeed(title = "nullprogram.com")
+        val graphics = perch.seedFolder("Graphics")
+        perch.seedFeed(title = "GPUOpen", folderId = graphics)
+        perch.seedFeed(title = "nullprogram.com")
 
         showHome()
         openDrawer()
@@ -220,9 +218,9 @@ class DrawerMultiSelectTest {
 
     @Test
     fun `Uncategorized cannot be ticked in a folder selection`() {
-        val graphics = seedFolder("Graphics")
-        seedFeed(title = "GPUOpen", folderId = graphics)
-        seedFeed(title = "nullprogram.com")
+        val graphics = perch.seedFolder("Graphics")
+        perch.seedFeed(title = "GPUOpen", folderId = graphics)
+        perch.seedFeed(title = "nullprogram.com")
 
         showHome()
         longPressFolder(graphics)
@@ -237,10 +235,10 @@ class DrawerMultiSelectTest {
 
     @Test
     fun `deleting folders keeps every source and moves them to Uncategorized`() {
-        val graphics = seedFolder("Graphics")
-        val security = seedFolder("Security")
-        seedFeed(title = "GPUOpen", folderId = graphics)
-        seedFeed(title = "Zero Day Initiative", folderId = security)
+        val graphics = perch.seedFolder("Graphics")
+        val security = perch.seedFolder("Security")
+        perch.seedFeed(title = "GPUOpen", folderId = graphics)
+        perch.seedFeed(title = "Zero Day Initiative", folderId = security)
 
         showHome()
         longPressFolder(graphics)
@@ -257,10 +255,10 @@ class DrawerMultiSelectTest {
 
     @Test
     fun `undoing a folder delete restores the folders and their sources' membership`() {
-        val graphics = seedFolder("Graphics")
-        val security = seedFolder("Security")
-        seedFeed(title = "GPUOpen", folderId = graphics)
-        seedFeed(title = "Zero Day Initiative", folderId = security)
+        val graphics = perch.seedFolder("Graphics")
+        val security = perch.seedFolder("Security")
+        perch.seedFeed(title = "GPUOpen", folderId = graphics)
+        perch.seedFeed(title = "Zero Day Initiative", folderId = security)
 
         showHome()
         longPressFolder(graphics)
@@ -284,11 +282,11 @@ class DrawerMultiSelectTest {
      */
     @Test
     fun `deleting the folder being filtered on widens the feed back to every source`() {
-        val graphics = seedFolder("Graphics")
-        val gpuopen = seedFeed(title = "GPUOpen", folderId = graphics)
-        val other = seedFeed(title = "Zero Day Initiative")
-        seedEntry(feedId = gpuopen, title = "Only in Graphics")
-        seedEntry(feedId = other, title = "Outside every folder")
+        val graphics = perch.seedFolder("Graphics")
+        val gpuopen = perch.seedFeed(title = "GPUOpen", folderId = graphics)
+        val other = perch.seedFeed(title = "Zero Day Initiative")
+        perch.seedEntry(feedId = gpuopen, title = "Only in Graphics")
+        perch.seedEntry(feedId = other, title = "Outside every folder")
 
         showHome()
         tapFolder(graphics)
@@ -305,11 +303,11 @@ class DrawerMultiSelectTest {
 
     @Test
     fun `deleting sources asks first and names what the reader kept`() {
-        val gpuopen = seedFeed(title = "GPUOpen")
-        val nullprogram = seedFeed(title = "nullprogram.com")
-        seedEntry(gpuopen, "Saved one", isSaved = true)
-        seedEntry(gpuopen, "Liked one", isLiked = true)
-        seedEntry(nullprogram, "Just read")
+        val gpuopen = perch.seedFeed(title = "GPUOpen")
+        val nullprogram = perch.seedFeed(title = "nullprogram.com")
+        perch.seedEntry(gpuopen, "Saved one", savedAt = now.toEpochMilli())
+        perch.seedEntry(gpuopen, "Liked one", starredAt = now.toEpochMilli())
+        perch.seedEntry(nullprogram, "Just read")
 
         showHome()
         longPress("GPUOpen")
@@ -325,7 +323,7 @@ class DrawerMultiSelectTest {
 
     @Test
     fun `a batch holding nothing saved or liked says nothing about it`() {
-        seedFeed(title = "GPUOpen").also { seedEntry(it, "Just read") }
+        perch.seedFeed(title = "GPUOpen").also { perch.seedEntry(it, "Just read") }
 
         showHome()
         longPress("GPUOpen")
@@ -337,8 +335,8 @@ class DrawerMultiSelectTest {
 
     @Test
     fun `cancelling a source delete keeps the batch the reader assembled`() {
-        seedFeed(title = "GPUOpen")
-        seedFeed(title = "nullprogram.com")
+        perch.seedFeed(title = "GPUOpen")
+        perch.seedFeed(title = "nullprogram.com")
 
         showHome()
         longPress("GPUOpen")
@@ -352,11 +350,11 @@ class DrawerMultiSelectTest {
 
     @Test
     fun `confirming a source delete removes the whole batch and leaves selection`() {
-        val gpuopen = seedFeed(title = "GPUOpen")
-        seedFeed(title = "nullprogram.com")
-        val kept = seedFeed(title = "Zero Day Initiative")
-        seedEntry(gpuopen, "Goes with it", isSaved = true)
-        seedEntry(kept, "Stays")
+        val gpuopen = perch.seedFeed(title = "GPUOpen")
+        perch.seedFeed(title = "nullprogram.com")
+        val kept = perch.seedFeed(title = "Zero Day Initiative")
+        perch.seedEntry(gpuopen, "Goes with it", savedAt = now.toEpochMilli())
+        perch.seedEntry(kept, "Stays")
 
         showHome()
         longPress("GPUOpen")
@@ -373,8 +371,8 @@ class DrawerMultiSelectTest {
 
     @Test
     fun `selecting two sources offers to move them`() {
-        seedFeed(title = "GPUOpen")
-        seedFeed(title = "nullprogram.com")
+        perch.seedFeed(title = "GPUOpen")
+        perch.seedFeed(title = "nullprogram.com")
 
         showHome()
         longPress("GPUOpen")
@@ -389,9 +387,9 @@ class DrawerMultiSelectTest {
 
     @Test
     fun `moving a batch files every ticked source under the chosen folder`() {
-        val graphics = seedFolder("Graphics")
-        seedFeed(title = "GPUOpen")
-        seedFeed(title = "nullprogram.com")
+        val graphics = perch.seedFolder("Graphics")
+        perch.seedFeed(title = "GPUOpen")
+        perch.seedFeed(title = "nullprogram.com")
 
         showHome()
         longPress("GPUOpen")
@@ -411,9 +409,9 @@ class DrawerMultiSelectTest {
 
     @Test
     fun `a batch from different folders marks no folder as current`() {
-        val graphics = seedFolder("Graphics")
-        seedFeed(title = "GPUOpen")
-        seedFeed(title = "nullprogram.com", folderId = graphics)
+        val graphics = perch.seedFolder("Graphics")
+        perch.seedFeed(title = "GPUOpen")
+        perch.seedFeed(title = "nullprogram.com", folderId = graphics)
 
         showHome()
         // Expanded before the selection starts: the chevron stays live mid-selection, but
@@ -434,7 +432,7 @@ class DrawerMultiSelectTest {
 
     @Test
     fun `back leaves selection before it closes the drawer`() {
-        seedFeed(title = "GPUOpen")
+        perch.seedFeed(title = "GPUOpen")
 
         showHome()
         longPress("GPUOpen")
@@ -566,44 +564,6 @@ class DrawerMultiSelectTest {
         drawerState = home.drawerState
         selection = home.selection
         homeScope = home.homeScope
-    }
-
-    private fun seedFolder(name: String): Long = runBlocking {
-        perch.container.folders.createFolder(name)
-    }
-
-    private fun seedFeed(
-        title: String,
-        folderId: Long = FolderEntity.UNCATEGORIZED_ID,
-    ): Long = runBlocking {
-        perch.database.feedDao().insert(
-            testFeed(
-                title = title,
-                folderId = folderId,
-            ),
-        )
-    }
-
-    private fun seedEntry(
-        feedId: Long,
-        title: String,
-        isSaved: Boolean = false,
-        isLiked: Boolean = false,
-    ): Long = runBlocking {
-        perch.database.entryDao().insert(
-            testEntry(
-                feedId = feedId,
-                title = title,
-                publishedAt = now.minusSeconds(DAY).toEpochMilli(),
-                summary = "A short summary.",
-                isRead = false,
-                isSaved = isSaved,
-                savedAt = if (isSaved) now.toEpochMilli() else null,
-                isStarred = isLiked,
-                starredAt = if (isLiked) now.toEpochMilli() else null,
-                fetchedAt = now.toEpochMilli(),
-            ),
-        )
     }
 
     private companion object {

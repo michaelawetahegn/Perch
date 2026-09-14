@@ -1,6 +1,5 @@
 package dev.mkiros.perch.ui.article
 
-import android.content.Context
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsDisplayed
@@ -11,20 +10,13 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performSemanticsAction
-import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
-import dev.mkiros.perch.data.db.PerchDatabase
-import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.extract.ArticleFixtures
 import dev.mkiros.perch.data.parse.FetchedPage
 import dev.mkiros.perch.data.parse.PageFetcher
+import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.data.repo.ArticleTextRepository
-import dev.mkiros.perch.data.repo.EntryRepository
-import dev.mkiros.perch.data.repo.FeedRepository
-import dev.mkiros.perch.data.net.FeedFetcher
-import dev.mkiros.perch.data.net.PerchHttp
-import dev.mkiros.perch.support.testEntry
-import dev.mkiros.perch.support.testFeed
+import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.theme.PerchTheme
 import java.io.File
@@ -33,7 +25,6 @@ import java.time.Instant
 import java.time.ZoneOffset
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.runBlocking
-import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -56,42 +47,30 @@ import org.robolectric.RobolectricTestRunner
 @RunWith(RobolectricTestRunner::class)
 class ArticleFullTextTest {
 
-    @get:Rule
+    @get:Rule(order = 0)
     val compose = createAndroidComposeRule<ComponentActivity>()
-
-    private lateinit var database: PerchDatabase
-    private lateinit var entries: EntryRepository
-    private lateinit var feeds: FeedRepository
-    private var feedId: Long = 0
 
     private val now = Instant.parse("2026-08-08T12:00:00Z")
     private val clock = Clock.fixed(now, ZoneOffset.UTC)
+
+    @get:Rule(order = 1)
+    val perch = PerchRule(clock = clock)
+
+    private var feedId: Long = 0
 
     /** How many pages the screen actually asked for — a refresh must never fetch any. */
     private val fetches = AtomicInteger(0)
 
     @Before
     fun setUp() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        database = PerchDatabase.inMemory(context)
-        entries = EntryRepository(database.entryDao(), clock)
-        feeds = FeedRepository(
-            feedDao = database.feedDao(),
-            entryDao = database.entryDao(),
-            fetcher = FeedFetcher(PerchHttp.client(cacheDir = null)),
-            clock = clock,
-        )
-        feedId = runBlocking { database.feedDao().insert(feed()) }
+        feedId = perch.seedFeed(feedUrl = "https://example.com/feed.xml")
     }
-
-    @After
-    fun tearDown() = database.close()
 
     /** §0's first shape: fabiensanglard.net ships no body at all. */
     @Test
     fun `opening an entry with no body fetches the article and renders it`() {
         val fixture = ArticleFixtures.noBody.first { it.slug == "fabiensanglard-tb4" }
-        val id = seedEntry(link = fixture.url, contentHtml = null)
+        val id = perch.seedEntry(feedId, link = fixture.url, contentHtml = null)
 
         showArticle(id, serving(fixture.slug))
         await { stored(id).fullTextAt != null }
@@ -104,7 +83,8 @@ class ArticleFullTextTest {
     @Test
     fun `opening an excerpt-only entry replaces the teaser with the article`() {
         val fixture = ArticleFixtures.excerptOnly.first { it.slug == "gpuopen-adaptive-subdivision" }
-        val id = seedEntry(
+        val id = perch.seedEntry(
+            feedId,
             link = fixture.url,
             contentHtml = "<p>Learn how fast, crack-free GPU work graph subdivision works.</p>",
             bodyIsExcerpt = true,
@@ -124,7 +104,7 @@ class ArticleFullTextTest {
     @Test
     fun `opening an entry whose feed shipped the whole article fetches nothing`() {
         val body = "<p>${"A real article, with commas, and paragraphs. ".repeat(40)}</p>"
-        val id = seedEntry(link = "https://example.com/post", contentHtml = body)
+        val id = perch.seedEntry(feedId, link = "https://example.com/post", contentHtml = body)
 
         showArticle(id, serving("fabiensanglard-tb4"))
         compose.waitForIdle()
@@ -141,7 +121,7 @@ class ArticleFullTextTest {
     fun `load full article is offered on a feed-supplied body and fetches when chosen`() {
         val fixture = ArticleFixtures.noBody.first { it.slug == "fabiensanglard-silpheed" }
         val body = "<p>${"A body long enough that nothing fires on its own. ".repeat(40)}</p>"
-        val id = seedEntry(link = fixture.url, contentHtml = body)
+        val id = perch.seedEntry(feedId, link = fixture.url, contentHtml = body)
 
         showArticle(id, serving(fixture.slug))
         openOverflow()
@@ -156,7 +136,7 @@ class ArticleFullTextTest {
     @Test
     fun `load full article is disabled once the body came from an extraction`() {
         val fixture = ArticleFixtures.noBody.first { it.slug == "fabiensanglard-tb4" }
-        val id = seedEntry(link = fixture.url, contentHtml = null)
+        val id = perch.seedEntry(feedId, link = fixture.url, contentHtml = null)
 
         showArticle(id, serving(fixture.slug))
         await { stored(id).fullTextAt != null }
@@ -171,7 +151,7 @@ class ArticleFullTextTest {
      */
     @Test
     fun `a failed fetch leaves the read-on-the-web fallback in place`() {
-        val id = seedEntry(link = "https://example.com/post", contentHtml = null)
+        val id = perch.seedEntry(feedId, link = "https://example.com/post", contentHtml = null)
 
         showArticle(id, PageFetcher { fetches.incrementAndGet(); null })
         compose.waitForIdle()
@@ -185,9 +165,9 @@ class ArticleFullTextTest {
 
     private fun showArticle(entryId: Long, fetcher: PageFetcher) {
         val viewModel = ArticleViewModel(
-            entries = entries,
-            feeds = feeds,
-            articleText = ArticleTextRepository(database.entryDao(), fetcher, clock),
+            entries = perch.container.entries,
+            feeds = perch.container.feeds,
+            articleText = ArticleTextRepository(perch.database.entryDao(), fetcher, clock),
             entryId = entryId,
             zone = ZoneOffset.UTC,
         )
@@ -234,29 +214,7 @@ class ArticleFullTextTest {
         }
 
     private fun stored(entryId: Long): EntryEntity =
-        runBlocking { database.entryDao().findById(entryId)!! }
-
-    private fun seedEntry(
-        link: String?,
-        contentHtml: String?,
-        bodyIsExcerpt: Boolean = false,
-    ): Long = runBlocking {
-        database.entryDao().insert(
-            testEntry(
-                feedId = feedId,
-                guid = "guid-${link.hashCode()}",
-                title = "An entry",
-                link = link,
-                publishedAt = now.minusSeconds(DAY).toEpochMilli(),
-                summary = "A short summary.",
-                contentHtml = contentHtml,
-                bodyIsExcerpt = bodyIsExcerpt,
-                fetchedAt = now.toEpochMilli(),
-            ),
-        )
-    }
-
-    private fun feed() = testFeed(feedUrl = "https://example.com/feed.xml")
+        runBlocking { perch.database.entryDao().findById(entryId)!! }
 
     private companion object {
         const val DAY = 24 * 3_600L

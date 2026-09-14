@@ -9,7 +9,7 @@ import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.EntryDao
 import dev.mkiros.perch.data.db.FeedDao
 import dev.mkiros.perch.data.db.PerchDatabase
-import dev.mkiros.perch.data.db.entity.FeedEntity
+import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.data.parse.PageFetcher
 import dev.mkiros.perch.data.repo.BackfillRepository
 import java.time.Clock
@@ -97,17 +97,11 @@ class BackfillWorkerTest {
     }
 
     private suspend fun addFeed(): Long = feeds.insert(
-        FeedEntity(
-            feedUrl = "https://example.com/feed.xml",
-            siteUrl = "https://example.com",
+        testFeed(
             title = "A blog",
-            customTitle = null,
-            faviconUrl = null,
-            etag = null,
-            lastModified = null,
+            feedUrl = "https://example.com/feed.xml",
             lastFetchedAt = now,
             lastSuccessAt = now,
-            lastError = null,
             addedAt = now,
         ),
     )

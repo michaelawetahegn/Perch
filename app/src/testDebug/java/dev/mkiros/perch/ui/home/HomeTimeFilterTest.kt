@@ -15,8 +15,6 @@ import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.model.TimeFilter
 import dev.mkiros.perch.support.PerchRule
-import dev.mkiros.perch.support.testEntry
-import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.ui.rowTitles
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.screenshot.homeViewModel
@@ -63,9 +61,9 @@ class HomeTimeFilterTest {
         // W02/#15. U07 opened this window at local midnight and hid last night's
         // articles from a reader looking just after it — the emptiest possible Feed at
         // the moment they most often open one.
-        val feedId = seedFeed("Source One")
-        seedEntry(feedId, "This morning", at = "2026-08-07T09:00:00Z")
-        seedEntry(feedId, "Late last night", at = "2026-08-06T23:59:00Z")
+        val feedId = perch.seedFeed("Source One")
+        perch.seedEntry(feedId, "This morning", publishedAt = at("2026-08-07T09:00:00Z"))
+        perch.seedEntry(feedId, "Late last night", publishedAt = at("2026-08-06T23:59:00Z"))
 
         showHome()
 
@@ -78,9 +76,9 @@ class HomeTimeFilterTest {
     fun `the list's edge is twenty-four hours back, and it holds`() {
         // A rolling window with no boundary assertion is an untested window. "Now" is
         // noon UTC, so these two straddle the edge by an hour on either side.
-        val feedId = seedFeed("Source One")
-        seedEntry(feedId, "Twenty-three hours old", at = "2026-08-06T13:00:00Z")
-        seedEntry(feedId, "Twenty-five hours old", at = "2026-08-06T11:00:00Z")
+        val feedId = perch.seedFeed("Source One")
+        perch.seedEntry(feedId, "Twenty-three hours old", publishedAt = at("2026-08-06T13:00:00Z"))
+        perch.seedEntry(feedId, "Twenty-five hours old", publishedAt = at("2026-08-06T11:00:00Z"))
 
         showHome()
 
@@ -95,8 +93,8 @@ class HomeTimeFilterTest {
         // emptied the Feed. W02's rolling window cannot do that — it never asks what day
         // it is — and this is the screen saying so with the reported zone on the clock.
         val evening = Clock.fixed(Instant.parse("2026-08-09T01:30:00Z"), CHICAGO)
-        val feedId = seedFeed("A Daily Blogger")
-        seedEntry(feedId, "Posted this morning", at = "2026-08-08T14:00:00Z")
+        val feedId = perch.seedFeed("A Daily Blogger")
+        perch.seedEntry(feedId, "Posted this morning", publishedAt = at("2026-08-08T14:00:00Z"))
 
         showHome(clock = evening)
 
@@ -105,9 +103,9 @@ class HomeTimeFilterTest {
 
     @Test
     fun `widening to the past week brings the last few days' entries back`() {
-        val feedId = seedFeed("Source One")
-        seedEntry(feedId, "This morning", at = "2026-08-07T09:00:00Z")
-        seedEntry(feedId, "Three days ago", at = "2026-08-04T09:00:00Z")
+        val feedId = perch.seedFeed("Source One")
+        perch.seedEntry(feedId, "This morning", publishedAt = at("2026-08-07T09:00:00Z"))
+        perch.seedEntry(feedId, "Three days ago", publishedAt = at("2026-08-04T09:00:00Z"))
 
         showHome()
         compose.onNodeWithText("Three days ago").assertDoesNotExist()
@@ -120,8 +118,8 @@ class HomeTimeFilterTest {
 
     @Test
     fun `a window wider than the entry still excludes what falls outside it`() {
-        val feedId = seedFeed("Source One")
-        seedEntry(feedId, "Last month", at = "2026-07-20T09:00:00Z")
+        val feedId = perch.seedFeed("Source One")
+        perch.seedEntry(feedId, "Last month", publishedAt = at("2026-07-20T09:00:00Z"))
 
         showHome()
         chooseRange(TimeFilter.PastWeek)
@@ -133,8 +131,8 @@ class HomeTimeFilterTest {
 
     @Test
     fun `all time keeps even an entry older than a year`() {
-        val feedId = seedFeed("Source One")
-        seedEntry(feedId, "Ancient history", at = "2019-01-01T09:00:00Z")
+        val feedId = perch.seedFeed("Source One")
+        perch.seedEntry(feedId, "Ancient history", publishedAt = at("2019-01-01T09:00:00Z"))
 
         showHome()
         chooseRange(TimeFilter.AllTime)
@@ -144,8 +142,8 @@ class HomeTimeFilterTest {
 
     @Test
     fun `the chosen range is remembered, not reset on the next launch`() {
-        val feedId = seedFeed("Source One")
-        seedEntry(feedId, "Last month", at = "2026-07-20T09:00:00Z")
+        val feedId = perch.seedFeed("Source One")
+        perch.seedEntry(feedId, "Last month", publishedAt = at("2026-07-20T09:00:00Z"))
 
         showHome()
         chooseRange(TimeFilter.PastMonth)
@@ -179,8 +177,8 @@ class HomeTimeFilterTest {
 
     @Test
     fun `an empty window offers to widen rather than showing a blank screen`() {
-        val feedId = seedFeed("Source One")
-        seedEntry(feedId, "Three days ago", at = "2026-08-04T09:00:00Z")
+        val feedId = perch.seedFeed("Source One")
+        perch.seedEntry(feedId, "Three days ago", publishedAt = at("2026-08-04T09:00:00Z"))
 
         showHome()
 
@@ -190,8 +188,8 @@ class HomeTimeFilterTest {
 
     @Test
     fun `taking the widen affordance widens the window`() {
-        val feedId = seedFeed("Source One")
-        seedEntry(feedId, "Three days ago", at = "2026-08-04T09:00:00Z")
+        val feedId = perch.seedFeed("Source One")
+        perch.seedEntry(feedId, "Three days ago", publishedAt = at("2026-08-04T09:00:00Z"))
 
         showHome()
         tap(HomeTestTags.EMPTY_WIDEN)
@@ -202,8 +200,9 @@ class HomeTimeFilterTest {
 
     @Test
     fun `an empty all-time inbox says the reader is caught up, with nothing to widen`() {
-        val feedId = seedFeed("Source One")
-        seedEntry(feedId, "Already read", at = "2026-08-07T09:00:00Z", read = true)
+        val feedId = perch.seedFeed("Source One")
+        val published = at("2026-08-07T09:00:00Z")
+        perch.seedEntry(feedId, "Already read", publishedAt = published, readAt = published)
 
         showHome()
         chooseRange(TimeFilter.AllTime)
@@ -218,12 +217,12 @@ class HomeTimeFilterTest {
     fun `entries from two folders are mixed together, newest first`() {
         // Created out of alphabetical order on purpose: alphabetical folder order used to
         // outrank recency here, and a seed already sorted could not tell the two apart.
-        val security = seedFolder("Security", sortIndex = 0)
-        val ai = seedFolder("AI", sortIndex = 1)
-        val zdi = seedFeed("ZDI", folderId = security)
-        val llm = seedFeed("LLM Weekly", folderId = ai)
-        seedEntry(zdi, "Newest of all", at = "2026-08-07T11:00:00Z")
-        seedEntry(llm, "A model release", at = "2026-08-07T08:00:00Z")
+        val security = perch.seedFolder("Security", sortIndex = 0)
+        val ai = perch.seedFolder("AI", sortIndex = 1)
+        val zdi = perch.seedFeed("ZDI", folderId = security)
+        val llm = perch.seedFeed("LLM Weekly", folderId = ai)
+        perch.seedEntry(zdi, "Newest of all", publishedAt = at("2026-08-07T11:00:00Z"))
+        perch.seedEntry(llm, "A model release", publishedAt = at("2026-08-07T08:00:00Z"))
 
         showHome()
 
@@ -234,11 +233,11 @@ class HomeTimeFilterTest {
 
     @Test
     fun `an uncategorized entry takes its place by date like any other`() {
-        val ai = seedFolder("AI", sortIndex = 9)
-        val loose = seedFeed("Unfiled Source")
-        val inAi = seedFeed("LLM Weekly", folderId = ai)
-        seedEntry(loose, "Unfiled entry", at = "2026-08-07T11:00:00Z")
-        seedEntry(inAi, "Filed entry", at = "2026-08-07T08:00:00Z")
+        val ai = perch.seedFolder("AI", sortIndex = 9)
+        val loose = perch.seedFeed("Unfiled Source")
+        val inAi = perch.seedFeed("LLM Weekly", folderId = ai)
+        perch.seedEntry(loose, "Unfiled entry", publishedAt = at("2026-08-07T11:00:00Z"))
+        perch.seedEntry(inAi, "Filed entry", publishedAt = at("2026-08-07T08:00:00Z"))
 
         showHome()
 
@@ -248,10 +247,11 @@ class HomeTimeFilterTest {
 
     @Test
     fun `scoping the drawer to one folder still narrows the list`() {
-        val ai = seedFolder("AI", sortIndex = 0)
-        val inAi = seedFeed("LLM Weekly", folderId = ai)
-        seedFeed("Unfiled Source").let { seedEntry(it, "Unfiled entry") }
-        seedEntry(inAi, "Filed entry")
+        val ai = perch.seedFolder("AI", sortIndex = 0)
+        val inAi = perch.seedFeed("LLM Weekly", folderId = ai)
+        val thisMorning = at("2026-08-07T09:00:00Z")
+        perch.seedFeed("Unfiled Source").let { perch.seedEntry(it, "Unfiled entry", publishedAt = thisMorning) }
+        perch.seedEntry(inAi, "Filed entry", publishedAt = thisMorning)
 
         showHome()
         compose.onNodeWithText("Unfiled entry").assertIsDisplayed()
@@ -309,41 +309,7 @@ class HomeTimeFilterTest {
         viewModel = showHomeScreen(perch, compose, clock, settings).viewModel
     }
 
-    private fun seedFolder(name: String, sortIndex: Int): Long = runBlocking {
-        perch.database.folderDao().insert(
-            FolderEntity(name = name, sortIndex = sortIndex, createdAt = 0L),
-        )
-    }
-
-    private fun seedFeed(
-        title: String,
-        folderId: Long = FolderEntity.UNCATEGORIZED_ID,
-    ): Long = runBlocking {
-        perch.database.feedDao().insert(
-            testFeed(
-                title = title,
-                folderId = folderId,
-            ),
-        )
-    }
-
-    private fun seedEntry(
-        feedId: Long,
-        title: String,
-        at: String = "2026-08-07T09:00:00Z",
-        read: Boolean = false,
-    ): Long = runBlocking {
-        val published = Instant.parse(at).toEpochMilli()
-        perch.database.entryDao().insert(
-            testEntry(
-                feedId = feedId,
-                title = title,
-                publishedAt = published,
-                isRead = read,
-                readAt = if (read) published else null,
-            ),
-        )
-    }
+    private fun at(iso: String): Long = Instant.parse(iso).toEpochMilli()
 
     private companion object {
         val CHICAGO: ZoneId = ZoneId.of("America/Chicago")

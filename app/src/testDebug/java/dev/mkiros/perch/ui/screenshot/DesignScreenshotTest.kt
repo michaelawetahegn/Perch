@@ -20,8 +20,6 @@ import androidx.compose.ui.test.performSemanticsAction
 import androidx.test.core.app.ApplicationProvider
 import coil.Coil
 import com.google.common.truth.Truth.assertThat
-import dev.mkiros.perch.data.db.entity.EntryEntity
-import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.repo.ArticleTextRepository
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.debug.DebugSeeder
@@ -430,40 +428,23 @@ class DesignScreenshotTest {
      * A source and an author long enough to overrun the byline, seeded straight in: the
      * shot is of a layout, not of a fetch, and no fixture in the corpus is this verbose.
      */
-    private fun seedLongBylineEntry(): Long = runBlocking {
-        val feedId = perch.database.feedDao().insert(
-            FeedEntity(
-                feedUrl = "https://example.org/gijn/feed.xml",
-                siteUrl = "https://example.org/gijn",
-                title = "Global Investigative Journalism Network",
-                customTitle = null,
-                faviconUrl = null,
-                etag = null,
-                lastModified = null,
-                lastFetchedAt = null,
-                lastSuccessAt = null,
-                lastError = null,
-                addedAt = now.toEpochMilli(),
-            ),
+    private fun seedLongBylineEntry(): Long {
+        val feedId = perch.seedFeed(
+            title = "Global Investigative Journalism Network",
+            feedUrl = "https://example.org/gijn/feed.xml",
+            siteUrl = "https://example.org/gijn",
+            addedAt = now.toEpochMilli(),
         )
-        perch.database.entryDao().insert(
-            EntryEntity(
-                feedId = feedId,
-                guid = "long-byline",
-                title = "Investigating Inside Conflict Zones in Africa",
-                link = "https://example.org/gijn/conflict-zones",
-                author = "Benon Herbert Oluka and Rowan Philp",
-                publishedAt = now.minusSeconds(2 * 24 * 60 * 60).toEpochMilli(),
-                publishedIsEstimated = false,
-                summary = "Reporters who cover war zones on the continent on what it takes.",
-                contentHtml = "<p>${"Reporting from a conflict zone begins long before the " +
-                    "reporter arrives. "}</p><h2>Before the border</h2><p>${"Fixers, " +
-                    "insurance, and a plan for getting out again. "}</p>",
-                imageUrl = null,
-                isRead = false,
-                readAt = null,
-                fetchedAt = now.toEpochMilli(),
-            ),
+        return perch.seedEntry(
+            feedId,
+            title = "Investigating Inside Conflict Zones in Africa",
+            guid = "long-byline",
+            link = "https://example.org/gijn/conflict-zones",
+            author = "Benon Herbert Oluka and Rowan Philp",
+            summary = "Reporters who cover war zones on the continent on what it takes.",
+            contentHtml = "<p>${"Reporting from a conflict zone begins long before the " +
+                "reporter arrives. "}</p><h2>Before the border</h2><p>${"Fixers, " +
+                "insurance, and a plan for getting out again. "}</p>",
         )
     }
 

@@ -5,6 +5,8 @@ import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.EntryDao
 import dev.mkiros.perch.data.db.FeedDao
 import dev.mkiros.perch.data.db.PerchDatabase
+import dev.mkiros.perch.support.testEntry
+import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.net.FeedFetcher
@@ -700,17 +702,10 @@ class FeedRepositoryTest {
         path: String = "/feed.xml",
         folderId: Long = FolderEntity.UNCATEGORIZED_ID,
     ): Long = feeds.insert(
-        FeedEntity(
+        testFeed(
+            title = path,
             feedUrl = server.url(path).toString(),
             siteUrl = null,
-            title = path,
-            customTitle = null,
-            faviconUrl = null,
-            etag = null,
-            lastModified = null,
-            lastFetchedAt = null,
-            lastSuccessAt = null,
-            lastError = null,
             addedAt = now,
             folderId = folderId,
         ),
@@ -728,22 +723,14 @@ class FeedRepositoryTest {
         fetchedAt: Long,
         isSaved: Boolean = false,
         isStarred: Boolean = false,
-    ) = dev.mkiros.perch.data.db.entity.EntryEntity(
+    ) = testEntry(
         feedId = feedId,
         guid = guid,
         title = guid,
         link = null,
-        author = null,
         publishedAt = publishedAt,
-        publishedIsEstimated = false,
-        summary = null,
-        contentHtml = null,
-        imageUrl = null,
-        isRead = isRead,
         readAt = if (isRead) publishedAt else null,
-        isSaved = isSaved,
         savedAt = if (isSaved) publishedAt else null,
-        isStarred = isStarred,
         starredAt = if (isStarred) publishedAt else null,
         fetchedAt = fetchedAt,
     )

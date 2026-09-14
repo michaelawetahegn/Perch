@@ -6,8 +6,8 @@ import dev.mkiros.perch.data.db.ArchivePostDao
 import dev.mkiros.perch.data.db.EntryDao
 import dev.mkiros.perch.data.db.FeedDao
 import dev.mkiros.perch.data.db.PerchDatabase
-import dev.mkiros.perch.data.db.entity.EntryEntity
-import dev.mkiros.perch.data.db.entity.FeedEntity
+import dev.mkiros.perch.support.testEntry
+import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.data.parse.FetchedPage
 import dev.mkiros.perch.support.MapPageFetcher
 import java.time.Clock
@@ -350,11 +350,7 @@ class BackfillRepositoryTest {
         fetcher.pages[SITE + "archive"] = archivePage(UNDATED_POST, updated = null)
         fetcher.pages[UNDATED_POST] = article("Mystery", published = null)
         val todayEntryId = entries.insert(
-            EntryEntity(
-                feedId = feedId, guid = "today", title = "Fresh", link = null, author = null,
-                publishedAt = now, publishedIsEstimated = false, summary = null, contentHtml = null,
-                imageUrl = null, readAt = null, fetchedAt = now,
-            ),
+            testEntry(feedId = feedId, guid = "today", title = "Fresh", link = null, publishedAt = now),
         )
 
         repo().run(feedId)
@@ -498,17 +494,12 @@ class BackfillRepositoryTest {
 
     private suspend fun addFeed(entryCount: Int, oldest: Instant?, siteUrl: String = SITE.trimEnd('/')): Long {
         val feedId = feeds.insert(
-            FeedEntity(
+            testFeed(
+                title = "A blog",
                 feedUrl = SITE + "feed.xml",
                 siteUrl = siteUrl,
-                title = "A blog",
-                customTitle = null,
-                faviconUrl = null,
-                etag = null,
-                lastModified = null,
                 lastFetchedAt = now,
                 lastSuccessAt = now,
-                lastError = null,
                 addedAt = now,
             ),
         )
@@ -525,10 +516,13 @@ class BackfillRepositoryTest {
         publishedAt: Instant = Instant.ofEpochMilli(now),
     ) {
         entries.insert(
-            EntryEntity(
-                feedId = feedId, guid = guid, title = guid, link = link, author = null,
-                publishedAt = publishedAt.toEpochMilli(), publishedIsEstimated = false, summary = null,
-                contentHtml = null, imageUrl = null, readAt = null, fetchedAt = now,
+            testEntry(
+                feedId = feedId,
+                guid = guid,
+                title = guid,
+                link = link,
+                publishedAt = publishedAt.toEpochMilli(),
+                fetchedAt = now,
             ),
         )
     }

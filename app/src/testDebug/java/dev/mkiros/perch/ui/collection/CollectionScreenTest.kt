@@ -12,8 +12,6 @@ import androidx.compose.ui.test.performSemanticsAction
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.entity.EntryEntity
 import dev.mkiros.perch.support.PerchRule
-import dev.mkiros.perch.support.testEntry
-import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.ui.home.EntryActionTestTags
 import dev.mkiros.perch.ui.rowTitles
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
@@ -80,14 +78,19 @@ class CollectionScreenTest {
 
     @Test
     fun `To-Read is ordered by when the reader saved it, not by publication`() {
-        val feedId = seedFeed()
+        val feedId = perch.seedFeed("Null Program")
         // Published oldest-last, saved newest-last: the two orders disagree on purpose.
-        seedEntry(feedId, "Older post", publishedAt = now.minusSeconds(9 * DAY), savedAt = now)
-        seedEntry(
+        perch.seedEntry(
+            feedId,
+            "Older post",
+            publishedAt = now.minusSeconds(9 * DAY).toEpochMilli(),
+            savedAt = now.toEpochMilli(),
+        )
+        perch.seedEntry(
             feedId,
             "Newer post",
-            publishedAt = now.minusSeconds(DAY),
-            savedAt = now.minusSeconds(HOUR),
+            publishedAt = now.minusSeconds(DAY).toEpochMilli(),
+            savedAt = now.minusSeconds(HOUR).toEpochMilli(),
         )
 
         show(Collection.ToRead)
@@ -97,9 +100,19 @@ class CollectionScreenTest {
 
     @Test
     fun `Liked is ordered by when the reader liked it`() {
-        val feedId = seedFeed()
-        seedEntry(feedId, "Liked first", publishedAt = now, starredAt = now.minusSeconds(HOUR))
-        seedEntry(feedId, "Liked last", publishedAt = now.minusSeconds(DAY), starredAt = now)
+        val feedId = perch.seedFeed("Null Program")
+        perch.seedEntry(
+            feedId,
+            "Liked first",
+            publishedAt = now.toEpochMilli(),
+            starredAt = now.minusSeconds(HOUR).toEpochMilli(),
+        )
+        perch.seedEntry(
+            feedId,
+            "Liked last",
+            publishedAt = now.minusSeconds(DAY).toEpochMilli(),
+            starredAt = now.toEpochMilli(),
+        )
 
         show(Collection.Liked)
 
@@ -109,8 +122,8 @@ class CollectionScreenTest {
     /** Reading something you saved is not the same as being done with it (§0). */
     @Test
     fun `a read entry stays on the To-Read queue`() {
-        val feedId = seedFeed()
-        seedEntry(feedId, "Already read", savedAt = now, readAt = now.toEpochMilli())
+        val feedId = perch.seedFeed("Null Program")
+        perch.seedEntry(feedId, "Already read", savedAt = now.toEpochMilli(), readAt = now.toEpochMilli())
 
         show(Collection.ToRead)
 
@@ -120,8 +133,13 @@ class CollectionScreenTest {
     /** The time filter is Feed's alone (§0): a queue that hides last month is not a queue. */
     @Test
     fun `an entry published a year ago is still on the queue`() {
-        val feedId = seedFeed()
-        seedEntry(feedId, "From last year", publishedAt = now.minusSeconds(400 * DAY), savedAt = now)
+        val feedId = perch.seedFeed("Null Program")
+        perch.seedEntry(
+            feedId,
+            "From last year",
+            publishedAt = now.minusSeconds(400 * DAY).toEpochMilli(),
+            savedAt = now.toEpochMilli(),
+        )
 
         show(Collection.ToRead)
 
@@ -135,8 +153,8 @@ class CollectionScreenTest {
      */
     @Test
     fun `an entry saved from elsewhere arrives without this screen asking`() {
-        val feedId = seedFeed()
-        val entryId = seedEntry(feedId, "Saved from the Feed")
+        val feedId = perch.seedFeed("Null Program")
+        val entryId = perch.seedEntry(feedId, "Saved from the Feed")
         show(Collection.ToRead)
         compose.onNodeWithTag(CollectionTestTags.EMPTY).assertExists()
 
@@ -150,8 +168,8 @@ class CollectionScreenTest {
 
     @Test
     fun `un-saving from To-Read takes the row out and offers to put it back`() {
-        val feedId = seedFeed()
-        val entryId = seedEntry(feedId, "An Async Runtime in C", savedAt = now)
+        val feedId = perch.seedFeed("Null Program")
+        val entryId = perch.seedEntry(feedId, "An Async Runtime in C", savedAt = now.toEpochMilli())
         show(Collection.ToRead)
 
         openActions()
@@ -165,8 +183,8 @@ class CollectionScreenTest {
 
     @Test
     fun `undo puts the entry back on the queue`() {
-        val feedId = seedFeed()
-        val entryId = seedEntry(feedId, "An Async Runtime in C", savedAt = now)
+        val feedId = perch.seedFeed("Null Program")
+        val entryId = perch.seedEntry(feedId, "An Async Runtime in C", savedAt = now.toEpochMilli())
         show(Collection.ToRead)
         openActions()
         tap(EntryActionTestTags.SAVE)
@@ -184,8 +202,8 @@ class CollectionScreenTest {
      */
     @Test
     fun `liking from To-Read does not take the entry off the queue`() {
-        val feedId = seedFeed()
-        val entryId = seedEntry(feedId, "An Async Runtime in C", savedAt = now)
+        val feedId = perch.seedFeed("Null Program")
+        val entryId = perch.seedEntry(feedId, "An Async Runtime in C", savedAt = now.toEpochMilli())
         show(Collection.ToRead)
 
         openActions()
@@ -219,8 +237,8 @@ class CollectionScreenTest {
 
     @Test
     fun `a saved link is announced by name once the sheet has closed`() {
-        val feedId = seedFeed()
-        val entryId = seedEntry(feedId, "An Async Runtime in C", savedAt = now)
+        val feedId = perch.seedFeed("Null Program")
+        val entryId = perch.seedEntry(feedId, "An Async Runtime in C", savedAt = now.toEpochMilli())
         show(Collection.ToRead)
 
         // S02/#33: what SaveLinkSheet's onSaved hands back the moment a save lands. The
@@ -271,37 +289,6 @@ class CollectionScreenTest {
                 compose.onAllNodesWithTag(CollectionTestTags.EMPTY).fetchSemanticsNodes()
                     .isNotEmpty()
         }
-    }
-
-    private fun seedFeed(): Long = runBlocking {
-        perch.database.feedDao().insert(
-            testFeed(
-                feedUrl = "https://example.com/feed.xml",
-                title = "Null Program",
-            ),
-        )
-    }
-
-    private fun seedEntry(
-        feedId: Long,
-        title: String,
-        publishedAt: Instant = now.minusSeconds(2 * DAY),
-        savedAt: Instant? = null,
-        starredAt: Instant? = null,
-        readAt: Long? = null,
-    ): Long = runBlocking {
-        perch.database.entryDao().insert(
-            testEntry(
-                feedId = feedId,
-                title = title,
-                publishedAt = publishedAt.toEpochMilli(),
-                summary = "A short summary.",
-                readAt = readAt,
-                savedAt = savedAt?.toEpochMilli(),
-                starredAt = starredAt?.toEpochMilli(),
-                fetchedAt = now.toEpochMilli(),
-            ),
-        )
     }
 
     private companion object {

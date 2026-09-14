@@ -2,7 +2,6 @@ package dev.mkiros.perch.ui.settings
 
 import androidx.lifecycle.viewModelScope
 import com.google.common.truth.Truth.assertThat
-import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.net.FeedFetcher
 import dev.mkiros.perch.data.repo.FeedRepository
 import dev.mkiros.perch.support.AWAIT_TIMEOUT_MS
@@ -220,23 +219,7 @@ class SettingsViewModelTest {
 
     // ---- harness ----------------------------------------------------------------
 
-    private fun subscribe() = runBlocking {
-        perch.database.feedDao().insert(
-            FeedEntity(
-                feedUrl = feedUrl,
-                siteUrl = server.url("/").toString(),
-                title = "Source",
-                customTitle = null,
-                faviconUrl = null,
-                etag = null,
-                lastModified = null,
-                lastFetchedAt = null,
-                lastSuccessAt = null,
-                lastError = null,
-                addedAt = 0L,
-            ),
-        )
-    }
+    private fun subscribe() = perch.seedFeed(title = "Source", feedUrl = feedUrl, siteUrl = server.url("/").toString())
 
     private fun opmlNaming(url: String) = """
         <?xml version="1.0" encoding="UTF-8"?>

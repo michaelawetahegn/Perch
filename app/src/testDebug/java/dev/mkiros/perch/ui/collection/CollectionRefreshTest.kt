@@ -8,13 +8,11 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.support.PerchRule
-import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.theme.PerchTheme
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
-import kotlinx.coroutines.runBlocking
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -111,14 +109,9 @@ class CollectionRefreshTest {
         }
     }
 
-    private fun seedFeed(path: String): Long = runBlocking {
-        perch.database.feedDao().insert(
-            testFeed(
-                feedUrl = server.url(path).toString(),
-                title = "Source One",
-            ),
-        )
-    }
+    /** A source served by [server] at [path]. */
+    private fun seedFeed(path: String): Long =
+        perch.seedFeed(title = "Source One", feedUrl = server.url(path).toString())
 
     private companion object {
         val RSS = """

@@ -14,7 +14,6 @@ import androidx.core.content.IntentCompat
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.entity.EntryEntity
-import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.model.TimeFilter
 import dev.mkiros.perch.support.PerchRule
@@ -87,7 +86,7 @@ class HomeEntryActionsTest {
 
     @Test
     fun `a saved entry offers to come off the queue, and does`() {
-        val entryId = seed(title = "An Async Runtime in C", isSaved = true)
+        val entryId = seed(title = "An Async Runtime in C", savedAt = 0L)
         showHome()
 
         openActions()
@@ -204,7 +203,7 @@ class HomeEntryActionsTest {
     @Test
     fun `the sheet's longest label wraps at a large font scale rather than truncating`() {
         RuntimeEnvironment.setFontScale(2.5f)
-        seed(title = "An Async Runtime in C", isSaved = true)
+        seed(title = "An Async Runtime in C", savedAt = 0L)
         showHome()
 
         openActions()
@@ -252,46 +251,11 @@ class HomeEntryActionsTest {
         compose.awaitInRealTime("the list to load") { compose.rowTitles().isNotEmpty() }
     }
 
-    private fun seed(
-        title: String,
-        isSaved: Boolean = false,
-        readAt: Long? = null,
-    ): Long = runBlocking {
-        val feedId = perch.database.feedDao().insert(
-            FeedEntity(
-                feedUrl = "https://example.com/feed.xml",
-                siteUrl = "https://example.com",
-                title = "Null Program",
-                customTitle = null,
-                faviconUrl = null,
-                etag = null,
-                lastModified = null,
-                lastFetchedAt = null,
-                lastSuccessAt = null,
-                lastError = null,
-                addedAt = 0L,
-            ),
-        )
-        entryId = perch.database.entryDao().insert(
-            EntryEntity(
-                feedId = feedId,
-                guid = "guid-1",
-                title = title,
-                link = "https://example.com/post",
-                author = null,
-                publishedAt = now.minusSeconds(2 * DAY).toEpochMilli(),
-                publishedIsEstimated = false,
-                summary = "A short summary.",
-                contentHtml = "<p>A short summary.</p>",
-                imageUrl = null,
-                isRead = readAt != null,
-                readAt = readAt,
-                isSaved = isSaved,
-                savedAt = if (isSaved) 0L else null,
-                fetchedAt = now.toEpochMilli(),
-            ),
-        )
-        entryId
+    /** One entry on one source, remembered as [entryId] so [entry] can read it back. */
+    private fun seed(title: String, savedAt: Long? = null, readAt: Long? = null): Long {
+        val feedId = perch.seedFeed(title = "Null Program", feedUrl = "https://example.com/feed.xml")
+        entryId = perch.seedEntry(feedId, title, savedAt = savedAt, readAt = readAt)
+        return entryId
     }
 
     private companion object {

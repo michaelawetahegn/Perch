@@ -3,6 +3,7 @@ package dev.mkiros.perch.data.repo
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.PerchDatabase
+import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.net.FeedFetcher
@@ -312,17 +313,11 @@ class ProfileRepositoryTest {
     }
 
     private fun sourceRow(path: String, title: String, folderId: Long, custom: String? = null) =
-        FeedEntity(
+        testFeed(
+            title = title,
             feedUrl = urlOf(path),
             siteUrl = "https://$path.example/",
-            title = title,
             customTitle = custom,
-            faviconUrl = null,
-            etag = null,
-            lastModified = null,
-            lastFetchedAt = null,
-            lastSuccessAt = null,
-            lastError = null,
             addedAt = now,
             folderId = folderId,
         )

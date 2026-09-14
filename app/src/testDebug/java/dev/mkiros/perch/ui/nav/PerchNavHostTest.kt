@@ -13,13 +13,13 @@ import androidx.compose.ui.test.performSemanticsAction
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.google.common.truth.Truth.assertThat
-import dev.mkiros.perch.data.db.entity.EntryEntity
-import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.repo.PerchPaging
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.di.AppContainer
 import dev.mkiros.perch.model.TimeFilter
 import dev.mkiros.perch.support.PerchRule
+import dev.mkiros.perch.support.testEntry
+import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.ui.article.ArticleTestTags
 import dev.mkiros.perch.ui.home.HomeTestTags
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
@@ -365,35 +365,16 @@ class PerchNavHostTest {
     private suspend fun insertFeed(
         title: String = "Example",
         url: String = "https://example.com/feed.xml",
-    ): Long = perch.database.feedDao().insert(
-        FeedEntity(
-            feedUrl = url,
-            siteUrl = "https://example.com",
-            title = title,
-            customTitle = null,
-            faviconUrl = null,
-            etag = null,
-            lastModified = null,
-            lastFetchedAt = null,
-            lastSuccessAt = null,
-            lastError = null,
-            addedAt = 0L,
-        ),
-    )
+    ): Long = perch.database.feedDao().insert(testFeed(title = title, feedUrl = url))
 
-    private fun entry(feedId: Long, index: Int, title: String) = EntryEntity(
+    private fun entry(feedId: Long, index: Int, title: String) = testEntry(
         feedId = feedId,
         guid = "guid-$index",
         title = title,
         link = "https://example.com/post/$index",
-        author = null,
         // Descending, so "Entry 00" is newest and therefore first in the list.
         publishedAt = 1_700_000_000_000L - index * 1_000L,
-        publishedIsEstimated = false,
         summary = "A short summary.",
-        contentHtml = "<p>A short summary.</p>",
-        imageUrl = null,
-        readAt = null,
         fetchedAt = 1_700_000_000_000L,
     )
 

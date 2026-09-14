@@ -12,11 +12,11 @@ import androidx.compose.ui.test.performTextReplacement
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.google.common.truth.Truth.assertThat
-import dev.mkiros.perch.data.db.entity.EntryEntity
-import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.model.TimeFilter
 import dev.mkiros.perch.support.PerchRule
+import dev.mkiros.perch.support.testEntry
+import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.ui.article.ArticleTestTags
 import dev.mkiros.perch.ui.collection.CollectionTestTags
 import dev.mkiros.perch.ui.home.HomeTestTags
@@ -254,32 +254,15 @@ class SearchFromEverySurfaceTest {
         perch.database.entryDao().observeAll().first().first { it.feedId == gijnId }.id
     }
 
-    private fun feed(url: String, title: String) = FeedEntity(
-        feedUrl = url,
-        siteUrl = url,
-        title = title,
-        customTitle = null,
-        faviconUrl = null,
-        etag = null,
-        lastModified = null,
-        lastFetchedAt = null,
-        lastSuccessAt = null,
-        lastError = null,
-        addedAt = 0L,
-    )
+    private fun feed(url: String, title: String) = testFeed(title = title, feedUrl = url, siteUrl = url)
 
-    private fun entry(feedId: Long, guid: String, title: String, html: String) = EntryEntity(
+    private fun entry(feedId: Long, guid: String, title: String, html: String) = testEntry(
         feedId = feedId,
         guid = guid,
         title = title,
         link = "https://example.com/$guid",
-        author = null,
         publishedAt = 1_700_000_000_000L,
-        publishedIsEstimated = false,
-        summary = null,
         contentHtml = html,
-        imageUrl = null,
-        readAt = null,
         fetchedAt = 0L,
     )
 }

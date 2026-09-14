@@ -485,7 +485,7 @@ review box (F15) is second from last, as CLAUDE.md requires.
         count; issue #60 closed; pushed.
       - Rung: unit
 
-- [ ] **F11 — One seeder, on `PerchRule`. Issue #61.**
+- [x] **F11 — One seeder, on `PerchRule`. Issue #61.**
       `gh issue view 61 --json body` — the shape, the files and the rule that no test may be
       deleted. Today: 25 private `seedFeed`/`seedEntry`/`seedFolder` declarations in 12 files
       (`grep -rn "private fun seed" app/src/test app/src/testDebug`), and 12 files outside

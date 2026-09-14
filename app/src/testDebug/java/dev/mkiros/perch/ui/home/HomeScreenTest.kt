@@ -24,8 +24,6 @@ import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.model.TimeFilter
 import dev.mkiros.perch.support.PerchRule
-import dev.mkiros.perch.support.testEntry
-import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.ui.rowTitles
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.screenshot.showHome as showHomeScreen
@@ -78,12 +76,12 @@ class HomeScreenTest {
 
     @Test
     fun `a row shows its title and its source with a relative time, and no snippet`() {
-        val feedId = seedFeed(title = "Null Program")
-        seedEntry(
+        val feedId = perch.seedFeed(title = "Null Program")
+        perch.seedEntry(
             feedId = feedId,
             title = "An Async Runtime in C",
             summary = "Coroutines without a language runtime, in about 200 lines.",
-            publishedAt = now.minusSeconds(3 * HOUR),
+            publishedAt = now.minusSeconds(3 * HOUR).toEpochMilli(),
         )
 
         showHome()
@@ -101,8 +99,8 @@ class HomeScreenTest {
 
     @Test
     fun `a renamed source shows under the name the reader gave it`() {
-        val feedId = seedFeed(title = "nullprogram.com", customTitle = "Chris Wellons")
-        seedEntry(feedId = feedId, title = "Practical libc-free threading")
+        val feedId = perch.seedFeed(title = "nullprogram.com", customTitle = "Chris Wellons")
+        perch.seedEntry(feedId = feedId, title = "Practical libc-free threading")
 
         showHome()
 
@@ -117,13 +115,13 @@ class HomeScreenTest {
      */
     @Test
     fun `entries from every source are interleaved newest first`() {
-        val security = seedFolder("Security")
-        val ai = seedFolder("AI")
-        val one = seedFeed(title = "Source One", folderId = security)
-        val two = seedFeed(title = "Source Two", folderId = ai)
-        seedEntry(feedId = one, title = "Oldest", publishedAt = now.minusSeconds(3 * DAY))
-        seedEntry(feedId = two, title = "Newest", publishedAt = now.minusSeconds(1 * HOUR))
-        seedEntry(feedId = one, title = "Middle", publishedAt = now.minusSeconds(1 * DAY))
+        val security = perch.seedFolder("Security")
+        val ai = perch.seedFolder("AI")
+        val one = perch.seedFeed(title = "Source One", folderId = security)
+        val two = perch.seedFeed(title = "Source Two", folderId = ai)
+        perch.seedEntry(feedId = one, title = "Oldest", publishedAt = now.minusSeconds(3 * DAY).toEpochMilli())
+        perch.seedEntry(feedId = two, title = "Newest", publishedAt = now.minusSeconds(1 * HOUR).toEpochMilli())
+        perch.seedEntry(feedId = one, title = "Middle", publishedAt = now.minusSeconds(1 * DAY).toEpochMilli())
 
         showHome()
 
@@ -134,10 +132,10 @@ class HomeScreenTest {
     /** And no header divides them: the ordering is the only sectioning there is. */
     @Test
     fun `the Feed draws no folder section header`() {
-        val security = seedFolder("Security")
-        val ai = seedFolder("AI")
-        seedEntry(feedId = seedFeed(title = "ZDI", folderId = security), title = "An advisory")
-        seedEntry(feedId = seedFeed(title = "LLM Weekly", folderId = ai), title = "A release")
+        val security = perch.seedFolder("Security")
+        val ai = perch.seedFolder("AI")
+        perch.seedEntry(feedId = perch.seedFeed(title = "ZDI", folderId = security), title = "An advisory")
+        perch.seedEntry(feedId = perch.seedFeed(title = "LLM Weekly", folderId = ai), title = "A release")
 
         showHome()
 
@@ -150,9 +148,9 @@ class HomeScreenTest {
 
     @Test
     fun `a read entry is not in the unread list`() {
-        val feedId = seedFeed(title = "Source One")
-        seedEntry(feedId = feedId, title = "Already read", readAt = now.toEpochMilli())
-        seedEntry(feedId = feedId, title = "Still unread")
+        val feedId = perch.seedFeed(title = "Source One")
+        perch.seedEntry(feedId = feedId, title = "Already read", readAt = now.toEpochMilli())
+        perch.seedEntry(feedId = feedId, title = "Still unread")
 
         showHome()
 
@@ -162,8 +160,8 @@ class HomeScreenTest {
 
     @Test
     fun `tapping a row opens that entry`() {
-        val feedId = seedFeed(title = "Source One")
-        val entryId = seedEntry(feedId = feedId, title = "Something to read")
+        val feedId = perch.seedFeed(title = "Source One")
+        val entryId = perch.seedEntry(feedId = feedId, title = "Something to read")
         val opened = mutableListOf<Long>()
 
         showHome(onOpenEntry = { opened += it })
@@ -181,8 +179,8 @@ class HomeScreenTest {
 
     @Test
     fun `with sources but nothing unread the empty state says so`() {
-        val feedId = seedFeed(title = "Source One")
-        seedEntry(feedId = feedId, title = "Already read", readAt = now.toEpochMilli())
+        val feedId = perch.seedFeed(title = "Source One")
+        perch.seedEntry(feedId = feedId, title = "Already read", readAt = now.toEpochMilli())
 
         showHome()
 
@@ -194,7 +192,7 @@ class HomeScreenTest {
 
     @Test
     fun `the drawer opens the add-source sheet`() {
-        seedFeed(title = "Source One")
+        perch.seedFeed(title = "Source One")
 
         showHome()
         openDrawer()
@@ -220,12 +218,12 @@ class HomeScreenTest {
 
     @Test
     fun `selecting a source lists only its entries and retitles the bar`() {
-        val one = seedFeed(title = "Source One")
-        val two = seedFeed(title = "Source Two")
-        val three = seedFeed(title = "Source Three")
-        seedEntry(feedId = one, title = "Only in one")
-        seedEntry(feedId = two, title = "Only in two")
-        seedEntry(feedId = three, title = "Only in three")
+        val one = perch.seedFeed(title = "Source One")
+        val two = perch.seedFeed(title = "Source Two")
+        val three = perch.seedFeed(title = "Source Three")
+        perch.seedEntry(feedId = one, title = "Only in one")
+        perch.seedEntry(feedId = two, title = "Only in two")
+        perch.seedEntry(feedId = three, title = "Only in three")
 
         showHome()
         selectInDrawer("Source Two")
@@ -238,8 +236,8 @@ class HomeScreenTest {
 
     @Test
     fun `a filtered source shows under the name the reader gave it`() {
-        val renamed = seedFeed(title = "nullprogram.com", customTitle = "Chris Wellons")
-        seedEntry(feedId = renamed, title = "Practical libc-free threading")
+        val renamed = perch.seedFeed(title = "nullprogram.com", customTitle = "Chris Wellons")
+        perch.seedEntry(feedId = renamed, title = "Practical libc-free threading")
 
         showHome()
         selectInDrawer("Chris Wellons")
@@ -249,10 +247,10 @@ class HomeScreenTest {
 
     @Test
     fun `going back to all sources clears the filter`() {
-        val one = seedFeed(title = "Source One")
-        val two = seedFeed(title = "Source Two")
-        seedEntry(feedId = one, title = "Only in one")
-        seedEntry(feedId = two, title = "Only in two")
+        val one = perch.seedFeed(title = "Source One")
+        val two = perch.seedFeed(title = "Source Two")
+        perch.seedEntry(feedId = one, title = "Only in one")
+        perch.seedEntry(feedId = two, title = "Only in two")
 
         showHome()
         selectInDrawer("Source Two")
@@ -265,13 +263,13 @@ class HomeScreenTest {
 
     @Test
     fun `each drawer row is badged with that source's unread count`() {
-        val two = seedFeed(title = "Two Unread")
-        val one = seedFeed(title = "One Unread")
-        val none = seedFeed(title = "Nothing Unread")
-        seedEntry(feedId = two, title = "first")
-        seedEntry(feedId = two, title = "second")
-        seedEntry(feedId = one, title = "third")
-        seedEntry(feedId = none, title = "fourth", readAt = now.toEpochMilli())
+        val two = perch.seedFeed(title = "Two Unread")
+        val one = perch.seedFeed(title = "One Unread")
+        val none = perch.seedFeed(title = "Nothing Unread")
+        perch.seedEntry(feedId = two, title = "first")
+        perch.seedEntry(feedId = two, title = "second")
+        perch.seedEntry(feedId = one, title = "third")
+        perch.seedEntry(feedId = none, title = "fourth", readAt = now.toEpochMilli())
 
         showHome()
         expandInDrawer(FolderEntity.UNCATEGORIZED_ID)
@@ -285,9 +283,9 @@ class HomeScreenTest {
 
     @Test
     fun `a source whose last refresh failed is marked in the drawer`() {
-        val healthy = seedFeed(title = "Healthy")
-        seedFeed(title = "Broken", lastError = "Connection reset")
-        seedEntry(feedId = healthy, title = "Something to read")
+        val healthy = perch.seedFeed(title = "Healthy")
+        perch.seedFeed(title = "Broken", lastError = "Connection reset")
+        perch.seedEntry(feedId = healthy, title = "Something to read")
 
         showHome()
         expandInDrawer(FolderEntity.UNCATEGORIZED_ID)
@@ -298,9 +296,9 @@ class HomeScreenTest {
 
     @Test
     fun `reading the last unread entry of a filtered source leaves the source listed`() {
-        val one = seedFeed(title = "Source One")
-        seedFeed(title = "Source Two")
-        seedEntry(feedId = one, title = "Only in one")
+        val one = perch.seedFeed(title = "Source One")
+        perch.seedFeed(title = "Source Two")
+        perch.seedEntry(feedId = one, title = "Only in one")
 
         showHome()
         selectInDrawer("Source One")
@@ -320,7 +318,7 @@ class HomeScreenTest {
      */
     @Test
     fun `long-pressing a source offers rename and remove`() {
-        seedFeed(title = "Source One")
+        perch.seedFeed(title = "Source One")
 
         showHome()
         longPressInDrawer("Source One")
@@ -331,7 +329,7 @@ class HomeScreenTest {
 
     @Test
     fun `removing a source asks before it does anything`() {
-        seedFeed(title = "Source One")
+        perch.seedFeed(title = "Source One")
 
         showHome()
         longPressInDrawer("Source One")
@@ -343,8 +341,8 @@ class HomeScreenTest {
 
     @Test
     fun `cancelling the removal leaves the source and its entries alone`() {
-        val one = seedFeed(title = "Source One")
-        seedEntry(feedId = one, title = "Only in one")
+        val one = perch.seedFeed(title = "Source One")
+        perch.seedEntry(feedId = one, title = "Only in one")
 
         showHome()
         longPressInDrawer("Source One")
@@ -358,10 +356,10 @@ class HomeScreenTest {
 
     @Test
     fun `confirming the removal takes the source's entries with it`() {
-        val one = seedFeed(title = "Source One")
-        val two = seedFeed(title = "Source Two")
-        seedEntry(feedId = one, title = "Only in one")
-        seedEntry(feedId = two, title = "Only in two")
+        val one = perch.seedFeed(title = "Source One")
+        val two = perch.seedFeed(title = "Source Two")
+        perch.seedEntry(feedId = one, title = "Only in one")
+        perch.seedEntry(feedId = two, title = "Only in two")
 
         showHome()
         longPressInDrawer("Source One")
@@ -375,10 +373,10 @@ class HomeScreenTest {
 
     @Test
     fun `removing the source being filtered on drops the filter`() {
-        val one = seedFeed(title = "Source One")
-        val two = seedFeed(title = "Source Two")
-        seedEntry(feedId = one, title = "Only in one")
-        seedEntry(feedId = two, title = "Only in two")
+        val one = perch.seedFeed(title = "Source One")
+        val two = perch.seedFeed(title = "Source Two")
+        perch.seedEntry(feedId = one, title = "Only in one")
+        perch.seedEntry(feedId = two, title = "Only in two")
 
         showHome()
         selectInDrawer("Source One")
@@ -405,7 +403,7 @@ class HomeScreenTest {
      */
     @Test
     fun `the overflow offers to remove the source being read`() {
-        seedFeed(title = "Source One")
+        perch.seedFeed(title = "Source One")
 
         showHome()
         selectInDrawer("Source One")
@@ -416,7 +414,7 @@ class HomeScreenTest {
 
     @Test
     fun `the overflow offers no removal on the unnarrowed feed`() {
-        seedFeed(title = "Source One")
+        perch.seedFeed(title = "Source One")
 
         showHome()
         openOverflow()
@@ -439,10 +437,10 @@ class HomeScreenTest {
 
     @Test
     fun `removing from the overflow asks first, then unsubscribes and widens the feed`() {
-        val one = seedFeed(title = "Source One")
-        val two = seedFeed(title = "Source Two")
-        seedEntry(feedId = one, title = "Only in one")
-        seedEntry(feedId = two, title = "Only in two")
+        val one = perch.seedFeed(title = "Source One")
+        val two = perch.seedFeed(title = "Source Two")
+        perch.seedEntry(feedId = one, title = "Only in one")
+        perch.seedEntry(feedId = two, title = "Only in two")
 
         showHome()
         selectInDrawer("Source One")
@@ -466,8 +464,8 @@ class HomeScreenTest {
 
     @Test
     fun `renaming a source relabels the drawer without touching the feed's own title`() {
-        val one = seedFeed(title = "nullprogram.com")
-        seedEntry(feedId = one, title = "Practical libc-free threading")
+        val one = perch.seedFeed(title = "nullprogram.com")
+        perch.seedEntry(feedId = one, title = "Practical libc-free threading")
 
         showHome()
         longPressInDrawer("nullprogram.com")
@@ -490,7 +488,7 @@ class HomeScreenTest {
 
     @Test
     fun `cancelling the rename dialog changes nothing`() {
-        seedFeed(title = "nullprogram.com")
+        perch.seedFeed(title = "nullprogram.com")
 
         showHome()
         longPressInDrawer("nullprogram.com")
@@ -505,7 +503,7 @@ class HomeScreenTest {
 
     @Test
     fun `emptying the rename field restores the title the feed publishes`() {
-        seedFeed(title = "nullprogram.com", customTitle = "Chris Wellons")
+        perch.seedFeed(title = "nullprogram.com", customTitle = "Chris Wellons")
 
         showHome()
         longPressInDrawer("Chris Wellons")
@@ -664,44 +662,6 @@ class HomeScreenTest {
     /** Y of a node's top edge in the root, for asserting one row is above another. */
     private fun topOf(text: String): Float =
         compose.onNodeWithText(text).fetchSemanticsNode().positionInRoot.y
-
-    private fun seedFolder(name: String): Long = runBlocking {
-        perch.database.folderDao().insert(FolderEntity(name = name, sortIndex = 0, createdAt = 0L))
-    }
-
-    private fun seedFeed(
-        title: String,
-        customTitle: String? = null,
-        lastError: String? = null,
-        folderId: Long = FolderEntity.UNCATEGORIZED_ID,
-    ): Long = runBlocking {
-        perch.database.feedDao().insert(
-            testFeed(
-                title = title,
-                customTitle = customTitle,
-                lastError = lastError,
-                folderId = folderId,
-            ),
-        )
-    }
-
-    private fun seedEntry(
-        feedId: Long,
-        title: String,
-        summary: String? = "A short summary.",
-        publishedAt: Instant = now.minusSeconds(2 * DAY),
-        readAt: Long? = null,
-    ): Long = runBlocking {
-        perch.database.entryDao().insert(
-            testEntry(
-                feedId = feedId,
-                title = title,
-                publishedAt = publishedAt.toEpochMilli(),
-                summary = summary,
-                readAt = readAt,
-            ),
-        )
-    }
 
     private companion object {
         const val HOUR = 3_600L

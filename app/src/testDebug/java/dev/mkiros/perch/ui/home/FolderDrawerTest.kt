@@ -20,8 +20,6 @@ import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.model.TimeFilter
 import dev.mkiros.perch.support.PerchRule
-import dev.mkiros.perch.support.testEntry
-import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.screenshot.showHome as showHomeScreen
 import java.time.Clock
@@ -75,10 +73,10 @@ class FolderDrawerTest {
 
     @Test
     fun `sources are listed under the folder they belong to`() {
-        val graphics = seedFolder("Graphics")
-        val security = seedFolder("Security")
-        seedFeed(title = "GPUOpen", folderId = graphics)
-        seedFeed(title = "Zero Day Initiative", folderId = security)
+        val graphics = perch.seedFolder("Graphics")
+        val security = perch.seedFolder("Security")
+        perch.seedFeed(title = "GPUOpen", folderId = graphics)
+        perch.seedFeed(title = "Zero Day Initiative", folderId = security)
 
         showHome()
         expandInDrawer(graphics)
@@ -97,10 +95,10 @@ class FolderDrawerTest {
     @Test
     fun `the drawer orders folders alphabetically whatever order they were made in`() {
         // Created in reverse: while creation order decided, Security led the drawer.
-        val security = seedFolder("Security")
-        val ai = seedFolder("ai")
-        seedEntry(seedFeed(title = "Zero Day Initiative", folderId = security), title = "advisory")
-        seedEntry(seedFeed(title = "LLM Weekly", folderId = ai), title = "a model")
+        val security = perch.seedFolder("Security")
+        val ai = perch.seedFolder("ai")
+        perch.seedEntry(perch.seedFeed(title = "Zero Day Initiative", folderId = security), title = "advisory")
+        perch.seedEntry(perch.seedFeed(title = "LLM Weekly", folderId = ai), title = "a model")
 
         showHome()
         openDrawer()
@@ -111,13 +109,13 @@ class FolderDrawerTest {
 
     @Test
     fun `a folder header carries the unread count of every source in it`() {
-        val graphics = seedFolder("Graphics")
-        val one = seedFeed(title = "GPUOpen", folderId = graphics)
-        val two = seedFeed(title = "Real-Time Rendering", folderId = graphics)
-        seedEntry(feedId = one, title = "first")
-        seedEntry(feedId = one, title = "second")
-        seedEntry(feedId = two, title = "third")
-        seedEntry(feedId = two, title = "read already", readAt = now.toEpochMilli())
+        val graphics = perch.seedFolder("Graphics")
+        val one = perch.seedFeed(title = "GPUOpen", folderId = graphics)
+        val two = perch.seedFeed(title = "Real-Time Rendering", folderId = graphics)
+        perch.seedEntry(feedId = one, title = "first")
+        perch.seedEntry(feedId = one, title = "second")
+        perch.seedEntry(feedId = two, title = "third")
+        perch.seedEntry(feedId = two, title = "read already", readAt = now.toEpochMilli())
 
         showHome()
         openDrawer()
@@ -127,9 +125,9 @@ class FolderDrawerTest {
 
     @Test
     fun `a folder with nothing unread is badged 0 rather than dropping out of the drawer`() {
-        val graphics = seedFolder("Graphics")
-        val feedId = seedFeed(title = "GPUOpen", folderId = graphics)
-        seedEntry(feedId = feedId, title = "read already", readAt = now.toEpochMilli())
+        val graphics = perch.seedFolder("Graphics")
+        val feedId = perch.seedFeed(title = "GPUOpen", folderId = graphics)
+        perch.seedEntry(feedId = feedId, title = "read already", readAt = now.toEpochMilli())
 
         showHome()
         openDrawer()
@@ -143,9 +141,9 @@ class FolderDrawerTest {
      */
     @Test
     fun `the drawer opens with every folder shut, headers only`() {
-        val graphics = seedFolder("Graphics")
-        seedFeed(title = "GPUOpen", folderId = graphics)
-        seedFeed(title = "nullprogram.com")
+        val graphics = perch.seedFolder("Graphics")
+        perch.seedFeed(title = "GPUOpen", folderId = graphics)
+        perch.seedFeed(title = "nullprogram.com")
 
         showHome()
         openDrawer()
@@ -158,9 +156,9 @@ class FolderDrawerTest {
 
     @Test
     fun `opening one folder reveals only that folder's sources`() {
-        val graphics = seedFolder("Graphics")
-        seedFeed(title = "GPUOpen", folderId = graphics)
-        seedFeed(title = "nullprogram.com")
+        val graphics = perch.seedFolder("Graphics")
+        perch.seedFeed(title = "GPUOpen", folderId = graphics)
+        perch.seedFeed(title = "nullprogram.com")
 
         showHome()
         expandInDrawer(graphics)
@@ -171,8 +169,8 @@ class FolderDrawerTest {
 
     @Test
     fun `expanding a folder hides its sources again on a second tap`() {
-        val graphics = seedFolder("Graphics")
-        seedFeed(title = "GPUOpen", folderId = graphics)
+        val graphics = perch.seedFolder("Graphics")
+        perch.seedFeed(title = "GPUOpen", folderId = graphics)
 
         showHome()
         expandInDrawer(graphics)
@@ -185,11 +183,11 @@ class FolderDrawerTest {
 
     @Test
     fun `selecting a folder lists only the entries of the sources in it`() {
-        val graphics = seedFolder("Graphics")
-        val inFolder = seedFeed(title = "GPUOpen", folderId = graphics)
-        val outside = seedFeed(title = "Null Program")
-        seedEntry(feedId = inFolder, title = "Only in Graphics")
-        seedEntry(feedId = outside, title = "Somewhere else")
+        val graphics = perch.seedFolder("Graphics")
+        val inFolder = perch.seedFeed(title = "GPUOpen", folderId = graphics)
+        val outside = perch.seedFeed(title = "Null Program")
+        perch.seedEntry(feedId = inFolder, title = "Only in Graphics")
+        perch.seedEntry(feedId = outside, title = "Somewhere else")
 
         showHome()
         openDrawer()
@@ -233,7 +231,7 @@ class FolderDrawerTest {
         awaitState { state -> state.folders.any { it.name == "Graphics" } }
         val graphics = folders().first { it.name == "Graphics" }.id
 
-        seedFeed(title = "GPUOpen", folderId = graphics)
+        perch.seedFeed(title = "GPUOpen", folderId = graphics)
         awaitDb { feedTitles().contains("GPUOpen") }
 
         compose.onNodeWithText("GPUOpen").assertIsDisplayed()
@@ -241,8 +239,8 @@ class FolderDrawerTest {
 
     @Test
     fun `renaming a folder from its overflow renames the row, not the sources in it`() {
-        val graphics = seedFolder("Graphics")
-        seedFeed(title = "GPUOpen", folderId = graphics)
+        val graphics = perch.seedFolder("Graphics")
+        perch.seedFeed(title = "GPUOpen", folderId = graphics)
 
         showHome()
         openDrawer()
@@ -259,8 +257,8 @@ class FolderDrawerTest {
 
     @Test
     fun `deleting a folder moves its sources to Uncategorized instead of removing them`() {
-        val graphics = seedFolder("Graphics")
-        seedFeed(title = "GPUOpen", folderId = graphics)
+        val graphics = perch.seedFolder("Graphics")
+        perch.seedFeed(title = "GPUOpen", folderId = graphics)
 
         showHome()
         openDrawer()
@@ -276,7 +274,7 @@ class FolderDrawerTest {
 
     @Test
     fun `Uncategorized offers neither rename nor delete`() {
-        seedFeed(title = "GPUOpen")
+        perch.seedFeed(title = "GPUOpen")
 
         showHome()
         openDrawer()
@@ -290,8 +288,8 @@ class FolderDrawerTest {
 
     @Test
     fun `moving a source from its long press files it under the chosen folder`() {
-        val graphics = seedFolder("Graphics")
-        seedFeed(title = "GPUOpen")
+        val graphics = perch.seedFolder("Graphics")
+        perch.seedFeed(title = "GPUOpen")
 
         showHome()
         longPressInDrawer("GPUOpen")
@@ -306,7 +304,7 @@ class FolderDrawerTest {
 
     @Test
     fun `a source can be moved into a folder created from the move dialog`() {
-        seedFeed(title = "GPUOpen")
+        perch.seedFeed(title = "GPUOpen")
 
         showHome()
         longPressInDrawer("GPUOpen")
@@ -332,8 +330,8 @@ class FolderDrawerTest {
     fun `a folder dialog's row stays on one line however long the folder's name`() {
         // Long enough to overflow the dialog outright: the assertion is that it is cut,
         // and a name that fits would pass whatever `ActionRow` did with its lines.
-        val graphics = seedFolder("Programming Languages and Compiler Implementation")
-        seedFeed(title = "GPUOpen")
+        val graphics = perch.seedFolder("Programming Languages and Compiler Implementation")
+        perch.seedFeed(title = "GPUOpen")
 
         showHome()
         longPressInDrawer("GPUOpen")
@@ -416,39 +414,6 @@ class FolderDrawerTest {
 
     private fun showHome() {
         viewModel = showHomeScreen(perch, compose, clock, settings).viewModel
-    }
-
-    private fun seedFolder(name: String): Long = runBlocking {
-        perch.container.folders.createFolder(name)
-    }
-
-    private fun seedFeed(
-        title: String,
-        folderId: Long = FolderEntity.UNCATEGORIZED_ID,
-    ): Long = runBlocking {
-        perch.database.feedDao().insert(
-            testFeed(
-                title = title,
-                folderId = folderId,
-            ),
-        )
-    }
-
-    private fun seedEntry(
-        feedId: Long,
-        title: String,
-        readAt: Long? = null,
-    ): Long = runBlocking {
-        perch.database.entryDao().insert(
-            testEntry(
-                feedId = feedId,
-                title = title,
-                publishedAt = now.minusSeconds(DAY).toEpochMilli(),
-                summary = "A short summary.",
-                readAt = readAt,
-                fetchedAt = now.toEpochMilli(),
-            ),
-        )
     }
 
     private companion object {

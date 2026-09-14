@@ -37,8 +37,6 @@ import dev.mkiros.perch.model.BackfillRunner
 import dev.mkiros.perch.model.TimeFilter
 import dev.mkiros.perch.support.MapPageFetcher
 import dev.mkiros.perch.support.PerchRule
-import dev.mkiros.perch.support.testEntry
-import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.ui.screenshot.Screenshots
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.screenshot.showHome as showHomeScreen
@@ -284,7 +282,7 @@ class BackfillOfferTest {
     fun `All Time scoped to one source states how far its stored history reaches`() {
         val fetcher = MapPageFetcher()
         val feedId = seedFeed(title = "GPUOpen")
-        seedEntry(feedId, "Old one", Instant.parse("2020-03-31T00:00:00Z"))
+        perch.seedEntry(feedId, "Old one", publishedAt = at("2020-03-31T00:00:00Z"))
 
         showHome(fetcher)
         tapRow("GPUOpen")
@@ -303,8 +301,8 @@ class BackfillOfferTest {
     fun `the reach sentence states the oldest date the source published for itself`() {
         val fetcher = MapPageFetcher()
         val feedId = seedFeed(title = "GPUOpen")
-        seedEntry(feedId, "Undated one", Instant.parse("2019-01-05T00:00:00Z"), isEstimated = true)
-        seedEntry(feedId, "Old one", Instant.parse("2020-03-31T00:00:00Z"))
+        perch.seedEntry(feedId, "Undated one", publishedAt = at("2019-01-05T00:00:00Z"), publishedIsEstimated = true)
+        perch.seedEntry(feedId, "Old one", publishedAt = at("2020-03-31T00:00:00Z"))
 
         showHome(fetcher)
         tapRow("GPUOpen")
@@ -318,7 +316,7 @@ class BackfillOfferTest {
     fun `a source whose every date was guessed reaches back to a guess`() {
         val fetcher = MapPageFetcher()
         val feedId = seedFeed(title = "GPUOpen")
-        seedEntry(feedId, "Undated one", Instant.parse("2020-03-31T00:00:00Z"), isEstimated = true)
+        perch.seedEntry(feedId, "Undated one", publishedAt = at("2020-03-31T00:00:00Z"), publishedIsEstimated = true)
 
         showHome(fetcher)
         tapRow("GPUOpen")
@@ -330,7 +328,7 @@ class BackfillOfferTest {
     @Test
     fun `the reach sentence is absent from the unified inbox`() {
         val fetcher = MapPageFetcher()
-        seedFeed(title = "GPUOpen").also { seedEntry(it, "Old one", Instant.parse("2020-03-31T00:00:00Z")) }
+        seedFeed(title = "GPUOpen").also { perch.seedEntry(it, "Old one", publishedAt = at("2020-03-31T00:00:00Z")) }
 
         showHome(fetcher)
 
@@ -623,37 +621,27 @@ class BackfillOfferTest {
         homeScope = home.homeScope
     }
 
-    private fun seedFeed(entryCount: Int = 0, title: String = "A blog"): Long = runBlocking {
-        val feedId = perch.database.feedDao().insert(
-            testFeed(
-                feedUrl = SITE + "feed.xml",
-                siteUrl = SITE.trimEnd('/'),
-                title = title,
-                lastFetchedAt = now.toEpochMilli(),
-                lastSuccessAt = now.toEpochMilli(),
-                addedAt = now.toEpochMilli(),
-            ),
-        )
-        repeat(entryCount) { i -> seedEntry(feedId, "existing-$i", now) }
-        feedId
-    }
+    private fun at(iso: String): Long = Instant.parse(iso).toEpochMilli()
 
-    private fun seedEntry(
-        feedId: Long,
-        title: String,
-        published: Instant,
-        isEstimated: Boolean = false,
-    ): Long = runBlocking {
-        perch.database.entryDao().insert(
-            testEntry(
-                feedId = feedId,
-                title = title,
-                link = "https://example.com/$title",
-                publishedAt = published.toEpochMilli(),
-                publishedIsEstimated = isEstimated,
-                fetchedAt = now.toEpochMilli(),
-            ),
+    /** [entryCount] entries whose links [existingLinks] can name, on a feed fetched now. */
+    private fun seedFeed(entryCount: Int = 0, title: String = "A blog"): Long {
+        val feedId = perch.seedFeed(
+            title = title,
+            feedUrl = SITE + "feed.xml",
+            siteUrl = SITE.trimEnd('/'),
+            lastFetchedAt = now.toEpochMilli(),
+            lastSuccessAt = now.toEpochMilli(),
+            addedAt = now.toEpochMilli(),
         )
+        repeat(entryCount) { i ->
+            perch.seedEntry(
+                feedId,
+                "existing-$i",
+                link = "https://example.com/existing-$i",
+                publishedAt = now.toEpochMilli(),
+            )
+        }
+        return feedId
     }
 
     /** No WorkManager anywhere: [enqueue] and [cancel] just record the call, and a test

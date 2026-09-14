@@ -21,8 +21,6 @@ import dev.mkiros.perch.data.net.ConnectivityMonitor
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.model.TimeFilter
 import dev.mkiros.perch.support.PerchRule
-import dev.mkiros.perch.support.testEntry
-import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.ui.rowTitles
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.screenshot.showHome as showHomeScreen
@@ -107,8 +105,8 @@ class HomeRefreshTest {
     fun `pulling the list refreshes every source exactly once`() {
         val one = seedRemoteFeed(path = "/one.xml", title = "Source One", entryTitle = "Fresh from one")
         val two = seedRemoteFeed(path = "/two.xml", title = "Source Two", entryTitle = "Fresh from two")
-        seedEntry(feedId = one, title = "Cached in one")
-        seedEntry(feedId = two, title = "Cached in two")
+        perch.seedEntry(feedId = one, title = "Cached in one")
+        perch.seedEntry(feedId = two, title = "Cached in two")
 
         showHome()
         pullToRefresh()
@@ -130,8 +128,8 @@ class HomeRefreshTest {
     fun `refreshing while filtered polls only the source on screen`() {
         val one = seedRemoteFeed(path = "/one.xml", title = "Source One", entryTitle = "Fresh from one")
         val two = seedRemoteFeed(path = "/two.xml", title = "Source Two", entryTitle = "Fresh from two")
-        seedEntry(feedId = one, title = "Cached in one")
-        seedEntry(feedId = two, title = "Cached in two")
+        perch.seedEntry(feedId = one, title = "Cached in one")
+        perch.seedEntry(feedId = two, title = "Cached in two")
 
         showHome()
         selectInDrawer("Source Two")
@@ -161,7 +159,7 @@ class HomeRefreshTest {
     @Test
     fun `the indicator comes back down when the refresh is done`() {
         val one = seedRemoteFeed(path = "/one.xml", title = "Source One", entryTitle = "Fresh from one")
-        seedEntry(feedId = one, title = "Cached in one")
+        perch.seedEntry(feedId = one, title = "Cached in one")
 
         showHome()
         pullToRefresh()
@@ -178,7 +176,7 @@ class HomeRefreshTest {
     fun `refreshing from the overflow menu polls every source exactly once`() {
         val one = seedRemoteFeed(path = "/one.xml", title = "Source One", entryTitle = "Fresh from one")
         seedRemoteFeed(path = "/two.xml", title = "Source Two", entryTitle = "Fresh from two")
-        seedEntry(feedId = one, title = "Cached in one")
+        perch.seedEntry(feedId = one, title = "Cached in one")
 
         showHome()
         refreshFromOverflow()
@@ -204,8 +202,8 @@ class HomeRefreshTest {
 
     @Test
     fun `a failing source keeps its cached entries listed and is flagged in the drawer`() {
-        val broken = seedFeed(title = "Broken", lastError = "Connection reset")
-        seedEntry(feedId = broken, title = "Fetched before it broke")
+        val broken = perch.seedFeed(title = "Broken", lastError = "Connection reset")
+        perch.seedEntry(feedId = broken, title = "Fetched before it broke")
 
         showHome()
 
@@ -216,8 +214,8 @@ class HomeRefreshTest {
 
     @Test
     fun `filtering to a failing source shows its message with a retry`() {
-        val broken = seedFeed(title = "Broken", lastError = "Connection reset")
-        seedEntry(feedId = broken, title = "Fetched before it broke")
+        val broken = perch.seedFeed(title = "Broken", lastError = "Connection reset")
+        perch.seedEntry(feedId = broken, title = "Fetched before it broke")
 
         showHome()
         selectInDrawer("Broken")
@@ -236,7 +234,7 @@ class HomeRefreshTest {
             entryTitle = "Back from the dead",
             lastError = "Connection reset",
         )
-        seedEntry(feedId = broken, title = "Fetched before it broke")
+        perch.seedEntry(feedId = broken, title = "Fetched before it broke")
 
         showHome()
         selectInDrawer("Broken")
@@ -249,9 +247,9 @@ class HomeRefreshTest {
 
     @Test
     fun `with every source failing the banner is global and dismissible`() {
-        val one = seedFeed(title = "Source One", lastError = "Connection reset")
-        seedFeed(title = "Source Two", lastError = "Host unreachable")
-        seedEntry(feedId = one, title = "Still readable")
+        val one = perch.seedFeed(title = "Source One", lastError = "Connection reset")
+        perch.seedFeed(title = "Source Two", lastError = "Host unreachable")
+        perch.seedEntry(feedId = one, title = "Still readable")
 
         showHome()
 
@@ -266,9 +264,9 @@ class HomeRefreshTest {
 
     @Test
     fun `one healthy source is enough to keep the global banner away`() {
-        val healthy = seedFeed(title = "Healthy")
-        seedFeed(title = "Broken", lastError = "Connection reset")
-        seedEntry(feedId = healthy, title = "Something to read")
+        val healthy = perch.seedFeed(title = "Healthy")
+        perch.seedFeed(title = "Broken", lastError = "Connection reset")
+        perch.seedEntry(feedId = healthy, title = "Something to read")
 
         showHome()
 
@@ -279,8 +277,8 @@ class HomeRefreshTest {
 
     @Test
     fun `offline says so above the list and leaves the list readable`() {
-        val feedId = seedFeed(title = "Source One")
-        seedEntry(feedId = feedId, title = "Saved earlier")
+        val feedId = perch.seedFeed(title = "Source One")
+        perch.seedEntry(feedId = feedId, title = "Saved earlier")
 
         showHome(connectivity = ConnectivityMonitor.AlwaysOffline)
 
@@ -292,8 +290,8 @@ class HomeRefreshTest {
 
     @Test
     fun `offline outranks a failing source, which is failing because of it`() {
-        val feedId = seedFeed(title = "Source One", lastError = "Host unreachable")
-        seedEntry(feedId = feedId, title = "Saved earlier")
+        val feedId = perch.seedFeed(title = "Source One", lastError = "Host unreachable")
+        perch.seedEntry(feedId = feedId, title = "Saved earlier")
 
         showHome(connectivity = ConnectivityMonitor.AlwaysOffline)
 
@@ -305,9 +303,9 @@ class HomeRefreshTest {
 
     @Test
     fun `mark all read empties the list and offers to undo`() {
-        val feedId = seedFeed(title = "Source One")
-        seedEntry(feedId = feedId, title = "First")
-        seedEntry(feedId = feedId, title = "Second")
+        val feedId = perch.seedFeed(title = "Source One")
+        perch.seedEntry(feedId = feedId, title = "First")
+        perch.seedEntry(feedId = feedId, title = "Second")
 
         showHome()
         markAllRead()
@@ -318,10 +316,10 @@ class HomeRefreshTest {
 
     @Test
     fun `undo restores exactly the entries that batch marked, and no others`() {
-        val feedId = seedFeed(title = "Source One")
-        seedEntry(feedId = feedId, title = "First")
-        seedEntry(feedId = feedId, title = "Second")
-        seedEntry(feedId = feedId, title = "Read last week", readAt = now.toEpochMilli())
+        val feedId = perch.seedFeed(title = "Source One")
+        perch.seedEntry(feedId = feedId, title = "First")
+        perch.seedEntry(feedId = feedId, title = "Second")
+        perch.seedEntry(feedId = feedId, title = "Read last week", readAt = now.toEpochMilli())
         val unreadBefore = unreadTitles()
 
         showHome()
@@ -338,10 +336,10 @@ class HomeRefreshTest {
 
     @Test
     fun `mark all read is scoped to the source being filtered on`() {
-        val one = seedFeed(title = "Source One")
-        val two = seedFeed(title = "Source Two")
-        seedEntry(feedId = one, title = "Only in one")
-        seedEntry(feedId = two, title = "Only in two")
+        val one = perch.seedFeed(title = "Source One")
+        val two = perch.seedFeed(title = "Source Two")
+        perch.seedEntry(feedId = one, title = "Only in one")
+        perch.seedEntry(feedId = two, title = "Only in two")
 
         showHome()
         selectInDrawer("Source One")
@@ -445,7 +443,7 @@ class HomeRefreshTest {
         lastError: String? = null,
     ): Long {
         bodies[path] = rss(title = title, entryTitle = entryTitle)
-        return seedFeed(title = title, lastError = lastError, feedUrl = server.url(path).toString())
+        return perch.seedFeed(title = title, lastError = lastError, feedUrl = server.url(path).toString())
     }
 
     private fun rss(title: String, entryTitle: String) = """
@@ -464,37 +462,6 @@ class HomeRefreshTest {
           </channel>
         </rss>
     """.trimIndent()
-
-    private fun seedFeed(
-        title: String,
-        lastError: String? = null,
-        feedUrl: String = "https://example.com/${title.hashCode()}/feed.xml",
-    ): Long = runBlocking {
-        perch.database.feedDao().insert(
-            testFeed(
-                feedUrl = feedUrl,
-                title = title,
-                lastError = lastError,
-            ),
-        )
-    }
-
-    private fun seedEntry(
-        feedId: Long,
-        title: String,
-        readAt: Long? = null,
-    ): Long = runBlocking {
-        val publishedAt = now.minusSeconds(2 * DAY).toEpochMilli()
-        perch.database.entryDao().insert(
-            testEntry(
-                feedId = feedId,
-                title = title,
-                publishedAt = publishedAt,
-                summary = "A short summary.",
-                readAt = readAt,
-            ),
-        )
-    }
 
     private companion object {
         val FRESH = listOf("Fresh from one", "Fresh from two")

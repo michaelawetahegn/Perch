@@ -18,8 +18,6 @@ import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.model.TimeFilter
 import dev.mkiros.perch.support.PerchRule
-import dev.mkiros.perch.support.testEntry
-import dev.mkiros.perch.support.testFeed
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.screenshot.homeViewModel
 import dev.mkiros.perch.ui.screenshot.showHome as showHomeScreen
@@ -64,7 +62,7 @@ class HomeTimeRangeTest {
 
     @Test
     fun `the closed control names the active range and none of the other four`() {
-        seedEntry(seedFeed("Source One"), "This morning")
+        perch.seedEntry(perch.seedFeed("Source One"), "This morning")
 
         showHome()
 
@@ -76,7 +74,7 @@ class HomeTimeRangeTest {
 
     @Test
     fun `the open menu offers all five ranges with exactly one marked selected`() {
-        seedEntry(seedFeed("Source One"), "This morning")
+        perch.seedEntry(perch.seedFeed("Source One"), "This morning")
 
         showHome()
         openMenu()
@@ -88,9 +86,9 @@ class HomeTimeRangeTest {
 
     @Test
     fun `choosing a range from the menu re-queries the list and closes the menu`() {
-        val feedId = seedFeed("Source One")
-        seedEntry(feedId, "This morning", at = "2026-08-07T09:00:00Z")
-        seedEntry(feedId, "Last month", at = "2026-07-20T09:00:00Z")
+        val feedId = perch.seedFeed("Source One")
+        perch.seedEntry(feedId, "This morning", publishedAt = at("2026-08-07T09:00:00Z"))
+        perch.seedEntry(feedId, "Last month", publishedAt = at("2026-07-20T09:00:00Z"))
 
         showHome()
         chooseRange(TimeFilter.PastMonth)
@@ -107,8 +105,8 @@ class HomeTimeRangeTest {
 
     @Test
     fun `the chosen range comes back out of DataStore on the next launch`() {
-        val feedId = seedFeed("Source One")
-        seedEntry(feedId, "Last month", at = "2026-07-20T09:00:00Z")
+        val feedId = perch.seedFeed("Source One")
+        perch.seedEntry(feedId, "Last month", publishedAt = at("2026-07-20T09:00:00Z"))
 
         showHome()
         chooseRange(TimeFilter.PastMonth)
@@ -129,7 +127,7 @@ class HomeTimeRangeTest {
 
     @Test
     fun `the widen affordance moves the dropdown's own selection`() {
-        seedEntry(seedFeed("Source One"), "Three days ago", at = "2026-08-04T09:00:00Z")
+        perch.seedEntry(perch.seedFeed("Source One"), "Three days ago", publishedAt = at("2026-08-04T09:00:00Z"))
 
         showHome()
         // Today is empty, so the way out is the empty state's button — and afterwards the
@@ -154,7 +152,7 @@ class HomeTimeRangeTest {
         // The longest of the five, which W02/#15 moved: "Past 24 Hours" is two characters
         // longer than "Past Month" was. Re-pin this when a label changes — the assertion
         // is only worth anything against whichever one is widest.
-        seedEntry(seedFeed("Source One"), "This morning")
+        perch.seedEntry(perch.seedFeed("Source One"), "This morning")
         runBlocking { settings.setTimeFilter(TimeFilter.Today) }
 
         showHome(fontScale = 1.3f)
@@ -219,27 +217,7 @@ class HomeTimeRangeTest {
         viewModel = showHomeScreen(perch, compose, clock, settings, fontScale = fontScale).viewModel
     }
 
-    private fun seedFeed(title: String): Long = runBlocking {
-        perch.database.feedDao().insert(
-            testFeed(
-                title = title,
-            ),
-        )
-    }
 
-    private fun seedEntry(
-        feedId: Long,
-        title: String,
-        at: String = "2026-08-07T09:00:00Z",
-    ): Long = runBlocking {
-        val published = Instant.parse(at).toEpochMilli()
-        perch.database.entryDao().insert(
-            testEntry(
-                feedId = feedId,
-                title = title,
-                publishedAt = published,
-                isRead = false,
-            ),
-        )
-    }
+    private fun at(iso: String): Long = Instant.parse(iso).toEpochMilli()
+
 }

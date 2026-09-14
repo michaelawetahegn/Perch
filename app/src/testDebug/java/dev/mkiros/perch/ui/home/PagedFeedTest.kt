@@ -8,8 +8,6 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performScrollToIndex
 import com.google.common.truth.Truth.assertThat
-import dev.mkiros.perch.data.db.entity.EntryEntity
-import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.repo.PerchPaging
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.model.TimeFilter
@@ -171,38 +169,16 @@ class PagedFeedTest {
         perch.database.entryDao().observeAll().first().first { it.title == title }.id
     }
 
-    private fun seed(count: Int) = runBlocking {
-        val feedId = perch.database.feedDao().insert(
-            FeedEntity(
-                feedUrl = "https://example.com/feed.xml",
-                siteUrl = "https://example.com",
-                title = "Null Program",
-                customTitle = null,
-                faviconUrl = null,
-                etag = null,
-                lastModified = null,
-                lastFetchedAt = null,
-                lastSuccessAt = null,
-                lastError = null,
-                addedAt = 0L,
-            ),
-        )
+    private fun seed(count: Int) {
+        val feedId = perch.seedFeed(title = "Null Program", feedUrl = "https://example.com/feed.xml")
         repeat(count) { index ->
-            perch.database.entryDao().insert(
-                EntryEntity(
-                    feedId = feedId,
-                    guid = "guid-$index",
-                    title = "Entry %02d".format(index),
-                    link = "https://example.com/$index",
-                    author = null,
-                    publishedAt = now.toEpochMilli() - index * 60_000L,
-                    publishedIsEstimated = false,
-                    summary = null,
-                    contentHtml = null,
-                    imageUrl = null,
-                    readAt = null,
-                    fetchedAt = now.toEpochMilli(),
-                ),
+            perch.seedEntry(
+                feedId,
+                title = "Entry %02d".format(index),
+                guid = "guid-$index",
+                link = "https://example.com/$index",
+                publishedAt = now.toEpochMilli() - index * 60_000L,
+                summary = null,
             )
         }
     }

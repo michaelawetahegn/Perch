@@ -12,8 +12,6 @@ import dev.mkiros.perch.support.LaunchedJobs
 import dev.mkiros.perch.support.MapPageFetcher
 import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.support.awaitInRealTime
-import dev.mkiros.perch.support.testEntry
-import dev.mkiros.perch.support.testFeed
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
@@ -369,21 +367,16 @@ class ArticleViewModelTest {
         contentHtml: String? = FEED_BODY,
         savedAt: Long? = null,
         starredAt: Long? = null,
-    ): Long = runBlocking {
-        val feedId = perch.database.feedDao().insert(testFeed(title = "A blog"))
-        perch.database.entryDao().insert(
-            testEntry(
-                feedId = feedId,
-                title = "A post",
-                link = LINK,
-                author = "A writer",
-                publishedAt = now.toEpochMilli(),
-                contentHtml = contentHtml,
-                savedAt = savedAt,
-                starredAt = starredAt,
-            ),
-        )
-    }
+    ): Long = perch.seedEntry(
+        perch.seedFeed(title = "A blog"),
+        title = "A post",
+        link = LINK,
+        author = "A writer",
+        publishedAt = now.toEpochMilli(),
+        contentHtml = contentHtml,
+        savedAt = savedAt,
+        starredAt = starredAt,
+    )
 
     private companion object {
         const val LINK = "https://example.com/post"
