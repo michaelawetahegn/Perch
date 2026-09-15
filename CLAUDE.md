@@ -41,8 +41,7 @@ close its issue, stop.
 
 Finished plans live in `docs/plans/` — v0.1 (T01–T32), v0.2 (U01–U16), v0.3 (V01–V16),
 v0.4 (W01–W12), all four of v0.5's slices (X01–X04, Y01–Y05, Z01–Z05, R00–R03), v0.6
-(S01–S13), v0.6.1 (D01–D30), v0.7.0 (E01–E04) and now **v0.8.0 (`PLAN-12.md`, F01–F16 — still
-at the repository root until the next plan archives it)** are **complete, frozen, and history
+(S01–S13), v0.6.1 (D01–D30), v0.7.0 (E01–E04) and v0.8.0 (F01–F16) are **complete, frozen, and history
 only**; never reopen a box in any of them. F04's box reads `[BLOCKED: …]` on purpose: the rule
 landed and #70 closed, and F15 found the failing live gate was the test harness, not the app.
 
@@ -58,7 +57,7 @@ what F15 left is `TECH_DEBT.md` "## Next plan" — a handful of small items, non
 its own, and none a licence to start. The next plan begins with what the human reports next.
 
 **Bellingcat is in the corpus as of the planning commit** (`fixtures/feeds.txt`, `snapshots/`,
-`manifest.tsv`, and two unlisted page fixtures under `fixtures/articles/`); `PLAN-12.md` §0.3
+`manifest.tsv`, and two unlisted page fixtures under `fixtures/articles/`); `docs/plans/PLAN-12-v0.8.0.md` §0.3
 says what a task may do with them. **`gijn.org` blocks every non-browser client** — it must never
 join `fixtures/feeds.txt`.
 
@@ -67,7 +66,7 @@ SPEC.md, DESIGN.md and earlier plans. Where they conflict, the newest §0 wins a
 updates the older doc in the same commit — do not "fix" §0 to match the older text.
 `docs/plans/PLAN-4-v0.4.md` §0, `docs/plans/PLAN-6-v0.5-slice2.md` §0,
 `docs/plans/PLAN-7-v0.5-slice3.md` §0, `docs/plans/PLAN-9-v0.6.md` §0,
-`docs/plans/PLAN-10-v0.6.1.md` §0, `docs/plans/PLAN-11-v0.7.0.md` §0 and `PLAN-12.md` §0 all
+`docs/plans/PLAN-10-v0.6.1.md` §0, `docs/plans/PLAN-11-v0.7.0.md` §0 and `docs/plans/PLAN-12-v0.8.0.md` §0 all
 still bind for everything a future plan's §0 does not restate. In particular **`docs/plans/PLAN-10-v0.6.1.md`
 §0.2's rule stands: prefer deleting to adding**, and an improvement that needs a behaviour
 change to justify it goes into `TECH_DEBT.md`, not into the code.
@@ -75,7 +74,7 @@ change to justify it goes into `TECH_DEBT.md`, not into the code.
 **The hard constraint the human set in v0.5 still binds: no site-specific parsing.** The parser
 must stay generalised and extensible, so that supporting one site means similar sites parse
 too. `docs/plans/PLAN-10-v0.6.1.md` §0.2 restates it with the grep gate that enforces it, and
-`PLAN-12.md` §0.3 applies it to this version's three rendering rules.
+`docs/plans/PLAN-12-v0.8.0.md` §0.3 applies it to this version's three rendering rules.
 
 **A plan task that names a GitHub issue is not done until that issue is closed** with a comment
 naming the commit and how it was verified — read it (`gh issue view N --json body`) before
