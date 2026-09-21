@@ -299,6 +299,7 @@
 
     <!-- Document reader (PLAN-13) -->
     <string name="article_document_gone">This document is no longer stored. Save it again to fetch it.</string>
+    <string name="document_kind_pdf">PDF</string>
     <string name="document_page_toast">Page %1$d of %2$d</string>
     <string name="document_pages_singular">1 page</string>
     <string name="document_pages_plural">%1$d pages</string>

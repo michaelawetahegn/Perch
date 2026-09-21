@@ -105,6 +105,20 @@ class EntryRowTest {
     }
 
     @Test
+    fun `a document row says PDF after its source`() {
+        show(item(sourceTitle = "Saved links", isDocument = true))
+
+        meta().assertTextEquals("Saved links · PDF")
+    }
+
+    @Test
+    fun `an ordinary row does not say PDF`() {
+        show(item(sourceTitle = "Null Program"))
+
+        meta().assertTextEquals("Null Program")
+    }
+
+    @Test
     fun `the time a row was published sits on its own line beneath the source`() {
         show(item(sourceTitle = "Null Program", folderId = 4, folderName = "Systems"))
 
@@ -393,6 +407,7 @@ class EntryRowTest {
         isRead: Boolean = false,
         folderId: Long = FolderEntity.UNCATEGORIZED_ID,
         folderName: String = FolderEntity.UNCATEGORIZED_NAME,
+        isDocument: Boolean = false,
     ) = EntryListItem(
         id = id,
         feedId = 1,
@@ -405,6 +420,7 @@ class EntryRowTest {
         sourceTitle = sourceTitle,
         folderId = folderId,
         folderName = folderName,
+        isDocument = isDocument,
     )
 
     /** A request that never completes — the row a reader sees while an image is in flight. */

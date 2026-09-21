@@ -177,6 +177,12 @@ private fun sourceAndCategory(item: EntryListItem): AnnotatedString {
                 append(item.folderName)
             }
         }
+        if (item.isDocument) {
+            withStyle(SpanStyle(color = categoryColor)) {
+                append(separator)
+                append(stringResource(R.string.document_kind_pdf))
+            }
+        }
     }
 }
 
