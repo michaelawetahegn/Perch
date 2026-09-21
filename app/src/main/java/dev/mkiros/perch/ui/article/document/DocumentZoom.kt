@@ -13,15 +13,10 @@ object DocumentZoom {
 
     fun pinch(current: DocTransform, viewportWidth: Float, centroidX: Float, panX: Float, zoom: Float): DocTransform {
         val newScale = (current.scale * zoom).coerceIn(MIN_SCALE, MAX_SCALE)
-        val viewportCenter = viewportWidth / 2f
-
-        // Centroid offset from viewport center
-        val centroidOffset = centroidX - viewportCenter
-        // Content offset from viewport center at current scale
-        val contentOffsetX = (centroidOffset - current.offsetX) / current.scale
-        // Where that content point should be at new scale
-        // viewport_offset = offset_x + content_offset * scale
-        val newOffsetX = centroidOffset - (contentOffsetX * newScale)
+        // The content point under the fingers — (centroidX − offsetX) / scale from the pages'
+        // left edge — stays under them at the new scale.
+        val contentX = (centroidX - current.offsetX) / current.scale
+        val newOffsetX = centroidX - contentX * newScale + panX
         val clampedOffsetX = newOffsetX.coerceIn(-(viewportWidth * (newScale - 1f)), 0f)
 
         return DocTransform(scale = newScale, offsetX = clampedOffsetX)

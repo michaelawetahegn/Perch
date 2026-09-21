@@ -615,7 +615,7 @@ tasks take screenshots (G07, G08, G11 and the two live ones) — through `Screen
         #72 commented naming the commit; pushed.
       - Rung: screenshot
 
-- [ ] **G07c — Pinch, drag and double-tap. TDD + screenshot. Issue #72.**
+- [x] **G07c — Pinch, drag and double-tap. TDD + screenshot. Issue #72.**
       **Read §0.6's *zoom* and *gestures* paragraphs before you touch code.** The arithmetic is **already
       built and tested**: `DocumentZoom.kt:8-56` (`pinch`, `drag`, `doubleTap`, `isZoomed`) with
       `DocumentZoomTest`'s 9 cases and `TextColumnTest`'s 5. This task only wires it into pointer input.

@@ -105,6 +105,11 @@ under `data/`, no `FeedEntity(`/`EntryEntity(` literal outside `support/Entities
 `MIN_COLOURS`, one `STOP_TIMEOUT_MS`, one back arrow, no test deleted, ignored or loosened.
 What is left, none of it a session on its own:
 
+- **`PerchApp.onTerminate` can deadlock against the startup document sweep** (G07c, 2026-09-21,
+  one hang in a full suite). Cancelling `startupScope` does not stop a Room query already on
+  Room's executor, so `database.close()` races the open it triggered. The likely fix is to join
+  the startup job, bounded, before `container.close()` — a test-only boundary on a device
+  (`onTerminate` never runs there), so it waits for a session that can reproduce it. NOTES.md has the stack.
 - **`EntryStateRow` and `PendingEntryStateEntity` declare the same eight fields** in the same
   order (`EntryStateRow.kt:9-16`, `PendingEntryStateEntity.kt:23-30`). Sharing them means an
   interface over an entity Room owns, so it waits for someone touching the schema anyway.

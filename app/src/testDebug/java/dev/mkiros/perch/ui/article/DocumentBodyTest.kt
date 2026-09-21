@@ -3,8 +3,11 @@ package dev.mkiros.perch.ui.article
 import android.text.format.Formatter
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.doubleClick
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -12,11 +15,15 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.pinch
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.document.DocumentFixtures
 import dev.mkiros.perch.data.repo.ArticleTextRepository
 import dev.mkiros.perch.support.PerchRule
+import dev.mkiros.perch.ui.article.document.DocumentTextColumnKey
+import dev.mkiros.perch.ui.article.document.DocumentZoom
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.theme.PerchTheme
 import java.time.Clock
@@ -155,6 +162,57 @@ class DocumentBodyTest {
         assertThat(page.top.value).isWithin(0.5f).of(list.top.value)
     }
 
+    @Test
+    fun `a double tap widens the pages to the text column`() {
+        showArticle(seedDocument("letter-margins"))
+        awaitTextColumn()
+        val list = compose.onNodeWithTag(ArticleTestTags.DOCUMENT).getUnclippedBoundsInRoot()
+        val before = pageBounds(0)
+
+        compose.onNodeWithTag(ArticleTestTags.DOCUMENT).performTouchInput { doubleClick() }
+        compose.waitForIdle()
+
+        // letter-margins' column is ~0.80 of the page (TextColumnTest), so ~1.25×.
+        val after = pageBounds(0)
+        val factor = (after.right - after.left) / (before.right - before.left)
+        assertThat(factor).isWithin(0.07f).of(1.25f)
+        assertThat(after.left.value).isLessThan(list.left.value)
+    }
+
+    @Test
+    fun `a second double tap returns to fit`() {
+        showArticle(seedDocument("letter-margins"))
+        awaitTextColumn()
+        val before = pageBounds(0)
+
+        compose.onNodeWithTag(ArticleTestTags.DOCUMENT).performTouchInput { doubleClick() }
+        compose.mainClock.advanceTimeBy(DOUBLE_TAP_WINDOW_MS)
+        compose.onNodeWithTag(ArticleTestTags.DOCUMENT).performTouchInput { doubleClick() }
+        compose.waitForIdle()
+
+        assertThat(pageBounds(0)).isEqualTo(before)
+    }
+
+    @Test
+    fun `a pinch past the maximum settles at the maximum`() {
+        showArticle(seedDocument("letter-margins"))
+        val before = pageBounds(0)
+
+        compose.onNodeWithTag(ArticleTestTags.DOCUMENT).performTouchInput {
+            pinch(
+                start0 = center - Offset(SPREAD, 0f),
+                end0 = center - Offset(SPREAD * PINCH_FACTOR, 0f),
+                start1 = center + Offset(SPREAD, 0f),
+                end1 = center + Offset(SPREAD * PINCH_FACTOR, 0f),
+            )
+        }
+        compose.waitForIdle()
+
+        val after = pageBounds(0)
+        val factor = (after.right - after.left) / (before.right - before.left)
+        assertThat(factor).isWithin(0.01f).of(DocumentZoom.MAX_SCALE)
+    }
+
     // ---- harness ---------------------------------------------------------------
 
     private val visit = mutableStateOf<ArticleViewModel?>(null)
@@ -209,6 +267,16 @@ class DocumentBodyTest {
         assertThat(rule.right).isEqualTo(pageBounds.right)
     }
 
+    private fun pageBounds(page: Int) =
+        compose.onNodeWithTag("${ArticleTestTags.DOCUMENT_PAGE}:$page").getUnclippedBoundsInRoot()
+
+    /** A double tap before the column is measured is the 2× fallback (§0.6), so wait for it. */
+    private fun awaitTextColumn() =
+        compose.awaitInRealTime("the text column to be measured") {
+            compose.onAllNodes(SemanticsMatcher.keyIsDefined(DocumentTextColumnKey))
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
     private fun awaitPageBitmap(page: Int) =
         compose.awaitInRealTime("page ${page + 1} to render") {
             compose.onAllNodesWithTagCount("${ArticleTestTags.DOCUMENT_PAGE_IMAGE}:$page") > 0
@@ -227,5 +295,14 @@ class DocumentBodyTest {
         visit.value = null
         compose.waitForIdle()
         runBlocking { perch.database.entryDao().setScrollPosition(id = 0L, scrollPosition = 0) }
+    }
+
+    private companion object {
+        /** Half the gap between the pinching fingers, and how far apart they end up (ImageViewerTest). */
+        const val SPREAD = 40f
+        const val PINCH_FACTOR = 20f
+
+        /** Comfortably past `ViewConfiguration`'s 300 ms double-tap timeout. */
+        const val DOUBLE_TAP_WINDOW_MS = 1_000L
     }
 }

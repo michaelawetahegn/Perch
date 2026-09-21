@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.doubleClick
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
@@ -11,6 +13,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.test.performTouchInput
 import androidx.test.core.app.ApplicationProvider
 import coil.Coil
 import dev.mkiros.perch.data.db.entity.FeedEntity
@@ -23,6 +26,7 @@ import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.ui.article.ArticleScreen
 import dev.mkiros.perch.ui.article.ArticleTestTags
 import dev.mkiros.perch.ui.article.ArticleViewModel
+import dev.mkiros.perch.ui.article.document.DocumentTextColumnKey
 import dev.mkiros.perch.ui.collection.CollectionTestTags
 import dev.mkiros.perch.ui.nav.NavTestTags
 import dev.mkiros.perch.ui.nav.PerchNavHost
@@ -163,6 +167,24 @@ class DocumentScreenshotTest {
         compose.onNodeWithTag(ArticleTestTags.DOCUMENT_TOAST, useUnmergedTree = true).assertExists()
 
         Screenshots.captureAndAssert(compose, "document-reader-scrolled", minBytes = 10_000L)
+    }
+
+    @Test
+    fun `the document reader zoomed to its text column by a double tap`() {
+        showReader(ThemeMode.Light)
+        // Before the column is measured a double tap is the 2× fallback (§0.6).
+        compose.awaitInRealTime("the text column to be measured") {
+            compose.onAllNodes(SemanticsMatcher.keyIsDefined(DocumentTextColumnKey))
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNodeWithTag(ArticleTestTags.DOCUMENT).performTouchInput { doubleClick() }
+        compose.waitForIdle()
+        compose.awaitInRealTime("page one to render at the zoomed bucket") {
+            compose.onAllNodesWithTag("${ArticleTestTags.DOCUMENT_PAGE_IMAGE}:0", useUnmergedTree = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        Screenshots.captureAndAssert(compose, "document-reader-zoomed", minBytes = 10_000L)
     }
 
     /** The reader's own sample (#72), opened from To-Read the way a pasted PDF lands. */

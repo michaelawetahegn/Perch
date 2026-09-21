@@ -10,7 +10,8 @@ class DocumentZoomTest {
         val scale = DocumentZoom.pinch(current, viewportWidth = 1000f, centroidX = 750f, panX = 0f, zoom = 2f)
 
         assertThat(scale.scale).isWithin(0.01f).of(2f)
-        assertThat(scale.offsetX).isWithin(0.01f).of(-250f)
+        // The content point at x = 750 stays at 750: 750 − 750 × 2.
+        assertThat(scale.offsetX).isWithin(0.01f).of(-750f)
     }
 
     @Test
