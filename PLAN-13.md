@@ -511,7 +511,7 @@ tasks take screenshots (G07, G08, G11 and the two live ones) — through `Screen
       - Done: RED shown; `./gradlew test` green and above G04's count; #72 commented; pushed.
       - Rung: unit
 
-- [ ] **G06 — Zoom as arithmetic: `DocumentZoom`, `TextColumn`, `pageUnderCentre`. TDD. Issue #72 (part 2 of 3).**
+- [x] **G06 — Zoom as arithmetic: `DocumentZoom`, `TextColumn`, `pageUnderCentre`. TDD. Issue #72 (part 2 of 3).**
       §0.6's *zoom*, *text column* and *page toast* paragraphs are the decision, numbers included. Pure
       code only — no composable this task.
       1. **RED:** `DocumentZoomTest` (`src/test/.../ui/article/document/`, the shape of `ZoomGeometryTest.kt`) —
