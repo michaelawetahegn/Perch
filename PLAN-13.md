@@ -449,7 +449,7 @@ tasks take screenshots (G07, G08, G11 and the two live ones) — through `Screen
         #72 commented with the commit; pushed.
       - Rung: unit
 
-- [ ] **G03 — The rasterizer seam: `PageRasterizer`, the platform one, and the fixture one. TDD. Issue #72 (part 2 of 2).**
+- [x] **G03 — The rasterizer seam: `PageRasterizer`, the platform one, and the fixture one. TDD. Issue #72 (part 2 of 2).**
       §0.5 is the decision. `PdfRendererRasterizer` is production code that no JVM test can execute — its
       test is the compile, a `open` returning null on a non-PDF (that path throws before the native call —
       prove it with `html-in-disguise.pdf` under Robolectric, expecting null, **not** an exception), and G14.
