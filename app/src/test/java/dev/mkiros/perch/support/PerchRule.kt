@@ -145,6 +145,7 @@ class PerchRule(
         bodyIsExcerpt: Boolean = false,
         fullTextAt: Long? = null,
         fetchedAt: Long = clock.millis(),
+        documentPath: String? = null,
     ): Long = runBlocking {
         database.entryDao().insert(
             testEntry(
@@ -164,6 +165,7 @@ class PerchRule(
                 bodyIsExcerpt = bodyIsExcerpt,
                 fullTextAt = fullTextAt,
                 fetchedAt = fetchedAt,
+                documentPath = documentPath,
             ),
         )
     }

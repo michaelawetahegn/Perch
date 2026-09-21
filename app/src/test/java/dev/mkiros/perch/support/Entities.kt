@@ -88,6 +88,7 @@ fun testEntry(
     bodyIsExcerpt: Boolean = false,
     fullTextAt: Long? = null,
     fetchedAt: Long = publishedAt,
+    documentPath: String? = null,
 ): EntryEntity = EntryEntity(
     feedId = feedId,
     guid = guid,
@@ -108,4 +109,5 @@ fun testEntry(
     bodyIsExcerpt = bodyIsExcerpt,
     fullTextAt = fullTextAt,
     fetchedAt = fetchedAt,
+    documentPath = documentPath,
 )

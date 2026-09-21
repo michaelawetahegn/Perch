@@ -293,6 +293,90 @@ class ArticleViewModelTest {
         assertThat(entries.scrollWrites).isEqualTo(0)
     }
 
+    // ---- documents (PLAN-13 G05) --------------------------------------------------------
+
+    @Test
+    fun `a document entry loads with its page count and aspects and no blocks`() {
+        val docPath = copyFixtureTo("mixed-sizes")
+        val id = seedEntry(
+            title = "A PDF",
+            contentHtml = null,
+            documentPath = docPath,
+        )
+        val viewModel = articleViewModel(id)
+        val state = loaded(viewModel)
+
+        assertThat(state.document).isNotNull()
+        assertThat(state.document!!.pageCount).isEqualTo(3)
+        assertThat(state.document!!.aspects[1]).isWithin(0.01f).of(1.5f)
+        assertThat(state.blocks).isEmpty()
+        assertThat(state.standfirst).isNull()
+        assertThat(state.canLoadFullText).isFalse()
+    }
+
+    @Test
+    fun `a document never triggers the automatic full-text fetch`() {
+        val docPath = copyFixtureTo("mixed-sizes")
+        val id = seedEntry(
+            title = "A PDF",
+            contentHtml = null,
+            link = LINK,
+            documentPath = docPath,
+        )
+        val viewModel = articleViewModel(id)
+
+        assertThat(fetcher.requested).isEmpty()
+    }
+
+    @Test
+    fun `a document whose file is gone says so`() {
+        val docPath = copyFixtureTo("mixed-sizes")
+        val id = seedEntry(
+            title = "A PDF",
+            contentHtml = null,
+            documentPath = docPath,
+        )
+        val file = perch.container.documents.resolve(docPath)
+        file?.delete()
+
+        val viewModel = articleViewModel(id)
+        val state = loaded(viewModel)
+
+        assertThat(state.document).isNull()
+        assertThat(state.documentGone).isTrue()
+    }
+
+    @Test
+    fun `Load full article is not offered for a document`() {
+        val docPath = copyFixtureTo("mixed-sizes")
+        val id = seedEntry(
+            title = "A PDF",
+            contentHtml = null,
+            documentPath = docPath,
+        )
+        val viewModel = articleViewModel(id)
+
+        assertThat(loaded(viewModel).canLoadFullText).isFalse()
+    }
+
+    @Test
+    fun `the page a document stopped on is written through saveScrollPosition`() {
+        val docPath = copyFixtureTo("mixed-sizes")
+        val id = seedEntry(
+            title = "A PDF",
+            contentHtml = null,
+            documentPath = docPath,
+        )
+        val viewModel = articleViewModel(id)
+
+        viewModel.saveScrollPosition(3)
+        viewModel.saveScrollPosition(3)
+        viewModel.saveScrollPosition(4)
+
+        assertThat(stored(id) { it.scrollPosition == 4 }.scrollPosition).isEqualTo(4)
+        assertThat(entries.scrollWrites).isEqualTo(2)
+    }
+
     // ---- harness -------------------------------------------------------------------------
 
     /** Constructed and *loaded* — the `init` read is Room's, so it is waited out here once. */
@@ -329,6 +413,8 @@ class ArticleViewModelTest {
         ),
         entryId = entryId,
         zone = ZoneOffset.UTC,
+        rasterizer = perch.container.rasterizer,
+        documents = perch.container.documents,
     )
 
     private fun loaded(viewModel: ArticleViewModel): ArticleUiState.Loaded =
@@ -367,16 +453,33 @@ class ArticleViewModelTest {
         contentHtml: String? = FEED_BODY,
         savedAt: Long? = null,
         starredAt: Long? = null,
+        documentPath: String? = null,
+        title: String = "A post",
+        link: String? = LINK,
+        author: String? = "A writer",
+        publishedAt: Long = now.toEpochMilli(),
     ): Long = perch.seedEntry(
         perch.seedFeed(title = "A blog"),
-        title = "A post",
-        link = LINK,
-        author = "A writer",
-        publishedAt = now.toEpochMilli(),
+        title = title,
+        link = link,
+        author = author,
+        publishedAt = publishedAt,
         contentHtml = contentHtml,
         savedAt = savedAt,
         starredAt = starredAt,
+        documentPath = documentPath,
     )
+
+    private fun copyFixtureTo(slug: String): String {
+        val fixture = dev.mkiros.perch.data.document.DocumentFixtures.manifest()
+            .find { it.slug == slug }
+            ?: throw IllegalArgumentException("Unknown fixture: $slug")
+
+        val destFile = perch.container.documents.newDocument()
+        fixture.file.copyTo(destFile, overwrite = true)
+        return perch.container.documents.relativize(destFile)
+            ?: throw IllegalStateException("Could not relativize $destFile")
+    }
 
     private companion object {
         const val LINK = "https://example.com/post"
