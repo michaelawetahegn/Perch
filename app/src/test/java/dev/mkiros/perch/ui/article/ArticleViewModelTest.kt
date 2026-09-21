@@ -306,10 +306,10 @@ class ArticleViewModelTest {
      * calling thread, before Room is reached, so it is exact the moment an action returns.
      */
     private val entries: CountingEntries by lazy {
-        CountingEntries(perch.database.entryDao(), clock)
+        CountingEntries(perch.database.entryDao(), clock, perch.container.documents)
     }
 
-    private class CountingEntries(entryDao: EntryDao, clock: Clock) : EntryRepository(entryDao, clock) {
+    private class CountingEntries(entryDao: EntryDao, clock: Clock, documents: dev.mkiros.perch.data.document.DocumentStore) : EntryRepository(entryDao, clock, documents) {
         var scrollWrites = 0
             private set
 

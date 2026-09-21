@@ -14,6 +14,7 @@ import androidx.compose.ui.test.performTextReplacement
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.PerchDatabase
+import dev.mkiros.perch.data.document.DocumentStore
 import dev.mkiros.perch.data.repo.EntryRepository
 import dev.mkiros.perch.support.testEntry
 import dev.mkiros.perch.support.testFeed
@@ -27,6 +28,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import java.io.File
 import java.time.Clock
 
 /**
@@ -57,7 +59,7 @@ class SearchSurfaceTest {
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         database = PerchDatabase.inMemory(context)
-        repository = EntryRepository(database.entryDao(), Clock.systemUTC())
+        repository = EntryRepository(database.entryDao(), Clock.systemUTC(), DocumentStore(File(context.filesDir, "documents")))
         viewModel = SearchViewModel(repository, Clock.systemUTC())
     }
 

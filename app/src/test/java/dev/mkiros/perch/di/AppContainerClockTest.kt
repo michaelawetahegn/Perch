@@ -5,8 +5,10 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.common.collect.Range
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.PerchDatabase
+import dev.mkiros.perch.data.document.DocumentStore
 import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.model.TimeFilter
+import java.io.File
 import java.time.Instant
 import java.time.ZoneId
 import java.util.TimeZone
@@ -78,6 +80,7 @@ class AppContainerClockTest {
         val container = AppContainer(
             database = PerchDatabase.inMemory(context),
             httpClient = PerchHttp.client(cacheDir = null),
+            documents = DocumentStore(File(context.filesDir, "documents")),
         )
         try {
             body(container)

@@ -37,6 +37,7 @@ import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.extract.ArticleExtractor
 import dev.mkiros.perch.data.extract.FullText
+import dev.mkiros.perch.data.document.DocumentStore
 import dev.mkiros.perch.data.extract.PageContentExtractor
 import dev.mkiros.perch.data.net.FeedFetcher
 import dev.mkiros.perch.data.net.PerchHttp
@@ -701,12 +702,14 @@ class LiveAcceptanceTest {
      */
     private fun probeExemplar(url: String): ExemplarProbe = runBlocking {
         val prefix = "not in the reading list; probed live — "
-        val fresh = PerchDatabase.inMemory(ApplicationProvider.getApplicationContext())
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val fresh = PerchDatabase.inMemory(context)
         try {
             val reader = AppContainer(
                 database = fresh,
                 httpClient = PerchHttp.client(cacheDir = null),
                 clock = clock,
+                documents = DocumentStore(File(context.filesDir, "documents")),
             )
             val resolution = runCatching { reader.feeds.resolve(url) }.getOrElse {
                 return@runBlocking ExemplarProbe(
@@ -907,12 +910,14 @@ class LiveAcceptanceTest {
         val before = folderMap(perch.database)
 
         val exported = perch.container.opml.export()
-        val fresh = PerchDatabase.inMemory(ApplicationProvider.getApplicationContext())
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val fresh = PerchDatabase.inMemory(context)
         try {
             val reader = AppContainer(
                 database = fresh,
                 httpClient = PerchHttp.client(cacheDir = null),
                 clock = clock,
+                documents = DocumentStore(File(context.filesDir, "documents")),
             )
             val result = reader.opml.import(exported)
             report.result = result
@@ -1039,7 +1044,12 @@ class LiveAcceptanceTest {
         val entries = perch.database.entryDao().observeAll().first()
         report.corpus = entries.size
 
-        val appZone = AppContainer(database = perch.database, httpClient = perch.container.httpClient).clock.zone
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val appZone = AppContainer(
+            database = perch.database,
+            httpClient = perch.container.httpClient,
+            documents = DocumentStore(File(context.filesDir, "documents"))
+        ).clock.zone
         report.zone = "$appZone"
         if (appZone != ZoneId.systemDefault()) {
             report.failures += "gate 8: AppContainer's default clock is zoned $appZone, not " +

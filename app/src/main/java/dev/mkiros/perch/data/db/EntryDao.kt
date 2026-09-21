@@ -52,7 +52,8 @@ internal object EntryQueries {
                e.publishedIsEstimated AS publishedIsEstimated, e.isRead AS isRead,
                COALESCE(NULLIF(TRIM(f.customTitle), ''), f.title) AS sourceTitle,
                fo.id AS folderId, fo.name AS folderName,
-               e.isSaved AS isSaved, e.isStarred AS isStarred, e.link AS link
+               e.isSaved AS isSaved, e.isStarred AS isStarred, e.link AS link,
+               (e.documentPath IS NOT NULL) AS isDocument
         FROM entries e
         JOIN feeds f ON f.id = e.feedId
         JOIN folders fo ON fo.id = f.folderId
@@ -603,6 +604,7 @@ abstract class EntryDao {
                     isStarred = existing.isStarred,
                     starredAt = existing.starredAt,
                     scrollPosition = existing.scrollPosition,
+                    documentPath = entry.documentPath ?: existing.documentPath,
                     contentHtml = if (keepExtracted) existing.contentHtml else entry.contentHtml,
                     fullTextAt = if (keepExtracted) existing.fullTextAt else null,
                 )
@@ -625,8 +627,27 @@ abstract class EntryDao {
         return inserted
     }
 
+    @Query(
+        """
+        SELECT id, documentPath, isSaved, isStarred FROM entries
+        WHERE documentPath IS NOT NULL
+        """,
+    )
+    abstract suspend fun documentRows(): List<DocumentRow>
+
+    @Query("UPDATE entries SET documentPath = NULL, imageUrl = NULL WHERE id = :id")
+    abstract suspend fun clearDocument(id: Long)
+
     internal companion object {
         /** SQLite's 999-variable ceiling, less headroom for the other bound arguments. */
         const val MAX_IDS_PER_STATEMENT = 900
     }
 }
+
+/** A row with a document. Companion to [DocumentStore.sweep]. */
+data class DocumentRow(
+    val id: Long,
+    val documentPath: String,
+    val isSaved: Boolean,
+    val isStarred: Boolean,
+)

@@ -8,6 +8,7 @@ import dev.mkiros.perch.data.db.EntryListItem
 import dev.mkiros.perch.data.db.FeedDao
 import dev.mkiros.perch.data.db.FolderDao
 import dev.mkiros.perch.data.db.PerchDatabase
+import dev.mkiros.perch.data.document.DocumentStore
 import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.support.testEntry
@@ -24,6 +25,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import java.io.File
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
@@ -59,13 +61,15 @@ class EntrySearchTest {
     fun openDatabase() {
         // `asSnapshot` drives the differ on the main dispatcher (U07a).
         Dispatchers.setMain(StandardTestDispatcher())
-        db = PerchDatabase.inMemory(ApplicationProvider.getApplicationContext())
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        db = PerchDatabase.inMemory(context)
         feeds = db.feedDao()
         folders = db.folderDao()
         entries = db.entryDao()
         repo = EntryRepository(
             entryDao = entries,
             clock = Clock.fixed(Instant.ofEpochMilli(NOW), ZoneOffset.UTC),
+            documents = DocumentStore(File(context.filesDir, "documents")),
         )
     }
 

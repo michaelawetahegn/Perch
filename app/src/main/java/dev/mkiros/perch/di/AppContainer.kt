@@ -2,6 +2,7 @@ package dev.mkiros.perch.di
 
 import android.content.Context
 import dev.mkiros.perch.data.db.PerchDatabase
+import dev.mkiros.perch.data.document.DocumentStore
 import dev.mkiros.perch.data.net.ConnectivityMonitor
 import dev.mkiros.perch.data.net.FeedFetcher
 import dev.mkiros.perch.data.net.PerchHttp
@@ -20,6 +21,7 @@ import dev.mkiros.perch.work.WorkManagerBackfillRunner
 import dev.mkiros.perch.work.WorkScheduler
 import okhttp3.OkHttpClient
 import java.io.Closeable
+import java.io.File
 import java.time.Clock
 
 /**
@@ -71,6 +73,8 @@ class AppContainer(
     val backfillRunner: BackfillRunner = BackfillRunner.NoOp,
     /** WorkManager as Settings sees it; [backfillRunner]'s reasoning, periodic side. */
     val refreshScheduler: RefreshScheduler = RefreshScheduler { },
+    /** Stored PDF documents (PLAN-13 G01). Constructed over `filesDir/documents`. */
+    val documents: DocumentStore,
 ) : Closeable {
 
     /**
@@ -127,7 +131,7 @@ class AppContainer(
     }
 
     val entries: EntryRepository by lazy {
-        EntryRepository(entryDao = database.entryDao(), clock = clock)
+        EntryRepository(entryDao = database.entryDao(), clock = clock, documents = documents)
     }
 
     val opml: OpmlRepository by lazy {
@@ -154,6 +158,7 @@ class AppContainer(
                 settings = SettingsStore.create(app),
                 backfillRunner = WorkManagerBackfillRunner(app),
                 refreshScheduler = { interval -> WorkScheduler.setInterval(app, interval) },
+                documents = DocumentStore(File(app.filesDir, "documents")),
             )
         }
     }

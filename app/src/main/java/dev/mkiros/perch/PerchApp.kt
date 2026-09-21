@@ -54,6 +54,7 @@ class PerchApp : Application(), Configuration.Provider {
         // reader who turned background refresh off back on it at the next cold launch.
         startupScope.launch {
             WorkScheduler.ensureScheduled(this@PerchApp, container.settings.current().refreshInterval)
+            container.entries.sweepDocuments()
         }
     }
 

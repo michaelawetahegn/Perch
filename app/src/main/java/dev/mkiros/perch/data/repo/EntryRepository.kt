@@ -8,6 +8,7 @@ import dev.mkiros.perch.data.db.EntryListItem
 import dev.mkiros.perch.data.db.FeedReach
 import dev.mkiros.perch.data.db.FtsQuery
 import dev.mkiros.perch.data.db.entity.EntryEntity
+import dev.mkiros.perch.data.document.DocumentStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
@@ -55,6 +56,7 @@ object PerchPaging {
 open class EntryRepository(
     private val entryDao: EntryDao,
     private val clock: Clock,
+    private val documents: DocumentStore,
 ) {
 
     /**
@@ -273,6 +275,18 @@ open class EntryRepository(
 
     suspend fun undoMarkAllRead(undo: MarkAllReadUndo) {
         entryDao.setRead(undo.entryIds, isRead = false, readAt = null)
+    }
+
+    /**
+     * Delete every stored PDF that no row names, and every PDF whose row is neither
+     * saved nor liked. Clear the paths from rows whose file was deleted.
+     *
+     * Runs once per process start from [dev.mkiros.perch.PerchApp.onCreate].
+     */
+    suspend fun sweepDocuments() {
+        val rows = entryDao.documentRows()
+        val toDelete = documents.sweep(rows)
+        toDelete.forEach { entryDao.clearDocument(it) }
     }
 }
 

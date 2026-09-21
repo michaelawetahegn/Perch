@@ -49,7 +49,7 @@ abstract class PerchDatabase : RoomDatabase() {
         const val NAME = "perch.db"
 
         /** Bumping this requires a [MIGRATIONS] entry from `VERSION - 1`. */
-        const val VERSION = 10
+        const val VERSION = 11
 
         /**
          * Folders (U03). Creates the table, seeds Uncategorized as id 1, and files every
@@ -273,6 +273,14 @@ abstract class PerchDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_10_11 = object : Migration(10, 11) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE `entries` ADD COLUMN `documentPath` TEXT",
+                )
+            }
+        }
+
         /** [MIGRATION_8_9]'s correlated lookup: the backfill copy of the row being updated. */
         private const val COPY_OF_THIS_ROW =
             "WHERE c.`feedId` = `entries`.`feedId` AND c.`link` = `entries`.`link` AND c.`guid` = c.`link`"
@@ -288,6 +296,7 @@ abstract class PerchDatabase : RoomDatabase() {
             MIGRATION_7_8,
             MIGRATION_8_9,
             MIGRATION_9_10,
+            MIGRATION_10_11,
         )
 
         /**

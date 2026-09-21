@@ -4,12 +4,14 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.FolderEntity
+import dev.mkiros.perch.data.document.DocumentStore
 import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.di.AppContainer
 import dev.mkiros.perch.model.BackfillRunner
 import kotlinx.coroutines.runBlocking
 import org.junit.rules.ExternalResource
+import java.io.File
 import java.time.Clock
 import java.time.Duration
 
@@ -50,12 +52,14 @@ class PerchRule(
     val database: PerchDatabase get() = container.database
 
     override fun before() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
         container = AppContainer(
-            database = PerchDatabase.inMemory(ApplicationProvider.getApplicationContext<Context>()),
+            database = PerchDatabase.inMemory(context),
             httpClient = PerchHttp.client(cacheDir = null),
             clock = clock,
             settings = settings,
             backfillRunner = backfillRunner,
+            documents = DocumentStore(File(context.filesDir, "documents")),
         )
     }
 

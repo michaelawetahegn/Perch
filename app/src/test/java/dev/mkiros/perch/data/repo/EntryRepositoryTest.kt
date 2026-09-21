@@ -7,6 +7,7 @@ import dev.mkiros.perch.data.db.EntryDao
 import dev.mkiros.perch.data.db.FeedDao
 import dev.mkiros.perch.data.db.FolderDao
 import dev.mkiros.perch.data.db.PerchDatabase
+import dev.mkiros.perch.data.document.DocumentStore
 import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.support.testEntry
@@ -18,6 +19,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import java.io.File
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
@@ -39,19 +41,23 @@ class EntryRepositoryTest {
     private lateinit var folders: FolderDao
     private lateinit var entries: EntryDao
     private lateinit var repo: EntryRepository
+    private lateinit var documents: DocumentStore
 
     /** `readAt` must be stamped from an injected clock, not `System.currentTimeMillis()`. */
     private val now = 1_700_000_500_000L
 
     @Before
     fun openDatabase() {
-        db = PerchDatabase.inMemory(ApplicationProvider.getApplicationContext())
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        db = PerchDatabase.inMemory(context)
         feeds = db.feedDao()
         folders = db.folderDao()
         entries = db.entryDao()
+        documents = DocumentStore(File(context.filesDir, "documents"))
         repo = EntryRepository(
             entryDao = entries,
             clock = Clock.fixed(Instant.ofEpochMilli(now), ZoneOffset.UTC),
+            documents = documents,
         )
     }
 
@@ -774,6 +780,7 @@ class EntryRepositoryTest {
             EntryRepository(
                 entryDao = entries,
                 clock = Clock.fixed(Instant.ofEpochMilli(millis), ZoneOffset.UTC),
+                documents = documents,
             ),
         )
 

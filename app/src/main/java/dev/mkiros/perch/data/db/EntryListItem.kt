@@ -25,6 +25,9 @@ package dev.mkiros.perch.data.db
  * @param link the article's own address, and the only thing worth sharing from a row
  *   (U09) — a reader forwarding an article means the article, not Perch's copy of it.
  *   Null for a feed that ships items with no link at all.
+ * @param isDocument true when [EntryEntity.documentPath] is not null, i.e., this entry
+ *   is a stored PDF. Has a default of false so a row that forgets to say it is a document
+ *   loses its label rather than crashing.
  */
 data class EntryListItem(
     val id: Long,
@@ -41,4 +44,5 @@ data class EntryListItem(
     val isSaved: Boolean = false,
     val isStarred: Boolean = false,
     val link: String? = null,
+    val isDocument: Boolean = false,
 )
