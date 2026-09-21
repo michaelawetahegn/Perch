@@ -1,5 +1,6 @@
 package dev.mkiros.perch.ui.collection
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
@@ -7,6 +8,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.mkiros.perch.data.repo.SaveLinkFailure
 import dev.mkiros.perch.data.repo.SavedLinkRepository
 import dev.mkiros.perch.di.AppContainer
+import dev.mkiros.perch.model.Incoming
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,6 +35,7 @@ data class SaveLinkUiState(
     val isBusy: Boolean = false,
     val error: SaveLinkFailure? = null,
     val savedEntryId: Long? = null,
+    val isOpen: Boolean = false,
 ) {
     /** Blank is not an address, and a second tap mid-flight is not a second save. */
     val canSubmit: Boolean get() = url.isNotBlank() && !isBusy
@@ -54,14 +57,39 @@ data class SaveLinkUiState(
  */
 class SaveLinkViewModel(
     private val savedLinks: SavedLinkRepository,
+    private val intake: MutableStateFlow<Incoming?> = MutableStateFlow(null),
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SaveLinkUiState())
     val state: StateFlow<SaveLinkUiState> = _state.asStateFlow()
 
+    init {
+        viewModelScope.launch {
+            intake.collect { incoming ->
+                when (incoming) {
+                    is Incoming.Link -> {
+                        onUrlChange(incoming.url)
+                        open()
+                        submit()
+                    }
+                    is Incoming.Document -> {
+                        open()
+                        submitDocument(incoming.uri, incoming.displayName)
+                    }
+                    null -> {}
+                }
+                intake.value = null
+            }
+        }
+    }
+
     /** Editing withdraws the error, the same as the add-source sheet does. */
     fun onUrlChange(value: String) {
         _state.update { it.copy(url = value, error = null) }
+    }
+
+    fun open() {
+        _state.update { it.copy(isOpen = true) }
     }
 
     fun submit() {
@@ -83,12 +111,37 @@ class SaveLinkViewModel(
             }
             _state.update { state ->
                 result.fold(
-                    onSuccess = { SaveLinkUiState(savedEntryId = it) },
+                    onSuccess = { SaveLinkUiState(isOpen = true, savedEntryId = it) },
                     onFailure = { failure ->
                         state.copy(
                             isBusy = false,
                             // Anything that is not saveLink's own vocabulary is still a
                             // link that did not arrive, and reads as one.
+                            error = failure as? SaveLinkFailure
+                                ?: SaveLinkFailure.Unreachable(failure.message.orEmpty()),
+                        )
+                    },
+                )
+            }
+        }
+    }
+
+    fun submitDocument(uri: Uri, displayName: String?) {
+        if (_state.value.isBusy) return
+        _state.update { it.copy(isBusy = true, error = null) }
+        viewModelScope.launch {
+            val result = try {
+                savedLinks.saveDocument(uri, displayName)
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                Result.failure(e)
+            }
+            _state.update { state ->
+                result.fold(
+                    onSuccess = { SaveLinkUiState(isOpen = true, savedEntryId = it) },
+                    onFailure = { failure ->
+                        state.copy(
+                            isBusy = false,
                             error = failure as? SaveLinkFailure
                                 ?: SaveLinkFailure.Unreachable(failure.message.orEmpty()),
                         )
@@ -116,7 +169,7 @@ class SaveLinkViewModel(
 
     companion object {
         fun factory(container: AppContainer) = viewModelFactory {
-            initializer { SaveLinkViewModel(container.savedLinks) }
+            initializer { SaveLinkViewModel(container.savedLinks, container.intake) }
         }
     }
 }

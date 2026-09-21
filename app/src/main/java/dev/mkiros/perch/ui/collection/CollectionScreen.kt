@@ -75,11 +75,12 @@ fun CollectionScreen(
     val pendingUndo by viewModel.pendingUndo.collectAsStateWithLifecycle()
     val savedLinkTitle by viewModel.savedLinkTitle.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+    val saveLinkState by saveLinkViewModel?.state?.collectAsStateWithLifecycle()
+        ?: remember { androidx.compose.runtime.mutableStateOf(SaveLinkUiState()) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val context = LocalContext.current
     var actionsForId by rememberSaveable { mutableStateOf<Long?>(null) }
-    var savingLink by rememberSaveable { mutableStateOf(false) }
 
     val undoLabel = stringResource(R.string.action_undo)
     val removedMessage = stringResource(
@@ -142,7 +143,7 @@ fun CollectionScreen(
                     // read yet, and "Liked" only ever means something they read and kept.
                     if (viewModel.collection == Collection.ToRead && saveLinkViewModel != null) {
                         IconButton(
-                            onClick = { savingLink = true },
+                            onClick = { saveLinkViewModel.open() },
                             modifier = Modifier.testTag(CollectionTestTags.SAVE_LINK),
                         ) {
                             Icon(
@@ -217,11 +218,21 @@ fun CollectionScreen(
         )
     }
 
-    if (savingLink && saveLinkViewModel != null) {
+    if (saveLinkState.isOpen && saveLinkViewModel != null) {
+        LaunchedEffect(saveLinkState.savedEntryId) {
+            saveLinkState.savedEntryId?.let {
+                viewModel.announceSavedLink(it)
+                saveLinkViewModel.reset()
+            }
+        }
         SaveLinkSheet(
             viewModel = saveLinkViewModel,
-            onDismiss = { savingLink = false },
-            onSaved = viewModel::announceSavedLink,
+            onDismiss = {
+                if (saveLinkViewModel.onDismissRequest()) {
+                    // Successfully dismissed
+                }
+            },
+            onSaved = { },
         )
     }
 }
