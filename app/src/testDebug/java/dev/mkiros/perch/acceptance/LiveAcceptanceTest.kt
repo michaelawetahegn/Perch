@@ -159,7 +159,8 @@ import org.robolectric.annotation.GraphicsMode
  * asks where a pasted link lives: on To-Read, out of the stream, and still in the index (#31).
  * **Gate 15** removes the source being read, from the overflow, against a real library, and
  * looks at what is left on screen (#29/#30) — it runs last in the file because it deletes a
- * source and its articles, and every shot before it needs them.
+ * source and its articles, and every shot before it needs them. **PLAN-13 G12 adds gate 16**
+ * (#72): a real PDF's address becomes a titled document on To-Read, after every shot.
  *
  * Where it deviates from PLAN.md: the file lives in `src/testDebug` rather than
  * `src/test`. Gate 3 needs a Compose rule, and `ui-test-manifest` is a
@@ -309,6 +310,11 @@ class LiveAcceptanceTest {
             report("GATE 15 (#29/#30: removing the source you are reading)", shots.removal.joinToString("\n"))
             failures += shots.failures
         }
+
+        // PLAN-13 G12/#72: after gate 15, and after every shot, so To-Read's shot is unchanged.
+        val document = aPdfUrlBecomesAPagedDocument()
+        report("GATE 16 (#72: a PDF's link becomes a document on To-Read)", document.summary)
+        failures += document.failures
 
         assertWithMessage(failures.joinToString("\n")).that(failures).isEmpty()
     }
@@ -2411,6 +2417,61 @@ class LiveAcceptanceTest {
         report
     }
 
+    // ---- gate 16: a PDF's link is a document --------------------------------------
+
+    private class DocumentReport(var summary: String) {
+        val failures = mutableListOf<String>()
+    }
+
+    /**
+     * PLAN-13 §0.9/#72: a real PDF's address, pasted, is downloaded, sniffed, stored whole
+     * and titled from its own Info dictionary — the NIST guideline keeps that dictionary in a
+     * compressed object stream (G02b), and its XMP title is the junk word "Print" (G02c).
+     * The container's rasterizer here is [dev.mkiros.perch.support.FixtureRasterizer], which
+     * knows this file by hash, so the gate proves everything but the pixels; those are G14's.
+     */
+    private fun aPdfUrlBecomesAPagedDocument(): DocumentReport = runBlocking {
+        val label = "issue #72's PDF"
+        val result = perch.container.savedLinks.saveLink(NIST_PDF_URL)
+        val id = result.getOrNull()
+            ?: return@runBlocking DocumentReport(
+                "$label: saveLink($NIST_PDF_URL) failed — ${result.exceptionOrNull()?.message}",
+            ).also {
+                it.failures += "gate 16: $label — did not save: ${result.exceptionOrNull()?.message}"
+            }
+        val row = perch.database.entryDao().findById(id)
+            ?: return@runBlocking DocumentReport("$label: row $id vanished after saveLink").also {
+                it.failures += "gate 16: $label — saved row $id could not be reread"
+            }
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val documents = DocumentStore(File(context.filesDir, "documents"))
+        val file = row.documentPath?.let { documents.resolve(it) }
+        val thumbnail = file?.let { documents.thumbnailFor(it) }
+        val queue = perch.container.entries.observeSaved().first()
+        val report = DocumentReport(
+            "$label: “${row.title}”, ${file?.length() ?: 0} bytes at ${row.documentPath}, " +
+                "thumbnail ${if (thumbnail?.exists() == true) "${thumbnail.length()} bytes" else "missing"}, " +
+                "page ${row.scrollPosition}, on To-Read among ${queue.size}",
+        )
+        if (row.title != NIST_PDF_TITLE) {
+            report.failures += "gate 16: $label — titled “${row.title}”, not “$NIST_PDF_TITLE”"
+        }
+        if (file?.length() != NIST_PDF_BYTES) {
+            report.failures += "gate 16: $label — documentPath ${row.documentPath} holds " +
+                "${file?.length()} bytes, not the $NIST_PDF_BYTES the server sends"
+        }
+        if (thumbnail?.exists() != true || row.imageUrl != thumbnail.toURI().toString()) {
+            report.failures += "gate 16: $label — no thumbnail of page one (imageUrl ${row.imageUrl})"
+        }
+        if (row.scrollPosition != 0) {
+            report.failures += "gate 16: $label — a new document opens on page ${row.scrollPosition}, not the top"
+        }
+        if (queue.none { it.id == id && it.isDocument }) {
+            report.failures += "gate 16: $label — “${row.title}” is not on To-Read as a document"
+        }
+        report
+    }
+
     // ---- harness ----------------------------------------------------------------
 
     private fun readingList(): List<String> =
@@ -2438,6 +2499,12 @@ class LiveAcceptanceTest {
     private fun report(gate: String, body: String) = println("\n$gate\n$body")
 
     private companion object {
+        /** Gate 16: public domain, `application/pdf`, no quota (PLAN-13 §0.9). */
+        const val NIST_PDF_URL =
+            "https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-63-4.pdf"
+        const val NIST_PDF_TITLE = "Digital Identity Guidelines"
+        const val NIST_PDF_BYTES = 858_054L
+
         const val LIVE_PROPERTY = "perch.live"
 
         /** The flat placeholder every remote image becomes. See `setUp`. */

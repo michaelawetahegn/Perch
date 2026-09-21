@@ -722,7 +722,7 @@ tasks take screenshots (G07, G08, G11 and the two live ones) — through `Screen
         green and above G10's count; `35/35` on the pre-existing shots; DESIGN.md updated; pushed.
       - Rung: screenshot
 
-- [ ] **G12 — Live gate 16: a real PDF URL becomes a titled, paged document on To-Read. Issue #72.**
+- [x] **G12 — Live gate 16: a real PDF URL becomes a titled, paged document on To-Read. Issue #72.**
       §0.9's *live gate 16* bullet is the decision, the URL included.
       Add the gate after gate 15 (`LiveAcceptanceTest.kt:1388`, the `captures.failures +=` idiom at `:1837`),
       then `./gradlew :app:testDebugUnitTest -Pperch.live=true --tests '*LiveAcceptance*'` in the

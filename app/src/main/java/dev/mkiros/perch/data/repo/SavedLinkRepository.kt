@@ -1,11 +1,13 @@
 package dev.mkiros.perch.data.repo
 
+import android.graphics.Bitmap
 import android.net.Uri
 import dev.mkiros.perch.data.db.EntryDao
 import dev.mkiros.perch.data.db.FeedDao
 import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.document.DocumentStore
 import dev.mkiros.perch.data.document.PageRasterizer
+import dev.mkiros.perch.data.document.PageSource
 import dev.mkiros.perch.data.document.PdfInfoReader
 import dev.mkiros.perch.data.extract.PageContentExtractor
 import dev.mkiros.perch.data.extract.toEntry
@@ -211,7 +213,8 @@ class SavedLinkRepository(
             file.delete()
             return Result.failure(SaveLinkFailure.Unreachable("$guid is not a readable page."))
         }
-        source.close()
+        val thumbnail = documents.thumbnailFor(file)
+        source.use { writeThumbnail(it, thumbnail) }
 
         val savedFeedId = feedDao.findByUrl(FeedEntity.SAVED_LINKS_FEED_URL)?.id
             ?: error("The saved-links feed is missing; every database is seeded with it (Y02).")
@@ -230,7 +233,7 @@ class SavedLinkRepository(
             author = null,
             summary = null,
             contentHtml = null,
-            imageUrl = null,
+            imageUrl = thumbnail.toURI().toString(),
             publishedAt = publishedAt,
             publishedIsEstimated = publishedIsEstimated,
             readAt = null,
@@ -253,6 +256,13 @@ class SavedLinkRepository(
         return Result.success(saved.id)
     }
 
+    /** §0.4 step 4: page one at [THUMBNAIL_PX] wide, cropped to its top square, as PNG. */
+    private fun writeThumbnail(source: PageSource, into: File) {
+        val page = source.render(0, THUMBNAIL_PX)
+        val square = Bitmap.createBitmap(page, 0, 0, THUMBNAIL_PX, minOf(THUMBNAIL_PX, page.height))
+        into.outputStream().use { square.compress(Bitmap.CompressFormat.PNG, 100, it) }
+    }
+
     private fun extractFilename(contentDisposition: String?): String? {
         if (contentDisposition == null) return null
         // Extract filename from Content-Disposition header
@@ -262,3 +272,6 @@ class SavedLinkRepository(
     }
 
 }
+
+/** A document row's thumbnail edge, in pixels (PLAN-13 §0.4). */
+private const val THUMBNAIL_PX = 256

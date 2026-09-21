@@ -43,7 +43,8 @@ class DocumentStore(private val directory: File) {
         val byPath = rows.associateBy { it.documentPath }
         val toDelete = mutableListOf<Long>()
 
-        directory.listFiles()?.forEach { file ->
+        val (pdfs, others) = directory.listFiles().orEmpty().partition { it.extension == "pdf" }
+        pdfs.forEach { file ->
             val path = relativize(file)
             val row = path?.let { byPath[it] }
 
@@ -55,6 +56,9 @@ class DocumentStore(private val directory: File) {
                 }
             }
         }
+        // A thumbnail is named by no row: it lives exactly as long as its document.
+        val thumbnails = pdfs.filter { it.exists() }.map { thumbnailFor(it) }.toSet()
+        others.filter { it !in thumbnails }.forEach { it.delete() }
 
         return toDelete
     }

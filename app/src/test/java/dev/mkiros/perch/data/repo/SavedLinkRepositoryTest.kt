@@ -1,5 +1,6 @@
 package dev.mkiros.perch.data.repo
 
+import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
@@ -232,6 +233,24 @@ class SavedLinkRepositoryTest {
         assertThat(saved.contentHtml).isNull()
         assertThat(saved.summary).isNull()
         assertThat(saved.isSaved).isTrue()
+    }
+
+    @Test
+    fun `a pasted PDF keeps the top square of its first page as its thumbnail`() = runTest {
+        server.enqueue(
+            MockResponse()
+                .setBody(Buffer().write(fixture("ssrn-6191618").file.readBytes()))
+                .addHeader("Content-Type", "application/pdf"),
+        )
+
+        val saved = entries.findById(repo.saveLink(server.url("/doc.pdf").toString()).getOrThrow())!!
+
+        val thumbnail = documents.thumbnailFor(documents.resolve(saved.documentPath!!)!!)
+        assertThat(thumbnail.exists()).isTrue()
+        assertThat(saved.imageUrl).isEqualTo(thumbnail.toURI().toString())
+        val bitmap = BitmapFactory.decodeFile(thumbnail.path)
+        assertThat(bitmap.width).isEqualTo(256)
+        assertThat(bitmap.height).isEqualTo(256)
     }
 
     @Test
