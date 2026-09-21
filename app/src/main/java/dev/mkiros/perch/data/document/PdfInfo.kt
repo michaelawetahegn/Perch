@@ -14,45 +14,128 @@ object PdfInfoReader {
             if (!text.startsWith("%PDF-")) return PdfInfo(null, null)
             if (text.contains("/Encrypt")) return PdfInfo(null, null)
 
-            val title = extractTitle(text)
-            val date = extractDate(text)
-            PdfInfo(title, date)
+            val infoNum = findInfoObjectNumber(text)
+            val title = if (infoNum >= 0) {
+                val titleStr = extractTitleFromObject(text, infoNum)
+                if (titleStr != null && !isBoilerplate(titleStr, file.nameWithoutExtension)) titleStr else null
+            } else null
+
+            val date = if (infoNum >= 0) {
+                extractDateFromObject(text, infoNum)
+            } else null
+
+            val finalTitle = title ?: extractFromXmp(text, file.nameWithoutExtension)
+            PdfInfo(finalTitle, date)
         } catch (e: Exception) {
             PdfInfo(null, null)
         }
     }
 
-    private fun extractTitle(text: String): String? {
-        // Try Info dictionary (/Title) - handle escaped parentheses
-        var titleMatch = text.indexOf("/Title")
-        while (titleMatch >= 0) {
-            var idx = titleMatch + 6
-            while (idx < text.length && text[idx].isWhitespace()) idx++
+    private fun findInfoObjectNumber(text: String): Int {
+        // Find the last /Info N 0 R reference (in trailer or xref)
+        val lastInfoMatch = text.lastIndexOf("/Info")
+        if (lastInfoMatch < 0) return -1
 
-            if (idx < text.length) {
-                if (text[idx] == '(') {
-                    // Extract literal string, handling escaped parens
-                    val str = extractLiteralString(text, idx)
-                    if (str != null && str.isNotEmpty() && !isBoilerplate(str)) return str
-                } else if (text[idx] == '<') {
-                    // Extract hex string
-                    val hex = extractHexString(text, idx)
-                    if (hex != null) {
-                        val decoded = decodeHex(hex)
-                        if (decoded != null && !isBoilerplate(decoded)) return decoded
-                    }
-                }
+        var idx = lastInfoMatch + 5
+        while (idx < text.length && text[idx].isWhitespace()) idx++
+
+        // Extract the object number N
+        val numStart = idx
+        while (idx < text.length && text[idx].isDigit()) idx++
+        if (numStart == idx) return -1
+
+        return text.substring(numStart, idx).toIntOrNull() ?: -1
+    }
+
+    private fun extractTitleFromObject(text: String, objNum: Int): String? {
+        val objContent = getObjectContent(text, objNum) ?: return null
+
+        // Look for /Title in the dictionary
+        val titleIdx = objContent.indexOf("/Title")
+        if (titleIdx < 0) return null
+
+        var idx = titleIdx + 6
+        while (idx < objContent.length && objContent[idx].isWhitespace()) idx++
+
+        if (idx >= objContent.length) return null
+
+        return when {
+            objContent[idx] == '(' -> extractLiteralString(objContent, idx)
+            objContent[idx] == '<' -> {
+                val hex = extractHexString(objContent, idx)
+                if (hex != null) decodeHex(hex) else null
             }
+            objContent[idx].isDigit() -> {
+                // Indirect reference like "12 0 R"
+                val refNum = extractRefNumber(objContent, idx)
+                if (refNum >= 0) extractTitleFromObject(text, refNum) else null
+            }
+            else -> null
+        }
+    }
 
-            titleMatch = text.indexOf("/Title", titleMatch + 6)
+    private fun extractDateFromObject(text: String, objNum: Int): Instant? {
+        val objContent = getObjectContent(text, objNum) ?: return null
+        val dateIdx = objContent.indexOf("/CreationDate")
+        if (dateIdx < 0) return null
+
+        var idx = dateIdx + 13
+        while (idx < objContent.length && objContent[idx].isWhitespace()) idx++
+
+        if (idx >= objContent.length) return null
+
+        val dateStr = when {
+            objContent[idx] == '(' -> extractLiteralString(objContent, idx)
+            else -> null
         }
 
-        // Try XMP - get the last non-boilerplate one
-        var title = extractFromXmp(text)
-        if (title != null && !isBoilerplate(title)) return title
-
-        return null
+        return if (dateStr != null) parsePdfDate(dateStr) else null
     }
+
+    private fun getObjectContent(text: String, objNum: Int): String? {
+        val objStart = findObjectStart(text, objNum)
+        if (objStart < 0) return null
+
+        val endObjIdx = text.indexOf("endobj", objStart)
+        if (endObjIdx < 0) return null
+
+        return text.substring(objStart, endObjIdx)
+    }
+
+    private fun findObjectStart(text: String, objNum: Int): Int {
+        // Look for "N 0 obj" with word boundaries
+        val pattern = Regex("(?:^|\\s)$objNum\\s+0\\s+obj", RegexOption.MULTILINE)
+        val match = pattern.find(text) ?: return -1
+
+        var pos = match.range.last + 1
+        // Skip to the end of the line
+        while (pos < text.length && text[pos] != '\n' && text[pos] != '\r') pos++
+        if (pos < text.length && text[pos] == '\r') pos++
+        if (pos < text.length && text[pos] == '\n') pos++
+        return pos
+    }
+
+    private fun extractRefNumber(text: String, startIdx: Int): Int {
+        var idx = startIdx
+        val numStart = idx
+        // Extract digits for the object number
+        while (idx < text.length && text[idx].isDigit()) idx++
+        if (idx == numStart) return -1
+
+        val refNum = text.substring(numStart, idx).toIntOrNull() ?: return -1
+
+        // Skip whitespace
+        while (idx < text.length && text[idx].isWhitespace()) idx++
+        if (idx >= text.length || text[idx] != '0') return -1
+        idx++
+
+        // Skip whitespace
+        while (idx < text.length && text[idx].isWhitespace()) idx++
+        if (idx >= text.length || text[idx] != 'R') return -1
+
+        return refNum
+    }
+
 
     private fun extractLiteralString(text: String, start: Int): String? {
         if (start >= text.length || text[start] != '(') return null
@@ -86,7 +169,17 @@ object PdfInfoReader {
                     i++
                 }
                 text[i] == ')' && depth == 0 -> {
-                    return sb.toString().trim().ifEmpty { null }
+                    val result = sb.toString()
+                    // Check for UTF-16BE BOM (FE FF as two bytes in ISO-8859-1)
+                    if (result.length >= 2 && result[0].code == 0xFE && result[1].code == 0xFF) {
+                        return try {
+                            val bytes = result.toByteArray(Charsets.ISO_8859_1)
+                            String(bytes, 2, bytes.size - 2, Charsets.UTF_16BE).trim().ifEmpty { null }
+                        } catch (e: Exception) {
+                            result.trim().ifEmpty { null }
+                        }
+                    }
+                    return result.trim().ifEmpty { null }
                 }
                 else -> {
                     sb.append(text[i])
@@ -116,7 +209,7 @@ object PdfInfoReader {
     }
 
     private fun decodeHex(hex: String): String? {
-        val clean = hex.replace(Regex("\\s"), "")
+        val clean = hex.replace(Regex("\\s"), "").lowercase()
         if (clean.isEmpty()) return null
 
         return try {
@@ -129,7 +222,8 @@ object PdfInfoReader {
 
             // Check UTF-16BE BOM
             if (bytes.size >= 2 && (bytes[0].toInt() and 0xFF) == 0xFE && (bytes[1].toInt() and 0xFF) == 0xFF) {
-                String(bytes, Charsets.UTF_16BE).trim().ifEmpty { null }
+                // Skip the BOM bytes (2 bytes) and decode the rest as UTF-16BE
+                String(bytes, 2, bytes.size - 2, Charsets.UTF_16BE).trim().ifEmpty { null }
             } else {
                 String(bytes, Charsets.ISO_8859_1).trim().ifEmpty { null }
             }
@@ -138,15 +232,14 @@ object PdfInfoReader {
         }
     }
 
-    private fun extractFromXmp(text: String): String? {
-        // Extract all dc:title entries and return the last non-boilerplate one
+    private fun extractFromXmp(text: String, fileNameWithoutExtension: String): String? {
+        // Extract the first non-boilerplate dc:title
         val regex = Regex("<dc:title>.*?<rdf:li[^>]*>([^<]+)</rdf:li>.*?</dc:title>", RegexOption.DOT_MATCHES_ALL)
-        var lastTitle: String? = null
         for (match in regex.findAll(text)) {
             val title = unescapeXml(match.groupValues[1].trim())
-            if (title.isNotEmpty()) lastTitle = title
+            if (title.isNotEmpty() && !isBoilerplate(title, fileNameWithoutExtension)) return title
         }
-        return lastTitle
+        return null
     }
 
     private fun unescapeXml(s: String): String {
@@ -193,14 +286,15 @@ object PdfInfoReader {
         }
     }
 
-    private fun isBoilerplate(title: String): Boolean {
+    private fun isBoilerplate(title: String, fileNameWithoutExtension: String): Boolean {
         val lower = title.lowercase().trim()
-        return lower in setOf("print", "untitled") ||
+        return lower in setOf("print", "untitled", "powerpoint presentation", "slide 1") ||
             lower.startsWith("microsoft word - ") ||
             lower.endsWith(".doc") ||
             lower.endsWith(".docx") ||
             lower.endsWith(".indd") ||
             lower.endsWith(".tex") ||
-            lower.endsWith(".dvi")
+            lower.endsWith(".dvi") ||
+            lower == fileNameWithoutExtension.lowercase()
     }
 }
