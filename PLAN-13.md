@@ -426,29 +426,66 @@ tasks take screenshots (G07, G08, G11 and the two live ones) — through `Screen
         `PerchDatabaseMigrationTest` green; #72 commented naming the commit and the tests; pushed.
       - Rung: unit
 
-- [BLOCKED: PDF metadata parsing — object stream decompression and XMP filtering incomplete (see commit f318c4b, NOTES.md 2026-09-21)] **G02 — A document's title and date come from the PDF itself. TDD. Issue #72.**
-      §0.3 is the decision — the rung order, the string decoding, the
-      object-stream path, the encrypted rule, the boilerplate list, the date.
-      1. **RED:** `PdfInfoReaderTest` (`src/test/.../data/document/`) — one case per manifest row, iterating
-         `DocumentFixtures.manifest()` (write `DocumentFixtures` now: `slug`, `file()`, `sha256`, `pages`,
-         `sizes`, `title`, `published`, from `fixtures/documents/manifest.tsv`; `repoRoot()` as
-         `CodeScreenshotTest.kt` finds it): `title` equals the manifest's `title` column **when that column is
-         not the slug** and is null when it is (`empty-title`, `scan-image-only`, `encrypted-empty-user-password`);
-         `creationDate` equals `published` where the manifest has one. Then the unit cases, inline bytes:
-         `a literal title with escaped parentheses`, `a UTF-16BE hex title`, `an indirect title reference`,
-         `the last Info dictionary wins over an earlier one`, `an Info dictionary inside an object stream`,
-         `XMP dc:title is read only when the dictionary has no title`, `"Print" is not a title`, `a "Microsoft
-         Word - " prefix is dropped`, `an encrypted file yields nothing`, `an HTML file yields nothing and
-         throws nothing`, `a CreationDate without a zone is UTC`.
-      2. **GREEN:** `PdfInfo.kt` — a byte scanner over the file (read once into memory; the 40 MiB cap
-         bounds it), `Inflater` for object streams, no regex over the whole file for anything but the
-         anchors (`/Info`, `obj`, `/ObjStm`, `<dc:title>`).
-      3. SPEC.md §5 gains a short "Documents" paragraph naming the standard and the rung order.
-      - Done: RED shown; `./gradlew test` green and above G01's count; the §0.2 grep gate empty
-        (`grep -rnoE '"[a-z0-9.-]+\.(com|org|net|io|dev|me|ski|ca|xyz|blog)"' app/src/main/java/dev/mkiros/perch/data/`);
-        #72 commented with the commit; pushed.
+- [ ] **G02a — The Info dictionary is resolved, not searched for. TDD. Issue #72.**
+      **Read §0.3 in full before you touch code.** It specifies the algorithm completely; the previous
+      attempt improvised and that is why this box was re-opened. Do not invent a different approach.
+      The current `PdfInfo.kt` is the wrong shape, not a starting point: `read()` (`PdfInfo.kt:8-23`)
+      decodes the whole file as ISO-8859-1 and `:27-48` takes the **first** `/Title` found anywhere —
+      which on `nist-sp800-63-4` is an embedded image XObject ("Adobe Illustrator Artwork"), not the
+      document. `/CreationDate` (`:108`) has the same bug. §0.3 wants the **last** `/Info N 0 R` in the
+      file, resolved to object `N`, and `/Title` and `/CreationDate` read from **that dictionary only**.
+      1. **First, fix the contradiction that made this box unachievable.** `PdfInfoReaderTest`'s
+         `creationDate` case asserts every manifest row's `published`, but `encrypted-empty-user-password`
+         carries a real `published` while §0.3 says an encrypted file yields **no title and no date**. No
+         implementation can satisfy both. The manifest stays truthful about the file; the `creationDate`
+         loop **skips encrypted fixtures**, exactly as the title loop already skips them. Say so in the commit.
+      2. **RED:** `the last Info dictionary wins over an earlier one`; `an indirect title reference is
+         followed` (`/Title 12 0 R`); `a /Title inside an image XObject is not the document's title`;
+         `a CreationDate without a zone is UTC`.
+      3. **GREEN:** resolve the trailer's last `/Info N 0 R`, find `N 0 obj`, read the two keys from that
+         dictionary. Plain objects only — compressed object streams are G02b's job, and a fixture that
+         needs one may stay red until then.
+      - Done: RED shown; `./gradlew test` green and above G01's count; `letter-margins`, `ssrn-6191618`,
+        `empty-title`, `encrypted-empty-user-password` and `html-in-disguise` all green; #72 commented
+        naming the commit; pushed.
       - Rung: unit
 
+- [ ] **G02b — An Info dictionary inside a compressed object stream. TDD. Issue #72.**
+      **Read §0.3's object-stream sentence before you touch code.** It names the tool:
+      `java.util.zip.Inflater`, which is in the JDK. **No new dependency is permitted or needed** —
+      SPEC.md §2 lists no PDF library, and a previous session's NOTES entry suggesting one was wrong.
+      A session that reaches for PDFBox or iText has misread the plan.
+      `nist-sp800-63-4` is the fixture that decides this: it has **zero** raw `/Title` occurrences because
+      its Info dictionary lives inside a `/Type /ObjStm`.
+      1. **RED:** `an Info dictionary inside an object stream is found` — `nist-sp800-63-4`'s title is
+         *Digital Identity Guidelines*.
+      2. **GREEN:** every `/Type /ObjStm` stream inflated with `Inflater`, its header of `objnum offset`
+         pairs scanned for `N` (ISO 32000-1 §7.5.7), the object read from the inflated bytes.
+      - Done: RED shown; `./gradlew test` green and above G02a's count; `nist-sp800-63-4` titled;
+        #72 commented naming the commit; pushed.
+      - Rung: unit
+
+- [ ] **G02c — The BOM, the XMP rung and the boilerplate list. TDD. Issue #72.**
+      **Read §0.3's string-decoding and boilerplate sentences before you touch code.** Three defects it
+      already specifies:
+      - `extractLiteralString` (`PdfInfo.kt:57-98`) has **no BOM check** — only `decodeHex` (`:131`) has
+        one. `scan-image-only`'s `/Title` is a *literal* holding raw UTF-16BE bytes behind an `FE FF` BOM,
+        so today it returns a garbled non-null string where §0.3 requires null.
+      - `extractFromXmp` (`:141-150`) takes the **last** `<dc:title>`; §0.3 says the **first**, and only
+        when the Info dictionary has no title. §0.10: the rung order is XMP *after* the dictionary, and
+        `nist-sp800-63-4` is why — its XMP says "Print". A session that swaps the rungs is aiming at a producer.
+      - `isBoilerplate` (`:196-205`) is missing `PowerPoint Presentation`, `Slide 1`, and the
+        title-equals-file-name rule.
+      1. **RED:** `a literal title behind a UTF-16BE BOM decodes`; `scan-image-only has no title`;
+         `XMP dc:title is read only when the dictionary has no title`; `"Print" is not a title`;
+         `a title equal to the file name is not a title`; `a "Microsoft Word - " prefix is dropped`.
+      2. **GREEN:** the three fixes, nothing else.
+      3. SPEC.md §5 gains a short "Documents" paragraph naming the standard and the rung order.
+      - Done: **all 14 `PdfInfoReaderTest` cases green**; `./gradlew test` green and above G02b's count;
+        the §0.2 grep gate empty
+        (`grep -rnoE '"[a-z0-9.-]+\.(com|org|net|io|dev|me|ski|ca|xyz|blog)"' app/src/main/java/dev/mkiros/perch/data/`);
+        #72 commented naming the commit; pushed.
+      - Rung: unit
 - [x] **G03 — The rasterizer seam: `PageRasterizer`, the platform one, and the fixture one. TDD. Issue #72 (part 2 of 2).**
       §0.5 is the decision. `PdfRendererRasterizer` is production code that no JVM test can execute — its
       test is the compile, a `open` returning null on a non-PDF (that path throws before the native call —
@@ -532,36 +569,77 @@ tasks take screenshots (G07, G08, G11 and the two live ones) — through `Screen
       - Done: RED shown; `./gradlew test` green and above G05's count; #72 commented; pushed.
       - Rung: unit
 
-- [BLOCKED: Compose test API gaps — testTag context, gesture APIs, node querying. See commit a9c82f8 and NOTES.md 2026-09-21.] **G07 — The document reader on screen. TDD + screenshot. Issue #72 (part 3 of 3).**
-      §0.6's *layout*, *separator*, *page toast*, *gestures*, *page you stopped on* and §0.5's *rendering
-      policy* paragraphs are the decision. Test tags: `ArticleTestTags.DOCUMENT` (`article:document`, the
-      list), `DOCUMENT_STRIP`, `DOCUMENT_PAGE` (every page item), `DOCUMENT_SEPARATOR`, `DOCUMENT_TOAST`,
-      `DOCUMENT_GONE`; strings `document_kind_pdf`, `document_pages` (plurals), `document_strip`
-      (`%1$s · %2$s · saved offline`), `document_page_toast`, `document_page_description` (`Page %1$d`),
-      `article_document_gone`.
-      1. **RED:** `DocumentBodyTest` (`src/testDebug/.../ui/article/`, `ArticleScreenTest.kt:456`'s
-         `showArticle` shape and `:492`'s drain, a seeded `ssrn-6191618` row through `FixtureRasterizer`) —
-         `a document shows its headline, byline, strip and first page` (strip text "112 pages · 850 KB · saved
-         offline", **no** `article:standfirst`, no `LOAD_FULL_TEXT` in the overflow); `every page is followed
-         by a separator`; `scrolling to page two raises the toast and it fades` (`performScrollToNode` on
-         the second `DOCUMENT_PAGE`; `DOCUMENT_TOAST` shows "Page 2 of 112"; after `mainClock.advanceTimeBy(1_500)`
-         it is gone); `the toast never shows on open`; `a double tap widens the pages to the text column`
-         (`performTouchInput { doubleClick() }`; the page node's width grows by the column's factor, its
-         x becomes negative); `a second double tap returns to fit`; `a pinch past the maximum settles at the
-         maximum` (`pinch()`); `leaving the screen writes the page under the centre` (`scrollPosition == 2`);
-         `a document reopens at the page it stopped on` (seed `scrollPosition = 3`; the third page item is
-         at the top); `a document whose file is gone says so`.
-      2. **GREEN:** `DocumentBody.kt` (`DocumentArticle`, `DocumentStrip`, the page item, `PageCache`, the
-         render effect, the separator, the toast, the gestures), `ArticleScreen`'s branch at `:180-190` /
-         `:302-366` (the `SelectionContainer` stays around the text branch only), the strings, the tags.
-      3. **Screenshots** — this task's own, the first four of §0.9's gallery: `DocumentScreenshotTest` with
-         `document-reader-dark`, `-light`, `-scrolled`, `-zoomed`. Look at each PNG. Critique against
-         DESIGN.md §8 in the commit, numbered; ≤ 2 iterations.
-      4. **Untouched pixels:** the `md5sum` recipe over the *existing* screenshot tests, `35/35`.
-      - Done: RED shown; `./gradlew test` green and above G06's count; four PNGs named in the commit with
-        the critique; `35/35`; #72 commented naming the three commits; pushed.
+- [ ] **G07a — The reader draws real pages. TDD + screenshot. Issue #72.**
+      **Read §0.6's *layout* and *separator* paragraphs and §0.5's rendering policy before you touch code.**
+      `DocumentArticle` (`DocumentBody.kt:52`) exists, but its page item (`:133-175`) draws a **grey
+      placeholder box captioned "Page N"** (`:159-163`) with a hardcoded `612f/792f` aspect (`:137`) —
+      no bitmap was ever wired. `ArticleScreen.kt:328-333` drops the byline (`author = null /* TODO */`).
+      1. **RED:** `DocumentBodyTest` (`src/testDebug/.../ui/article/`) currently holds only a
+         `placeholder()` no-op at `:54-57` — replace it. Use `ArticleScreenTest.kt:456`'s `showArticle`
+         shape and a seeded `ssrn-6191618` row through `FixtureRasterizer`. Cases: `a document shows its
+         headline, byline, strip and first page` (strip reads "112 pages · 850 KB · saved offline", **no**
+         `article:standfirst`, no `LOAD_FULL_TEXT` in the overflow); `every page is followed by a
+         separator`; `a document whose file is gone says so`.
+      2. **GREEN:** the page item renders the real bitmap at the measure with the aspect from
+         `DocumentUi.aspects` (never the 612/792 fallback), `PageCache`, the render effect, the separator;
+         restore the byline through the branch.
+      3. **Screenshots** — `DocumentScreenshotTest` gains `document-reader-light` and `document-reader-dark`,
+         through `Screenshots.captureAndAssert` (`ScreenshotSupport.kt:78`), **never `captureToImage()`**
+         (its KDoc at `:18-26` says why: `PixelCopy` waits on a frame callback Robolectric never delivers).
+         `Read` each PNG. Critique against DESIGN.md §8 in the commit, numbered; ≤ 2 iterations.
+      4. **Untouched pixels:** the NOTES.md `md5sum` recipe over the existing `*ScreenshotTest*`, `35/35`.
+      - Done: RED shown; `./gradlew test` green and above G06's count; two PNGs named in the commit with
+        the numbered critique; `35/35`; #72 commented naming the commit; pushed.
       - Rung: screenshot
 
+- [ ] **G07b — The page toast, and the page you stopped on. TDD + screenshot. Issue #72.**
+      **Read §0.6's *page toast* and *the page you stopped on* paragraphs before you touch code.**
+      **This is dead code today, not missing code.** `DocumentBody.kt:229-233` is a local `pageUnderCentre`
+      stub that returns `null` unconditionally behind a `// TODO`, so the toast never shows and the page
+      memory always writes 0. The real pure implementation already exists at `PagePosition.kt:9-25`, over a
+      `LayoutItem` interface that `LazyListItemInfo` does not implement. **Delete the stub and write the
+      adapter — do not write a third implementation.** `PageUnderCentreTest`'s 4 cases already pin the
+      arithmetic; this task only wires it.
+      1. **RED:** `scrolling to page two raises the toast and it fades` — note `performScrollToNode` takes a
+         `SemanticsMatcher` (`hasTestTag(...)`); the bare no-arg call is what failed last time.
+         `DOCUMENT_TOAST` reads "Page 2 of 112" and after `mainClock.advanceTimeBy(1_500)` it is gone.
+         `the toast never shows on open`; `leaving the screen writes the page under the centre`
+         (`scrollPosition == 2`, drained the `ArticleScreenTest.kt:492` way); `a document reopens at the
+         page it stopped on` (seed `scrollPosition = 3`).
+      2. **GREEN:** the adapter, the toast pill with `AnimatedVisibility` fading 1 200 ms after the last
+         change, `onScrollSettled(pageUnderCentre ?: 0)` on settle and on leave, and
+         `rememberLazyListState(initialFirstVisibleItemIndex = state.scrollPosition)`.
+      3. **Screenshot** — `document-reader-scrolled` (page 2 under the centre, toast showing). `Read` it;
+         critique against DESIGN.md §8, numbered; ≤ 2 iterations.
+      - Done: RED shown; `./gradlew test` green and above G07a's count; the PNG named with its critique;
+        #72 commented naming the commit; pushed.
+      - Rung: screenshot
+
+- [ ] **G07c — Pinch, drag and double-tap. TDD + screenshot. Issue #72.**
+      **Read §0.6's *zoom* and *gestures* paragraphs before you touch code.** The arithmetic is **already
+      built and tested**: `DocumentZoom.kt:8-56` (`pinch`, `drag`, `doubleTap`, `isZoomed`) with
+      `DocumentZoomTest`'s 9 cases and `TextColumnTest`'s 5. This task only wires it into pointer input.
+      **The previous attempt's stated blocker was wrong, and believing it will re-block this box.** This
+      repo tests gestures today: `ImageViewerTest.kt:86-92` calls `pinch(start0 = …, end0 = …, start1 = …,
+      end1 = …)` with explicit `Offset`s, and `doubleClick()` zero-arg at `:104` and `:109`; the same
+      pattern is reused at `LiveAcceptanceTest.kt:1458`. What failed before were arities and types — a bare
+      `pinch()` (there is no no-arg overload), a bare `performScrollToNode()`, and `.filter { lambda }`
+      where `SemanticsNodeInteractionCollection.filter` takes a `SemanticsMatcher`. **Copy
+      `ImageViewerTest`'s call shapes exactly.**
+      §0.10's trap: put `transformable` and `draggable(Horizontal)` on the list's **parent `Box`**, never on
+      the `LazyColumn` — on the same node they compete for touch slop.
+      1. **RED:** `a double tap widens the pages to the text column` (the page node's width grows by the
+         column's factor and its x goes negative); `a second double tap returns to fit`; `a pinch past the
+         maximum settles at the maximum`.
+      2. **GREEN:** `transformable(state, canPan = { false })`, `draggable(Orientation.Horizontal,
+         enabled = zoomed)` and `pointerInput { detectTapGestures(onDoubleTap = …) }` on the parent `Box`;
+         each page a `Box` of `requiredWidth(pageWidth × scale)` with `offset { IntOffset(offsetX, 0) }`
+         inside a `clipToBounds()` list; the render bucket re-chosen on gesture end (§0.5).
+      3. **Screenshot** — `document-reader-zoomed` (after a double-tap, the text column fills the width).
+         `Read` it; critique against DESIGN.md §8, numbered; ≤ 2 iterations.
+      - Done: RED shown; `./gradlew test` green and above G07b's count; the PNG named with its critique;
+        `35/35` still; #72 commented naming the commit; pushed.
+      - Rung: screenshot
 - [x] **G08 — A document on To-Read shows its first page and says it is a PDF. TDD + screenshot. Issue #72.**
       §0.7 is the decision.
       1. **RED:** `EntryRowTest` (`:80-108`'s shape) — `a document row says PDF after its source`
@@ -576,33 +654,50 @@ tasks take screenshots (G07, G08, G11 and the two live ones) — through `Screen
         #72 commented with the commit; pushed.
       - Rung: screenshot
 
-- [BLOCKED: RED tests incomplete — document import path needs RED tests in SaveLinkRepositoryTest, SaveLinkViewModelTest, SaveLinkSheetTest] **G09 — Share a link or a PDF to Perch, or open a PDF with it. TDD. Issue #72.**
-      §0.8's *intents*, *value*, *flow* and *local file* paragraphs are the
-      decision.
-      1. **RED, pure:** `IncomingShareTest` (`src/test/.../ui/nav/`, Robolectric for `Intent`) — `a shared
-         sentence with a URL in it is the URL`; `a share with no URL is nothing`; `a shared PDF stream is a
-         document with its display name`; `a viewed PDF is a document`; `a plain launch is nothing`.
-         **RED, repository:** `SavedLinkRepositoryTest` — `a shared file is stored under a content hash and
-         titled from the file` (opener map: `uri → ssrn-6191618.pdf` bytes; `guid == "perch:document:0a8e0e01…"`
-         (the manifest's sha256), `link == null`, title from the manifest); `the same file shared twice is one
-         row`; `a shared file that is not a PDF fails as NotDocument`; `a shared file with no title takes its
-         display name`.
-         **RED, ViewModel:** `SaveLinkViewModelTest` (`src/test/.../ui/collection/`, new or existing) — `an
-         incoming link opens the sheet and submits it`; `an incoming document opens the sheet and imports it`;
-         `the intake is cleared once taken`; `open and dismiss own the sheet's visibility`.
-         **RED, screen:** `SaveLinkSheetTest` (`:61-104`) — `a link shared to Perch lands on To-Read with the
-         confirmation` (set `container.intake.value = Incoming.Link(server.url(...))`, show the shell, await
-         the row and the *Saved “…”* snackbar).
-      2. **GREEN:** the manifest, `MainActivity.onNewIntent`, `model/Incoming.kt`, `ui/nav/IncomingShare.kt`,
-         `AppContainer.intake` and `documentOpener`, `PerchNavHost`'s collector, `SaveLinkUiState.isOpen` /
-         `open()` / `accept` / `submitDocument`, `CollectionScreen`'s `savingLink` → `state.isOpen`,
-         `SavedLinkRepository.saveDocument`, `SaveLinkFailure.NotDocument`, the two strings.
-      3. SPEC.md §10 (navigation) gains the intake sentence; DESIGN.md §5's To-Read paragraph gains "a share
-         is a paste already confirmed".
-      - Done: RED shown for all four layers; `./gradlew test` green and above G08's count; #72 commented with the commit;
-        pushed.
+- [ ] **G09a — The document intake is proved by tests. TDD. Issue #72.**
+      **The feature code already landed and works** (commits `fc3aa2c`, `0eaaf32`); this box was blocked
+      only because its tests were never written. **Do not rewrite the feature.** §0.8's *intents*, *value*,
+      *flow* and *local file* paragraphs are still the decision.
+      The path, for the tests to follow: `AndroidManifest.xml:24-42` declares `SEND text/plain`,
+      `SEND application/pdf` and `VIEW application/pdf` → `MainActivity.handleIncoming`
+      (`MainActivity.kt:39-45`) → `incomingFrom` (`IncomingShare.kt:19-52`, pure) → `AppContainer.kt:75`'s
+      `intake` → `SaveLinkViewModel`'s collector (`:66-84`) → `submitDocument` (`:129-152`) →
+      `SavedLinkRepository.saveDocument` (`:145-196`) → the shared `storeDocument` sink (`:198-251`).
+      1. **RED, pure:** `IncomingShareTest` (`src/test/.../ui/nav/`, Robolectric for `Intent`) — **it does
+         not exist yet**: `a shared sentence with a URL in it is the URL`; `a share with no URL is nothing`;
+         `a shared PDF stream is a document with its display name`; `a viewed PDF is a document`;
+         `a plain launch is nothing`.
+      2. **RED, repository:** `SavedLinkRepositoryTest` (`src/test/.../data/repo/`) — mirror the shape at
+         `:79`. Note the existing case at `:211` exercises `saveLink`, **not** `saveDocument`, so it proves
+         nothing here: `a shared file is stored under a content hash and titled from the file` (opener map
+         `uri → ssrn-6191618.pdf`; `guid == "perch:document:<the manifest sha256>"`, `link == null`);
+         `the same file shared twice is one row`; `a shared file that is not a PDF fails as NotDocument`;
+         `a shared file with no title takes its display name`.
+      3. **RED, ViewModel:** `SaveLinkViewModelTest` (`src/test/.../ui/collection/`) — nothing in it
+         currently touches `Incoming`, `intake` or `submitDocument`: `an incoming link opens the sheet and
+         submits it`; `an incoming document opens the sheet and imports it`; `the intake is cleared once
+         taken`; `open and dismiss own the sheet's visibility`.
+      - Done: RED shown for all three layers; `./gradlew test` green and above G07c's count; #72 commented
+        naming the commit; pushed.
       - Rung: unit
 
+- [ ] **G09b — A picked PDF keeps its display name, and the docs say how a share works. TDD. Issue #72.**
+      `SaveLinkSheet.kt:95` passes `displayName = null` from the picker, so a picked PDF with no embedded
+      title falls back further than it should. `IncomingShare.kt:11-13`'s own KDoc says the caller holding a
+      `Context` looks up `OpenableColumns.DISPLAY_NAME` — that caller was never built.
+      1. **RED:** `SaveLinkSheetTest` (`src/testDebug/.../ui/collection/`) — G10 left a
+         `FakeActivityResultRegistry` at `:264` and a `letterMarginsUri()` helper at `:236`; reuse them.
+         `a picked file with no title takes its display name`; `a link shared to Perch lands on To-Read with
+         the confirmation` (set `container.intake.value = Incoming.Link(...)`, show the shell, await the row
+         and the *Saved "…"* snackbar). §0.10's trap: an injected tap does not reach a node inside a bottom
+         sheet — use `performSemanticsAction(OnClick)` for `CHOOSE_FILE`.
+      2. **GREEN:** the `OpenableColumns.DISPLAY_NAME` lookup at the picker call site, passed through to
+         `submitDocument`.
+      3. SPEC.md §10 (navigation) gains the intake sentence; DESIGN.md §5's To-Read paragraph gains "a share
+         is a paste already confirmed".
+      - Done: RED shown; `./gradlew test` green and above G09a's count; #72 commented naming the commit;
+        pushed.
+      - Rung: unit
 - [x] **G10 — Choose a PDF from the phone in the Save-a-link sheet. TDD. Issue #72.**
       §0.8's *picker* paragraph is the decision.
       1. **RED:** `SaveLinkSheetTest` — `the sheet offers to choose a PDF` (`CHOOSE_FILE` present, under the
