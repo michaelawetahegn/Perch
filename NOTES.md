@@ -4,7 +4,6 @@
 - 2026-09-21 — **PLAN-13 run 1 stopped after G10; G02 (done)/G07/G09 re-opened as eight smaller boxes.** All three blocks were avoidable: each task's own §0 section already specified the algorithm, and the sessions improvised. The re-opened boxes carry the anchors below. Do not re-derive them.
 - 2026-09-21 — **G12: §0.4 step 4 (the page-one thumbnail) had never been built**, and `DocumentStore.sweep` deleted every thumbnail (no row names a `-1.png`); both fixed in G12 with `DocumentStoreTest` — the sweep had no test at all before it. G13 found both of the other unbuilt §0.4 rungs the same way — step 2's file-name title from `Content-Disposition` or the URL's last segment, and step 5's delete-the-previous-file — and built them with tests. **Read a task's §0 steps against the code, not against the tests.**
 - 2026-09-21 — **G09b: the share path never reached the sheet before G09b.** G09a proved each layer alone, but `PerchNavHost` never collected `container.intake`, so To-Read (the owner of `SaveLinkViewModel`) was never brought up. Only a whole-shell test (`SaveLinkSheetTest > a link shared to Perch…`) shows that; a per-layer green is not "the feature works".
-- 2026-09-21 — **Loop hazard: the nightly emulator reboot can hang a run forever** (`TECH_DEBT.md` has the fix). Clear it by killing the `device.sh reboot` subtree.
 - 2026-09-21 — **G07c: `./gradlew test` can hang forever, not fail** (seen in G07c and again in G11, debug variant, early in the run; a re-run passed both times). `PerchApp.onCreate`'s startup `sweepDocuments()` (G01) opens Room on `arch_disk_io` while `onTerminate` → `AppContainer.close()` → `RoomDatabase.close()` runs on the Robolectric main thread; `startupScope.cancel()` does not stop Room's own executor, and the two deadlock inside Room (`InvalidationTracker.syncTriggers` vs `FrameworkSQLiteOpenHelper.close`). Diagnose with `jstack` on the `Gradle Test Executor` pid; kill it and re-run. Filed in `TECH_DEBT.md` "## Next plan". Wrap long runs in `timeout 45m`.
 - **Standing grep gates:** the two commands are in the active plan's §0.2. Behind the hostname one: parse by
   **standards** (OG, JSON-LD, Dublin Core, sitemaps.org, RFC 5005/9309), so one blog's support makes similar ones work
@@ -79,9 +78,11 @@
   **SPEC.md §4/§8a**. What is only here: **`MIGRATION_6_7`'s `CREATE VIRTUAL TABLE` must be
   byte-for-byte what `7.json` exports** or Room fails validation on the *next* open, not on the
   migration — a test that only runs the migration will not catch it.
-- 2026-09-14 — **v0.8.0 released** (`versionCode` 10, DB 8 → 10 via `MIGRATION_8_9` + `MIGRATION_9_10`); test
-  floor **2067** (1200 debug + 867 release). APK `app/build/outputs/apk/release/perch-0.8.0.apk`. In-place
-  upgrades are verified on the **emulator only** (it holds v0.8.0 now); the human's real phone no session can reach. An
+- 2026-09-21 — **v0.9.0 built, signed, NOT released** (G14a; `versionCode` 11, DB 10 → 11 via `MIGRATION_10_11`);
+  test floor **2240** (1298 debug + 942 release). APK `app/build/outputs/apk/release/perch-0.9.0.apk` (gitignored —
+  rebuild with `assembleRelease` + rename if it is gone). Release notes wait at the end of `docs/RELEASE-NOTES.md`.
+  G14b (tag, release, close #72) is HELD for the human. In-place
+  upgrades are verified on the **emulator only** (it holds v0.9.0 now); the human's real phone no session can reach. An
   upgrade check needs a seeded install and **there is no first-run seeder** (the Maestro flow's "a
   clean install seeds itself" comment is stale): add a source through the UI, and set the range to
   All Time or a fresh install looks empty. `adb shell input text` drops everything past ~15

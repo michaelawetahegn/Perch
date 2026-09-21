@@ -761,7 +761,7 @@ tasks take screenshots (G07, G08, G11 and the two live ones) — through `Screen
         `./gradlew test` green; any new issue linked; pushed.
       - Rung: unit
 
-- [ ] **G14a — v0.9.0 is built and signed. The APK only; the release is held. Issue #72.**
+- [x] **G14a — v0.9.0 is built and signed. The APK only; the release is held. Issue #72.**
       **The human is testing this build on their own phone for a few days before it ships.** Build it,
       prove it, commit it — **do not tag, do not `gh release create`, do not close #72.** That is G14b,
       and it is deliberately held: a later reviewer does it once the build has been lived with.

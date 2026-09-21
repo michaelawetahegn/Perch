@@ -114,3 +114,50 @@ gh release create v0.3.0 --title "Perch v0.3.0 — <the release's reason>" \
 
 The title follows the same rule as the headline sentence: `Perch v0.2.0 — the
 daily-driver pass`, not `Release 0.2.0`.
+
+---
+
+## Written, not yet shipped: v0.9.0
+
+Written by G14a so the reviewer has it to read; G14b publishes it as
+`Perch v0.9.0 — PDFs on To-Read` and then deletes this section.
+
+```markdown
+Some of what I want to read is not a web page — it is a paper, a report, a set of
+guidelines, and it comes as a PDF. **Perch now keeps a PDF on To-Read and reads it as
+pages, inside the same article screen as everything else**, offline, for as long as you
+keep it.
+
+### Installing / upgrading
+
+Installs in place over v0.8.0 and keeps your read state, likes and To-Read queue. The
+database moves from version 10 to 11 — one new column — on first launch; nothing is
+asked of you.
+
+### New
+
+- **Three ways to get a PDF in.** Paste a PDF's link into *Save a link*; share one to
+  Perch from the browser or from Files (or open a PDF *with* Perch); or tap *Choose a PDF*
+  in the *Save a link* sheet and pick one from the phone. Each lands on To-Read.
+  ([#72](https://github.com/michaelawetahegn/Perch/issues/72))
+- **Kept whole, on the phone.** The file itself is stored — not a copy of its text — so
+  it reads the same with no connection. Files up to 40 MiB.
+- **Its own title, its own date.** Perch reads the title and date the PDF carries inside
+  it, and falls back to the file's name when it carries none. On To-Read the row shows
+  the first page as its picture and says *PDF*.
+- **Read as pages.** Pages fill the screen's width, one after another; a small marker
+  tells you which page you are on. Pinch to zoom, or double-tap to zoom straight to the
+  text column. Leave, come back, and you are on the page you stopped at.
+- **Found by title.** Search finds a PDF by its title.
+
+### Known issues
+
+- **SSRN links must be shared as files.** SSRN refuses every app that is not a web
+  browser, and Perch does not pretend to be one — so pasting an SSRN link fails. Download
+  the paper in your browser and share the downloaded file to Perch instead.
+- **Search reads a PDF's title, not its pages.** A word that appears only inside the
+  document will not find it.
+- **Pages stay white in dark mode**, as the document was published.
+- **Sharing a PDF that arrived as a file** sends its title only, not the file.
+- **An encrypted PDF** arrives untitled — it shows the file's name.
+```
