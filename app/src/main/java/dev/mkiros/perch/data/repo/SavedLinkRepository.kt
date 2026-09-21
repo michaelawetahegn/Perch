@@ -87,6 +87,11 @@ class SavedLinkRepository(
         val bytes = file.readBytes()
         file.delete()
 
+        // Non-PDF pages still have the 8 MiB cap (SPEC.md §6)
+        if (bytes.size > 8 * 1024 * 1024) {
+            return Result.failure(SaveLinkFailure.Unreachable("Feed is too large (over 8 MiB)"))
+        }
+
         // A pasted feed address is not an error — it is the other feature (§0.4). Checked
         // against the bytes we already have, not through discovery: a blog *post* routinely
         // declares its site's feed via autodiscovery, and that must not make every post look

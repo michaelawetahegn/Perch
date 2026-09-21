@@ -467,7 +467,7 @@ tasks take screenshots (G07, G08, G11 and the two live ones) — through `Screen
       - Done: RED shown; `./gradlew test` green and above G02's count; #72 commented; pushed.
       - Rung: unit
 
-- [ ] **G04 — A pasted link to a PDF lands on To-Read as a stored document. TDD. Issue #72.**
+- [x] **G04 — A pasted link to a PDF lands on To-Read as a stored document. TDD. Issue #72.**
       §0.4 is the decision, in its order.
       1. **RED, fetcher:** `FeedFetcherTest` — `download streams a body to the file and reports its headers`
          (MockWebServer serving `letter-margins.pdf` with `Content-Type: application/pdf` and a
