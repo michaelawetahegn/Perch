@@ -1,5 +1,8 @@
 package dev.mkiros.perch.ui.collection
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetValue
@@ -7,6 +10,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.mkiros.perch.R
@@ -65,6 +69,7 @@ fun SaveLinkSheet(
             state = state,
             onUrlChange = viewModel::onUrlChange,
             onSubmit = viewModel::submit,
+            onSubmitDocument = viewModel::submitDocument,
         )
     }
 }
@@ -80,8 +85,17 @@ fun SaveLinkSheetContent(
     state: SaveLinkUiState,
     onUrlChange: (String) -> Unit,
     onSubmit: () -> Unit,
+    onSubmitDocument: (Uri, String?) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier,
 ) {
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument(),
+    ) { uri ->
+        if (uri != null) {
+            onSubmitDocument(uri, null)
+        }
+    }
+
     UrlFormContent(
         title = stringResource(R.string.save_link_title),
         fieldLabel = stringResource(R.string.save_link_field_label),
@@ -96,6 +110,14 @@ fun SaveLinkSheetContent(
         errorTag = SaveLinkTestTags.ERROR,
         submitTag = SaveLinkTestTags.SUBMIT,
         modifier = modifier,
+        belowField = {
+            androidx.compose.material3.TextButton(
+                onClick = { filePickerLauncher.launch(arrayOf("application/pdf")) },
+                modifier = Modifier.testTag(SaveLinkTestTags.CHOOSE_FILE),
+            ) {
+                androidx.compose.material3.Text(stringResource(R.string.save_link_choose_file))
+            }
+        },
     )
 }
 
@@ -118,4 +140,5 @@ object SaveLinkTestTags {
     const val URL_FIELD = "save-link:url"
     const val SUBMIT = "save-link:submit"
     const val ERROR = "save-link:error"
+    const val CHOOSE_FILE = "save-link:choose-file"
 }

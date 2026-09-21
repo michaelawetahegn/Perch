@@ -224,7 +224,7 @@
 
     <string name="collection_empty_to_read_title">Nothing queued yet</string>
     <!-- Y04: To-Read now takes a pasted link as well as a long-press, so the empty state says both. -->
-    <string name="collection_empty_to_read_body">Paste a link\'s address above, or long-press any entry and save it for later. It waits here until you take it off, however long that is.</string>
+    <string name="collection_empty_to_read_body">Paste a link\'s address above, or long-press any entry and save it for later. It waits here until you take it off, however long that is. …or share a PDF to Perch.</string>
     <string name="collection_empty_liked_title">Nothing liked yet</string>
     <string name="collection_empty_liked_body">Like an entry to keep it. Liked entries stay for good, even after their source stops listing them.</string>
     <string name="collection_removed_to_read">Removed from To-Read</string>

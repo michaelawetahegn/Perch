@@ -7,6 +7,7 @@ import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.document.DocumentStore
 import dev.mkiros.perch.data.document.PageRasterizer
 import dev.mkiros.perch.data.net.PerchHttp
+import dev.mkiros.perch.data.repo.DocumentOpener
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.di.AppContainer
 import dev.mkiros.perch.model.BackfillRunner
@@ -46,6 +47,8 @@ class PerchRule(
     private val backfillRunner: BackfillRunner = BackfillRunner.NoOp,
     /** PLAN-13 G03: the rasterizer for tests (fixtures). */
     private val rasterizer: PageRasterizer = FixtureRasterizer(),
+    /** PLAN-13 G10: opens URIs for document imports in tests. */
+    private val documentOpener: DocumentOpener? = null,
 ) : ExternalResource() {
 
     /** Valid from the rule's `before` — that is, from `@Before` onwards. */
@@ -64,6 +67,7 @@ class PerchRule(
             backfillRunner = backfillRunner,
             documents = DocumentStore(File(context.filesDir, "documents")),
             rasterizer = rasterizer,
+            documentOpener = documentOpener,
         )
     }
 

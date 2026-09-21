@@ -1,7 +1,15 @@
 package dev.mkiros.perch.ui.collection
 
+import android.net.Uri
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.LocalActivityResultRegistryOwner
+import androidx.activity.result.ActivityResultRegistry
+import androidx.activity.result.ActivityResultRegistryOwner
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.contract.ActivityResultContract
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.core.app.ActivityOptionsCompat
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
@@ -12,6 +20,7 @@ import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextInput
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.common.truth.Truth.assertThat
+import dev.mkiros.perch.data.document.DocumentFixtures
 import dev.mkiros.perch.support.PerchRule
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.theme.PerchTheme
@@ -42,14 +51,25 @@ class SaveLinkSheetTest {
 
     private lateinit var server: MockWebServer
     private lateinit var viewModel: SaveLinkViewModel
+    private lateinit var tempDir: java.io.File
 
     @get:Rule(order = 1)
-    val perch = PerchRule()
+    val perch = PerchRule(
+        // Provide a DocumentOpener that can handle file:// URIs for testing
+        documentOpener = object : dev.mkiros.perch.data.repo.DocumentOpener {
+            override fun open(uri: Uri) = try {
+                java.io.File(uri.path!!).inputStream()
+            } catch (e: Exception) {
+                null
+            }
+        },
+    )
 
     @Before
     fun setUp() {
         server = MockWebServer()
         server.start()
+        tempDir = compose.activity.cacheDir
     }
 
     @After
@@ -125,18 +145,58 @@ class SaveLinkSheetTest {
         assertThat(entryCount()).isEqualTo(0)
     }
 
+    @Test
+    fun `the sheet offers to choose a PDF`() {
+        showSheet()
+        compose.onNodeWithTag(SaveLinkTestTags.CHOOSE_FILE).assertIsDisplayed()
+    }
+
+    @Test
+    fun `choosing a file imports it`() {
+        showSheet()
+        chooseFile()
+        awaitState { it.savedEntryId != null }
+
+        val saved = runBlocking { perch.database.entryDao().findById(viewModel.state.value.savedEntryId!!)!! }
+        assertThat(saved.documentPath).isNotNull()
+        assertThat(saved.title).contains("Letter")
+        assertThat(saved.isSaved).isTrue()
+    }
+
+    @Test
+    fun `cancelling the picker leaves the sheet as it was`() {
+        showSheet()
+        cancelFileChooser()
+
+        compose.onNodeWithTag(SaveLinkTestTags.CHOOSE_FILE).assertIsDisplayed()
+        assertThat(viewModel.state.value.isBusy).isFalse()
+        assertThat(viewModel.state.value.error).isNull()
+        assertThat(entryCount()).isEqualTo(0)
+    }
+
     // ---- harness ---------------------------------------------------------------
 
+    private lateinit var fakeRegistry: FakeActivityResultRegistry
+
     private fun showSheet() {
+        fakeRegistry = FakeActivityResultRegistry()
         viewModel = SaveLinkViewModel(perch.container.savedLinks)
+        val owner = object : ActivityResultRegistryOwner {
+            override val activityResultRegistry = fakeRegistry
+        }
         compose.setContent {
             val state by viewModel.state.collectAsStateWithLifecycle()
-            PerchTheme(dynamicColor = false) {
-                SaveLinkSheetContent(
-                    state = state,
-                    onUrlChange = viewModel::onUrlChange,
-                    onSubmit = viewModel::submit,
-                )
+            CompositionLocalProvider(
+                LocalActivityResultRegistryOwner provides owner,
+            ) {
+                PerchTheme(dynamicColor = false) {
+                    SaveLinkSheetContent(
+                        state = state,
+                        onUrlChange = viewModel::onUrlChange,
+                        onSubmit = viewModel::submit,
+                        onSubmitDocument = viewModel::submitDocument,
+                    )
+                }
             }
         }
         compose.waitForIdle()
@@ -151,6 +211,33 @@ class SaveLinkSheetTest {
         compose.onNodeWithTag(SaveLinkTestTags.SUBMIT)
             .performSemanticsAction(SemanticsActions.OnClick)
         compose.waitForIdle()
+    }
+
+    private fun chooseFile() {
+        compose.onNodeWithTag(SaveLinkTestTags.CHOOSE_FILE)
+            .performSemanticsAction(SemanticsActions.OnClick)
+        compose.waitForIdle()
+        // Simulate selecting a file
+        val uri = letterMarginsUri()
+        fakeRegistry.simulateResult(uri)
+        compose.waitForIdle()
+        awaitState { it.isBusy || it.savedEntryId != null }
+    }
+
+    private fun cancelFileChooser() {
+        compose.onNodeWithTag(SaveLinkTestTags.CHOOSE_FILE)
+            .performSemanticsAction(SemanticsActions.OnClick)
+        compose.waitForIdle()
+        // Simulate cancelling the picker
+        fakeRegistry.simulateCancel()
+        compose.waitForIdle()
+    }
+
+    private fun letterMarginsUri(): Uri {
+        val fixture = DocumentFixtures.manifest().first { it.slug == "letter-margins" }
+        val tempFile = java.io.File(tempDir, "letter-margins.pdf")
+        fixture.file.copyTo(tempFile, overwrite = true)
+        return Uri.fromFile(tempFile)
     }
 
     private fun awaitState(predicate: (SaveLinkUiState) -> Boolean) =
@@ -169,4 +256,33 @@ class SaveLinkSheetTest {
             """.trimIndent(),
         )
         .addHeader("Content-Type", "text/html; charset=utf-8")
+
+    /**
+     * Fake ActivityResultRegistry for testing file picker without launching the real activity.
+     * Simulates success or cancellation of ActivityResultContracts.OpenDocument().
+     */
+    private class FakeActivityResultRegistry : ActivityResultRegistry() {
+        private var lastRequestCode: Int = -1
+
+        override fun <I, O> onLaunch(
+            requestCode: Int,
+            contract: ActivityResultContract<I, O>,
+            input: I,
+            options: ActivityOptionsCompat?,
+        ) {
+            lastRequestCode = requestCode
+        }
+
+        fun simulateResult(uri: Uri) {
+            if (lastRequestCode >= 0) {
+                dispatchResult(lastRequestCode, uri)
+            }
+        }
+
+        fun simulateCancel() {
+            if (lastRequestCode >= 0) {
+                dispatchResult(lastRequestCode, null)
+            }
+        }
+    }
 }
