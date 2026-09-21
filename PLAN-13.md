@@ -761,12 +761,16 @@ tasks take screenshots (G07, G08, G11 and the two live ones) — through `Screen
         `./gradlew test` green; any new issue linked; pushed.
       - Rung: unit
 
-- [ ] **G14 — Release v0.9.0.** Bump `perchVersionCode` 10 → **11** and `perchVersionName` `0.8.0` →
-      **`0.9.0`** at `app/build.gradle.kts:12-13`, **the one place they live**. §0.1 settles the digit.
+- [ ] **G14a — v0.9.0 is built and signed. The APK only; the release is held. Issue #72.**
+      **The human is testing this build on their own phone for a few days before it ships.** Build it,
+      prove it, commit it — **do not tag, do not `gh release create`, do not close #72.** That is G14b,
+      and it is deliberately held: a later reviewer does it once the build has been lived with.
+      Bump `perchVersionCode` 10 → **11** and `perchVersionName` `0.8.0` → **`0.9.0`** at
+      `app/build.gradle.kts:12-13`, **the one place they live**. §0.1 settles the digit.
       - **Live acceptance first, bounded:** the G12 command in the **foreground**, ~90 s, **at most two
         runs**; paste every gate's count into the commit. If the second run still fails on a network gate,
-        say which and release anyway, filing the failure as an issue — unless the failing gate is 16, in
-        which case stop and mark the box `[BLOCKED: …]` with the output.
+        say which and carry on, naming it in the commit for G14b to file — unless the failing gate is 16,
+        in which case stop and mark the box `[BLOCKED: …]` with the output.
       - `./gradlew test assembleRelease` — **not `clean`** (runs `lintVitalRelease`). Signing from
         `~/.perch/signing.properties` (U02) — **absent it the build silently debug-signs**, so verify the
         certificate on the file, not the build log.
@@ -777,20 +781,35 @@ tasks take screenshots (G07, G08, G11 and the two live ones) — through `Screen
         **do not boot it** — say so in the commit and let G12 stand as the proof of everything but the
         pixels, and add a `TECH_DEBT.md` line "verify `PdfRendererRasterizer` on a device" so the reader's first open is
         not the first render ever.
-      - Release notes through `docs/RELEASE-NOTES.md`'s template; `scripts/release-notes.sh v0.8.0` drafts
-        from #72 — write them in the reader's words: paste a PDF's link, share one from the browser or
-        Files, or choose one from the phone; it is kept whole and read as pages; pinch, or double-tap to the
-        text; the page you stopped on is remembered. Say plainly that SSRN links must be shared as files
-        (§0.4). "Installing / upgrading": installs in place over v0.8.0 and keeps read state, likes and
-        To-Read; the database moves 10 → 11 (one new column).
-      - Tag `v0.9.0`, push, `gh release create v0.9.0` with the notes and `perch-0.9.0.apk`. Close **#72**
-        naming the release. Then the turnover edits so the next session is not a loop session: CLAUDE.md's
-        active-plan section says v0.9.0 shipped and there is no active plan; `loop.sh:19` and
-        `scripts/progress.sh:11` keep naming `PLAN-13.md` (a stray launch fails loudly on the missing root
-        file, as before); NOTES.md pruned under 100 lines with this version's floor and APK path. **Do not
-        move this file** — the watching session archives it into `docs/plans/` after the loop reports complete.
-      - Done: `gh release view v0.9.0 --json assets` lists the APK; `aapt2 dump badging` reads
-        `versionCode='11' versionName='0.9.0'`; `apksigner verify --print-certs` prints U02's digest
-        `61367c0499de5c49c824f4d7ba7b4e692d33960cc57c0622772227a8b7fce489`; `git status` clean and pushed;
+      - Write the release notes now, into `docs/RELEASE-NOTES.md` through its template;
+        `scripts/release-notes.sh v0.8.0` drafts from #72 — in the reader's words: paste a PDF's link,
+        share one from the browser or Files, or choose one from the phone; it is kept whole and read as
+        pages; pinch, or double-tap to the text; the page you stopped on is remembered. Say plainly that
+        SSRN links must be shared as files (§0.4). "Installing / upgrading": installs in place over v0.8.0
+        and keeps read state, likes and To-Read; the database moves 10 → 11 (one new column).
+        They ship in G14b; writing them here means the reviewer has them to read.
+      - NOTES.md pruned under 100 lines with this version's test floor and the APK path.
+      - **Do not do the turnover edits.** `CLAUDE.md`, `loop.sh:19` and `scripts/progress.sh:11` keep
+        naming `PLAN-13.md` until the release actually goes out. **Do not move this file.**
+      - Done: `aapt2 dump badging` on `perch-0.9.0.apk` reads `versionCode='11' versionName='0.9.0'`;
+        `apksigner verify --print-certs` prints U02's digest
+        `61367c0499de5c49c824f4d7ba7b4e692d33960cc57c0622772227a8b7fce489`; the APK's path in the commit
+        message; `git status` clean and pushed; **no tag exists** (`git tag -l v0.9.0` is empty) and #72
+        is still open.
+      - Rung: build
+
+- [HELD: awaiting the human — they are testing perch-0.9.0.apk on their own phone for a few days, then a reviewer ships it] **G14b — Release v0.9.0 publicly.**
+      **Not for a loop session. Do not start this box because it is the next one.** It goes out only on
+      the human's word, after they have lived with the build G14a produced. A loop that reaches here
+      should report the plan complete and stop; `- [HELD: …]` is not `- [ ]` and `loop.sh` will not take it.
+      Everything is already built, signed and written by G14a. This box is only the publishing:
+      - Tag `v0.9.0`, push the tag, `gh release create v0.9.0` with `docs/RELEASE-NOTES.md`'s notes and
+        `perch-0.9.0.apk` attached. Close **#72** naming the release.
+      - File any network gate G14a reported failing as its own issue.
+      - Then the turnover edits so the next session is not a loop session: CLAUDE.md's active-plan section
+        says v0.9.0 shipped and there is no active plan; `loop.sh:19` and `scripts/progress.sh:11` keep
+        naming `PLAN-13.md` (a stray launch fails loudly on the missing root file, as before). **Do not
+        move this file** — the watching session archives it into `docs/plans/` afterwards.
+      - Done: `gh release view v0.9.0 --json assets` lists the APK; `git status` clean and pushed;
         `gh issue list --state open` does not list #72.
       - Rung: build
