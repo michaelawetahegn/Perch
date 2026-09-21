@@ -17,8 +17,7 @@ and what each failure mode actually means.
 
 ## If your prompt was "Read CLAUDE.md and continue", you are a loop session
 
-**As of v0.8.0 there is no active plan** — see the section below before doing anything
-else. Everything in this section applies the moment a `PLAN-13.md` exists, and not before.
+**The active plan is `PLAN-13.md`** — see the section below. Everything in this section applies.
 
 `loop.sh` starts every session with exactly that prompt. If it is yours, you are **the
 worker, not the orchestrator**. A `loop.sh` in `pgrep` is **your own driver** — not someone
@@ -37,49 +36,43 @@ is expected to end in a commit and a push; that is the only way progress exists 
 So: go to the cold start below, do the single next unchecked task, verify it, commit, push,
 close its issue, stop.
 
-## There is no active plan — v0.8.0 shipped on 2026-09-14
+## The active plan is `PLAN-13.md` — v0.9.0, PDFs on To-Read (#72)
 
-Finished plans live in `docs/plans/` — v0.1 (T01–T32), v0.2 (U01–U16), v0.3 (V01–V16),
-v0.4 (W01–W12), all four of v0.5's slices (X01–X04, Y01–Y05, Z01–Z05, R00–R03), v0.6
-(S01–S13), v0.6.1 (D01–D30), v0.7.0 (E01–E04) and v0.8.0 (F01–F16) are **complete, frozen, and history
-only**; never reopen a box in any of them. F04's box reads `[BLOCKED: …]` on purpose: the rule
-landed and #70 closed, and F15 found the failing live gate was the test harness, not the app.
+Finished plans live in `docs/plans/` — v0.1 (T01–T32), v0.2 (U01–U16), v0.3 (V01–V16), v0.4
+(W01–W12), all four of v0.5's slices (X01–X04, Y01–Y05, Z01–Z05, R00–R03), v0.6 (S01–S13), v0.6.1
+(D01–D30), v0.7.0 (E01–E04) and v0.8.0 (F01–F16) are **complete, frozen, and history only**; never
+reopen a box in any of them. F04's box reads `[BLOCKED: …]` on purpose.
 
-**There is no active plan, so there is no next task to pick up.** A session that reads this,
-finds every box checked and has no instruction beyond "continue" is **not** a worker: say
-that the plan is finished and stop — do not invent work, do not start a refactor. When the
-human asks for the next batch, read `docs/RALPH.md` and open a `PLAN-13.md` at the repository
-root; that becomes the active plan and every rule below applies to it. Wherever these standing
-orders say "PLAN.md", read the active plan.
+**`PLAN-13.md` at the repository root is the active plan** (G01–G14, planned 2026-09-21): a PDF the
+reader pastes, shares or picks is stored whole and read as pages inside the article surface. Its §0
+is authoritative for v0.9.0 and deliberately overrides older text in SPEC.md, DESIGN.md and earlier
+plans; where they conflict, §0 wins and the task updates the older doc in the same commit — do not
+"fix" §0 to match the older text. **There is one issue, #72** — no per-task issues; every task
+comments on #72 with its commit and what was verified, and G14 closes it with the release.
 
-**Nothing is filed for the next version.** v0.8.0 closed every open issue (#60–#64, #67–#71);
-what F15 left is `TECH_DEBT.md` "## Next plan" — a handful of small items, none a session on
-its own, and none a licence to start. The next plan begins with what the human reports next.
+**Three facts a session will otherwise re-derive** (all measured in planning, all in §0):
+`PdfRenderer` cannot run under Robolectric — every JVM test and screenshot goes through the
+`PageRasterizer` seam and the fixture rasterizer over `fixtures/documents/` (`manifest.tsv` is the
+contract; the emulator, only if already up, is the one proof of the real renderer, in G14);
+`FullText.needsExtraction(null, false)` is true, so the article screen's automatic fetch must be
+guarded for a document; SSRN answers 403 to every non-browser client, and Perch does not impersonate
+a browser — SSRN papers arrive by share, never by URL.
 
-**Bellingcat is in the corpus as of the planning commit** (`fixtures/feeds.txt`, `snapshots/`,
-`manifest.tsv`, and two unlisted page fixtures under `fixtures/articles/`); `docs/plans/PLAN-12-v0.8.0.md` §0.3
-says what a task may do with them. **`gijn.org` blocks every non-browser client** — it must never
-join `fixtures/feeds.txt`.
+**Nothing else is filed.** `TECH_DEBT.md` "## Next plan" holds a handful of small items; none is a
+licence to start. `docs/plans/PLAN-4-v0.4.md` §0, `PLAN-6` §0, `PLAN-7` §0, `PLAN-9` §0, `PLAN-10` §0,
+`PLAN-11` §0 and `PLAN-12` §0 still bind for everything PLAN-13's §0 does not restate — in particular
+**`PLAN-10` §0.2's rule: prefer deleting to adding**, and an improvement that needs a behaviour change
+to justify it goes into `TECH_DEBT.md`, not into the code.
 
-**Each plan's §0 is authoritative for its own version** and deliberately overrides older text in
-SPEC.md, DESIGN.md and earlier plans. Where they conflict, the newest §0 wins and the task
-updates the older doc in the same commit — do not "fix" §0 to match the older text.
-`docs/plans/PLAN-4-v0.4.md` §0, `docs/plans/PLAN-6-v0.5-slice2.md` §0,
-`docs/plans/PLAN-7-v0.5-slice3.md` §0, `docs/plans/PLAN-9-v0.6.md` §0,
-`docs/plans/PLAN-10-v0.6.1.md` §0, `docs/plans/PLAN-11-v0.7.0.md` §0 and `docs/plans/PLAN-12-v0.8.0.md` §0 all
-still bind for everything a future plan's §0 does not restate. In particular **`docs/plans/PLAN-10-v0.6.1.md`
-§0.2's rule stands: prefer deleting to adding**, and an improvement that needs a behaviour
-change to justify it goes into `TECH_DEBT.md`, not into the code.
+**The hard constraint the human set in v0.5 still binds: no site-specific parsing.** The parser must
+stay generalised and extensible; `docs/plans/PLAN-10-v0.6.1.md` §0.2 restates it with the grep gate
+that enforces it, and PLAN-13 §0.3 applies it to a PDF's own metadata (standards, producers, never a
+site). **`gijn.org` blocks every non-browser client** — it must never join `fixtures/feeds.txt`.
 
-**The hard constraint the human set in v0.5 still binds: no site-specific parsing.** The parser
-must stay generalised and extensible, so that supporting one site means similar sites parse
-too. `docs/plans/PLAN-10-v0.6.1.md` §0.2 restates it with the grep gate that enforces it, and
-`docs/plans/PLAN-12-v0.8.0.md` §0.3 applies it to this version's three rendering rules.
-
-**A plan task that names a GitHub issue is not done until that issue is closed** with a comment
-naming the commit and how it was verified — read it (`gh issue view N --json body`) before
-starting, and remember the plan's §0 outranks an issue body where they disagree. Either way
-the commit is **pushed** (`git push`) so the human can watch from the issue tracker while AFK.
+**A plan task that names a GitHub issue is not done until that issue carries a comment** naming the
+commit and how it was verified — read `gh issue view 72 --json body` before starting, and remember
+the plan's §0 outranks the issue body where they disagree. Either way the commit is **pushed**
+(`git push`) so the human can watch from the issue tracker while AFK.
 
 ## Cold start (keep it under ~3k tokens)
 
@@ -87,7 +80,7 @@ the commit is **pushed** (`git push`) so the human can watch from the issue trac
    `git log --oneline -15`. Nothing else yet.
 2. Find the **single next unchecked `[ ]` task** in it. That is your entire job this
    session. Read its GitHub issue. **If every box is checked, the plan is finished:
-   say so and stop** — see "There is no active plan" above.
+   say so and stop** — see the active-plan section above.
 3. Read only the files that task touches. **Never read the whole repo.** Consult
    `SPEC.md` / `DESIGN.md` only for the sections the task needs.
 4. Do the task. Verify. Commit. Push. Close the issue. Stop.

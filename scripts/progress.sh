@@ -8,7 +8,7 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."
 
-PLAN=${PLAN:-PLAN-12.md}
+PLAN=${PLAN:-PLAN-13.md}
 LOG=${LOG:-"loop-$(basename "$PLAN" .md | tr 'A-Z' 'a-z').log"}
 
 case "${1:-}" in
