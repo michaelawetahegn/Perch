@@ -400,7 +400,7 @@ tasks take screenshots (G07, G08, G11 and the two live ones) — through `Screen
 
 ## The tasks
 
-- [ ] **G01 — A stored document is an entry: schema 11, `documentPath`, the store and its sweep. TDD. Issue #72.**
+- [x] **G01 — A stored document is an entry: schema 11, `documentPath`, the store and its sweep. TDD. Issue #72.**
       §0.2 is the decision, whole.
       1. **RED, schema:** `PerchMigration10To11Test` (copy `PerchMigration9To10Test.kt:25-60`'s shape) — a
          populated v10 file opens at 11 with every feed and entry intact and `documentPath` NULL on every row;
