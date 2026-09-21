@@ -463,6 +463,8 @@ class ArticleScreenTest {
             articleText = ArticleTextRepository(perch.database.entryDao(), { null }, clock),
             entryId = entryId,
             zone = ZoneOffset.UTC,
+            rasterizer = perch.container.rasterizer,
+            documents = perch.container.documents,
         )
         if (!contentSet) {
             contentSet = true

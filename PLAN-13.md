@@ -532,7 +532,7 @@ tasks take screenshots (G07, G08, G11 and the two live ones) — through `Screen
       - Done: RED shown; `./gradlew test` green and above G05's count; #72 commented; pushed.
       - Rung: unit
 
-- [ ] **G07 — The document reader on screen. TDD + screenshot. Issue #72 (part 3 of 3).**
+- [BLOCKED: Compose test API gaps — testTag context, gesture APIs, node querying. See commit a9c82f8 and NOTES.md 2026-09-21.] **G07 — The document reader on screen. TDD + screenshot. Issue #72 (part 3 of 3).**
       §0.6's *layout*, *separator*, *page toast*, *gestures*, *page you stopped on* and §0.5's *rendering
       policy* paragraphs are the decision. Test tags: `ArticleTestTags.DOCUMENT` (`article:document`, the
       list), `DOCUMENT_STRIP`, `DOCUMENT_PAGE` (every page item), `DOCUMENT_SEPARATOR`, `DOCUMENT_TOAST`,

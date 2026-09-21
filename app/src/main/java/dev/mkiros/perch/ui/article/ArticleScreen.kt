@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
+import dev.mkiros.perch.ui.article.document.DocumentArticle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Bookmark
@@ -307,58 +308,87 @@ private fun Article(
     onOpenLink: (String) -> Unit,
     onOpenImage: (ArticleBlock.Image) -> Unit,
 ) {
-    val scroll = rememberScrollState(initial = state.scrollPosition)
-    LaunchedEffect(scroll) {
-        snapshotFlow { scroll.isScrollInProgress }
-            .filter { !it }
-            .drop(1)
-            .collect { onScrollSettled(scroll.value) }
-    }
-    DisposableEffect(Unit) {
-        onDispose { onScrollSettled(scroll.value) }
-    }
-    SelectionContainer {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(scroll),
-        ) {
-            Column(
-                modifier = Modifier
-                    .widthIn(max = Dimens.articleMeasure)
-                    .align(Alignment.CenterHorizontally)
-                    .padding(horizontal = Dimens.screenHorizontal),
+    // Branch on document vs. regular article
+    if (state.document != null) {
+        if (state.documentGone) {
+            // Document file is missing
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = state.title,
-                    style = ArticleType.headline,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.testTag(ArticleTestTags.HEADLINE),
+                    text = stringResource(R.string.article_document_gone),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .padding(horizontal = Dimens.screenHorizontal)
+                        .testTag(ArticleTestTags.DOCUMENT_GONE),
                 )
-                Byline(state, onOpenSource)
-                state.standfirst?.let { standfirst ->
+            }
+        } else {
+            // Show document reader
+            DocumentArticle(
+                document = state.document,
+                title = state.title,
+                author = null,  // TODO: get from state if available
+                onScrollSettled = onScrollSettled,
+            )
+        }
+    } else {
+        // Regular text article
+        val scroll = rememberScrollState(initial = state.scrollPosition)
+        LaunchedEffect(scroll) {
+            snapshotFlow { scroll.isScrollInProgress }
+                .filter { !it }
+                .drop(1)
+                .collect { onScrollSettled(scroll.value) }
+        }
+        DisposableEffect(Unit) {
+            onDispose { onScrollSettled(scroll.value) }
+        }
+        SelectionContainer {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(scroll),
+            ) {
+                Column(
+                    modifier = Modifier
+                        .widthIn(max = Dimens.articleMeasure)
+                        .align(Alignment.CenterHorizontally)
+                        .padding(horizontal = Dimens.screenHorizontal),
+                ) {
                     Text(
-                        text = standfirst,
-                        style = ArticleType.standfirst,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier
-                            .padding(bottom = Dimens.paragraphSpacing)
-                            .testTag(ArticleTestTags.STANDFIRST),
+                        text = state.title,
+                        style = ArticleType.headline,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.testTag(ArticleTestTags.HEADLINE),
                     )
-                }
+                    Byline(state, onOpenSource)
+                    state.standfirst?.let { standfirst ->
+                        Text(
+                            text = standfirst,
+                            style = ArticleType.standfirst,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier
+                                .padding(bottom = Dimens.paragraphSpacing)
+                                .testTag(ArticleTestTags.STANDFIRST),
+                        )
+                    }
 
-                if (state.blocks.isEmpty()) {
-                    EmptyBody(state, onOpenLink)
-                } else {
-                    ArticleBody(
-                        blocks = state.blocks,
-                        articleLink = state.link,
-                        onOpenLink = onOpenLink,
-                        onOpenImage = onOpenImage,
-                    )
-                }
+                    if (state.blocks.isEmpty()) {
+                        EmptyBody(state, onOpenLink)
+                    } else {
+                        ArticleBody(
+                            blocks = state.blocks,
+                            articleLink = state.link,
+                            onOpenLink = onOpenLink,
+                            onOpenImage = onOpenImage,
+                        )
+                    }
 
-                Spacer(modifier = Modifier.height(Dimens.xxl))
+                    Spacer(modifier = Modifier.height(Dimens.xxl))
+                }
             }
         }
     }
@@ -500,6 +530,12 @@ object ArticleTestTags {
     const val TABLE_EDGE_END = "article:table-edge-end"
     const val RULE = "article:rule"
     const val EMBED = "article:embed"
+    const val DOCUMENT = "article:document"
+    const val DOCUMENT_STRIP = "article:document-strip"
+    const val DOCUMENT_PAGE = "article:document-page"
+    const val DOCUMENT_SEPARATOR = "article:document-separator"
+    const val DOCUMENT_TOAST = "article:document-toast"
+    const val DOCUMENT_GONE = "article:document-gone"
 }
 
 /** The summary is a stand-in for the body, so it reads a shade quieter than one. */
