@@ -61,6 +61,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.mkiros.perch.R
 import dev.mkiros.perch.data.parse.ArticleBlock
+import dev.mkiros.perch.data.document.PageSource
+import java.io.File
 import dev.mkiros.perch.ui.article.zoom.ImageViewer
 import dev.mkiros.perch.ui.article.zoom.ZoomedImage
 import dev.mkiros.perch.ui.home.copyLink
@@ -195,6 +197,7 @@ fun ArticleScreen(
                             onOpenSource = onOpenSource,
                             onOpenLink = { url -> openInBrowser(context, url) },
                             onOpenImage = { image -> zoomed.value = ZoomedImage(image.url, image.alt) },
+                            openPages = viewModel::openPages,
                         )
                     }
                 }
@@ -240,15 +243,18 @@ private fun Overflow(state: ArticleUiState.Loaded, onLoadFullArticle: () -> Unit
             )
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.article_load_full_text)) },
-                enabled = state.canLoadFullText && !state.isFetchingFullText,
-                onClick = {
-                    open = false
-                    onLoadFullArticle()
-                },
-                modifier = Modifier.testTag(ArticleTestTags.LOAD_FULL_TEXT),
-            )
+            // A stored PDF has no text to extract, and its link is the PDF (PLAN-13 §0.6).
+            if (state.document == null && !state.documentGone) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.article_load_full_text)) },
+                    enabled = state.canLoadFullText && !state.isFetchingFullText,
+                    onClick = {
+                        open = false
+                        onLoadFullArticle()
+                    },
+                    modifier = Modifier.testTag(ArticleTestTags.LOAD_FULL_TEXT),
+                )
+            }
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.entry_action_copy_link)) },
                 enabled = state.link != null,
@@ -307,31 +313,32 @@ private fun Article(
     onOpenSource: (Long) -> Unit,
     onOpenLink: (String) -> Unit,
     onOpenImage: (ArticleBlock.Image) -> Unit,
+    openPages: (File) -> PageSource?,
 ) {
-    // Branch on document vs. regular article
     if (state.document != null) {
-        if (state.documentGone) {
-            // Document file is missing
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = stringResource(R.string.article_document_gone),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier
-                        .padding(horizontal = Dimens.screenHorizontal)
-                        .testTag(ArticleTestTags.DOCUMENT_GONE),
-                )
-            }
-        } else {
-            // Show document reader
-            DocumentArticle(
-                document = state.document,
-                title = state.title,
-                author = null,  // TODO: get from state if available
-                onScrollSettled = onScrollSettled,
+        DocumentArticle(
+            document = state.document,
+            openPages = openPages,
+            onScrollSettled = onScrollSettled,
+        ) {
+            Text(
+                text = state.title,
+                style = ArticleType.headline,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.testTag(ArticleTestTags.HEADLINE),
+            )
+            Byline(state, onOpenSource)
+        }
+    } else if (state.documentGone && state.link == null) {
+        // With a link, the text branch's EmptyBody offers the web copy instead (§0.6).
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text(
+                text = stringResource(R.string.article_document_gone),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .padding(horizontal = Dimens.screenHorizontal)
+                    .testTag(ArticleTestTags.DOCUMENT_GONE),
             )
         }
     } else {
@@ -533,6 +540,7 @@ object ArticleTestTags {
     const val DOCUMENT = "article:document"
     const val DOCUMENT_STRIP = "article:document-strip"
     const val DOCUMENT_PAGE = "article:document-page"
+    const val DOCUMENT_PAGE_IMAGE = "article:document-page-image"
     const val DOCUMENT_SEPARATOR = "article:document-separator"
     const val DOCUMENT_TOAST = "article:document-toast"
     const val DOCUMENT_GONE = "article:document-gone"

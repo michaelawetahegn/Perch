@@ -569,7 +569,7 @@ tasks take screenshots (G07, G08, G11 and the two live ones) — through `Screen
       - Done: RED shown; `./gradlew test` green and above G05's count; #72 commented; pushed.
       - Rung: unit
 
-- [ ] **G07a — The reader draws real pages. TDD + screenshot. Issue #72.**
+- [x] **G07a — The reader draws real pages. TDD + screenshot. Issue #72.**
       **Read §0.6's *layout* and *separator* paragraphs and §0.5's rendering policy before you touch code.**
       `DocumentArticle` (`DocumentBody.kt:52`) exists, but its page item (`:133-175`) draws a **grey
       placeholder box captioned "Page N"** (`:159-163`) with a hardcoded `612f/792f` aspect (`:137`) —

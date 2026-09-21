@@ -2,6 +2,7 @@ package dev.mkiros.perch.ui.screenshot
 
 import android.content.Context
 import androidx.activity.ComponentActivity
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -12,10 +13,15 @@ import androidx.compose.ui.test.performSemanticsAction
 import androidx.test.core.app.ApplicationProvider
 import coil.Coil
 import dev.mkiros.perch.data.db.entity.FeedEntity
+import dev.mkiros.perch.data.document.DocumentFixtures
+import dev.mkiros.perch.data.repo.ArticleTextRepository
 import dev.mkiros.perch.debug.DebugSeeder
 import dev.mkiros.perch.model.ThemeMode
 import dev.mkiros.perch.model.TimeFilter
 import dev.mkiros.perch.support.PerchRule
+import dev.mkiros.perch.ui.article.ArticleScreen
+import dev.mkiros.perch.ui.article.ArticleTestTags
+import dev.mkiros.perch.ui.article.ArticleViewModel
 import dev.mkiros.perch.ui.collection.CollectionTestTags
 import dev.mkiros.perch.ui.nav.NavTestTags
 import dev.mkiros.perch.ui.nav.PerchNavHost
@@ -38,8 +44,8 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
 /**
- * Screenshots of document rows in the To-Read list. The document row displays the first
- * page as a thumbnail and labels the row as a PDF.
+ * The document gallery (PLAN-13 §0.9): the To-Read row — first page as its thumbnail, labelled
+ * a PDF — and the reader, in both themes, over the `ssrn-6191618` fixture.
  */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -68,8 +74,15 @@ class DocumentScreenshotTest {
         server.start()
     }
 
+    /** Whether the reader is composed; dropping it is what writes the page it stopped on. */
+    private val readerShown = mutableStateOf(true)
+
     @After
     fun tearDown() {
+        // Drain the reader's NonCancellable leaving write (NOTES.md, E01) before PerchRule closes.
+        readerShown.value = false
+        compose.waitForIdle()
+        runBlocking { perch.database.entryDao().setScrollPosition(id = 0L, scrollPosition = 0) }
         Coil.reset()
         server.shutdown()
     }
@@ -121,6 +134,58 @@ class DocumentScreenshotTest {
         }
 
         Screenshots.captureAndAssert(compose, "document-to-read-row", minBytes = 10_000L)
+    }
+
+    @Test
+    fun `the document reader in light`() {
+        showReader(ThemeMode.Light)
+
+        Screenshots.captureAndAssert(compose, "document-reader-light", minBytes = 10_000L)
+    }
+
+    @Test
+    fun `the document reader in dark`() {
+        showReader(ThemeMode.Dark)
+
+        Screenshots.captureAndAssert(compose, "document-reader-dark", minBytes = 10_000L)
+    }
+
+    /** The reader's own sample (#72), opened from To-Read the way a pasted PDF lands. */
+    private fun showReader(mode: ThemeMode) {
+        val fixture = DocumentFixtures.manifest().first { it.slug == "ssrn-6191618" }
+        val stored = perch.container.documents.newDocument()
+        fixture.file.copyTo(stored, overwrite = true)
+        val id = perch.seedEntry(
+            runBlocking { perch.database.feedDao().findByUrl(FeedEntity.SAVED_LINKS_FEED_URL)!!.id },
+            title = fixture.title!!,
+            guid = "perch:document:ssrn-6191618",
+            link = null,
+            author = "Joshua Della Vedova",
+            publishedAt = fixture.published!!.toEpochMilli(),
+            contentHtml = null,
+            documentPath = perch.container.documents.relativize(stored),
+            savedAt = now.toEpochMilli(),
+        )
+        val viewModel = ArticleViewModel(
+            entries = perch.container.entries,
+            feeds = perch.container.feeds,
+            articleText = ArticleTextRepository(perch.database.entryDao(), { null }, clock),
+            entryId = id,
+            zone = ZoneOffset.UTC,
+            rasterizer = perch.container.rasterizer,
+            documents = perch.container.documents,
+        )
+        compose.setContent {
+            PerchTheme(mode = mode, dynamicColor = false) {
+                if (readerShown.value) ArticleScreen(viewModel = viewModel, onBack = {})
+            }
+        }
+        compose.awaitInRealTime("the first two pages to render") {
+            listOf(0, 1).all { page ->
+                compose.onAllNodesWithTag("${ArticleTestTags.DOCUMENT_PAGE_IMAGE}:$page", useUnmergedTree = true)
+                    .fetchSemanticsNodes().isNotEmpty()
+            }
+        }
     }
 
     private fun showShell(mode: ThemeMode) {

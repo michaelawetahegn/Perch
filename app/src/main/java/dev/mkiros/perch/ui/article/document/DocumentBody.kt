@@ -2,23 +2,26 @@ package dev.mkiros.perch.ui.article.document
 
 import android.text.format.Formatter
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Divider
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -27,38 +30,58 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.min
 import dev.mkiros.perch.R
+import dev.mkiros.perch.data.document.PageSource
 import dev.mkiros.perch.ui.article.ArticleTestTags
 import dev.mkiros.perch.ui.article.DocumentUi
 import dev.mkiros.perch.ui.theme.ArticleType
 import dev.mkiros.perch.ui.theme.Dimens
+import java.io.File
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.withContext
 
 /**
- * The document reading surface: a PDF rendered as pages full-bleed and untouched.
- * The page you stopped on is remembered. Separators follow each page; a page
- * toast shows which page is under the viewport centre and fades after 1200 ms.
+ * The document reading surface (PLAN-13 §0.6): a PDF drawn as its own pages, at the
+ * measure, edge to edge and untouched, each followed by a separator.
+ *
+ * Item 0 is the header — [header] (the article's headline and byline) and the document
+ * strip; item N is page N. Every page is laid out at its own aspect from
+ * [DocumentUi.aspects] before its bitmap exists, so nothing reflows when one arrives.
+ * The source is opened when the screen shows and closed when it leaves.
  */
 @Composable
 fun DocumentArticle(
     document: DocumentUi,
-    title: String,
-    author: String?,
+    openPages: (File) -> PageSource?,
     onScrollSettled: (Int) -> Unit,
+    header: @Composable () -> Unit,
 ) {
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = 0)
     var toastVisible by remember { mutableStateOf(false) }
     var toastPageNumber by remember { mutableStateOf(1) }
+
+    val pages by produceState<PageCache?>(initialValue = null, document.file) {
+        value = withContext(Dispatchers.IO) { openPages(document.file) }?.let(::PageCache)
+        awaitDispose { value?.close() }
+    }
 
     // Track scroll settle to write page number
     LaunchedEffect(listState) {
@@ -91,87 +114,54 @@ fun DocumentArticle(
             }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val pageWidth = min(maxWidth, Dimens.articleMeasure)
+        // §0.5: the fit-width bucket; G07c re-chooses it when a zoom gesture ends.
+        val pageWidthPx = with(LocalDensity.current) { pageWidth.roundToPx() }
         LazyColumn(
             state = listState,
             modifier = Modifier
                 .fillMaxSize()
                 .testTag(ArticleTestTags.DOCUMENT),
-            contentPadding = PaddingValues(bottom = Dimens.xxl)
+            horizontalAlignment = Alignment.CenterHorizontally,
+            contentPadding = PaddingValues(bottom = Dimens.xxl),
         ) {
-            // Header: title, byline, strip
             item {
                 Column(
                     modifier = Modifier
                         .widthIn(max = Dimens.articleMeasure)
-                        .padding(horizontal = Dimens.screenHorizontal)
                         .fillMaxWidth()
+                        .padding(horizontal = Dimens.screenHorizontal),
                 ) {
-                    Text(
-                        text = title,
-                        style = ArticleType.headline,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.testTag(ArticleTestTags.HEADLINE),
-                    )
-                    // Minimal byline - just author if available
-                    if (author != null) {
-                        Text(
-                            text = author,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
+                    header()
                     DocumentStrip(
                         pageCount = document.pageCount,
                         sizeBytes = document.sizeBytes,
-                        modifier = Modifier.testTag(ArticleTestTags.DOCUMENT_STRIP)
+                        modifier = Modifier.testTag(ArticleTestTags.DOCUMENT_STRIP),
                     )
                 }
             }
 
-            // Pages
-            itemsIndexed((0 until document.pageCount).toList()) { pageIndex, _ ->
-                val aspect = if (pageIndex < document.aspects.size) {
-                    document.aspects[pageIndex]
-                } else {
-                    612f / 792f  // Standard letter
-                }
-
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Surface(
-                        color = MaterialTheme.colorScheme.surface,
+            items(count = document.pageCount) { index ->
+                Column {
+                    DocumentPage(
+                        pages = pages,
+                        index = index,
+                        widthPx = pageWidthPx,
                         modifier = Modifier
-                            .widthIn(max = Dimens.articleMeasure)
-                            .heightIn(min = (Dimens.articleMeasure.value / aspect).dp)
-                            .testTag("${ArticleTestTags.DOCUMENT_PAGE}:$pageIndex")
-                            .background(MaterialTheme.colorScheme.surface)
-                            .fillMaxWidth(0.9f)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(MaterialTheme.colorScheme.surfaceVariant),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "Page ${pageIndex + 1}",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    }
+                            .width(pageWidth)
+                            .aspectRatio(document.aspects[index])
+                            .testTag("${ArticleTestTags.DOCUMENT_PAGE}:$index"),
+                    )
+                    // §0.6: the outline colour reads as near-black in light and still shows in dark.
+                    Box(
+                        modifier = Modifier
+                            .width(pageWidth)
+                            .height(SEPARATOR)
+                            .background(MaterialTheme.colorScheme.outline)
+                            .testTag("${ArticleTestTags.DOCUMENT_SEPARATOR}:$index"),
+                    )
                 }
-
-                Divider(
-                    thickness = 2.dp,
-                    color = MaterialTheme.colorScheme.outline,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag("${ArticleTestTags.DOCUMENT_SEPARATOR}:$pageIndex")
-                )
             }
         }
 
@@ -204,18 +194,54 @@ fun DocumentArticle(
     }
 }
 
+/**
+ * One page: the surface-coloured box of the page's shape until its bitmap arrives, then
+ * the page as rendered — white in both themes, the document as published (§0.6).
+ */
 @Composable
-private fun DocumentStrip(
-    pageCount: Int,
-    sizeBytes: Long,
-    modifier: Modifier = Modifier
-) {
-    val context = LocalContext.current
-    val sizeFormatted = Formatter.formatShortFileSize(context, sizeBytes)
+private fun DocumentPage(pages: PageCache?, index: Int, widthPx: Int, modifier: Modifier) {
+    val bitmap by produceState(pages?.cached(index, widthPx), pages, index, widthPx) {
+        if (pages != null && value == null) value = pages.page(index, widthPx)
+    }
+    Box(modifier = modifier.background(MaterialTheme.colorScheme.surfaceContainerLow)) {
+        bitmap?.let { page ->
+            DisposableEffect(pages, page) { onDispose(pages!!.show(index, widthPx)) }
+            Image(
+                bitmap = page.asImageBitmap(),
+                contentDescription = null,
+                contentScale = ContentScale.FillBounds,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .testTag("${ArticleTestTags.DOCUMENT_PAGE_IMAGE}:$index"),
+            )
+        }
+    }
+}
 
-    Column(modifier = modifier.padding(vertical = Dimens.md)) {
+/** `PDF · 112 pages · 850 KB · saved offline`, the chip and a caption (§0.6). */
+@Composable
+private fun DocumentStrip(pageCount: Int, sizeBytes: Long, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    Row(
+        modifier = modifier.padding(bottom = Dimens.lg),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
+    ) {
         Text(
-            text = "$pageCount pages · $sizeFormatted · saved offline",
+            text = stringResource(R.string.document_kind_pdf),
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSecondaryContainer,
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.secondaryContainer, RoundedCornerShape(4.dp))
+                .padding(horizontal = Dimens.xs + 2.dp, vertical = 2.dp),
+        )
+        Text(
+            text = stringResource(
+                R.string.document_strip,
+                pluralStringResource(R.plurals.document_pages, pageCount, pageCount),
+                Formatter.formatShortFileSize(context, sizeBytes),
+            ),
             style = ArticleType.caption,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -232,9 +258,5 @@ fun pageUnderCentre(visibleItems: List<Any>, viewportHeight: Int): Int? {
     return null
 }
 
-// Extensions for Dimens
-private val Dimens.md: androidx.compose.ui.unit.Dp
-    get() = this.xs
-
-private val Dimens.sm: androidx.compose.ui.unit.Dp
-    get() = this.xs / 2
+/** The rule under every page, the last included (§0.6). */
+private val SEPARATOR = 2.dp

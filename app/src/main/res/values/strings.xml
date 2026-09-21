@@ -301,8 +301,12 @@
     <string name="article_document_gone">This document is no longer stored. Save it again to fetch it.</string>
     <string name="document_kind_pdf">PDF</string>
     <string name="document_page_toast">Page %1$d of %2$d</string>
-    <string name="document_pages_singular">1 page</string>
-    <string name="document_pages_plural">%1$d pages</string>
+    <plurals name="document_pages">
+        <item quantity="one">%1$d page</item>
+        <item quantity="other">%1$d pages</item>
+    </plurals>
+    <!-- The document strip under a PDF's byline: "112 pages · 850 KB · saved offline". -->
+    <string name="document_strip">%1$s · %2$s · saved offline</string>
     <string name="save_link_choose_file">Choose a PDF…</string>
     <string name="save_link_importing">Importing…</string>
     <string name="save_link_error_not_document">That file is not a PDF Perch can read</string>

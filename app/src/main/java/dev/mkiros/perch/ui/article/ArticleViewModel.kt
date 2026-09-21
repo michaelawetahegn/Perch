@@ -172,12 +172,15 @@ class ArticleViewModel(
     private fun loaded(entry: EntryEntity): ArticleUiState.Loaded {
         if (entry.documentPath != null && rasterizer != null && documents != null) {
             val file = documents.resolve(entry.documentPath)
-            val docSource = file?.let { rasterizer.open(it) }
-            return if (docSource != null) {
-                val aspects = (0 until docSource.pageCount).map { idx ->
-                    val size = docSource.size(idx)
+            // Only the shape is read here; the screen opens its own source to draw from.
+            val shape = file?.let { rasterizer.open(it) }?.use { source ->
+                source.pageCount to (0 until source.pageCount).map { idx ->
+                    val size = source.size(idx)
                     size.width.toFloat() / size.height.toFloat()
                 }
+            }
+            return if (shape != null) {
+                val (pageCount, aspects) = shape
                 ArticleUiState.Loaded(
                     title = entry.title,
                     standfirst = null,
@@ -191,7 +194,7 @@ class ArticleViewModel(
                     isFetchingFullText = false,
                     canLoadFullText = false,
                     scrollPosition = entry.scrollPosition,
-                    document = DocumentUi(file, docSource.pageCount, aspects, file.length()),
+                    document = DocumentUi(file, pageCount, aspects, file.length()),
                     documentGone = false,
                 )
             } else {
@@ -229,6 +232,9 @@ class ArticleViewModel(
             scrollPosition = entry.scrollPosition,
         )
     }
+
+    /** Opens a document's pages for the screen to draw; the screen closes it when it leaves. */
+    fun openPages(file: java.io.File): dev.mkiros.perch.data.document.PageSource? = rasterizer?.open(file)
 
     /**
      * Remembers where the reader stopped (E01, #65), so the next open resumes there.
