@@ -1,5 +1,6 @@
 package dev.mkiros.perch.data.repo
 
+import android.net.Uri
 import dev.mkiros.perch.data.db.EntryDao
 import dev.mkiros.perch.data.db.FeedDao
 import dev.mkiros.perch.data.db.entity.FeedEntity
@@ -14,6 +15,8 @@ import dev.mkiros.perch.data.parse.FeedParser
 import dev.mkiros.perch.data.parse.ParseResult
 import dev.mkiros.perch.data.parse.normalizePastedUrl
 import java.io.File
+import java.io.InputStream
+import java.security.MessageDigest
 import java.time.Clock
 
 /**
@@ -28,6 +31,9 @@ sealed class SaveLinkFailure(message: String) : Exception(message) {
 
     /** Could not be fetched, or was too large or not an article; already phrased for the user. */
     class Unreachable(message: String) : SaveLinkFailure(message)
+
+    /** A shared or local file that is not a PDF (PLAN-13 §0.8). */
+    class NotDocument : SaveLinkFailure("That file is not a PDF Perch can read")
 }
 
 /**
@@ -53,6 +59,7 @@ class SavedLinkRepository(
     private val documents: DocumentStore,
     private val rasterizer: PageRasterizer,
     private val parser: FeedParser = FeedParser(),
+    private val documentOpener: DocumentOpener? = null,
 ) {
 
     suspend fun saveLink(url: String): Result<Long> {
@@ -133,6 +140,59 @@ class SavedLinkRepository(
             entryDao.setSaved(saved.id, isSaved = true, savedAt = now)
         }
         return Result.success(saved.id)
+    }
+
+    suspend fun saveDocument(uri: Uri, displayName: String?): Result<Long> {
+        if (documentOpener == null) {
+            return Result.failure(SaveLinkFailure.Unreachable("Document opener not available"))
+        }
+
+        val file = documents.newDocument()
+        val stream = documentOpener.open(uri)
+        if (stream == null) {
+            file.delete()
+            return Result.failure(SaveLinkFailure.Unreachable("Cannot open file"))
+        }
+
+        // Copy stream to file, computing SHA-256 hash
+        val digest = MessageDigest.getInstance("SHA-256")
+        val buffer = ByteArray(8192)
+        var bytesRead: Int
+        stream.use { input ->
+            file.outputStream().use { output ->
+                while (input.read(buffer).also { bytesRead = it } != -1) {
+                    output.write(buffer, 0, bytesRead)
+                    digest.update(buffer, 0, bytesRead)
+                }
+            }
+        }
+
+        val bytes = file.readBytes()
+        if (bytes.size > 40 * 1024 * 1024) {
+            file.delete()
+            return Result.failure(SaveLinkFailure.Unreachable("File is too large (over 40 MiB)"))
+        }
+
+        // Check if it's a PDF by sniffing the first 1 KiB
+        val sniff = bytes.sliceArray(0 until minOf(1024, bytes.size)).decodeToString(throwOnInvalidSequence = false)
+        val isPdf = sniff.contains("%PDF-")
+
+        if (!isPdf) {
+            file.delete()
+            return Result.failure(SaveLinkFailure.NotDocument())
+        }
+
+        // Hash in hex format, for guid
+        val sha256Hex = digest.digest().joinToString("") { "%02x".format(it) }
+        val guid = "perch:document:$sha256Hex"
+
+        return storeDocument(
+            file = file,
+            link = null,
+            guid = guid,
+            nameHint = displayName?.substringBeforeLast(".")?.replace("_", " "),
+            isSaved = true
+        )
     }
 
     private suspend fun storeDocument(

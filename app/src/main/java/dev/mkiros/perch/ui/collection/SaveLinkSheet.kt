@@ -110,6 +110,7 @@ private fun SaveLinkFailure.message(): String = when (this) {
     is SaveLinkFailure.IsFeed -> stringResource(R.string.save_link_error_is_feed)
     is SaveLinkFailure.Unreachable ->
         message ?: stringResource(R.string.save_link_error_unreachable)
+    is SaveLinkFailure.NotDocument -> stringResource(R.string.save_link_error_not_document)
 }
 
 /** Handles for the nodes a test drives. */
