@@ -576,7 +576,7 @@ tasks take screenshots (G07, G08, G11 and the two live ones) — through `Screen
         #72 commented with the commit; pushed.
       - Rung: screenshot
 
-- [ ] **G09 — Share a link or a PDF to Perch, or open a PDF with it. TDD. Issue #72.**
+- [BLOCKED: RED tests incomplete — document import path needs RED tests in SaveLinkRepositoryTest, SaveLinkViewModelTest, SaveLinkSheetTest] **G09 — Share a link or a PDF to Perch, or open a PDF with it. TDD. Issue #72.**
       §0.8's *intents*, *value*, *flow* and *local file* paragraphs are the
       decision.
       1. **RED, pure:** `IncomingShareTest` (`src/test/.../ui/nav/`, Robolectric for `Intent`) — `a shared
