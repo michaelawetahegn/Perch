@@ -495,7 +495,7 @@ tasks take screenshots (G07, G08, G11 and the two live ones) — through `Screen
         pushed.
       - Rung: unit
 
-- [ ] **G05 — The article ViewModel knows a document: pages, no full text, the page remembered. TDD. Issue #72 (part 1 of 3).**
+- [x] **G05 — The article ViewModel knows a document: pages, no full text, the page remembered. TDD. Issue #72 (part 1 of 3).**
       §0.6's *ViewModel* paragraph is the decision.
       1. **RED:** `ArticleViewModelTest` (`:322`'s `newViewModel` gains `rasterizer = FixtureRasterizer()` and
          `documents`) — `a document entry loads with its page count and aspects and no blocks` (seed a row
