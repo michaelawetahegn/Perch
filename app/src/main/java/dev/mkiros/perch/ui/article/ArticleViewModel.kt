@@ -61,7 +61,9 @@ sealed interface ArticleUiState {
      *   sometimes decide a stub is an article, so the reader is never stuck with one.
      * @param scrollPosition the body offset, in pixels, the reader last stopped at (E01,
      *   #65) — read once on open; the screen owns it from there and writes it back
-     *   through [saveScrollPosition].
+     *   through [saveScrollPosition]. For a document, this is the page number (1-based).
+     * @param document a stored PDF loaded with its page count and aspect ratios; null for articles.
+     * @param documentGone true when a document row lost its file between sessions.
      */
     data class Loaded(
         val title: String,
@@ -76,6 +78,8 @@ sealed interface ArticleUiState {
         val isFetchingFullText: Boolean = false,
         val canLoadFullText: Boolean = false,
         val scrollPosition: Int = 0,
+        val document: DocumentUi? = null,
+        val documentGone: Boolean = false,
     ) : ArticleUiState
 }
 
@@ -93,6 +97,8 @@ class ArticleViewModel(
     private val articleText: ArticleTextRepository,
     private val entryId: Long,
     private val zone: ZoneId = ZoneId.systemDefault(),
+    private val rasterizer: dev.mkiros.perch.data.document.PageRasterizer? = null,
+    private val documents: dev.mkiros.perch.data.document.DocumentStore? = null,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<ArticleUiState>(ArticleUiState.Loading)
@@ -124,7 +130,9 @@ class ArticleViewModel(
             // held behind — worst case they read the excerpt while the article arrives.
             // An entry whose body already came from an extraction is left alone: the page
             // has been read once and re-reading it would say the same thing.
-            if (entry.fullTextAt == null &&
+            // Documents never trigger this (PLAN-13 §0.6).
+            if (entry.documentPath == null &&
+                entry.fullTextAt == null &&
                 FullText.needsExtraction(entry.contentHtml, entry.bodyIsExcerpt)
             ) {
                 fetchFullText()
@@ -162,6 +170,49 @@ class ArticleViewModel(
     }
 
     private fun loaded(entry: EntryEntity): ArticleUiState.Loaded {
+        if (entry.documentPath != null && rasterizer != null && documents != null) {
+            val file = documents.resolve(entry.documentPath)
+            val docSource = file?.let { rasterizer.open(it) }
+            return if (docSource != null) {
+                val aspects = (0 until docSource.pageCount).map { idx ->
+                    val size = docSource.size(idx)
+                    size.width.toFloat() / size.height.toFloat()
+                }
+                ArticleUiState.Loaded(
+                    title = entry.title,
+                    standfirst = null,
+                    source = source,
+                    byline = byline,
+                    blocks = emptyList(),
+                    summary = null,
+                    link = entry.link,
+                    isSaved = entry.isSaved,
+                    isLiked = entry.isStarred,
+                    isFetchingFullText = false,
+                    canLoadFullText = false,
+                    scrollPosition = entry.scrollPosition,
+                    document = DocumentUi(file, docSource.pageCount, aspects, file.length()),
+                    documentGone = false,
+                )
+            } else {
+                ArticleUiState.Loaded(
+                    title = entry.title,
+                    standfirst = null,
+                    source = source,
+                    byline = byline,
+                    blocks = emptyList(),
+                    summary = null,
+                    link = entry.link,
+                    isSaved = entry.isSaved,
+                    isLiked = entry.isStarred,
+                    isFetchingFullText = false,
+                    canLoadFullText = false,
+                    scrollPosition = entry.scrollPosition,
+                    document = null,
+                    documentGone = true,
+                )
+            }
+        }
         val blocks = ArticleLowering.toBlocks(entry.contentHtml)
         return ArticleUiState.Loaded(
             title = entry.title,
@@ -317,6 +368,8 @@ class ArticleViewModel(
                     feeds = container.feeds,
                     articleText = container.articleText,
                     entryId = entryId,
+                    rasterizer = container.rasterizer,
+                    documents = container.documents,
                 )
             }
         }
