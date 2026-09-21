@@ -62,7 +62,7 @@ class CollectionScreenTest {
         compose.onNodeWithText("Nothing queued yet").assertIsDisplayed()
         compose.onNodeWithText(
             "Paste a link's address above, or long-press any entry and save it for later. " +
-                "It waits here until you take it off, however long that is.",
+                "It waits here until you take it off, however long that is. …or share a PDF to Perch.",
         ).assertIsDisplayed()
     }
 

@@ -94,12 +94,64 @@ object PdfInfoReader {
 
     private fun getObjectContent(text: String, objNum: Int): String? {
         val objStart = findObjectStart(text, objNum)
-        if (objStart < 0) return null
+        if (objStart < 0) return findInObjectStreams(text, objNum)
 
         val endObjIdx = text.indexOf("endobj", objStart)
         if (endObjIdx < 0) return null
 
         return text.substring(objStart, endObjIdx)
+    }
+
+    /**
+     * ISO 32000-1 §7.5.7: a `/Type /ObjStm` stream holds `/N` objects; its inflated bytes open
+     * with `N` pairs of `objnum offset`, offsets counted from `/First`.
+     */
+    private fun findInObjectStreams(text: String, objNum: Int): String? {
+        for (match in Regex("/Type\\s*/ObjStm\\b").findAll(text)) {
+            val dictStart = text.lastIndexOf("obj", match.range.first)
+            val streamKeyword = text.indexOf("stream", match.range.last)
+            if (dictStart < 0 || streamKeyword < 0) continue
+            val dict = text.substring(dictStart, streamKeyword)
+            val count = Regex("/N\\s+(\\d+)").find(dict)?.groupValues?.get(1)?.toIntOrNull() ?: continue
+            val first = Regex("/First\\s+(\\d+)").find(dict)?.groupValues?.get(1)?.toIntOrNull() ?: continue
+
+            var dataStart = streamKeyword + "stream".length
+            if (dataStart < text.length && text[dataStart] == '\r') dataStart++
+            if (dataStart < text.length && text[dataStart] == '\n') dataStart++
+            val dataEnd = text.indexOf("endstream", dataStart).takeIf { it >= 0 } ?: continue
+            val body = inflate(text.substring(dataStart, dataEnd).toByteArray(Charsets.ISO_8859_1)) ?: continue
+            if (first > body.length) continue
+
+            val header = body.substring(0, first).trim().split(Regex("\\s+")).mapNotNull { it.toIntOrNull() }
+            if (header.size < count * 2) continue
+            for (i in 0 until count) {
+                if (header[i * 2] != objNum) continue
+                val start = first + header[i * 2 + 1]
+                val end = if (i + 1 < count) first + header[(i + 1) * 2 + 1] else body.length
+                if (start > body.length || end < start) return null
+                return body.substring(start, minOf(end, body.length))
+            }
+        }
+        return null
+    }
+
+    private fun inflate(bytes: ByteArray): String? {
+        val inflater = java.util.zip.Inflater()
+        return try {
+            inflater.setInput(bytes)
+            val out = java.io.ByteArrayOutputStream(bytes.size * 4)
+            val buffer = ByteArray(8192)
+            while (!inflater.finished()) {
+                val n = inflater.inflate(buffer)
+                if (n == 0 && (inflater.needsInput() || inflater.needsDictionary())) break
+                out.write(buffer, 0, n)
+            }
+            String(out.toByteArray(), Charsets.ISO_8859_1)
+        } catch (e: java.util.zip.DataFormatException) {
+            null
+        } finally {
+            inflater.end()
+        }
     }
 
     private fun findObjectStart(text: String, objNum: Int): Int {

@@ -450,7 +450,7 @@ tasks take screenshots (G07, G08, G11 and the two live ones) — through `Screen
         naming the commit; pushed.
       - Rung: unit
 
-- [ ] **G02b — An Info dictionary inside a compressed object stream. TDD. Issue #72.**
+- [x] **G02b — An Info dictionary inside a compressed object stream. TDD. Issue #72.**
       **Read §0.3's object-stream sentence before you touch code.** It names the tool:
       `java.util.zip.Inflater`, which is in the JDK. **No new dependency is permitted or needed** —
       SPEC.md §2 lists no PDF library, and a previous session's NOTES entry suggesting one was wrong.

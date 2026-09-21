@@ -29,10 +29,7 @@ class PdfInfoReaderTest {
     fun `creationDate equals manifest published when present`() {
         for (fixture in DocumentFixtures.manifest()) {
             // Skip encrypted files: §0.3 says an encrypted file yields no date
-            // Skip nist: Info is in object stream (G02b, not G02a)
-            if (fixture.published != null &&
-                fixture.slug != "encrypted-empty-user-password" &&
-                fixture.slug != "nist-sp800-63-4") {
+            if (fixture.published != null && fixture.slug != "encrypted-empty-user-password") {
                 val info = PdfInfoReader.read(fixture.file)
                 assertThat(info.creationDate).isEqualTo(fixture.published)
             }
@@ -74,11 +71,38 @@ class PdfInfoReaderTest {
     }
 
     @Test
-    fun `an Info dictionary inside an object stream`() {
+    fun `an Info dictionary inside an object stream is found`() {
+        // nist-sp800-63-4 has no plain `4921 0 obj`: its Info dictionary lives in a /Type /ObjStm
         val fixture = DocumentFixtures.manifest().find { it.slug == "nist-sp800-63-4" }
         assertThat(fixture).isNotNull()
         val info = PdfInfoReader.read(fixture!!.file)
-        assertThat(info.title).isNotNull()
+        assertThat(info.title).isEqualTo("Digital Identity Guidelines")
+        assertThat(info.creationDate).isEqualTo(fixture.published)
+    }
+
+    @Test
+    fun `an object stream is read by its header, not by the first dictionary in it`() {
+        // ISO 32000-1 §7.5.7: object 8 sits second, behind a decoy that has a /Title of its own
+        val decoy = "<< /Title (Decoy) >>"
+        val info = "<< /Title (Found by offset) /CreationDate (D:20240102030405Z) >>"
+        val objects = "$decoy $info"
+        val header = "7 0 8 ${decoy.length + 1} "
+        val deflater = java.util.zip.Deflater()
+        deflater.setInput((header + objects).toByteArray(Charsets.ISO_8859_1))
+        deflater.finish()
+        val buffer = ByteArray(4096)
+        val packed = buffer.copyOf(deflater.deflate(buffer))
+        deflater.end()
+
+        val pdf = java.io.ByteArrayOutputStream()
+        pdf.write("%PDF-1.5\n9 0 obj\n<< /Type /ObjStm /N 2 /First ${header.length} /Filter /FlateDecode /Length ${packed.size} >>\nstream\n".toByteArray(Charsets.ISO_8859_1))
+        pdf.write(packed)
+        pdf.write("\nendstream\nendobj\ntrailer\n<< /Info 8 0 R >>\n%%EOF\n".toByteArray(Charsets.ISO_8859_1))
+        val file = java.io.File.createTempFile("objstm", ".pdf").apply { deleteOnExit(); writeBytes(pdf.toByteArray()) }
+
+        val read = PdfInfoReader.read(file)
+        assertThat(read.title).isEqualTo("Found by offset")
+        assertThat(read.creationDate).isEqualTo(java.time.Instant.parse("2024-01-02T03:04:05Z"))
     }
 
     @Test
@@ -113,11 +137,8 @@ class PdfInfoReaderTest {
     fun `CreationDate without a zone is UTC`() {
         // All fixtures should parse dates correctly with UTC as default
         // Skip encrypted files: §0.3 says encrypted files yield no date
-        // Skip nist: Info is in object stream (G02b, not G02a)
         for (fixture in DocumentFixtures.manifest()) {
-            if (fixture.published != null &&
-                fixture.slug != "encrypted-empty-user-password" &&
-                fixture.slug != "nist-sp800-63-4") {
+            if (fixture.published != null && fixture.slug != "encrypted-empty-user-password") {
                 val info = PdfInfoReader.read(fixture.file)
                 assertThat(info.creationDate).isNotNull()
             }
