@@ -709,7 +709,7 @@ tasks take screenshots (G07, G08, G11 and the two live ones) — through `Screen
       - Done: RED shown; `./gradlew test` green and above G09's count; #72 commented with the commit; pushed.
       - Rung: unit
 
-- [ ] **G11 — The gallery critique, and DESIGN.md says what a document is. Screenshot. Issue #72 (follow-up).**
+- [x] **G11 — The gallery critique, and DESIGN.md says what a document is. Screenshot. Issue #72 (follow-up).**
       Re-run `DocumentScreenshotTest`; **look at all five PNGs together** against DESIGN.md §8 and the mocks
       the reader approved (`document-reader-*`: headline measure and byline unchanged from an article; the
       strip's chip and caption; pages full-bleed to the measure with **no** gutter; the 2 dp outline rule; the

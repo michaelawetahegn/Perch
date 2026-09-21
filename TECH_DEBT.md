@@ -110,6 +110,10 @@ What is left, none of it a session on its own:
   Room's executor, so `database.close()` races the open it triggered. The likely fix is to join
   the startup job, bounded, before `container.close()` — a test-only boundary on a device
   (`onTerminate` never runs there), so it waits for a session that can reproduce it. NOTES.md has the stack.
+- **An inverted-page setting for documents in dark mode** (PLAN-13 §0.6, G11). Pages stay
+  white on purpose — the document as published, as every phone PDF reader shows it — and
+  DESIGN.md §8 "Documents" says why. A reader who wants dark pages is a behaviour change,
+  so it waits for a request.
 - **`EntryStateRow` and `PendingEntryStateEntity` declare the same eight fields** in the same
   order (`EntryStateRow.kt:9-16`, `PendingEntryStateEntity.kt:23-30`). Sharing them means an
   interface over an entity Room owns, so it waits for someone touching the schema anyway.

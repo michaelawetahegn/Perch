@@ -212,4 +212,16 @@ object Dimens {
      * on the last column, wider and it starts hiding a column that is legibly there.
      */
     val tableEdgeFade = xl
+
+    // --- documents (PLAN-13, DESIGN.md §8 "Documents") ---
+    /** The rule under every page — 2dp, so `outline` reads in both themes. */
+    val documentSeparator = 2.dp
+
+    /** The strip's `PDF` chip: 4dp corners like a figure, a tight label inset. */
+    val documentChipCorner = xs
+    val documentChipHorizontal = 6.dp
+    val documentChipVertical = 2.dp
+
+    /** The page toast sits this far above the bottom edge. */
+    val documentToastBottom = xl
 }

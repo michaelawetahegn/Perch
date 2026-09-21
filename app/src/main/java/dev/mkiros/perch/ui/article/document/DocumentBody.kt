@@ -66,7 +66,6 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.semantics.SemanticsPropertyKey
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import dev.mkiros.perch.R
 import dev.mkiros.perch.data.document.PageSource
@@ -245,7 +244,7 @@ fun DocumentArticle(
                         Box(
                             modifier = Modifier
                                 .width(pageWidth)
-                                .height(SEPARATOR)
+                                .height(Dimens.documentSeparator)
                                 .background(MaterialTheme.colorScheme.outline)
                                 .testTag("${ArticleTestTags.DOCUMENT_SEPARATOR}:$index"),
                         )
@@ -261,7 +260,7 @@ fun DocumentArticle(
             exit = fadeOut(tween(TOAST_FADE_MS)),
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = Dimens.xl),
+                .padding(bottom = Dimens.documentToastBottom),
         ) {
             Text(
                 text = stringResource(R.string.document_page_toast, toastPage, document.pageCount),
@@ -333,8 +332,8 @@ private fun DocumentStrip(pageCount: Int, sizeBytes: Long, modifier: Modifier = 
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSecondaryContainer,
             modifier = Modifier
-                .background(MaterialTheme.colorScheme.secondaryContainer, RoundedCornerShape(4.dp))
-                .padding(horizontal = Dimens.xs + 2.dp, vertical = 2.dp),
+                .background(MaterialTheme.colorScheme.secondaryContainer, RoundedCornerShape(Dimens.documentChipCorner))
+                .padding(horizontal = Dimens.documentChipHorizontal, vertical = Dimens.documentChipVertical),
         )
         Text(
             text = stringResource(
@@ -357,9 +356,6 @@ private class VisibleItem(info: LazyListItemInfo) : LayoutItem {
     override val offset = info.offset
     override val size = info.size
 }
-
-/** The rule under every page, the last included (§0.6). */
-private val SEPARATOR = 2.dp
 
 /** How long the page toast stays after the page under the centre last changed (§0.6). */
 private const val TOAST_LINGER_MS = 1_200L

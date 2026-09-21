@@ -406,6 +406,40 @@ mono one — see §3.
 - **Anything unmapped** (iframes, embeds, video): a single tasteful inline card —
   "Embedded content · open on the web" — never an empty hole, never raw markup.
 
+### Documents (v0.9.0, PLAN-13 §0.6)
+
+A stored PDF opens in the same article surface — same top bar, same actions, same
+headline and byline — and then shows its pages instead of blocks. The reader approved
+this shape from mocks on 2026-09-21; `DocumentBody.kt` is its one renderer.
+
+- **The strip** is the one new line in the header, under the byline: a `PDF` chip
+  (`labelSmall` bold on `secondaryContainer`, `Dimens.documentChipCorner` 4dp corners,
+  `documentChipHorizontal`/`documentChipVertical` 6dp/2dp inset), then
+  `112 pages · 870 kB · saved offline` in Caption style, `onSurfaceVariant`. The header is
+  inset and capped at the 680dp measure exactly like an article's.
+- **The pages** are the document as published: full-bleed to the measure, centred, no
+  gutter, no crop, no text selection (there is no text). Each page's height is known
+  from its aspect before its bitmap is, so nothing reflows as pages arrive.
+- **The separator** is a `Dimens.documentSeparator` 2dp rule the width of the page in
+  `outline`, under every page including the last. The reader asked for a black line;
+  `outline` is near-black in light and still visible in dark, which pure black is not.
+- **The page toast** is a pill at the bottom centre, `documentToastBottom` 24dp up:
+  `inverseSurface`/`inverseOnSurface`, full radius, `labelLarge`, *Page 2 of 112*. It
+  names the page under the viewport's vertical centre, appears only when that page
+  changes after the first composition — never on open — and fades (150 ms, §6) 1.2 s
+  after the last change.
+- **Two zooms, one axis.** Pinch scales 1×–4× about the fingers; while zoomed a
+  horizontal drag pans and a vertical one still scrolls the list. **Double-tap fits the
+  body's text column to the width** — the ink bounds of pages 2–4, padded 2%, so the
+  title page's narrower block does not decide it — or 2× where no column was measured,
+  and a second double-tap returns to fit. The header does not zoom.
+- **Pages stay white in dark mode.** It is the document as published, and every phone
+  PDF reader does the same; inverting a scan or a figure lies about it. An inverted-page
+  setting is a `TECH_DEBT.md` line, not a default.
+- **On To-Read** a document is an ordinary row: the meta line ends ` · PDF` in the
+  category's dimmer colour, and the thumbnail is the top of page one. No chip, no new
+  colour, every other row unchanged.
+
 ### Normalization rules the renderer must enforce
 
 These are what make heterogeneous sources look like one publication:
