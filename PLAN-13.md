@@ -562,7 +562,7 @@ tasks take screenshots (G07, G08, G11 and the two live ones) — through `Screen
         the critique; `35/35`; #72 commented naming the three commits; pushed.
       - Rung: screenshot
 
-- [ ] **G08 — A document on To-Read shows its first page and says it is a PDF. TDD + screenshot. Issue #72.**
+- [x] **G08 — A document on To-Read shows its first page and says it is a PDF. TDD + screenshot. Issue #72.**
       §0.7 is the decision.
       1. **RED:** `EntryRowTest` (`:80-108`'s shape) — `a document row says PDF after its source`
          (`META` reads "Saved links · PDF"); `an ordinary row does not`. `DocumentScreenshotTest` gains
