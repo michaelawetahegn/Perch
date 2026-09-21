@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -180,6 +181,19 @@ fun PerchNavHost(
         feedScrolled = feedListState.canScrollBackward,
     )
     val step = nextBackStep(backState)
+
+    // PLAN-13 §0.8: a share is a paste the reader has already confirmed, and To-Read is
+    // where a paste happens. Its SaveLinkViewModel takes the value off `intake`; this only
+    // brings To-Read on screen so that view model exists. Selecting a tab is a no-op from
+    // the article route (V08), so an open article is popped first.
+    LaunchedEffect(container.intake) {
+        container.intake.collect { incoming ->
+            if (incoming == null) return@collect
+            search.value = null
+            if (navController.currentDestination?.route == Routes.ARTICLE) navController.popBackStack()
+            selectTab(navController, PerchTab.ToRead)
+        }
+    }
 
     // One handler for the whole policy. It is disabled at `Exit`, which is what hands the
     // gesture back to the platform — the only way out of the app (§0). The overlay and

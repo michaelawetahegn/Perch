@@ -10,11 +10,13 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.mkiros.perch.R
 import dev.mkiros.perch.data.repo.SaveLinkFailure
+import dev.mkiros.perch.ui.nav.displayNameOf
 import dev.mkiros.perch.ui.source.DismissWhenDone
 import dev.mkiros.perch.ui.source.UrlFormContent
 
@@ -88,11 +90,13 @@ fun SaveLinkSheetContent(
     onSubmitDocument: (Uri, String?) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier,
 ) {
+    val resolver = LocalContext.current.contentResolver
     val filePickerLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocument(),
     ) { uri ->
         if (uri != null) {
-            onSubmitDocument(uri, null)
+            // The name is the title's last rung when the file carries none (§0.3).
+            onSubmitDocument(uri, resolver.displayNameOf(uri) ?: uri.lastPathSegment)
         }
     }
 

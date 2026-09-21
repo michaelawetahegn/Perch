@@ -1,6 +1,11 @@
 package dev.mkiros.perch.ui.collection
 
+import android.content.ContentProvider
+import android.content.ContentValues
+import android.database.Cursor
+import android.database.MatrixCursor
 import android.net.Uri
+import android.provider.OpenableColumns
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.activity.result.ActivityResultRegistry
@@ -14,6 +19,7 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performSemanticsAction
@@ -21,7 +27,9 @@ import androidx.compose.ui.test.performTextInput
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.document.DocumentFixtures
+import dev.mkiros.perch.model.Incoming
 import dev.mkiros.perch.support.PerchRule
+import dev.mkiros.perch.ui.nav.PerchNavHost
 import dev.mkiros.perch.ui.screenshot.awaitInRealTime
 import dev.mkiros.perch.ui.theme.PerchTheme
 import kotlinx.coroutines.runBlocking
@@ -32,6 +40,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 
 /**
@@ -58,12 +67,15 @@ class SaveLinkSheetTest {
         // Provide a DocumentOpener that can handle file:// URIs for testing
         documentOpener = object : dev.mkiros.perch.data.repo.DocumentOpener {
             override fun open(uri: Uri) = try {
-                java.io.File(uri.path!!).inputStream()
+                (pickedFiles[uri] ?: java.io.File(uri.path!!)).inputStream()
             } catch (e: Exception) {
                 null
             }
         },
     )
+
+    /** A picker's `content://` URIs, and the fixture each one stands for. */
+    private val pickedFiles = mutableMapOf<Uri, java.io.File>()
 
     @Before
     fun setUp() {
@@ -174,6 +186,47 @@ class SaveLinkSheetTest {
         assertThat(entryCount()).isEqualTo(0)
     }
 
+    @Test
+    fun `a picked file with no title takes its display name`() {
+        // A real picker hands back a document id, never the file's name: the name is only
+        // in the provider's DISPLAY_NAME column.
+        val fixture = DocumentFixtures.manifest().first { it.slug == "empty-title" }
+        val uri = Uri.parse("content://${PickedDocuments.AUTHORITY}/document/msf%3A42")
+        pickedFiles[uri] = fixture.file
+        PickedDocuments.displayName = "Quarterly_report.pdf"
+        Robolectric.setupContentProvider(PickedDocuments::class.java, PickedDocuments.AUTHORITY)
+
+        showSheet()
+        chooseFile(uri)
+        awaitState { it.savedEntryId != null }
+
+        val saved = runBlocking { perch.database.entryDao().findById(viewModel.state.value.savedEntryId!!)!! }
+        assertThat(saved.title).isEqualTo("Quarterly report")
+    }
+
+    @Test
+    fun `a link shared to Perch lands on To-Read with the confirmation`() {
+        server.enqueue(article("A Shared Article"))
+        perch.container.intake.value = Incoming.Link(server.url("/shared").toString())
+
+        compose.setContent {
+            PerchTheme(dynamicColor = false) {
+                PerchNavHost(container = perch.container)
+            }
+        }
+
+        compose.awaitInRealTime("the shared link saved") { entryCount() == 1 }
+        compose.awaitInRealTime("the shared link's confirmation") {
+            compose.onAllNodesWithText("Saved “A Shared Article”").fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.awaitInRealTime("the shared link's row on To-Read") {
+            compose.onAllNodesWithText("A Shared Article").fetchSemanticsNodes().isNotEmpty()
+        }
+        val saved = runBlocking { perch.database.entryDao().countAll() }
+        assertThat(saved).isEqualTo(1)
+        assertThat(perch.container.intake.value).isNull()
+    }
+
     // ---- harness ---------------------------------------------------------------
 
     private lateinit var fakeRegistry: FakeActivityResultRegistry
@@ -213,12 +266,11 @@ class SaveLinkSheetTest {
         compose.waitForIdle()
     }
 
-    private fun chooseFile() {
+    private fun chooseFile(uri: Uri = letterMarginsUri()) {
         compose.onNodeWithTag(SaveLinkTestTags.CHOOSE_FILE)
             .performSemanticsAction(SemanticsActions.OnClick)
         compose.waitForIdle()
         // Simulate selecting a file
-        val uri = letterMarginsUri()
         fakeRegistry.simulateResult(uri)
         compose.waitForIdle()
         awaitState { it.isBusy || it.savedEntryId != null }
@@ -256,6 +308,27 @@ class SaveLinkSheetTest {
             """.trimIndent(),
         )
         .addHeader("Content-Type", "text/html; charset=utf-8")
+
+    /** The document provider a picker's URI belongs to: it answers DISPLAY_NAME and nothing else. */
+    class PickedDocuments : ContentProvider() {
+        override fun onCreate() = true
+        override fun query(
+            uri: Uri,
+            projection: Array<out String>?,
+            selection: String?,
+            selectionArgs: Array<out String>?,
+            sortOrder: String?,
+        ): Cursor = MatrixCursor(arrayOf(OpenableColumns.DISPLAY_NAME)).apply { addRow(arrayOf(displayName)) }
+        override fun getType(uri: Uri) = "application/pdf"
+        override fun insert(uri: Uri, values: ContentValues?) = null
+        override fun delete(uri: Uri, selection: String?, selectionArgs: Array<out String>?) = 0
+        override fun update(uri: Uri, values: ContentValues?, selection: String?, selectionArgs: Array<out String>?) = 0
+
+        companion object {
+            const val AUTHORITY = "dev.mkiros.perch.test.documents"
+            var displayName: String? = null
+        }
+    }
 
     /**
      * Fake ActivityResultRegistry for testing file picker without launching the real activity.

@@ -172,6 +172,9 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
   absence of the drawer and the range, and the absence of folder sections: these lists are
   ordered by the reader's own gesture. Since W03 the Feed has no folder sections either —
   all three lists are one stream apiece, differing only in what put an article in them. Each empty state says what its list is *for*.
+  **A share is a paste already confirmed** (PLAN-13 §0.8): a link or PDF shared to Perch
+  lands on To-Read through the same sheet a paste does, saves without asking again, and
+  says so with the same *Saved "…"* snackbar — the reader chose it once in the other app.
 - **Multi-select in the drawer (U09a).** A long press on a source or a folder header
   starts a selection; every row of *that kind* gains a checkbox, the "All sources" row and
   the drawer's three navigation items are replaced by a contextual bar — close · *N

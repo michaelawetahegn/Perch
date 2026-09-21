@@ -8,7 +8,10 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.mkiros.perch.data.settings.PerchSettings
+import dev.mkiros.perch.model.Incoming
 import dev.mkiros.perch.ui.nav.PerchNavHost
+import dev.mkiros.perch.ui.nav.displayNameOf
+import dev.mkiros.perch.ui.nav.incomingFrom
 import dev.mkiros.perch.ui.theme.PerchTheme
 
 class MainActivity : ComponentActivity() {
@@ -40,7 +43,12 @@ class MainActivity : ComponentActivity() {
 
     private fun handleIncoming(intent: Intent?) {
         val container = (application as PerchApp).container
-        val incoming = dev.mkiros.perch.ui.nav.incomingFrom(intent)
+        val incoming = when (val from = incomingFrom(intent)) {
+            is Incoming.Document -> from.copy(
+                displayName = contentResolver.displayNameOf(from.uri) ?: from.displayName,
+            )
+            else -> from
+        }
         if (incoming != null) {
             container.intake.value = incoming
         }

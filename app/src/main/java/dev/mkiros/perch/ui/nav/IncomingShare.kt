@@ -1,5 +1,6 @@
 package dev.mkiros.perch.ui.nav
 
+import android.content.ContentResolver
 import android.content.Intent
 import android.net.Uri
 import android.provider.OpenableColumns
@@ -9,8 +10,7 @@ import dev.mkiros.perch.model.Incoming
  * Extracts the incoming value from an intent (PLAN-13 §0.8).
  *
  * Pure over the intent: no context needed. [displayName] is the URI's last
- * segment; the caller with context uses [OpenableColumns.DISPLAY_NAME] through
- * the resolver if they need a better name.
+ * segment; the caller with a context replaces it with [displayNameOf].
  *
  * @return [Incoming.Link] if the intent is a SEND + text/plain with a URL,
  *   [Incoming.Document] if it is a SEND with EXTRA_STREAM or a VIEW with a PDF URI,
@@ -43,4 +43,18 @@ fun incomingFrom(intent: Intent?): Incoming? {
         Intent.ACTION_VIEW -> intent.data?.let { Incoming.Document(it, it.lastPathSegment) }
         else -> null
     }
+}
+
+/**
+ * The name the reader knows a file by — [OpenableColumns.DISPLAY_NAME] from its provider.
+ * A picker's or a share's `content://` URI ends in a document id, not a file name, so its
+ * last segment names nothing; null when the provider does not say.
+ */
+fun ContentResolver.displayNameOf(uri: Uri): String? = try {
+    query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
+        if (cursor.moveToFirst()) cursor.getString(0) else null
+    }
+} catch (e: Exception) {
+    // A provider that refuses the query (or a file:// URI) still leaves a readable file.
+    null
 }

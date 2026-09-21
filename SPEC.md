@@ -494,6 +494,15 @@ results, and above `ReturnToFeed` — not merely above `LeaveScope` — because 
 from To-Read and Liked too, and any lower would change tabs and throw the question away in one
 press. Returning from an article restores the list's scroll position.
 
+**The intake (PLAN-13 §0.8).** Perch is a share target (`SEND` `text/plain` or
+`application/pdf`) and an *Open with* target for a PDF (`VIEW`, never `BROWSABLE`); the one
+`MainActivity` is `singleTask`, and both `onCreate` and `onNewIntent` put what arrived on
+`AppContainer.intake`. The shell answers by selecting To-Read (popping an open article, closing
+search), where the save-link sheet takes the value, opens itself and saves it — a shared link
+as a paste, a shared or picked file with its provider's `DISPLAY_NAME` as the title's last rung.
+It is not a destination and opens no article: success is the *Saved "…"* snackbar, a failure
+stays in the sheet with its reason.
+
 ## 11. Definition of done (project level)
 
 1. `./gradlew test assembleDebug` green from a clean checkout.

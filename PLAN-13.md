@@ -681,7 +681,7 @@ tasks take screenshots (G07, G08, G11 and the two live ones) — through `Screen
         naming the commit; pushed.
       - Rung: unit
 
-- [ ] **G09b — A picked PDF keeps its display name, and the docs say how a share works. TDD. Issue #72.**
+- [x] **G09b — A picked PDF keeps its display name, and the docs say how a share works. TDD. Issue #72.**
       `SaveLinkSheet.kt:95` passes `displayName = null` from the picker, so a picked PDF with no embedded
       title falls back further than it should. `IncomingShare.kt:11-13`'s own KDoc says the caller holding a
       `Context` looks up `OpenableColumns.DISPLAY_NAME` — that caller was never built.
