@@ -16,8 +16,7 @@ object PdfInfoReader {
 
             val infoNum = findInfoObjectNumber(text)
             val title = if (infoNum >= 0) {
-                val titleStr = extractTitleFromObject(text, infoNum)
-                if (titleStr != null && !isBoilerplate(titleStr, file.nameWithoutExtension)) titleStr else null
+                extractTitleFromObject(text, infoNum)?.let { cleanTitle(it, file.nameWithoutExtension) }
             } else null
 
             val date = if (infoNum >= 0) {
@@ -249,17 +248,6 @@ object PdfInfoReader {
         return if (i < text.length) text.substring(start + 1, i) else null
     }
 
-    private fun extractDate(text: String): Instant? {
-        val dateStr = extractViaRegex(text, "/CreationDate\\s*\\(([^)]+)\\)") ?: return null
-        return parsePdfDate(dateStr)
-    }
-
-    private fun extractViaRegex(text: String, pattern: String): String? {
-        val regex = Regex(pattern)
-        val match = regex.find(text)
-        return match?.groupValues?.getOrNull(1)?.trim()?.takeIf { it.isNotEmpty() }
-    }
-
     private fun decodeHex(hex: String): String? {
         val clean = hex.replace(Regex("\\s"), "").lowercase()
         if (clean.isEmpty()) return null
@@ -284,14 +272,11 @@ object PdfInfoReader {
         }
     }
 
+    /** ISO 32000-1 §14.3.2: the first `<dc:title>` only — a boilerplate one is no title, not a cue to look further. */
     private fun extractFromXmp(text: String, fileNameWithoutExtension: String): String? {
-        // Extract the first non-boilerplate dc:title
         val regex = Regex("<dc:title>.*?<rdf:li[^>]*>([^<]+)</rdf:li>.*?</dc:title>", RegexOption.DOT_MATCHES_ALL)
-        for (match in regex.findAll(text)) {
-            val title = unescapeXml(match.groupValues[1].trim())
-            if (title.isNotEmpty() && !isBoilerplate(title, fileNameWithoutExtension)) return title
-        }
-        return null
+        val first = regex.find(text) ?: return null
+        return cleanTitle(unescapeXml(first.groupValues[1]), fileNameWithoutExtension)
     }
 
     private fun unescapeXml(s: String): String {
@@ -338,15 +323,20 @@ object PdfInfoReader {
         }
     }
 
-    private fun isBoilerplate(title: String, fileNameWithoutExtension: String): Boolean {
-        val lower = title.lowercase().trim()
-        return lower in setOf("print", "untitled", "powerpoint presentation", "slide 1") ||
-            lower.startsWith("microsoft word - ") ||
-            lower.endsWith(".doc") ||
-            lower.endsWith(".docx") ||
-            lower.endsWith(".indd") ||
-            lower.endsWith(".tex") ||
-            lower.endsWith(".dvi") ||
+    /**
+     * Producer boilerplate is not a title (§0.3): a `Microsoft Word - ` prefix and an authoring-file
+     * suffix are stripped, then `Print`, `Untitled`, `PowerPoint Presentation`, `Slide 1` and the
+     * file's own name are rejected.
+     */
+    private fun cleanTitle(raw: String, fileNameWithoutExtension: String): String? {
+        val title = raw.replace(Regex("\\s+"), " ").trim()
+            .removePrefix("Microsoft Word - ")
+            .replace(Regex("\\.(docx?|indd|tex|dvi)$", RegexOption.IGNORE_CASE), "")
+            .trim()
+        val lower = title.lowercase()
+        val rejected = title.isEmpty() ||
+            lower in setOf("print", "untitled", "powerpoint presentation", "slide 1") ||
             lower == fileNameWithoutExtension.lowercase()
+        return title.takeUnless { rejected }
     }
 }

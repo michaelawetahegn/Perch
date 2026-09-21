@@ -107,21 +107,49 @@ class PdfInfoReaderTest {
 
     @Test
     fun `XMP dc_title is read only when the dictionary has no title`() {
-        // nist-sp800-63-4 has XMP that says "Print", but Info takes precedence
-        val fixture = DocumentFixtures.manifest().find { it.slug == "nist-sp800-63-4" }
-        assertThat(fixture).isNotNull()
-        val info = PdfInfoReader.read(fixture!!.file)
-        assertThat(info.title).isNotEqualTo("Print")
+        val xmp = "<dc:title><rdf:Alt><rdf:li xml:lang=\"x-default\">From XMP &amp; first</rdf:li></rdf:Alt></dc:title>" +
+            "<dc:title><rdf:Alt><rdf:li xml:lang=\"x-default\">Second XMP</rdf:li></rdf:Alt></dc:title>"
+        assertThat(PdfInfoReader.read(pdf(info = "<< /CreationDate (D:20240102) >>", xmp = xmp)).title)
+            .isEqualTo("From XMP & first")
+        assertThat(PdfInfoReader.read(pdf(info = "<< /Title (From Info) >>", xmp = xmp)).title)
+            .isEqualTo("From Info")
+        // nist-sp800-63-4's XMP says "Print"; its Info dictionary outranks it
+        val nist = DocumentFixtures.manifest().first { it.slug == "nist-sp800-63-4" }
+        assertThat(PdfInfoReader.read(nist.file).title).isEqualTo("Digital Identity Guidelines")
     }
 
     @Test
     fun `Print is not a title`() {
-        // XMP might have "Print" but it should be rejected
-        val fixture = DocumentFixtures.manifest().find { it.slug == "nist-sp800-63-4" }
-        assertThat(fixture).isNotNull()
-        val info = PdfInfoReader.read(fixture!!.file)
-        // The real title comes from Info dict, not XMP
-        assertThat(info.title).isEqualTo("Digital Identity Guidelines")
+        assertThat(PdfInfoReader.read(pdf(info = "<< /Title (Print) >>")).title).isNull()
+        val xmp = "<dc:title><rdf:Alt><rdf:li xml:lang=\"x-default\">Print</rdf:li></rdf:Alt></dc:title>" +
+            "<dc:title><rdf:Alt><rdf:li xml:lang=\"x-default\">Not the first</rdf:li></rdf:Alt></dc:title>"
+        assertThat(PdfInfoReader.read(pdf(info = "<< >>", xmp = xmp)).title).isNull()
+    }
+
+    @Test
+    fun `a title equal to the file name is not a title`() {
+        assertThat(PdfInfoReader.read(pdf(info = "<< /Title (Quarterly-Report) >>", name = "quarterly-report")).title)
+            .isNull()
+    }
+
+    @Test
+    fun `a Microsoft Word prefix and a doc suffix are dropped`() {
+        assertThat(PdfInfoReader.read(pdf(info = "<< /Title (Microsoft Word - Budget 2026.docx) >>")).title)
+            .isEqualTo("Budget 2026")
+        assertThat(PdfInfoReader.read(pdf(info = "<< /Title (Field notes.indd) >>")).title)
+            .isEqualTo("Field notes")
+    }
+
+    @Test
+    fun `a literal title behind a UTF-16BE BOM decodes`() {
+        val utf16 = String(byteArrayOf(0xFE.toByte(), 0xFF.toByte()) + "Grüße".toByteArray(Charsets.UTF_16BE), Charsets.ISO_8859_1)
+        assertThat(PdfInfoReader.read(pdf(info = "<< /Title ($utf16) >>")).title).isEqualTo("Grüße")
+    }
+
+    @Test
+    fun `whitespace inside a title is collapsed`() {
+        assertThat(PdfInfoReader.read(pdf(info = "<< /Title (  Two\\nlines   and  gaps ) >>")).title)
+            .isEqualTo("Two lines and gaps")
     }
 
     @Test
@@ -180,5 +208,17 @@ class PdfInfoReaderTest {
         val info = PdfInfoReader.read(fixture!!.file)
         assertThat(info.title).isNotEqualTo("Adobe Illustrator Artwork")
         assertThat(info.title).isEqualTo("Digital Identity Guidelines")
+    }
+
+    /** A minimal plain-object PDF: the Info dictionary as object 1, an optional XMP stream as object 2. */
+    private fun pdf(info: String, xmp: String? = null, name: String = "synthetic"): java.io.File {
+        val body = StringBuilder("%PDF-1.4\n1 0 obj\n$info\nendobj\n")
+        if (xmp != null) {
+            val packet = "<x:xmpmeta xmlns:x=\"adobe:ns:meta/\"><rdf:RDF><rdf:Description>$xmp</rdf:Description></rdf:RDF></x:xmpmeta>"
+            body.append("2 0 obj\n<< /Type /Metadata /Subtype /XML /Length ${packet.length} >>\nstream\n$packet\nendstream\nendobj\n")
+        }
+        body.append("trailer\n<< /Info 1 0 R >>\n%%EOF\n")
+        val dir = kotlin.io.path.createTempDirectory("pdfinfo").toFile().apply { deleteOnExit() }
+        return java.io.File(dir, "$name.pdf").apply { deleteOnExit(); writeBytes(body.toString().toByteArray(Charsets.ISO_8859_1)) }
     }
 }

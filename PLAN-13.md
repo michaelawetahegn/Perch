@@ -465,7 +465,7 @@ tasks take screenshots (G07, G08, G11 and the two live ones) — through `Screen
         #72 commented naming the commit; pushed.
       - Rung: unit
 
-- [ ] **G02c — The BOM, the XMP rung and the boilerplate list. TDD. Issue #72.**
+- [x] **G02c — The BOM, the XMP rung and the boilerplate list. TDD. Issue #72.**
       **Read §0.3's string-decoding and boilerplate sentences before you touch code.** Three defects it
       already specifies:
       - `extractLiteralString` (`PdfInfo.kt:57-98`) has **no BOM check** — only `decodeHex` (`:131`) has
