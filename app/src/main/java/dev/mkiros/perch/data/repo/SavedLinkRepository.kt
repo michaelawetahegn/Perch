@@ -154,30 +154,33 @@ class SavedLinkRepository(
             return Result.failure(SaveLinkFailure.Unreachable("Cannot open file"))
         }
 
-        // Copy stream to file, computing SHA-256 hash
+        // Copy the stream to the file, hashing it, and stop at the cap rather than after it:
+        // a share is whatever the sending app hands over (§0.8).
         val digest = MessageDigest.getInstance("SHA-256")
         val buffer = ByteArray(8192)
-        var bytesRead: Int
+        var copied = 0L
         stream.use { input ->
             file.outputStream().use { output ->
-                while (input.read(buffer).also { bytesRead = it } != -1) {
+                while (true) {
+                    val bytesRead = input.read(buffer)
+                    if (bytesRead == -1) break
+                    copied += bytesRead
+                    if (copied > FeedFetcher.MAX_DOCUMENT_BYTES) break
                     output.write(buffer, 0, bytesRead)
                     digest.update(buffer, 0, bytesRead)
                 }
             }
         }
-
-        val bytes = file.readBytes()
-        if (bytes.size > 40 * 1024 * 1024) {
+        if (copied > FeedFetcher.MAX_DOCUMENT_BYTES) {
             file.delete()
             return Result.failure(SaveLinkFailure.Unreachable("File is too large (over 40 MiB)"))
         }
 
         // Check if it's a PDF by sniffing the first 1 KiB
-        val sniff = bytes.sliceArray(0 until minOf(1024, bytes.size)).decodeToString(throwOnInvalidSequence = false)
-        val isPdf = sniff.contains("%PDF-")
-
-        if (!isPdf) {
+        val sniff = file.inputStream().use { input ->
+            ByteArray(minOf(1024L, copied).toInt()).also { input.read(it) }
+        }.decodeToString(throwOnInvalidSequence = false)
+        if (!sniff.contains("%PDF-")) {
             file.delete()
             return Result.failure(SaveLinkFailure.NotDocument())
         }

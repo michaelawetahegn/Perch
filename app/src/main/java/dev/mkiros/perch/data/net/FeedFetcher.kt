@@ -173,7 +173,7 @@ class FeedFetcher(
         else -> "Could not reach $host: ${e.message ?: e.javaClass.simpleName}"
     }
 
-    private companion object {
+    internal companion object {
         const val NOT_MODIFIED = 304
         const val MIB = 1024L * 1024L
         const val MAX_BODY_BYTES = 8L * MIB

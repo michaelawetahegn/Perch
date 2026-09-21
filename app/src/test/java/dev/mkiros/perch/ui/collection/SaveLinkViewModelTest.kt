@@ -1,13 +1,17 @@
 package dev.mkiros.perch.ui.collection
 
+import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.FeedEntity
+import dev.mkiros.perch.data.document.DocumentFixtures
 import dev.mkiros.perch.data.document.DocumentStore
 import dev.mkiros.perch.data.net.FeedFetcher
+import dev.mkiros.perch.data.repo.DocumentOpener
 import dev.mkiros.perch.data.repo.SaveLinkFailure
 import dev.mkiros.perch.data.repo.SavedLinkRepository
+import dev.mkiros.perch.model.Incoming
 import dev.mkiros.perch.support.FixtureRasterizer
 import dev.mkiros.perch.support.awaitInRealTime
 import java.io.File
@@ -18,6 +22,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -60,6 +65,12 @@ class SaveLinkViewModelTest {
     private lateinit var server: MockWebServer
     private lateinit var viewModel: SaveLinkViewModel
 
+    /** What `MainActivity` offers when something is shared to Perch (PLAN-13 §0.8). */
+    private val intake = MutableStateFlow<Incoming?>(null)
+
+    /** The content resolver, as a map. */
+    private val shared = mutableMapOf<Uri, File>()
+
     /** Held shut so a save can be observed mid-flight, and opened by the test that wants it. */
     private val gate = CountDownLatch(1)
 
@@ -93,7 +104,9 @@ class SaveLinkViewModelTest {
                 clock = Clock.fixed(Instant.parse("2026-09-07T12:00:00Z"), ZoneOffset.UTC),
                 documents = documents,
                 rasterizer = FixtureRasterizer(),
+                documentOpener = DocumentOpener { uri -> shared[uri]?.inputStream() },
             ),
+            intake,
         )
     }
 
@@ -173,6 +186,54 @@ class SaveLinkViewModelTest {
         assertThat(viewModel.state.value.error).isNotNull()
         assertThat(viewModel.state.value.canDismiss).isTrue()
         assertThat(viewModel.onDismissRequest()).isTrue()
+    }
+
+    // ---- a share is a paste already confirmed (PLAN-13 §0.8) --------------------
+
+    @Test
+    fun `an incoming link opens the sheet and submits it`() {
+        val url = server.url(READABLE_PATH).toString()
+
+        intake.value = Incoming.Link(url)
+
+        awaitState { it.savedEntryId != null }
+        assertThat(viewModel.state.value.isOpen).isTrue()
+        val row = runBlocking { database.entryDao().findById(viewModel.state.value.savedEntryId!!) }!!
+        assertThat(row.link).isEqualTo(url)
+        assertThat(row.isSaved).isTrue()
+    }
+
+    @Test
+    fun `an incoming document opens the sheet and imports it`() {
+        val uri = Uri.parse("content://test/letter-margins.pdf")
+        shared[uri] = DocumentFixtures.manifest().first { it.slug == "letter-margins" }.file
+
+        intake.value = Incoming.Document(uri, "letter-margins.pdf")
+
+        awaitState { it.savedEntryId != null }
+        assertThat(viewModel.state.value.isOpen).isTrue()
+        val row = runBlocking { database.entryDao().findById(viewModel.state.value.savedEntryId!!) }!!
+        assertThat(row.documentPath).isNotNull()
+        assertThat(row.link).isNull()
+    }
+
+    @Test
+    fun `the intake is cleared once taken`() {
+        intake.value = Incoming.Link(server.url(READABLE_PATH).toString())
+
+        awaitState { it.savedEntryId != null }
+        assertThat(intake.value).isNull()
+    }
+
+    @Test
+    fun `open and dismiss own the sheet's visibility`() {
+        assertThat(viewModel.state.value.isOpen).isFalse()
+
+        viewModel.open()
+        assertThat(viewModel.state.value.isOpen).isTrue()
+
+        assertThat(viewModel.onDismissRequest()).isTrue()
+        assertThat(viewModel.state.value.isOpen).isFalse()
     }
 
     // ---- harness ---------------------------------------------------------------

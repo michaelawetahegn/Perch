@@ -43,12 +43,23 @@ class IncomingShareTest {
     }
 
     @Test
-    fun `a viewed PDF is handled`() {
-        // Robolectric's Intent implementation handles ACTION_VIEW + URI differently;
-        // the important case for now is ACTION_SEND with EXTRA_STREAM (which works).
-        // This test placeholder ensures the function exists.
-        val result = incomingFrom(null)
-        assertThat(result).isNull()
+    fun `a viewed PDF is a document`() {
+        val uri = Uri.parse("content://com.example/document/paper.pdf")
+        val intent = Intent(Intent.ACTION_VIEW).setDataAndType(uri, "application/pdf")
+        val result = incomingFrom(intent)
+        assertThat(result).isEqualTo(Incoming.Document(uri, "paper.pdf"))
+    }
+
+    /**
+     * The manifest's filter matched the resolver's type, but `Intent.getType()` is only a
+     * type the sender set explicitly: a file manager that sends `ACTION_VIEW` with the data
+     * alone reaches Perch with no type on the intent (§0.8: a `VIEW` with a `data` URI).
+     */
+    @Test
+    fun `a viewed file whose sender set no type is still a document`() {
+        val uri = Uri.parse("content://com.example/document/paper.pdf")
+        val result = incomingFrom(Intent(Intent.ACTION_VIEW, uri))
+        assertThat(result).isEqualTo(Incoming.Document(uri, "paper.pdf"))
     }
 
     @Test

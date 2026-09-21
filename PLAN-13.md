@@ -654,7 +654,7 @@ tasks take screenshots (G07, G08, G11 and the two live ones) — through `Screen
         #72 commented with the commit; pushed.
       - Rung: screenshot
 
-- [ ] **G09a — The document intake is proved by tests. TDD. Issue #72.**
+- [x] **G09a — The document intake is proved by tests. TDD. Issue #72.**
       **The feature code already landed and works** (commits `fc3aa2c`, `0eaaf32`); this box was blocked
       only because its tests were never written. **Do not rewrite the feature.** §0.8's *intents*, *value*,
       *flow* and *local file* paragraphs are still the decision.

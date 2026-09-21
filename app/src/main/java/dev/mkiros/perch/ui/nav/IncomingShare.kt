@@ -38,15 +38,9 @@ fun incomingFrom(intent: Intent?): Incoming? {
                 null
             }
         }
-        Intent.ACTION_VIEW -> {
-            // Opening a PDF with Perch
-            if (type == "application/pdf") {
-                val uri = intent.data
-                if (uri != null) Incoming.Document(uri, uri.lastPathSegment) else null
-            } else {
-                null
-            }
-        }
+        // Opening a file with Perch. The manifest's filter only lets a PDF through, but
+        // getType() is only a type the sender set, and a file manager may send the data alone.
+        Intent.ACTION_VIEW -> intent.data?.let { Incoming.Document(it, it.lastPathSegment) }
         else -> null
     }
 }

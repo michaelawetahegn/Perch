@@ -1,5 +1,6 @@
 package dev.mkiros.perch.data.repo
 
+import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.EntryDao
@@ -11,6 +12,7 @@ import dev.mkiros.perch.data.document.DocumentStore
 import dev.mkiros.perch.data.net.FeedFetcher
 import dev.mkiros.perch.support.FixtureRasterizer
 import java.io.File
+import java.io.InputStream
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.test.runTest
 import okhttp3.OkHttpClient
@@ -47,6 +49,9 @@ class SavedLinkRepositoryTest {
     private lateinit var repo: SavedLinkRepository
     private lateinit var documents: DocumentStore
 
+    /** What the content resolver would hand back for each shared URI (§0.8's map). */
+    private val shared = mutableMapOf<Uri, () -> InputStream>()
+
     private val now = Instant.parse("2026-08-25T12:00:00Z").toEpochMilli()
 
     @Before
@@ -66,6 +71,7 @@ class SavedLinkRepositoryTest {
             clock = Clock.fixed(Instant.ofEpochMilli(now), ZoneOffset.UTC),
             documents = documents,
             rasterizer = FixtureRasterizer(),
+            documentOpener = DocumentOpener { uri -> shared[uri]?.invoke() },
         )
     }
 
@@ -227,6 +233,94 @@ class SavedLinkRepositoryTest {
         assertThat(saved.summary).isNull()
         assertThat(saved.isSaved).isTrue()
     }
+
+    @Test
+    fun `a shared file is stored under a content hash and titled from the file`() = runTest {
+        val fixture = fixture("ssrn-6191618")
+        val uri = share(fixture.file, "ssrn-6191618.pdf")
+
+        val result = repo.saveDocument(uri, "ssrn-6191618.pdf")
+
+        val saved = entries.findById(result.getOrThrow())!!
+        assertThat(saved.guid).isEqualTo("perch:document:${fixture.sha256}")
+        assertThat(saved.link).isNull()
+        assertThat(saved.title).isEqualTo(fixture.title)
+        assertThat(saved.isSaved).isTrue()
+        assertThat(documents.resolve(saved.documentPath!!)!!.readBytes())
+            .isEqualTo(fixture.file.readBytes())
+        assertThat(feeds.findById(saved.feedId)!!.feedUrl).isEqualTo(FeedEntity.SAVED_LINKS_FEED_URL)
+    }
+
+    @Test
+    fun `the same file shared twice is one row`() = runTest {
+        val file = fixture("letter-margins").file
+
+        val first = repo.saveDocument(share(file, "a.pdf"), "a.pdf").getOrThrow()
+        val second = repo.saveDocument(share(file, "b.pdf"), "b.pdf").getOrThrow()
+
+        assertThat(second).isEqualTo(first)
+        assertThat(entries.countAll()).isEqualTo(1)
+    }
+
+    @Test
+    fun `a shared file that is not a PDF fails as NotDocument`() = runTest {
+        val uri = share(fixture("html-in-disguise").file, "html-in-disguise.pdf")
+
+        val result = repo.saveDocument(uri, "html-in-disguise.pdf")
+
+        assertThat(result.exceptionOrNull()).isInstanceOf(SaveLinkFailure.NotDocument::class.java)
+        assertThat(entries.countAll()).isEqualTo(0)
+        assertThat(documentFiles()).isEmpty()
+    }
+
+    @Test
+    fun `a shared file with no title takes its display name`() = runTest {
+        val uri = share(fixture("empty-title").file, "Reading_list notes.pdf")
+
+        val saved = entries.findById(repo.saveDocument(uri, "Reading_list notes.pdf").getOrThrow())!!
+
+        assertThat(saved.title).isEqualTo("Reading list notes")
+    }
+
+    /**
+     * §0.8: the 40 MiB cap is applied *to the stream*. A share is whatever the sending app
+     * hands over, so a copy that reads to the end before measuring would fill the disk with
+     * a video someone shared by mistake before it said no.
+     */
+    @Test
+    fun `a shared file over the cap is refused before it is read to the end`() = runTest {
+        val cap = FeedFetcher.MAX_DOCUMENT_BYTES
+        var read = 0L
+        val uri = Uri.parse("content://test/huge.pdf")
+        shared[uri] = {
+            object : InputStream() {
+                val header = "%PDF-1.7\n".toByteArray()
+                override fun read(): Int {
+                    if (read >= cap * 2) return -1
+                    val b = if (read < header.size) header[read.toInt()].toInt() else 0
+                    read++
+                    return b
+                }
+            }
+        }
+
+        val result = repo.saveDocument(uri, "huge.pdf")
+
+        assertThat(result.exceptionOrNull()).isInstanceOf(SaveLinkFailure.Unreachable::class.java)
+        assertThat(result.exceptionOrNull()!!.message).contains("40 MiB")
+        assertThat(read).isAtMost(cap + 64 * 1024)
+        assertThat(documentFiles()).isEmpty()
+    }
+
+    private fun fixture(slug: String) = DocumentFixtures.manifest().first { it.slug == slug }
+
+    private fun share(file: File, name: String): Uri {
+        val uri = Uri.parse("content://test/$name")
+        shared[uri] = { file.inputStream() }
+        return uri
+    }
+
+    private fun documentFiles() = File(tmpDir.root, "documents").listFiles().orEmpty().toList()
 
     private fun article() = MockResponse()
         .setBody(
