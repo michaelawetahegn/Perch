@@ -3,6 +3,8 @@ package dev.mkiros.perch.di
 import android.content.Context
 import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.document.DocumentStore
+import dev.mkiros.perch.data.document.PageRasterizer
+import dev.mkiros.perch.data.document.PdfRendererRasterizer
 import dev.mkiros.perch.data.net.ConnectivityMonitor
 import dev.mkiros.perch.data.net.FeedFetcher
 import dev.mkiros.perch.data.net.PerchHttp
@@ -75,6 +77,8 @@ class AppContainer(
     val refreshScheduler: RefreshScheduler = RefreshScheduler { },
     /** Stored PDF documents (PLAN-13 G01). Constructed over `filesDir/documents`. */
     val documents: DocumentStore,
+    /** Renders document pages to bitmaps (PLAN-13 G03). */
+    val rasterizer: PageRasterizer = PdfRendererRasterizer(),
 ) : Closeable {
 
     /**

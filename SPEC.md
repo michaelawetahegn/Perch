@@ -115,6 +115,8 @@ app/src/main/java/dev/mkiros/perch/
 │  ├─ opml/ Opml.kt
 │  ├─ profile/ Profile.kt  ProfileJson.kt                 (v0.4 backup/restore)
 │  ├─ settings/ SettingsStore.kt                          (DataStore)
+│  ├─ document/ DocumentStore.kt  PdfInfo.kt  PageRasterizer.kt
+│  │            PdfRendererRasterizer.kt                  (PLAN-13 — PDFs)
 │  └─ repo/ FeedRepository.kt  EntryRepository.kt  FolderRepository.kt
 │           ArticleTextRepository.kt  BackfillRepository.kt  SavedLinkRepository.kt
 │           OpmlRepository.kt  ProfileRepository.kt  FolderResolver.kt
@@ -356,6 +358,8 @@ the web".
 `application/rdf+xml`, then common paths (`/feed`, `/rss.xml`, `/atom.xml`,
 `/index.xml`, `/feed.xml`, `/feeds/all.atom.xml`). Resolve relative hrefs. If the
 pasted URL already parses as a feed, skip discovery entirely.
+
+**Documents (PLAN-13):** stored PDF documents are read using the platform's `android.graphics.pdf.PdfRenderer` (API 21+). Metadata is extracted using a pure-JVM scanner of ISO 32000-1 standards (the PDF standard): title from the Info dictionary or XMP metadata (with producer boilerplate filtering); date from the Info dictionary CreationDate. No third-party PDF parsing library is used (SPEC.md §2). Tests use pre-rendered fixture PNGs to avoid Robolectric limitations with PdfRenderer. The rasterizer is a seam (`PageRasterizer` interface) so that production code uses the platform renderer and test code uses fixtures.
 
 ## 6. Networking
 

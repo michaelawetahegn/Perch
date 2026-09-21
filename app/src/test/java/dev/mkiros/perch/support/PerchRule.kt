@@ -5,6 +5,7 @@ import androidx.test.core.app.ApplicationProvider
 import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.document.DocumentStore
+import dev.mkiros.perch.data.document.PageRasterizer
 import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.di.AppContainer
@@ -43,6 +44,8 @@ class PerchRule(
     val settings: SettingsStore = SettingsStore.inMemory(),
     /** D22: the Feed's WorkManager seam is the container's, so a fake arrives the same way. */
     private val backfillRunner: BackfillRunner = BackfillRunner.NoOp,
+    /** PLAN-13 G03: the rasterizer for tests (fixtures). */
+    private val rasterizer: PageRasterizer = FixtureRasterizer(),
 ) : ExternalResource() {
 
     /** Valid from the rule's `before` — that is, from `@Before` onwards. */
@@ -60,6 +63,7 @@ class PerchRule(
             settings = settings,
             backfillRunner = backfillRunner,
             documents = DocumentStore(File(context.filesDir, "documents")),
+            rasterizer = rasterizer,
         )
     }
 
