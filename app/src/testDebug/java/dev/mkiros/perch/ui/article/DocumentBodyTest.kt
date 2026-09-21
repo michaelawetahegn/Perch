@@ -108,6 +108,53 @@ class DocumentBodyTest {
         compose.onNodeWithTag(ArticleTestTags.DOCUMENT).assertDoesNotExist()
     }
 
+    @Test
+    fun `scrolling to page two raises the toast and it fades`() {
+        showArticle(seedDocument("ssrn-6191618"))
+
+        compose.onNodeWithTag(ArticleTestTags.DOCUMENT).performScrollToIndex(2)
+        compose.onNodeWithTag(ArticleTestTags.DOCUMENT_TOAST, useUnmergedTree = true)
+            .assertTextEquals("Page 2 of 112")
+
+        compose.mainClock.advanceTimeBy(1_500)
+        compose.onNodeWithTag(ArticleTestTags.DOCUMENT_TOAST, useUnmergedTree = true).assertDoesNotExist()
+    }
+
+    @Test
+    fun `the toast never shows on open`() {
+        val id = seedDocument("ssrn-6191618")
+        runBlocking { perch.database.entryDao().setScrollPosition(id = id, scrollPosition = 3) }
+        showArticle(id)
+        awaitPageBitmap(2)
+
+        compose.onNodeWithTag(ArticleTestTags.DOCUMENT_TOAST, useUnmergedTree = true).assertDoesNotExist()
+    }
+
+    @Test
+    fun `leaving the screen writes the page under the centre`() {
+        val id = seedDocument("ssrn-6191618")
+        showArticle(id)
+
+        compose.onNodeWithTag(ArticleTestTags.DOCUMENT).performScrollToIndex(2)
+        leaveArticle()
+
+        val entry = runBlocking { perch.database.entryDao().findById(id) }!!
+        assertThat(entry.scrollPosition).isEqualTo(2)
+    }
+
+    @Test
+    fun `a document reopens at the page it stopped on`() {
+        val id = seedDocument("ssrn-6191618")
+        runBlocking { perch.database.entryDao().setScrollPosition(id = id, scrollPosition = 3) }
+        showArticle(id)
+
+        // Item N is page N, so page three (index 2) is the first thing on screen.
+        compose.onNodeWithTag(ArticleTestTags.HEADLINE).assertDoesNotExist()
+        val list = compose.onNodeWithTag(ArticleTestTags.DOCUMENT).getUnclippedBoundsInRoot()
+        val page = compose.onNodeWithTag("${ArticleTestTags.DOCUMENT_PAGE}:2").getUnclippedBoundsInRoot()
+        assertThat(page.top.value).isWithin(0.5f).of(list.top.value)
+    }
+
     // ---- harness ---------------------------------------------------------------
 
     private val visit = mutableStateOf<ArticleViewModel?>(null)

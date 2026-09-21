@@ -3,6 +3,7 @@ package dev.mkiros.perch.ui.article.document
 import android.text.format.Formatter
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -20,10 +21,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListItemInfo
+import androidx.compose.foundation.lazy.LazyListLayoutInfo
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -54,8 +57,12 @@ import dev.mkiros.perch.ui.theme.ArticleType
 import dev.mkiros.perch.ui.theme.Dimens
 import java.io.File
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.withContext
 
 /**
@@ -71,46 +78,43 @@ import kotlinx.coroutines.withContext
 fun DocumentArticle(
     document: DocumentUi,
     openPages: (File) -> PageSource?,
+    scrollPosition: Int,
     onScrollSettled: (Int) -> Unit,
     header: @Composable () -> Unit,
 ) {
-    val listState = rememberLazyListState(initialFirstVisibleItemIndex = 0)
+    // Item N is page N (item 0 is the header), so the page stopped on is the item to open at.
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = scrollPosition)
+    var toastPage by remember { mutableStateOf(1) }
     var toastVisible by remember { mutableStateOf(false) }
-    var toastPageNumber by remember { mutableStateOf(1) }
 
     val pages by produceState<PageCache?>(initialValue = null, document.file) {
         value = withContext(Dispatchers.IO) { openPages(document.file) }?.let(::PageCache)
         awaitDispose { value?.close() }
     }
 
-    // Track scroll settle to write page number
+    // §0.6: the page is written when a scroll settles and as the screen leaves, never per frame.
     LaunchedEffect(listState) {
         snapshotFlow { listState.isScrollInProgress }
-            .filter { !it }
             .drop(1)
-            .collect {
-                val page = pageUnderCentre(listState.layoutInfo.visibleItemsInfo, 500) ?: 0
-                onScrollSettled(page)
-            }
+            .filter { !it }
+            .collect { onScrollSettled(listState.layoutInfo.pageUnderCentre() ?: 0) }
+    }
+    DisposableEffect(listState) {
+        onDispose { onScrollSettled(listState.layoutInfo.pageUnderCentre() ?: 0) }
     }
 
-    // Dispose handler to write final position
-    DisposableEffect(Unit) {
-        onDispose {
-            val page = pageUnderCentre(listState.layoutInfo.visibleItemsInfo, 500) ?: 0
-            onScrollSettled(page)
-        }
-    }
-
-    // Track page under centre for toast
+    // The toast follows the page under the centre once it changes; the first page seen is
+    // the one opened at, so it never shows on open.
     LaunchedEffect(listState) {
-        snapshotFlow { listState.firstVisibleItemIndex }
-            .collect { index ->
-                val page = pageUnderCentre(listState.layoutInfo.visibleItemsInfo, 500)
-                if (page != null && page > 0) {
-                    toastPageNumber = page
-                    toastVisible = true
-                }
+        snapshotFlow { listState.layoutInfo.pageUnderCentre() }
+            .filterNotNull()
+            .distinctUntilChanged()
+            .drop(1)
+            .collectLatest { page ->
+                toastPage = page
+                toastVisible = true
+                delay(TOAST_LINGER_MS)
+                toastVisible = false
             }
     }
 
@@ -165,31 +169,24 @@ fun DocumentArticle(
             }
         }
 
-        // Page toast - bottom centre
-        Box(
+        // §0.6: a pill at the bottom centre, gone TOAST_LINGER_MS after the last change.
+        AnimatedVisibility(
+            visible = toastVisible,
+            enter = fadeIn(tween(TOAST_FADE_MS)),
+            exit = fadeOut(tween(TOAST_FADE_MS)),
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = Dimens.xl)
+                .padding(bottom = Dimens.xl),
         ) {
-            AnimatedVisibility(
-                visible = toastVisible,
-                exit = fadeOut(animationSpec = tween(durationMillis = 1200))
-            ) {
-                Surface(
-                    shape = MaterialTheme.shapes.large,
-                    color = MaterialTheme.colorScheme.inverseSurface,
-                    modifier = Modifier.padding(horizontal = Dimens.xl)
-                ) {
-                    Text(
-                        text = stringResource(R.string.document_page_toast, toastPageNumber, document.pageCount),
-                        color = MaterialTheme.colorScheme.inverseOnSurface,
-                        style = MaterialTheme.typography.labelLarge,
-                        modifier = Modifier
-                            .padding(horizontal = Dimens.md, vertical = Dimens.sm)
-                            .testTag(ArticleTestTags.DOCUMENT_TOAST)
-                    )
-                }
-            }
+            Text(
+                text = stringResource(R.string.document_page_toast, toastPage, document.pageCount),
+                color = MaterialTheme.colorScheme.inverseOnSurface,
+                style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.inverseSurface, CircleShape)
+                    .padding(horizontal = Dimens.md, vertical = Dimens.sm)
+                    .testTag(ArticleTestTags.DOCUMENT_TOAST),
+            )
         }
     }
 }
@@ -248,15 +245,21 @@ private fun DocumentStrip(pageCount: Int, sizeBytes: Long, modifier: Modifier = 
     }
 }
 
-/**
- * Find the page whose item straddles the viewport centre, pure over layout info.
- * The first item is the header (index 0), so page N is at item index N.
- */
-fun pageUnderCentre(visibleItems: List<Any>, viewportHeight: Int): Int? {
-    val center = viewportHeight / 2
-    // TODO: implement with actual item bounds
-    return null
+/** [pageUnderCentre] over the list's own layout: item N is page N, the header never one. */
+private fun LazyListLayoutInfo.pageUnderCentre(): Int? =
+    pageUnderCentre(visibleItemsInfo.map(::VisibleItem), viewportSize.height)
+
+private class VisibleItem(info: LazyListItemInfo) : LayoutItem {
+    override val index = info.index
+    override val offset = info.offset
+    override val size = info.size
 }
 
 /** The rule under every page, the last included (§0.6). */
 private val SEPARATOR = 2.dp
+
+/** How long the page toast stays after the page under the centre last changed (§0.6). */
+private const val TOAST_LINGER_MS = 1_200L
+
+/** The toast's fade, DESIGN.md §6's read-state crossfade. */
+private const val TOAST_FADE_MS = 150

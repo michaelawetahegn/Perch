@@ -9,6 +9,7 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.test.core.app.ApplicationProvider
 import coil.Coil
@@ -148,6 +149,20 @@ class DocumentScreenshotTest {
         showReader(ThemeMode.Dark)
 
         Screenshots.captureAndAssert(compose, "document-reader-dark", minBytes = 10_000L)
+    }
+
+    @Test
+    fun `the document reader scrolled to page two, the toast showing`() {
+        showReader(ThemeMode.Light)
+        // Item N is page N: page two at the top of the viewport is under its centre.
+        compose.onNodeWithTag(ArticleTestTags.DOCUMENT).performScrollToIndex(2)
+        compose.awaitInRealTime("page two to render") {
+            compose.onAllNodesWithTag("${ArticleTestTags.DOCUMENT_PAGE_IMAGE}:1", useUnmergedTree = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNodeWithTag(ArticleTestTags.DOCUMENT_TOAST, useUnmergedTree = true).assertExists()
+
+        Screenshots.captureAndAssert(compose, "document-reader-scrolled", minBytes = 10_000L)
     }
 
     /** The reader's own sample (#72), opened from To-Read the way a pasted PDF lands. */

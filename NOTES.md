@@ -86,7 +86,7 @@
   All Time or a fresh install looks empty. `adb shell input text` drops everything past ~15
   characters — type a URL in short chunks, submit with `input keyevent 66`; never tap a button at
   its dump bounds while the IME is up (uiautomator does not dump it) — `keyevent 111` hides it.
-- 2026-09-21 — **G02b: `./gradlew test` was red on the release variant from G03 to G02b** — `FixtureRasterizer` sat in `src/testDebug` while `src/test` (shared by both variants) used it. It now lives in `src/test/.../support`. **Count both variants** (run with `--continue`); a debug-only green is not the Done-condition. Two more first-run-only flakes that passed alone: `SaveLinkSheetTest > pasting a feed address…`, `PagedFeedTest > a read-state change…`.
+- 2026-09-21 — **G02b: `./gradlew test` was red on the release variant from G03 to G02b** — `FixtureRasterizer` sat in `src/testDebug` while `src/test` (shared by both variants) used it. It now lives in `src/test/.../support`. **Count both variants** (run with `--continue`); a debug-only green is not the Done-condition. Two more first-run-only flakes that passed alone: `SaveLinkSheetTest > pasting a feed address…`, `PagedFeedTest > a read-state change…`, `PerchNavHostTest > the bottom bar is on every list destination…` (a leaked `ArticleViewModel` feed load, G07b).
 - 2026-09-08 — **Two full-suite-only flakes; green alone and on a re-run, so re-run before diagnosing.**
   `WorkSchedulerTest > choosing manual cancels…` (3 of 5 by D15) waits on WorkManager's own executor, which
   `SynchronousExecutor` misses; `SettingsViewModelTest` (D23) failed inside `Dispatchers.setMain`/`resetMain`.

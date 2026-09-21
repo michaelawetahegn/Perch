@@ -319,6 +319,7 @@ private fun Article(
         DocumentArticle(
             document = state.document,
             openPages = openPages,
+            scrollPosition = state.scrollPosition,
             onScrollSettled = onScrollSettled,
         ) {
             Text(

@@ -592,7 +592,7 @@ tasks take screenshots (G07, G08, G11 and the two live ones) — through `Screen
         the numbered critique; `35/35`; #72 commented naming the commit; pushed.
       - Rung: screenshot
 
-- [ ] **G07b — The page toast, and the page you stopped on. TDD + screenshot. Issue #72.**
+- [x] **G07b — The page toast, and the page you stopped on. TDD + screenshot. Issue #72.**
       **Read §0.6's *page toast* and *the page you stopped on* paragraphs before you touch code.**
       **This is dead code today, not missing code.** `DocumentBody.kt:229-233` is a local `pageUnderCentre`
       stub that returns `null` unconditionally behind a `// TODO`, so the toast never shows and the page
