@@ -1,5 +1,6 @@
 package dev.mkiros.perch
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,6 +18,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         val container = (application as PerchApp).container
+        handleIncoming(intent)
         setContent {
             // The theme choice is read here, above the nav graph, so that changing it in
             // Settings recolours the whole app in place rather than only the screen that
@@ -28,6 +30,19 @@ class MainActivity : ComponentActivity() {
             PerchTheme(mode = settings.themeMode) {
                 PerchNavHost(container = container)
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleIncoming(intent)
+    }
+
+    private fun handleIncoming(intent: Intent?) {
+        val container = (application as PerchApp).container
+        val incoming = dev.mkiros.perch.ui.nav.incomingFrom(intent)
+        if (incoming != null) {
+            container.intake.value = incoming
         }
     }
 }

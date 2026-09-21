@@ -10,6 +10,7 @@ import dev.mkiros.perch.data.net.FeedFetcher
 import dev.mkiros.perch.data.net.PerchHttp
 import dev.mkiros.perch.data.repo.ArticleTextRepository
 import dev.mkiros.perch.data.repo.BackfillRepository
+import dev.mkiros.perch.data.repo.DocumentOpener
 import dev.mkiros.perch.data.repo.EntryRepository
 import dev.mkiros.perch.data.repo.FeedRepository
 import dev.mkiros.perch.data.repo.FolderRepository
@@ -18,9 +19,11 @@ import dev.mkiros.perch.data.repo.ProfileRepository
 import dev.mkiros.perch.data.repo.SavedLinkRepository
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.model.BackfillRunner
+import dev.mkiros.perch.model.Incoming
 import dev.mkiros.perch.model.RefreshScheduler
 import dev.mkiros.perch.work.WorkManagerBackfillRunner
 import dev.mkiros.perch.work.WorkScheduler
+import kotlinx.coroutines.flow.MutableStateFlow
 import okhttp3.OkHttpClient
 import java.io.Closeable
 import java.io.File
@@ -79,6 +82,10 @@ class AppContainer(
     val documents: DocumentStore,
     /** Renders document pages to bitmaps (PLAN-13 G03). */
     val rasterizer: PageRasterizer = PdfRendererRasterizer(),
+    /** Shares and document imports offered to Perch (PLAN-13 §0.8). */
+    val intake: MutableStateFlow<Incoming?> = MutableStateFlow(null),
+    /** Opens content URIs for document imports (PLAN-13 §0.8). Wired in [create]. */
+    val documentOpener: DocumentOpener? = null,
 ) : Closeable {
 
     /**
@@ -129,6 +136,7 @@ class AppContainer(
             clock = clock,
             documents = documents,
             rasterizer = rasterizer,
+            documentOpener = documentOpener,
         )
     }
 
@@ -165,6 +173,13 @@ class AppContainer(
                 backfillRunner = WorkManagerBackfillRunner(app),
                 refreshScheduler = { interval -> WorkScheduler.setInterval(app, interval) },
                 documents = DocumentStore(File(app.filesDir, "documents")),
+                documentOpener = DocumentOpener { uri ->
+                    try {
+                        app.contentResolver.openInputStream(uri)
+                    } catch (e: Exception) {
+                        null
+                    }
+                },
             )
         }
     }
