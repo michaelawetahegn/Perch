@@ -603,7 +603,7 @@ tasks take screenshots (G07, G08, G11 and the two live ones) — through `Screen
         pushed.
       - Rung: unit
 
-- [ ] **G10 — Choose a PDF from the phone in the Save-a-link sheet. TDD. Issue #72.**
+- [x] **G10 — Choose a PDF from the phone in the Save-a-link sheet. TDD. Issue #72.**
       §0.8's *picker* paragraph is the decision.
       1. **RED:** `SaveLinkSheetTest` — `the sheet offers to choose a PDF` (`CHOOSE_FILE` present, under the
          field); `choosing a file imports it` (a fake `ActivityResultRegistry` provided through
