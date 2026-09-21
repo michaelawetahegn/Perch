@@ -11,14 +11,15 @@ import dev.mkiros.perch.data.document.PageSource
 import dev.mkiros.perch.data.document.PdfInfoReader
 import dev.mkiros.perch.data.extract.PageContentExtractor
 import dev.mkiros.perch.data.extract.toEntry
+import dev.mkiros.perch.data.db.entity.EntryEntity
+import dev.mkiros.perch.data.net.DownloadResult
 import dev.mkiros.perch.data.net.FeedFetcher
-import dev.mkiros.perch.data.net.FetchResult
 import dev.mkiros.perch.data.parse.FeedParser
 import dev.mkiros.perch.data.parse.ParseResult
 import dev.mkiros.perch.data.parse.normalizePastedUrl
 import java.io.File
-import java.io.InputStream
 import java.security.MessageDigest
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import java.time.Clock
 
 /**
@@ -69,8 +70,8 @@ class SavedLinkRepository(
         val file = documents.newDocument()
 
         val downloaded = when (val result = fetcher.download(normalized, file)) {
-            is dev.mkiros.perch.data.net.DownloadResult.Success -> result
-            is dev.mkiros.perch.data.net.DownloadResult.Failure -> {
+            is DownloadResult.Success -> result
+            is DownloadResult.Failure -> {
                 file.delete()
                 return Result.failure(SaveLinkFailure.Unreachable(result.message))
             }
@@ -89,6 +90,7 @@ class SavedLinkRepository(
                 link = downloaded.finalUrl,
                 guid = downloaded.finalUrl,
                 nameHint = extractFilename(downloaded.contentDisposition)
+                    ?: downloaded.finalUrl.toHttpUrlOrNull()?.pathSegments?.lastOrNull { it.isNotBlank() },
             )
         }
 
@@ -97,7 +99,7 @@ class SavedLinkRepository(
         file.delete()
 
         // Non-PDF pages still have the 8 MiB cap (SPEC.md §6)
-        if (bytes.size > 8 * 1024 * 1024) {
+        if (bytes.size > FeedFetcher.MAX_BODY_BYTES) {
             return Result.failure(SaveLinkFailure.Unreachable("Feed is too large (over 8 MiB)"))
         }
 
@@ -195,8 +197,7 @@ class SavedLinkRepository(
             file = file,
             link = null,
             guid = guid,
-            nameHint = displayName?.substringBeforeLast(".")?.replace("_", " "),
-            isSaved = true
+            nameHint = displayName,
         )
     }
 
@@ -205,7 +206,6 @@ class SavedLinkRepository(
         link: String?,
         guid: String,
         nameHint: String?,
-        isSaved: Boolean = true
     ): Result<Long> {
         // Verify the file is a readable PDF
         val source = rasterizer.open(file)
@@ -220,12 +220,12 @@ class SavedLinkRepository(
             ?: error("The saved-links feed is missing; every database is seeded with it (Y02).")
 
         val pdfInfo = PdfInfoReader.read(file)
-        val title = pdfInfo.title ?: nameHint ?: "Document"
+        val title = pdfInfo.title ?: nameHint?.let(::titleFromFileName) ?: "Document"
         val publishedAt = pdfInfo.creationDate?.toEpochMilli() ?: clock.millis()
         val publishedIsEstimated = pdfInfo.creationDate == null
 
         val now = clock.millis()
-        val entity = dev.mkiros.perch.data.db.entity.EntryEntity(
+        val entity = EntryEntity(
             feedId = savedFeedId,
             guid = guid,
             link = link,
@@ -237,7 +237,7 @@ class SavedLinkRepository(
             publishedAt = publishedAt,
             publishedIsEstimated = publishedIsEstimated,
             readAt = null,
-            savedAt = if (isSaved) now else null,
+            savedAt = now,
             starredAt = null,
             fetchedAt = now,
             bodyIsExcerpt = false,
@@ -246,11 +246,17 @@ class SavedLinkRepository(
             documentPath = documents.relativize(file),
         )
 
+        // §0.4 step 5: a re-saved document replaces its file rather than orphaning it.
+        entryDao.findByGuid(savedFeedId, guid)?.documentPath
+            ?.let(documents::resolve)
+            ?.takeIf { it != file }
+            ?.let(documents::delete)
+
         entryDao.upsertAll(listOf(entity))
         val saved = entryDao.findByGuid(savedFeedId, guid)
             ?: error("upsertAll just wrote this row.")
 
-        if (!saved.isSaved && isSaved) {
+        if (!saved.isSaved) {
             entryDao.setSaved(saved.id, isSaved = true, savedAt = now)
         }
         return Result.success(saved.id)
@@ -272,6 +278,13 @@ class SavedLinkRepository(
     }
 
 }
+
+/**
+ * §0.4 step 2: a file name becomes a title by dropping one extension and turning `_` into
+ * spaces — nothing else. An "extension" starts with a letter, so `1706.03762v7` stays whole.
+ */
+private fun titleFromFileName(name: String): String? =
+    name.replace(Regex("\\.[A-Za-z][A-Za-z0-9]{0,4}$"), "").replace('_', ' ').trim().ifBlank { null }
 
 /** A document row's thumbnail edge, in pixels (PLAN-13 §0.4). */
 private const val THUMBNAIL_PX = 256

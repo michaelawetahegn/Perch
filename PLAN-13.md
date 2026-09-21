@@ -733,7 +733,7 @@ tasks take screenshots (G07, G08, G11 and the two live ones) — through `Screen
       - Done: the live run's gate lines in the commit, 16 among them; `./gradlew test` green; #72 commented with the commit; pushed.
       - Rung: unit + one bounded live run
 
-- [ ] **G13 — The review pass. The whole of v0.9.0, read at once.**
+- [x] **G13 — The review pass. The whole of v0.9.0, read at once.**
       Read `git diff v0.8.0..HEAD` — **the whole of it** — and answer, in the commit message and in NOTES.md
       where it outlives the plan:
       1. Does any doc still describe v0.8.0? README.md (the feature list and the gallery — add the reader

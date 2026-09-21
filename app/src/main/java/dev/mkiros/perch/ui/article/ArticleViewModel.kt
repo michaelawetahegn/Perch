@@ -171,50 +171,29 @@ class ArticleViewModel(
 
     private fun loaded(entry: EntryEntity): ArticleUiState.Loaded {
         if (entry.documentPath != null && rasterizer != null && documents != null) {
-            val file = documents.resolve(entry.documentPath)
             // Only the shape is read here; the screen opens its own source to draw from.
-            val shape = file?.let { rasterizer.open(it) }?.use { source ->
-                source.pageCount to (0 until source.pageCount).map { idx ->
-                    val size = source.size(idx)
-                    size.width.toFloat() / size.height.toFloat()
+            val document = documents.resolve(entry.documentPath)?.let { file ->
+                rasterizer.open(file)?.use { source ->
+                    val aspects = (0 until source.pageCount).map { index ->
+                        source.size(index).let { it.width.toFloat() / it.height }
+                    }
+                    DocumentUi(file, source.pageCount, aspects, file.length())
                 }
             }
-            return if (shape != null) {
-                val (pageCount, aspects) = shape
-                ArticleUiState.Loaded(
-                    title = entry.title,
-                    standfirst = null,
-                    source = source,
-                    byline = byline,
-                    blocks = emptyList(),
-                    summary = null,
-                    link = entry.link,
-                    isSaved = entry.isSaved,
-                    isLiked = entry.isStarred,
-                    isFetchingFullText = false,
-                    canLoadFullText = false,
-                    scrollPosition = entry.scrollPosition,
-                    document = DocumentUi(file, pageCount, aspects, file.length()),
-                    documentGone = false,
-                )
-            } else {
-                ArticleUiState.Loaded(
-                    title = entry.title,
-                    standfirst = null,
-                    source = source,
-                    byline = byline,
-                    blocks = emptyList(),
-                    summary = null,
-                    link = entry.link,
-                    isSaved = entry.isSaved,
-                    isLiked = entry.isStarred,
-                    isFetchingFullText = false,
-                    canLoadFullText = false,
-                    scrollPosition = entry.scrollPosition,
-                    document = null,
-                    documentGone = true,
-                )
-            }
+            return ArticleUiState.Loaded(
+                title = entry.title,
+                standfirst = null,
+                source = source,
+                byline = byline,
+                blocks = emptyList(),
+                summary = null,
+                link = entry.link,
+                isSaved = entry.isSaved,
+                isLiked = entry.isStarred,
+                scrollPosition = entry.scrollPosition,
+                document = document,
+                documentGone = document == null,
+            )
         }
         val blocks = ArticleLowering.toBlocks(entry.contentHtml)
         return ArticleUiState.Loaded(

@@ -7,14 +7,15 @@
 </p>
 
 <p align="center">
-  <img src="screenshots/home-dark.png" width="11.8%" alt="The Feed, one chronological stream, dark theme">
-  <img src="screenshots/drawer.png" width="11.8%" alt="The drawer, folders collapsed by default">
-  <img src="screenshots/search-dark.png" width="11.8%" alt="Search over everything Perch has stored, results newest first">
-  <img src="screenshots/article.png" width="11.8%" alt="Article reader view, the source name in the byline a link into that source">
-  <img src="screenshots/scoped-source-dark.png" width="11.8%" alt="The Feed scoped to a single source, its archive reached back past what the feed carries">
-  <img src="screenshots/code-dark.png" width="11.8%" alt="Syntax-highlighted code block with a pinned line-number gutter">
-  <img src="screenshots/table-dark.png" width="11.8%" alt="A tabular security advisory rendered with rules and a header row">
-  <img src="screenshots/to-read-dark.png" width="11.8%" alt="The To-Read queue">
+  <img src="screenshots/home-dark.png" width="10.5%" alt="The Feed, one chronological stream, dark theme">
+  <img src="screenshots/drawer.png" width="10.5%" alt="The drawer, folders collapsed by default">
+  <img src="screenshots/search-dark.png" width="10.5%" alt="Search over everything Perch has stored, results newest first">
+  <img src="screenshots/article.png" width="10.5%" alt="Article reader view, the source name in the byline a link into that source">
+  <img src="screenshots/scoped-source-dark.png" width="10.5%" alt="The Feed scoped to a single source, its archive reached back past what the feed carries">
+  <img src="screenshots/code-dark.png" width="10.5%" alt="Syntax-highlighted code block with a pinned line-number gutter">
+  <img src="screenshots/table-dark.png" width="10.5%" alt="A tabular security advisory rendered with rules and a header row">
+  <img src="screenshots/to-read-dark.png" width="10.5%" alt="The To-Read queue">
+  <img src="screenshots/document-dark.png" width="10.5%" alt="A PDF saved to To-Read, read as its pages under a headline, byline and PDF strip">
 </p>
 
 ## What Perch is
@@ -63,6 +64,13 @@ never on refresh, never replacing text with less text. *Load full article* force
 and Perch fetches the page, extracts a title and body the same way full text does, and drops
 it on the queue as a real, readable entry.
 
+**A PDF, kept whole.** Paste a PDF's link, share one to Perch from the browser or Files, or
+choose one from the phone, and it lands on To-Read stored in full — titled from the file's own
+metadata, readable offline. It opens as its pages, page-width and untouched, with a separator
+between them and a toast saying which page you are on; pinch to zoom, or double-tap to fit the
+text column to the screen. It reopens at the page you stopped on. Some sites (SSRN among them)
+refuse any client that is not a browser, so their papers arrive by sharing the downloaded file.
+
 **A source's back catalogue.** When a feed only shows its newest handful, Perch can discover
 the rest — an RFC 5005 archive link, a sitemap, or both — parse by standards alone, and offer
 to fetch what the feed itself doesn't carry. No site is special-cased: the same discovery works
@@ -109,10 +117,12 @@ app/src/main/java/dev/mkiros/perch/
   data/extract/  Readability-style full-text extraction over jsoup
   data/db/       Room entities, DAOs, migrations
   data/net/      OkHttp fetcher, conditional GET, connectivity
+  data/document/ stored PDFs: the file store, title/date from the PDF itself, the page renderer
   data/repo/     FeedRepository — fetch → parse → sanitize → store
   work/          RefreshWorker
   ui/            Compose screens, theme, brand, navigation
 fixtures/        harvested feed, homepage and article corpus (the test contract)
+fixtures/documents/  PDFs and their pre-rendered pages; manifest.tsv is the contract
 ```
 
 [`SPEC.md`](SPEC.md) pins the toolchain and the behavioural rules, [`DESIGN.md`](DESIGN.md) is

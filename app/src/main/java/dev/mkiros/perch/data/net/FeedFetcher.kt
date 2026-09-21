@@ -148,7 +148,7 @@ class FeedFetcher(
             return DownloadResult.Failure(tooLargeDocument())
         }
 
-        buffer.writeTo(into.outputStream())
+        into.outputStream().use { buffer.writeTo(it) }
         return DownloadResult.Success(
             finalUrl = response.request.url.toString(),
             contentType = response.header("Content-Type"),

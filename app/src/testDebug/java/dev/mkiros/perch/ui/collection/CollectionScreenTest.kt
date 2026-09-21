@@ -54,6 +54,7 @@ class CollectionScreenTest {
 
     // Y04: rewritten, not weakened — To-Read now takes a pasted link as well as a
     // long-press (§0.4), so the empty state has to say both or it undersells the screen.
+    // PLAN-13 G13: and a share, as one clause of the sentence rather than a tail after it.
     @Test
     fun `an empty To-Read says what the list is for, not that it is empty`() {
         show(Collection.ToRead)
@@ -61,8 +62,8 @@ class CollectionScreenTest {
         compose.onNodeWithTag(CollectionTestTags.EMPTY).assertExists()
         compose.onNodeWithText("Nothing queued yet").assertIsDisplayed()
         compose.onNodeWithText(
-            "Paste a link's address above, or long-press any entry and save it for later. " +
-                "It waits here until you take it off, however long that is. …or share a PDF to Perch.",
+            "Paste a link's address above, share a link or a PDF to Perch, or long-press any " +
+                "entry and save it for later. It waits here until you take it off, however long that is.",
         ).assertIsDisplayed()
     }
 

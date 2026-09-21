@@ -114,6 +114,24 @@ What is left, none of it a session on its own:
   white on purpose — the document as published, as every phone PDF reader shows it — and
   DESIGN.md §8 "Documents" says why. A reader who wants dark pages is a behaviour change,
   so it waits for a request.
+- **API 35 text extraction for documents** (PLAN-13 §0.3). `PdfRenderer.Page.getTextContents()`
+  would give a stored PDF a searchable body and a title rung (page one's first line) for files
+  with no metadata — but it exists on one Android version, on the device only, so a document is
+  findable by title alone (SPEC.md §8a) until a plan decides the other versions' answer.
+- **Sharing a local document out of Perch** (PLAN-13 G13). A PDF that arrived as a file has
+  no link, so the article's share action sends its title and nothing else; sending the file
+  itself needs a `FileProvider` and a manifest entry — a behaviour change, so it waits.
+- **Titles of encrypted PDFs** (PLAN-13 §0.3). A file with `/Encrypt` in its trailer yields no
+  title and no date, because its strings are RC4/AES ciphertext even under an empty user
+  password; decrypting them is a standard (ISO 32000-1 §7.6) but not a small one.
+- **`ArticleViewModel.loaded` opens a document on the main thread** (G13). It reads every
+  page's size through a fresh `PageSource` before the first frame — 112 `openPage` calls for
+  the SSRN sample. §0.6 said `Dispatchers.IO`; moving it means making `loaded` suspend, and
+  `ArticleViewModelTest` reads the state synchronously on an unconfined Main, so the change
+  wants its own session and a measurement on the device first.
+- **`loop.sh`'s nightly `"$DEV" reboot` has no timeout** (`loop.sh:137`, `device.sh:154`'s
+  `wait-for-device`), so an `offline` emulator hangs a run before its first session and the
+  stall guard never fires. `boot_emulator` already wraps its call in `timeout`; this one should too.
 - **`EntryStateRow` and `PendingEntryStateEntity` declare the same eight fields** in the same
   order (`EntryStateRow.kt:9-16`, `PendingEntryStateEntity.kt:23-30`). Sharing them means an
   interface over an entity Room owns, so it waits for someone touching the schema anyway.

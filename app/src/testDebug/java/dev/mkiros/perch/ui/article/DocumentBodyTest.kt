@@ -62,6 +62,7 @@ class DocumentBodyTest {
         compose.onNodeWithTag(ArticleTestTags.HEADLINE)
             .assertTextEquals("Who Profits from Prediction? Execution, not Information")
         compose.onNodeWithTag(ArticleTestTags.BYLINE, useUnmergedTree = true).assertIsDisplayed()
+        compose.onNodeWithTag(ArticleTestTags.DOCUMENT_STRIP, useUnmergedTree = true).assertIsDisplayed()
         compose.onNodeWithText("112 pages · ${sizeOf(870_451)} · saved offline").assertIsDisplayed()
         compose.onNodeWithTag(ArticleTestTags.STANDFIRST).assertDoesNotExist()
         awaitPageBitmap(0)

@@ -227,12 +227,7 @@ fun CollectionScreen(
         }
         SaveLinkSheet(
             viewModel = saveLinkViewModel,
-            onDismiss = {
-                if (saveLinkViewModel.onDismissRequest()) {
-                    // Successfully dismissed
-                }
-            },
-            onSaved = { },
+            onDismiss = { saveLinkViewModel.onDismissRequest() },
         )
     }
 }

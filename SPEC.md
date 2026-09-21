@@ -101,6 +101,7 @@ app/src/main/java/dev/mkiros/perch/
 ├─ di/AppContainer.kt              manual DI: db, okhttp, repos, clock, connectivity, settings
 ├─ model/ TimeFilter.kt  ThemeMode.kt  RefreshInterval.kt   the types every layer shares:
 │         BackfillRunner.kt  RefreshScheduler.kt            ui → data/work → model, never back
+│         Incoming.kt                                       (PLAN-13 — a share or an opened PDF)
 ├─ data/
 │  ├─ db/  PerchDatabase.kt  FeedDao.kt  EntryDao.kt  FolderDao.kt  ArchivePostDao.kt
 │  │       EntryListItem.kt  EntryStateRow.kt  EntryIdentity.kt  FeedReach.kt  FtsQuery.kt
@@ -119,13 +120,14 @@ app/src/main/java/dev/mkiros/perch/
 │  │            PdfRendererRasterizer.kt                  (PLAN-13 — PDFs)
 │  └─ repo/ FeedRepository.kt  EntryRepository.kt  FolderRepository.kt
 │           ArticleTextRepository.kt  BackfillRepository.kt  SavedLinkRepository.kt
+│           DocumentOpener.kt
 │           OpmlRepository.kt  ProfileRepository.kt  FolderResolver.kt
 ├─ work/ RefreshWorker.kt  BackfillWorker.kt  WorkScheduler.kt
 │        WorkManagerBackfillRunner.kt
 └─ ui/  ViewModels.kt                 the one STOP_TIMEOUT_MS every ViewModel shares
    ├─ theme/ Color.kt  Type.kt  Theme.kt  Dimens.kt  Brand.kt  CodeTheme.kt  BackArrow.kt
    ├─ brand/ PerchBrandMark.kt
-   ├─ nav/   PerchNavHost.kt  PerchBottomBar.kt  BackChain.kt
+   ├─ nav/   PerchNavHost.kt  PerchBottomBar.kt  BackChain.kt  IncomingShare.kt
    ├─ home/  HomeScreen.kt  HomeViewModel.kt  EntryRow.kt  DrawerSelection.kt
    │         EntryActions.kt  FolderActions.kt  SourceActions.kt  SelectionBar.kt
    │         PagedList.kt  EmptyState.kt  RelativeTime.kt  BackfillOfferUi.kt  PullUp.kt
@@ -133,6 +135,7 @@ app/src/main/java/dev/mkiros/perch/
    ├─ article/ ArticleScreen.kt  ArticleViewModel.kt  ArticleBody.kt  RichText.kt
    │           code/{CodeHighlighter,CodeLanguage}.kt
    │           zoom/{ImageViewer,ZoomGeometry,ZoomState}.kt
+   │           DocumentUi.kt  document/{DocumentBody,DocumentZoom,TextColumn,PageCache,PagePosition}.kt
    ├─ collection/ CollectionScreen.kt  CollectionViewModel.kt
    │              SaveLinkSheet.kt  SaveLinkViewModel.kt
    ├─ search/ SearchSurface.kt  SearchViewModel.kt  SearchState.kt
@@ -256,7 +259,17 @@ adds `feeds.isSynthetic` and seeds the saved-links feed for pasted links (PLAN-6
 the `entries_fts` search index and its delete trigger (PLAN-9 S08); version 8 adds
 `entries.scrollPosition` — the body offset an article reopens at (PLAN-11 E01); version 9 merges the
 duplicate rows #69 created; no shape change (PLAN-12 F02); version 10 adds `archive_posts`, the remembered
-archive plan (PLAN-12 F07). Current version: 10.
+archive plan (PLAN-12 F07); version 11 adds `entries.documentPath`, a stored PDF's path relative to
+`filesDir` (PLAN-13 G01). Current version: 11.
+
+**Stored documents (v11/PLAN-13 §0.2)** are rows on the saved-links feed like any pasted link, with
+the file in `filesDir/documents/<uuid>.pdf` and its page-one thumbnail `<uuid>-1.png` beside it
+(`imageUrl` is that file's `file://` URI). `upsertAll` carries `documentPath` like a reader flag. The
+directory is swept **once per process start** (`EntryRepository.sweepDocuments`, from `PerchApp`):
+a file no row names, or whose row is neither saved nor liked, is deleted and its row forgets it
+(`documentPath` and `imageUrl` nulled) — never on a flag change, because *Removed from To-Read* has
+an Undo. Neither the profile (U14) nor Auto Backup carries a document: a restored row whose file is
+missing reads as a pasted link, or says the document is no longer stored when it has no link.
 
 **`entries_fts` (v7/PLAN-9 §0.8)** is a standalone `FTS4(title, body)` whose `rowid` is
 `entries.id` — deliberately **not** `@Fts4(contentEntity = …)`, whose sync triggers Room does not
@@ -376,6 +389,9 @@ pasted URL already parses as a feed, skip discovery entirely.
   `danluu.com/atom.xml` 11.1 MB and `googleprojectzero.blogspot.com` 13.2 MB, both
   decompressed — those two are out of scope for Perch, and say so by name in the live
   acceptance test's exclusion list rather than by failing forever.
+- **A document's cap is 40 MiB** (PLAN-13 §0.4): `FeedFetcher.download` streams a pasted link to
+  a file, and a shared file is copied under the same cap; only a response that turns out not to be
+  a PDF is then held to the 8 MiB page cap.
 
 ## 7. Refresh policy
 
@@ -403,13 +419,17 @@ pasted URL already parses as a feed, skip discovery entirely.
   computed by SQL `COUNT`, never in Kotlin.
 - Three independent reader-owned flags (PLAN-2 §0): `isRead`, `isSaved` (*Read later*),
   `isStarred` (*Liked*). Clearing one nulls its timestamp; none of them implies another.
+- **Where the reader stopped** (`entries.scrollPosition`, E01) is the body's scroll offset in pixels
+  for an article and, for a stored document, the **page number** (1-based; 0 is the top) — the
+  two meanings never coexist on one row (PLAN-13 §0.2).
 
 ## 8a. Search (v0.6/PLAN-9 §0.8, #28)
 
 - **Everything stored is findable**, by title or by body text, over `entries_fts`. Coverage is
   therefore as patchy as `contentHtml` is: a feed that ships a headline and a link has only its
   summary indexed until the article is opened and full-text extraction replaces it. Search must
-  not pretend a never-opened article has a body.
+  not pretend a never-opened article has a body. **A stored document is findable by title only**
+  (PLAN-13 §0.4): its indexed body is empty, since Perch extracts no text from a PDF.
 - **Reader input never reaches `MATCH`.** `FtsQuery.from(raw): String?` strips non-alphanumerics,
   joins the tokens with a **space** and suffixes the last with `*` for prefix matching, returning
   null for empty. A stray `"`, `*` or `AND` passed through would throw at runtime. The join is a

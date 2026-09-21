@@ -3,10 +3,8 @@ package dev.mkiros.perch.data.document
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.pdf.PdfRenderer
-import androidx.annotation.RequiresApi
 import java.io.File
 import java.io.IOException
-import kotlinx.coroutines.sync.Mutex
 
 /** Production PDF rasterizer using Android's PdfRenderer. */
 class PdfRendererRasterizer : PageRasterizer {
@@ -35,35 +33,25 @@ class PdfRendererRasterizer : PageRasterizer {
     }
 }
 
-@RequiresApi(21)
+/** Not thread-safe, one open page at a time: [dev.mkiros.perch.ui.article.document.PageCache] serialises renders. */
 private class PdfRendererSource(
     private val renderer: PdfRenderer,
     private val fd: android.os.ParcelFileDescriptor,
 ) : PageSource {
     override val pageCount: Int = renderer.pageCount
-    private val mutex = Mutex()
 
     override fun size(index: Int): PageSize {
-        val page = renderer.openPage(index)
-        val size = PageSize(page.width, page.height)
-        page.close()
-        return size
+        return renderer.openPage(index).use { page -> PageSize(page.width, page.height) }
     }
 
     override fun render(index: Int, widthPx: Int): Bitmap {
-        val page = renderer.openPage(index)
-        val sizePoints = PageSize(page.width, page.height)
-        val aspect = sizePoints.width.toFloat() / sizePoints.height.toFloat()
-        val heightPx = (widthPx / aspect).toInt()
-
-        val bitmap = Bitmap.createBitmap(widthPx, heightPx, Bitmap.Config.ARGB_8888)
-        // Fill with white background
-        bitmap.eraseColor(Color.WHITE)
-        // Render to bitmap (scaled to fit)
-        page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
-        page.close()
-
-        return bitmap
+        return renderer.openPage(index).use { page ->
+            val heightPx = (widthPx * page.height.toFloat() / page.width).toInt()
+            Bitmap.createBitmap(widthPx, heightPx, Bitmap.Config.ARGB_8888).apply {
+                eraseColor(Color.WHITE)
+                page.render(this, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+            }
+        }
     }
 
     override fun close() {

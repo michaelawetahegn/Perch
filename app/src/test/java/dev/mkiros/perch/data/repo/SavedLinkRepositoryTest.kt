@@ -254,6 +254,41 @@ class SavedLinkRepositoryTest {
     }
 
     @Test
+    fun `a pasted PDF with no title of its own takes its Content-Disposition name`() = runTest {
+        server.enqueue(pdf("empty-title").addHeader("Content-Disposition", "attachment; filename=\"Quarterly_notes.pdf\""))
+
+        val saved = entries.findById(repo.saveLink(server.url("/download").toString()).getOrThrow())!!
+
+        assertThat(saved.title).isEqualTo("Quarterly notes")
+    }
+
+    @Test
+    fun `a pasted PDF with no title and no file name takes the address's last segment`() = runTest {
+        server.enqueue(pdf("empty-title"))
+        server.enqueue(pdf("empty-title"))
+
+        val named = entries.findById(repo.saveLink(server.url("/papers/Annual_report.pdf").toString()).getOrThrow())!!
+        val versioned = entries.findById(repo.saveLink(server.url("/pdf/1706.03762v7").toString()).getOrThrow())!!
+
+        assertThat(named.title).isEqualTo("Annual report")
+        assertThat(versioned.title).isEqualTo("1706.03762v7")
+    }
+
+    @Test
+    fun `pasting the same PDF twice keeps one stored file, not two`() = runTest {
+        server.enqueue(pdf("letter-margins"))
+        server.enqueue(pdf("letter-margins"))
+        val url = server.url("/letter.pdf").toString()
+
+        repo.saveLink(url).getOrThrow()
+        val saved = entries.findById(repo.saveLink(url).getOrThrow())!!
+
+        assertThat(documentFiles().filter { it.extension == "pdf" }.map { it.name })
+            .containsExactly(documents.resolve(saved.documentPath!!)!!.name)
+        assertThat(documentFiles().filter { it.extension == "png" }).hasSize(1)
+    }
+
+    @Test
     fun `a shared file is stored under a content hash and titled from the file`() = runTest {
         val fixture = fixture("ssrn-6191618")
         val uri = share(fixture.file, "ssrn-6191618.pdf")
@@ -332,6 +367,10 @@ class SavedLinkRepositoryTest {
     }
 
     private fun fixture(slug: String) = DocumentFixtures.manifest().first { it.slug == slug }
+
+    private fun pdf(slug: String) = MockResponse()
+        .setBody(Buffer().write(fixture(slug).file.readBytes()))
+        .addHeader("Content-Type", "application/pdf")
 
     private fun share(file: File, name: String): Uri {
         val uri = Uri.parse("content://test/$name")
