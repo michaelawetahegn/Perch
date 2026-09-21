@@ -426,7 +426,7 @@ tasks take screenshots (G07, G08, G11 and the two live ones) — through `Screen
         `PerchDatabaseMigrationTest` green; #72 commented naming the commit and the tests; pushed.
       - Rung: unit
 
-- [ ] **G02 — A document's title and date come from the PDF itself. TDD. Issue #72.**
+- [BLOCKED: PDF metadata parsing — object stream decompression and XMP filtering incomplete (see commit f318c4b, NOTES.md 2026-09-21)] **G02 — A document's title and date come from the PDF itself. TDD. Issue #72.**
       §0.3 is the decision — the rung order, the string decoding, the
       object-stream path, the encrypted rule, the boilerplate list, the date.
       1. **RED:** `PdfInfoReaderTest` (`src/test/.../data/document/`) — one case per manifest row, iterating

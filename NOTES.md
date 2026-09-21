@@ -1,6 +1,7 @@
 # NOTES.md
 
 ## Log
+- 2026-09-21 — **G02: PDF metadata extraction (PLAN-13).** `PdfInfoReader` reads title and creationDate from PDFs. Implementation challenge: PDF structure is complex (object streams, XMP metadata, hex-encoded strings, escaped parentheses). RED tests created with 14 cases (6/14 passing); 8 cases still failing due to object stream decompression and XMP boilerplate filtering needing refinement. Test framework (`DocumentFixtures` reading manifest.tsv) is solid. Recommend: (1) add optional dependency for PDF parsing if available, OR (2) accept manual/curated title extraction as fallback for complex PDFs, OR (3) continue iterative regex-based parsing with focus on the fixture files present in the repo. See commit f318c4b.
 - **Standing grep gates:** the two commands are in the active plan's §0.2. Behind the hostname one: parse by
   **standards** (OG, JSON-LD, Dublin Core, sitemaps.org, RFC 5005/9309), so one blog's support makes similar ones work
   — **a rule lifting one fixture and moving no other is aimed at a site.** **U01: the repo is public** (MIT), so a
