@@ -2,6 +2,7 @@ package dev.mkiros.perch.data.net
 
 import dev.mkiros.perch.data.parse.FetchedPage
 import dev.mkiros.perch.data.parse.PageFetcher
+import java.io.File
 import java.io.IOException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
@@ -32,6 +33,21 @@ sealed interface FetchResult {
     data class Failure(val message: String) : FetchResult
 }
 
+/** What downloading a document to a file can come back as. */
+sealed interface DownloadResult {
+
+    /** The document was downloaded and written to the file. */
+    class Success(
+        val finalUrl: String,
+        val contentType: String?,
+        val contentDisposition: String?,
+        val bytes: Long,
+    ) : DownloadResult
+
+    /** A per-source problem, phrased for the user. Never an exception. */
+    data class Failure(val message: String) : DownloadResult
+}
+
 /**
  * Fetches feed bytes over HTTP per SPEC.md §6.
  *
@@ -48,6 +64,7 @@ sealed interface FetchResult {
 class FeedFetcher(
     private val client: OkHttpClient,
     private val maxBodyBytes: Long = MAX_BODY_BYTES,
+    private val maxDocumentBytes: Long = MAX_DOCUMENT_BYTES,
 ) : PageFetcher {
 
     /** Fetches [url], offering [etag]/[lastModified] as conditional-GET validators. */
@@ -76,6 +93,21 @@ class FeedFetcher(
             else -> null
         }
 
+    /** Downloads [url] to [into], up to [maxDocumentBytes]. */
+    suspend fun download(url: String, into: File): DownloadResult {
+        val request = runCatching {
+            Request.Builder().url(url).build()
+        }.getOrElse { return DownloadResult.Failure("Not a usable address: $url") }
+
+        return withContext(Dispatchers.IO) {
+            try {
+                client.newCall(request).execute().use { response -> readDocument(response, into) }
+            } catch (e: IOException) {
+                DownloadResult.Failure(unreachable(request.url.host, e))
+            }
+        }
+    }
+
     private fun read(response: Response): FetchResult {
         if (response.code == NOT_MODIFIED) return FetchResult.NotModified
         if (!response.isSuccessful) return FetchResult.Failure(httpFailure(response))
@@ -98,6 +130,33 @@ class FeedFetcher(
         )
     }
 
+    private fun readDocument(response: Response, into: File): DownloadResult {
+        if (!response.isSuccessful) return DownloadResult.Failure(httpFailure(response))
+
+        val body = response.body ?: return DownloadResult.Failure("Empty response")
+        if (body.contentLength() > maxDocumentBytes) {
+            into.delete()
+            return DownloadResult.Failure(tooLargeDocument())
+        }
+
+        val buffer = Buffer()
+        while (buffer.size <= maxDocumentBytes) {
+            if (body.source().read(buffer, READ_CHUNK) == -1L) break
+        }
+        if (buffer.size > maxDocumentBytes) {
+            into.delete()
+            return DownloadResult.Failure(tooLargeDocument())
+        }
+
+        buffer.writeTo(into.outputStream())
+        return DownloadResult.Success(
+            finalUrl = response.request.url.toString(),
+            contentType = response.header("Content-Type"),
+            contentDisposition = response.header("Content-Disposition"),
+            bytes = buffer.size,
+        )
+    }
+
     private fun httpFailure(response: Response) = when (response.code) {
         404, 410 -> "Feed not found (HTTP ${response.code})"
         in 500..599 -> "The server is having trouble (HTTP ${response.code})"
@@ -105,6 +164,8 @@ class FeedFetcher(
     }
 
     private fun tooLarge() = "Feed is too large (over ${maxBodyBytes / MIB} MiB)"
+
+    private fun tooLargeDocument() = "Document is too large (over ${maxDocumentBytes / MIB} MiB)"
 
     private fun unreachable(host: String, e: IOException) = when (e) {
         is SocketTimeoutException -> "Timed out contacting $host"
@@ -116,6 +177,7 @@ class FeedFetcher(
         const val NOT_MODIFIED = 304
         const val MIB = 1024L * 1024L
         const val MAX_BODY_BYTES = 8L * MIB
+        const val MAX_DOCUMENT_BYTES = 40L * MIB
         const val READ_CHUNK = 64L * 1024L
     }
 }

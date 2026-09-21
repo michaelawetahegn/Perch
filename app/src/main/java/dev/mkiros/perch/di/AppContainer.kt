@@ -127,6 +127,8 @@ class AppContainer(
             entryDao = database.entryDao(),
             fetcher = fetcher,
             clock = clock,
+            documents = documents,
+            rasterizer = rasterizer,
         )
     }
 

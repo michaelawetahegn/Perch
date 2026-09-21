@@ -1,6 +1,7 @@
 package dev.mkiros.perch.data.net
 
 import com.google.common.truth.Truth.assertThat
+import java.io.File
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.test.runTest
 import okhttp3.Interceptor
@@ -17,13 +18,18 @@ import okio.Source
 import okio.buffer
 import org.junit.After
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
 
 /**
  * The contract of SPEC.md §6: conditional GET is mandatory, a 304 costs nothing, and every
  * way a fetch can go wrong is a per-source message rather than an exception.
  */
 class FeedFetcherTest {
+
+    @get:Rule
+    val tmpDir: TemporaryFolder = TemporaryFolder()
 
     private lateinit var server: MockWebServer
     private lateinit var bodyReads: BodyReadCounter
@@ -229,6 +235,39 @@ class FeedFetcherTest {
             .fetch(url(), etag = null, lastModified = null)
 
         assertThat(server.takeRequest().getHeader("User-Agent")).isEqualTo(PerchHttp.USER_AGENT)
+    }
+
+    @Test
+    fun `download streams a body to the file and reports its headers`() = runTest {
+        val content = "PDF content here"
+        server.enqueue(
+            MockResponse()
+                .setBody(content)
+                .addHeader("Content-Type", "application/pdf")
+                .addHeader("Content-Disposition", "attachment; filename=\"paper.pdf\""),
+        )
+
+        val file = File(tmpDir.root, "test.pdf")
+        val result = fetcher.download(url(), file)
+
+        assertThat(result).isInstanceOf(DownloadResult.Success::class.java)
+        val success = result as DownloadResult.Success
+        assertThat(file.exists()).isTrue()
+        assertThat(success.contentType).contains("application/pdf")
+        assertThat(success.contentDisposition).contains("paper.pdf")
+        assertThat(success.finalUrl).isEqualTo(url())
+    }
+
+    @Test
+    fun `download stops at the document cap`() = runTest {
+        val oversized = Buffer().write(ByteArray(41 * 1024 * 1024))
+        server.enqueue(MockResponse().setBody(oversized))
+
+        val file = File(tmpDir.root, "large.pdf")
+        val result = fetcher.download(url(), file)
+
+        assertThat(result).isInstanceOf(DownloadResult.Failure::class.java)
+        assertThat((result as DownloadResult.Failure).message.lowercase()).contains("too large")
     }
 
     /** Counts bytes pulled off the wire, so "a 304 costs nothing" can be asserted literally. */

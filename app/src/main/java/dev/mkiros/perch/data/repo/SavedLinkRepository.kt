@@ -3,6 +3,9 @@ package dev.mkiros.perch.data.repo
 import dev.mkiros.perch.data.db.EntryDao
 import dev.mkiros.perch.data.db.FeedDao
 import dev.mkiros.perch.data.db.entity.FeedEntity
+import dev.mkiros.perch.data.document.DocumentStore
+import dev.mkiros.perch.data.document.PageRasterizer
+import dev.mkiros.perch.data.document.PdfInfoReader
 import dev.mkiros.perch.data.extract.PageContentExtractor
 import dev.mkiros.perch.data.extract.toEntry
 import dev.mkiros.perch.data.net.FeedFetcher
@@ -10,6 +13,7 @@ import dev.mkiros.perch.data.net.FetchResult
 import dev.mkiros.perch.data.parse.FeedParser
 import dev.mkiros.perch.data.parse.ParseResult
 import dev.mkiros.perch.data.parse.normalizePastedUrl
+import java.io.File
 import java.time.Clock
 
 /**
@@ -46,40 +50,64 @@ class SavedLinkRepository(
     private val entryDao: EntryDao,
     private val fetcher: FeedFetcher,
     private val clock: Clock,
+    private val documents: DocumentStore,
+    private val rasterizer: PageRasterizer,
     private val parser: FeedParser = FeedParser(),
 ) {
 
     suspend fun saveLink(url: String): Result<Long> {
         val normalized = normalizePastedUrl(url)
-        val fetched = when (val result = fetcher.fetch(normalized, etag = null, lastModified = null)) {
-            is FetchResult.Success -> result
-            is FetchResult.Failure -> return Result.failure(SaveLinkFailure.Unreachable(result.message))
-            // No validators were sent, so nothing could have been validated.
-            FetchResult.NotModified ->
-                return Result.failure(SaveLinkFailure.Unreachable("Nothing came back from $normalized."))
+        val file = documents.newDocument()
+
+        val downloaded = when (val result = fetcher.download(normalized, file)) {
+            is dev.mkiros.perch.data.net.DownloadResult.Success -> result
+            is dev.mkiros.perch.data.net.DownloadResult.Failure -> {
+                file.delete()
+                return Result.failure(SaveLinkFailure.Unreachable(result.message))
+            }
         }
+
+        // Check if it's a PDF by sniffing the first 1 KiB
+        val sniff = file.inputStream().use { stream ->
+            ByteArray(minOf(1024, file.length().toInt())).apply { stream.read(this) }
+        }
+        val isPdf = sniff.decodeToString(throwOnInvalidSequence = false).contains("%PDF-")
+            || downloaded.contentType?.startsWith("application/pdf") == true
+
+        if (isPdf) {
+            return storeDocument(
+                file = file,
+                link = downloaded.finalUrl,
+                guid = downloaded.finalUrl,
+                nameHint = extractFilename(downloaded.contentDisposition)
+            )
+        }
+
+        // Not a PDF, process as HTML page using the downloaded bytes
+        val bytes = file.readBytes()
+        file.delete()
 
         // A pasted feed address is not an error — it is the other feature (§0.4). Checked
         // against the bytes we already have, not through discovery: a blog *post* routinely
         // declares its site's feed via autodiscovery, and that must not make every post look
         // like a feed.
-        if (parser.parse(fetched.bytes, fetched.contentType, fetched.finalUrl) is ParseResult.Success) {
-            return Result.failure(SaveLinkFailure.IsFeed(fetched.finalUrl))
+        if (parser.parse(bytes, downloaded.contentType, downloaded.finalUrl) is ParseResult.Success) {
+            return Result.failure(SaveLinkFailure.IsFeed(downloaded.finalUrl))
         }
 
-        val document = PageContentExtractor.parse(fetched.bytes, fetched.finalUrl)
+        val document = PageContentExtractor.parse(bytes, downloaded.finalUrl)
             ?: return Result.failure(SaveLinkFailure.Unreachable("$normalized is not a readable page."))
 
         val savedFeedId = feedDao.findByUrl(FeedEntity.SAVED_LINKS_FEED_URL)?.id
             ?: error("The saved-links feed is missing; every database is seeded with it (Y02).")
 
-        val content = PageContentExtractor.extract(document, fetched.finalUrl)
+        val content = PageContentExtractor.extract(document, downloaded.finalUrl)
         val now = clock.millis()
         // A page that declares no date at all is dated *now*, and says so: a link saved
         // today belongs at the top of To-Read, not at the bottom under EPOCH.
         val entity = content.toEntry(
             feedId = savedFeedId,
-            finalUrl = fetched.finalUrl,
+            finalUrl = downloaded.finalUrl,
             publishedAt = content.metadata.publishedAt?.toEpochMilli() ?: now,
             publishedIsEstimated = content.metadata.publishedAt == null,
             fetchedAt = now,
@@ -90,7 +118,7 @@ class SavedLinkRepository(
         // Idempotent on (feedId, guid), same as a refetched feed entry — pasting the same
         // link twice lands on the row this already wrote rather than duplicating it.
         entryDao.upsertAll(listOf(entity))
-        val saved = entryDao.findByGuid(savedFeedId, fetched.finalUrl)
+        val saved = entryDao.findByGuid(savedFeedId, downloaded.finalUrl)
             ?: error("upsertAll just wrote this row.")
         // D04: `upsertAll` carries the existing row's reader flags forward (U04), because a
         // *feed* must never overwrite what the reader did. A pasted link is the one caller
@@ -100,6 +128,69 @@ class SavedLinkRepository(
             entryDao.setSaved(saved.id, isSaved = true, savedAt = now)
         }
         return Result.success(saved.id)
+    }
+
+    private suspend fun storeDocument(
+        file: File,
+        link: String?,
+        guid: String,
+        nameHint: String?,
+        isSaved: Boolean = true
+    ): Result<Long> {
+        // Verify the file is a readable PDF
+        val source = rasterizer.open(file)
+        if (source == null || source.pageCount == 0) {
+            file.delete()
+            return Result.failure(SaveLinkFailure.Unreachable("$guid is not a readable page."))
+        }
+        source.close()
+
+        val savedFeedId = feedDao.findByUrl(FeedEntity.SAVED_LINKS_FEED_URL)?.id
+            ?: error("The saved-links feed is missing; every database is seeded with it (Y02).")
+
+        val pdfInfo = PdfInfoReader.read(file)
+        val title = pdfInfo.title ?: nameHint ?: "Document"
+        val publishedAt = pdfInfo.creationDate?.toEpochMilli() ?: clock.millis()
+        val publishedIsEstimated = pdfInfo.creationDate == null
+
+        val now = clock.millis()
+        val entity = dev.mkiros.perch.data.db.entity.EntryEntity(
+            feedId = savedFeedId,
+            guid = guid,
+            link = link,
+            title = title,
+            author = null,
+            summary = null,
+            contentHtml = null,
+            imageUrl = null,
+            publishedAt = publishedAt,
+            publishedIsEstimated = publishedIsEstimated,
+            readAt = null,
+            savedAt = if (isSaved) now else null,
+            starredAt = null,
+            fetchedAt = now,
+            bodyIsExcerpt = false,
+            fullTextAt = null,
+            scrollPosition = 0,
+            documentPath = documents.relativize(file),
+        )
+
+        entryDao.upsertAll(listOf(entity))
+        val saved = entryDao.findByGuid(savedFeedId, guid)
+            ?: error("upsertAll just wrote this row.")
+
+        if (!saved.isSaved && isSaved) {
+            entryDao.setSaved(saved.id, isSaved = true, savedAt = now)
+        }
+        return Result.success(saved.id)
+    }
+
+    private fun extractFilename(contentDisposition: String?): String? {
+        if (contentDisposition == null) return null
+        // Extract filename from Content-Disposition header
+        // Format: attachment; filename="example.pdf" or attachment; filename*=UTF-8''...
+        val filenameMatch = Regex("filename\\*?=(?:UTF-8'')?\"?([^\";\n]+)\"?").find(contentDisposition)
+        return filenameMatch?.groupValues?.get(1)?.trim()
     }
 
 }

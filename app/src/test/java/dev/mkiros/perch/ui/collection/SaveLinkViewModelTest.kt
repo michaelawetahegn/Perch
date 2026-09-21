@@ -4,10 +4,13 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.FeedEntity
+import dev.mkiros.perch.data.document.DocumentStore
 import dev.mkiros.perch.data.net.FeedFetcher
 import dev.mkiros.perch.data.repo.SaveLinkFailure
 import dev.mkiros.perch.data.repo.SavedLinkRepository
+import dev.mkiros.perch.support.FixtureRasterizer
 import dev.mkiros.perch.support.awaitInRealTime
+import java.io.File
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
@@ -26,7 +29,9 @@ import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
 import org.junit.After
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
@@ -47,6 +52,9 @@ import org.robolectric.RobolectricTestRunner
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
 class SaveLinkViewModelTest {
+
+    @get:Rule
+    val tmpDir: TemporaryFolder = TemporaryFolder()
 
     private lateinit var database: PerchDatabase
     private lateinit var server: MockWebServer
@@ -74,6 +82,7 @@ class SaveLinkViewModelTest {
                 }
         }
         server.start()
+        val documents = DocumentStore(File(tmpDir.root, "documents"))
         viewModel = SaveLinkViewModel(
             SavedLinkRepository(
                 feedDao = database.feedDao(),
@@ -82,6 +91,8 @@ class SaveLinkViewModelTest {
                     OkHttpClient.Builder().readTimeout(5, TimeUnit.SECONDS).build(),
                 ),
                 clock = Clock.fixed(Instant.parse("2026-09-07T12:00:00Z"), ZoneOffset.UTC),
+                documents = documents,
+                rasterizer = FixtureRasterizer(),
             ),
         )
     }

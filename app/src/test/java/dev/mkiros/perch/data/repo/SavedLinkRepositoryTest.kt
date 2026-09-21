@@ -6,7 +6,11 @@ import dev.mkiros.perch.data.db.EntryDao
 import dev.mkiros.perch.data.db.FeedDao
 import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.FeedEntity
+import dev.mkiros.perch.data.document.DocumentFixtures
+import dev.mkiros.perch.data.document.DocumentStore
 import dev.mkiros.perch.data.net.FeedFetcher
+import dev.mkiros.perch.support.FixtureRasterizer
+import java.io.File
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.test.runTest
 import okhttp3.OkHttpClient
@@ -16,7 +20,9 @@ import okhttp3.mockwebserver.SocketPolicy
 import okio.Buffer
 import org.junit.After
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import java.time.Clock
@@ -31,11 +37,15 @@ import java.time.ZoneOffset
 @RunWith(RobolectricTestRunner::class)
 class SavedLinkRepositoryTest {
 
+    @get:Rule
+    val tmpDir: TemporaryFolder = TemporaryFolder()
+
     private lateinit var db: PerchDatabase
     private lateinit var feeds: FeedDao
     private lateinit var entries: EntryDao
     private lateinit var server: MockWebServer
     private lateinit var repo: SavedLinkRepository
+    private lateinit var documents: DocumentStore
 
     private val now = Instant.parse("2026-08-25T12:00:00Z").toEpochMilli()
 
@@ -46,6 +56,7 @@ class SavedLinkRepositoryTest {
         entries = db.entryDao()
         server = MockWebServer()
         server.start()
+        documents = DocumentStore(File(tmpDir.root, "documents"))
         repo = SavedLinkRepository(
             feedDao = feeds,
             entryDao = entries,
@@ -53,6 +64,8 @@ class SavedLinkRepositoryTest {
                 OkHttpClient.Builder().readTimeout(500, TimeUnit.MILLISECONDS).build(),
             ),
             clock = Clock.fixed(Instant.ofEpochMilli(now), ZoneOffset.UTC),
+            documents = documents,
+            rasterizer = FixtureRasterizer(),
         )
     }
 
@@ -192,6 +205,27 @@ class SavedLinkRepositoryTest {
         assertThat(saved.title).isEqualTo("Just A Title")
         assertThat(saved.contentHtml).isNull()
         assertThat(saved.link).isEqualTo(server.url("/stub").toString())
+    }
+
+    @Test
+    fun `a pasted PDF is stored whole and titled from the file`() = runTest {
+        val fixture = DocumentFixtures.manifest().first { it.slug == "ssrn-6191618" }
+        val pdfContent = fixture.file.readBytes()
+        server.enqueue(
+            MockResponse()
+                .setBody(Buffer().write(pdfContent))
+                .addHeader("Content-Type", "application/pdf")
+                .addHeader("Content-Disposition", "attachment; filename=\"sample.pdf\""),
+        )
+
+        val result = repo.saveLink(server.url("/doc.pdf").toString())
+
+        assertThat(result.isSuccess).isTrue()
+        val saved = entries.findById(result.getOrThrow())!!
+        assertThat(saved.documentPath).isNotNull()
+        assertThat(saved.contentHtml).isNull()
+        assertThat(saved.summary).isNull()
+        assertThat(saved.isSaved).isTrue()
     }
 
     private fun article() = MockResponse()
