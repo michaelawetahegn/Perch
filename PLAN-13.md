@@ -426,7 +426,7 @@ tasks take screenshots (G07, G08, G11 and the two live ones) — through `Screen
         `PerchDatabaseMigrationTest` green; #72 commented naming the commit and the tests; pushed.
       - Rung: unit
 
-- [ ] **G02a — The Info dictionary is resolved, not searched for. TDD. Issue #72.**
+- [x] **G02a — The Info dictionary is resolved, not searched for. TDD. Issue #72.**
       **Read §0.3 in full before you touch code.** It specifies the algorithm completely; the previous
       attempt improvised and that is why this box was re-opened. Do not invent a different approach.
       The current `PdfInfo.kt` is the wrong shape, not a starting point: `read()` (`PdfInfo.kt:8-23`)
