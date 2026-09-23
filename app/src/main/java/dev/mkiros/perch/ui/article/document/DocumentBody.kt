@@ -41,6 +41,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListItemInfo
 import androidx.compose.foundation.lazy.LazyListLayoutInfo
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -53,6 +54,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -71,6 +73,7 @@ import dev.mkiros.perch.R
 import dev.mkiros.perch.data.document.PageSource
 import dev.mkiros.perch.ui.article.ArticleTestTags
 import dev.mkiros.perch.ui.article.DocumentUi
+import dev.mkiros.perch.ui.article.SaveReadingPosition
 import dev.mkiros.perch.ui.theme.ArticleType
 import dev.mkiros.perch.ui.theme.Dimens
 import java.io.File
@@ -81,6 +84,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 
 /**
@@ -102,8 +106,11 @@ fun DocumentArticle(
     onScrollSettled: (Int) -> Unit,
     header: @Composable () -> Unit,
 ) {
-    // Item N is page N (item 0 is the header), so the page stopped on is the item to open at.
-    val listState = rememberLazyListState(initialFirstVisibleItemIndex = scrollPosition)
+    // Opened at the item stopped on, then moved into it once its height is laid out; the
+    // list's own saved state carries it across a rotation, so that happens once per visit.
+    val start = remember { DocumentPosition.decode(scrollPosition) }
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = start.item)
+    var restored by rememberSaveable { mutableStateOf(false) }
     var toastPage by remember { mutableStateOf(1) }
     var toastVisible by remember { mutableStateOf(false) }
 
@@ -112,20 +119,26 @@ fun DocumentArticle(
         awaitDispose { value?.close() }
     }
 
-    // §0.6: the page is written when a scroll settles and as the screen leaves, never per frame.
-    LaunchedEffect(listState) {
-        snapshotFlow { listState.isScrollInProgress }
-            .drop(1)
-            .filter { !it }
-            .collect { onScrollSettled(listState.layoutInfo.pageUnderCentre() ?: 0) }
-    }
-    DisposableEffect(listState) {
-        onDispose { onScrollSettled(listState.layoutInfo.pageUnderCentre() ?: 0) }
-    }
+    // §0.6: written when a scroll settles, when the screen pauses and as it leaves — never
+    // per frame, and not before the restore, whose depth a write at the item's top would lose.
+    SaveReadingPosition(
+        isScrolling = { listState.isScrollInProgress },
+        position = { if (restored) listState.position()?.encode() else null },
+        save = onScrollSettled,
+    )
 
-    // The toast follows the page under the centre once it changes; the first page seen is
-    // the one opened at, so it never shows on open.
     LaunchedEffect(listState) {
+        if (!restored) {
+            val first = snapshotFlow { listState.layoutInfo.visibleItemsInfo.firstOrNull() }.filterNotNull().first()
+            // A stored item past the end (the list clamps it) opens where the list put it.
+            if (first.index == start.item && start.depth > 0) {
+                listState.scrollToItem(start.item, start.offsetIn(first.size))
+            }
+            restored = true
+        }
+
+        // The toast follows the page under the centre once it changes; the first page seen
+        // is the one opened at, so it never shows on open.
         snapshotFlow { listState.layoutInfo.pageUnderCentre() }
             .filterNotNull()
             .distinctUntilChanged()
@@ -346,6 +359,11 @@ private fun DocumentStrip(pageCount: Int, sizeBytes: Long, modifier: Modifier = 
         )
     }
 }
+
+/** Where the list is: its first visible item and how far into that item's height. */
+private fun LazyListState.position(): DocumentPosition? =
+    layoutInfo.visibleItemsInfo.firstOrNull { it.index == firstVisibleItemIndex }
+        ?.let { DocumentPosition.of(it.index, firstVisibleItemScrollOffset, it.size) }
 
 /** [pageUnderCentre] over the list's own layout: item N is page N, the header never one. */
 private fun LazyListLayoutInfo.pageUnderCentre(): Int? =

@@ -61,7 +61,8 @@ sealed interface ArticleUiState {
      *   sometimes decide a stub is an article, so the reader is never stuck with one.
      * @param scrollPosition the body offset, in pixels, the reader last stopped at (E01,
      *   #65) — read once on open; the screen owns it from there and writes it back
-     *   through [saveScrollPosition]. For a document, this is the page number (1-based).
+     *   through [saveScrollPosition]. For a document it is a
+     *   [dev.mkiros.perch.ui.article.document.DocumentPosition], encoded.
      * @param document a stored PDF loaded with its page count and aspect ratios; null for articles.
      * @param documentGone true when a document row lost its file between sessions.
      */

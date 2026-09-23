@@ -2,6 +2,7 @@ package dev.mkiros.perch.support
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import dev.mkiros.perch.PerchApp
 import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.FolderEntity
 import dev.mkiros.perch.data.document.DocumentStore
@@ -11,6 +12,7 @@ import dev.mkiros.perch.data.repo.DocumentOpener
 import dev.mkiros.perch.data.settings.SettingsStore
 import dev.mkiros.perch.di.AppContainer
 import dev.mkiros.perch.model.BackfillRunner
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.runBlocking
 import org.junit.rules.ExternalResource
 import java.io.File
@@ -73,6 +75,19 @@ class PerchRule(
 
     override fun after() {
         container.close()
+    }
+
+    /**
+     * A new file in [DocumentStore], once the app's own start-up work is done. [PerchApp]'s
+     * sweep shares the documents directory but not [database], so to it every file there is
+     * one no row names — left to race, it deletes the file from under the test.
+     */
+    fun newDocument(): File {
+        runBlocking {
+            ApplicationProvider.getApplicationContext<PerchApp>().startupScope.coroutineContext[Job]!!.children
+                .forEach { it.join() }
+        }
+        return container.documents.newDocument()
     }
 
     // ---- seeding (F11 / #61) -------------------------------------------------------------
