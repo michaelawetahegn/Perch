@@ -13,6 +13,7 @@ import dev.mkiros.perch.ui.nav.PerchNavHost
 import dev.mkiros.perch.ui.nav.displayNameOf
 import dev.mkiros.perch.ui.nav.incomingFrom
 import dev.mkiros.perch.ui.theme.PerchTheme
+import kotlinx.coroutines.flow.update
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,7 +51,7 @@ class MainActivity : ComponentActivity() {
             else -> from
         }
         if (incoming != null) {
-            container.intake.value = incoming
+            container.intake.update { it + incoming }
         }
     }
 }

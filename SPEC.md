@@ -522,7 +522,8 @@ press. Returning from an article restores the list's scroll position.
 search), where the save-link sheet takes the value, opens itself and saves it — a shared link
 as a paste, a shared or picked file with its provider's `DISPLAY_NAME` as the title's last rung.
 It is not a destination and opens no article: success is the *Saved "…"* snackbar, a failure
-stays in the sheet with its reason.
+stays in the sheet with its reason. Shares that arrive meanwhile queue in arrival order and are
+taken one at a time, each only once the sheet is free — never over a failure not yet dismissed.
 
 ## 11. Definition of done (project level)
 

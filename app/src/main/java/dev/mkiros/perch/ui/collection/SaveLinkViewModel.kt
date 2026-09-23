@@ -14,9 +14,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -52,6 +51,9 @@ data class SaveLinkUiState(
      * issue reports. The sheet reads this through [SaveLinkViewModel.onDismissRequest].
      */
     val canDismiss: Boolean get() = !isBusy
+
+    /** Free to take a share: nothing in flight, nothing saved but unannounced, no failure unread. */
+    internal val isFree: Boolean get() = !isBusy && savedEntryId == null && error == null
 }
 
 /**
@@ -61,7 +63,7 @@ data class SaveLinkUiState(
  */
 class SaveLinkViewModel(
     private val savedLinks: SavedLinkRepository,
-    private val intake: MutableStateFlow<Incoming?> = MutableStateFlow(null),
+    private val intake: MutableStateFlow<List<Incoming>> = MutableStateFlow(emptyList()),
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SaveLinkUiState())
@@ -69,22 +71,24 @@ class SaveLinkViewModel(
 
     init {
         viewModelScope.launch {
-            // A share that lands while the sheet is saving, or holds a save the screen has not
-            // announced yet, waits in the intake for the sheet to be free — it is not dropped.
-            val free = _state.map { !it.isBusy && it.savedEntryId == null }.distinctUntilChanged()
-            combine(intake, free) { incoming, isFree -> incoming.takeIf { isFree } }
-                .filterNotNull()
-                .collect { incoming ->
-                    intake.value = null
-                    open()
-                    when (incoming) {
-                        is Incoming.Link -> {
-                            onUrlChange(incoming.url)
-                            submit()
-                        }
-                        is Incoming.Document -> submitDocument(incoming.uri, incoming.displayName)
+            // Shares wait in the intake, oldest first, until the sheet is free: not saving, not
+            // holding a save the screen has not announced, and not showing a failure the reader
+            // has not dismissed or edited away. None is dropped, and none wipes another's error.
+            // Each turn starts a fresh `combine`, so it only ever sees the state as it is now.
+            while (true) {
+                val incoming = combine(intake, _state) { waiting, state ->
+                    waiting.firstOrNull()?.takeIf { state.isFree }
+                }.filterNotNull().first()
+                intake.update { it.drop(1) }
+                open()
+                when (incoming) {
+                    is Incoming.Link -> {
+                        onUrlChange(incoming.url)
+                        submit()
                     }
+                    is Incoming.Document -> submitDocument(incoming.uri, incoming.displayName)
                 }
+            }
         }
     }
 

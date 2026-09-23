@@ -187,8 +187,8 @@ fun PerchNavHost(
     // brings To-Read on screen so that view model exists. Selecting a tab is a no-op from
     // the article route (V08), so an open article is popped first.
     LaunchedEffect(container.intake) {
-        container.intake.collect { incoming ->
-            if (incoming == null) return@collect
+        container.intake.collect { waiting ->
+            if (waiting.isEmpty()) return@collect
             search.value = null
             if (navController.currentDestination?.route == Routes.ARTICLE) navController.popBackStack()
             selectTab(navController, PerchTab.ToRead)
