@@ -4,30 +4,26 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.pdf.PdfRenderer
 import java.io.File
-import java.io.IOException
+import android.os.ParcelFileDescriptor
 
 /** Production PDF rasterizer using Android's PdfRenderer. */
 class PdfRendererRasterizer : PageRasterizer {
     override fun open(file: File): PageSource? {
+        val fd = try {
+            ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
+        } catch (e: Exception) {
+            return null // gone, or not ours to read
+        }
         return try {
-            val fd = android.os.ParcelFileDescriptor.open(
-                file,
-                android.os.ParcelFileDescriptor.MODE_READ_ONLY
-            )
-            try {
-                val renderer = PdfRenderer(fd)
-                PdfRendererSource(renderer, fd)
-            } catch (e: Throwable) {
-                // PdfRenderer may fail for non-PDF files or under Robolectric (NoSuchMethodError)
-                fd.close()
-                null
-            }
-        } catch (e: IOException) {
+            PdfRendererSource(PdfRenderer(fd), fd)
+        } catch (e: Exception) {
+            // Not a PDF, damaged, or password-protected: PdfRenderer says so with IOException
+            // or SecurityException.
+            fd.close()
             null
-        } catch (e: SecurityException) {
-            null
-        } catch (e: Throwable) {
-            // Catch any other errors
+        } catch (e: NoSuchMethodError) {
+            // Robolectric has no PdfRenderer (PLAN-13 §0.5); on a device this never happens.
+            fd.close()
             null
         }
     }
@@ -36,7 +32,7 @@ class PdfRendererRasterizer : PageRasterizer {
 /** Not thread-safe, one open page at a time: [dev.mkiros.perch.ui.article.document.PageCache] serialises renders. */
 private class PdfRendererSource(
     private val renderer: PdfRenderer,
-    private val fd: android.os.ParcelFileDescriptor,
+    private val fd: ParcelFileDescriptor,
 ) : PageSource {
     override val pageCount: Int = renderer.pageCount
 
