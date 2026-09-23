@@ -48,7 +48,7 @@ class PerchRule(
     /** PLAN-13 G03: the rasterizer for tests (fixtures). */
     private val rasterizer: PageRasterizer = FixtureRasterizer(),
     /** PLAN-13 G10: opens URIs for document imports in tests. */
-    private val documentOpener: DocumentOpener? = null,
+    private val documentOpener: DocumentOpener = DocumentOpener { null },
 ) : ExternalResource() {
 
     /** Valid from the rule's `before` — that is, from `@Before` onwards. */

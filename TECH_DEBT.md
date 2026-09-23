@@ -124,11 +124,15 @@ What is left, none of it a session on its own:
 - **Titles of encrypted PDFs** (PLAN-13 §0.3). A file with `/Encrypt` in its trailer yields no
   title and no date, because its strings are RC4/AES ciphertext even under an empty user
   password; decrypting them is a standard (ISO 32000-1 §7.6) but not a small one.
-- **`ArticleViewModel.loaded` opens a document on the main thread** (G13). It reads every
-  page's size through a fresh `PageSource` before the first frame — 112 `openPage` calls for
-  the SSRN sample. §0.6 said `Dispatchers.IO`; moving it means making `loaded` suspend, and
-  `ArticleViewModelTest` reads the state synchronously on an unconfined Main, so the change
-  wants its own session and a measurement on the device first.
+- **A swept URL-PDF row opens as an article that fetches its PDF as a page** (v0.9.0 review).
+  When the startup sweep drops the file of a row neither saved nor liked, `clearDocument` leaves
+  a row with a PDF `link`, no body and no `documentPath`, so `ArticleViewModel`'s automatic
+  full-text fetch runs extraction over PDF bytes (it finds nothing and changes nothing) and
+  *Load full article* is offered. Marking such a row needs a flag `upsertAll`'s merge carries —
+  it resets `fullTextAt` — so it waits for a schema change or a decision to drop the row instead.
+- **A document is opened twice to be shown** (v0.9.0 review). `ArticleViewModel.loaded()` opens
+  the PDF and every page in turn only to read aspect ratios, then `DocumentBody` opens it again
+  to draw; one source handed from the first to the second would halve the work on a long paper.
 - **`loop.sh`'s nightly `"$DEV" reboot` has no timeout** (`loop.sh:137`, `device.sh:154`'s
   `wait-for-device`), so an `offline` emulator hangs a run before its first session and the
   stall guard never fires. `boot_emulator` already wraps its call in `timeout`; this one should too.

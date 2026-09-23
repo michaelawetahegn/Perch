@@ -3,6 +3,20 @@ package dev.mkiros.perch.ui.article
 import android.text.format.Formatter
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.swipeUp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import dev.mkiros.perch.ui.article.document.DocumentPosition
+import dev.mkiros.perch.ui.article.document.DocumentArticle
+import dev.mkiros.perch.data.document.PageSource
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.SemanticsMatcher
@@ -139,7 +153,7 @@ class DocumentBodyTest {
     }
 
     @Test
-    fun `leaving the screen writes the page under the centre`() {
+    fun `leaving the screen writes the item at the top and how far into it`() {
         val id = seedDocument("ssrn-6191618")
         showArticle(id)
 
@@ -147,7 +161,104 @@ class DocumentBodyTest {
         leaveArticle()
 
         val entry = runBlocking { perch.database.entryDao().findById(id) }!!
-        assertThat(entry.scrollPosition).isEqualTo(2)
+        val stored = DocumentPosition.decode(entry.scrollPosition)
+        assertThat(stored.item).isEqualTo(2)
+        assertThat(stored.offsetIn(1_000)).isEqualTo(0)
+    }
+
+    /** Navigation holds an entry at STARTED while its enter transition runs; back can come first. */
+    @Test
+    fun `leaving a screen that never resumed still writes where it was`() {
+        val id = seedDocument("ssrn-6191618")
+        showArticle(id, reach = Lifecycle.State.STARTED)
+
+        compose.onNodeWithTag(ArticleTestTags.DOCUMENT).performScrollToIndex(2)
+        leaveArticle()
+
+        val entry = runBlocking { perch.database.entryDao().findById(id) }!!
+        assertThat(DocumentPosition.decode(entry.scrollPosition).item).isEqualTo(2)
+    }
+
+    /** SPEC §8: a document's position and a page's pixels never share a row. */
+    @Test
+    fun `a gone document shown through its link leaves the document's place alone`() {
+        val feed = perch.seedFeed(title = "Saved")
+        val id = perch.seedEntry(
+            feed,
+            title = "A vanished paper",
+            link = "https://example.com/paper.pdf",
+            contentHtml = null,
+            documentPath = "documents/never-stored.pdf",
+        )
+        val place = DocumentPosition(item = 3, depth = 5).encode()
+        runBlocking { perch.database.entryDao().setScrollPosition(id = id, scrollPosition = place) }
+        showArticle(id)
+
+        leaveArticle()
+
+        val entry = runBlocking { perch.database.entryDao().findById(id) }!!
+        assertThat(entry.scrollPosition).isEqualTo(place)
+    }
+
+    @Test
+    fun `a document reopens at the exact offset it was left at, across two pages`() {
+        val id = seedDocument("ssrn-6191618")
+        showArticle(id)
+
+        // Page two's bottom fifth and the top of page three — not a page boundary.
+        compose.onNodeWithTag(ArticleTestTags.DOCUMENT).performScrollToIndex(2)
+        val pageHeight = pageBounds(1).let { (it.bottom - it.top).value } * density()
+        compose.onNodeWithTag(ArticleTestTags.DOCUMENT).performSemanticsAction(SemanticsActions.ScrollBy) {
+            it(0f, pageHeight * 0.8f)
+        }
+        compose.waitForIdle()
+        val left = topPage()
+        assertThat(left.first).isEqualTo(1)
+        assertThat(left.second).isLessThan(-pageHeight * 0.7f)
+
+        leaveArticle()
+        showArticle(id)
+
+        assertTopIs(left)
+    }
+
+    @Test
+    fun `a fling still running when the screen stops is saved where the screen stopped`() {
+        val id = seedDocument("ssrn-6191618")
+        showArticle(id)
+
+        compose.mainClock.autoAdvance = false
+        compose.onNodeWithTag(ArticleTestTags.DOCUMENT).performTouchInput { swipeUp(durationMillis = 60) }
+        compose.mainClock.advanceTimeBy(FRAME_MS * 4)
+        val atBack = topPage()
+
+        // Back pops the entry: it stops at once, while the exit transition keeps it drawn
+        // and the fling keeps going underneath until the composition leaves.
+        compose.runOnUiThread { owner.registry.currentState = Lifecycle.State.CREATED }
+        compose.mainClock.advanceTimeBy(2_000)
+        assertThat(topPage()).isNotEqualTo(atBack)
+        visit.value = null
+        compose.mainClock.autoAdvance = true
+        compose.waitForIdle()
+
+        showArticle(id)
+
+        assertTopIs(atBack)
+    }
+
+    @Test
+    fun `a fling that settles before leaving is saved where it settled`() {
+        val id = seedDocument("ssrn-6191618")
+        showArticle(id)
+
+        compose.onNodeWithTag(ArticleTestTags.DOCUMENT).performTouchInput { swipeUp(durationMillis = 60) }
+        compose.waitForIdle()
+        val settled = topPage()
+        leaveArticle()
+
+        showArticle(id)
+
+        assertTopIs(settled)
     }
 
     @Test
@@ -214,10 +325,57 @@ class DocumentBodyTest {
         assertThat(factor).isWithin(0.01f).of(DocumentZoom.MAX_SCALE)
     }
 
+    /**
+     * The screen can leave while its pages are still being opened. The open finishes anyway
+     * and hands back a renderer holding the file open; nobody is left to close it but this.
+     */
+    @Test
+    fun `pages opened after the screen has gone are closed, not leaked`() {
+        val fixture = DocumentFixtures.manifest().first { it.slug == "letter-margins" }
+        val started = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        val closed = AtomicBoolean(false)
+        val shown = mutableStateOf(true)
+        compose.setContent {
+            if (shown.value) {
+                DocumentArticle(
+                    document = DocumentUi(fixture.file, 3, List(3) { 612f / 792f }, fixture.file.length()),
+                    openPages = { file ->
+                        started.countDown()
+                        release.await(10, TimeUnit.SECONDS)
+                        val source = perch.container.rasterizer.open(file)!!
+                        object : PageSource by source {
+                            override fun close() {
+                                closed.set(true)
+                                source.close()
+                            }
+                        }
+                    },
+                    scrollPosition = 0,
+                    onScrollSettled = {},
+                    header = {},
+                )
+            }
+        }
+        compose.awaitInRealTime("the pages to start opening") { started.count == 0L }
+
+        shown.value = false
+        compose.waitForIdle()
+        release.countDown()
+
+        compose.awaitInRealTime("the late source to be closed") { closed.get() }
+    }
+
     // ---- harness ---------------------------------------------------------------
 
     private val visit = mutableStateOf<ArticleViewModel?>(null)
     private var contentSet = false
+
+    /** The article's own lifecycle, as the back stack entry gives it one: back stops it first. */
+    private val owner = object : LifecycleOwner {
+        val registry = LifecycleRegistry.createUnsafe(this)
+        override val lifecycle: Lifecycle get() = registry
+    }
 
     private fun seedDocument(slug: String): Long {
         val fixture = DocumentFixtures.manifest().first { it.slug == slug }
@@ -233,7 +391,7 @@ class DocumentBodyTest {
         )
     }
 
-    private fun showArticle(entryId: Long) {
+    private fun showArticle(entryId: Long, reach: Lifecycle.State = Lifecycle.State.RESUMED) {
         val viewModel = ArticleViewModel(
             entries = perch.container.entries,
             feeds = perch.container.feeds,
@@ -247,10 +405,15 @@ class DocumentBodyTest {
             contentSet = true
             compose.setContent {
                 PerchTheme(dynamicColor = false) {
-                    visit.value?.let { shown -> ArticleScreen(viewModel = shown, onBack = {}) }
+                    visit.value?.let { shown ->
+                        CompositionLocalProvider(LocalLifecycleOwner provides owner) {
+                            ArticleScreen(viewModel = shown, onBack = {})
+                        }
+                    }
                 }
             }
         }
+        compose.runOnUiThread { owner.registry.currentState = reach }
         visit.value = viewModel
         compose.awaitInRealTime("the article to load") { viewModel.state.value !is ArticleUiState.Loading }
         compose.waitForIdle()
@@ -267,6 +430,35 @@ class DocumentBodyTest {
         assertThat(rule.left).isEqualTo(pageBounds.left)
         assertThat(rule.right).isEqualTo(pageBounds.right)
     }
+
+    /**
+     * The page whose top is at or above the list's top — the one the screen is inside —
+     * and how far above, in pixels (0 or less). Unclipped: the page runs past the list.
+     */
+    private fun topPage(): Pair<Int, Float> {
+        val listTop = compose.onNodeWithTag(ArticleTestTags.DOCUMENT).fetchSemanticsNode().positionInRoot.y
+        val tops = compose.onAllNodes(SemanticsMatcher("a document page") { node ->
+            node.config.getOrNull(SemanticsProperties.TestTag)?.let(PAGE_TAG::matches) == true
+        }, useUnmergedTree = true).fetchSemanticsNodes().associate { node ->
+            PAGE_TAG.matchEntire(node.config[SemanticsProperties.TestTag])!!.groupValues[1].toInt() to
+                node.positionInRoot.y - listTop
+        }
+        val page = tops.filterValues { it <= 0.5f }.keys.maxOrNull() ?: tops.keys.min()
+        return page to tops.getValue(page)
+    }
+
+    /** The same page is at the top, to the pixel. */
+    private fun assertTopIs(expected: Pair<Int, Float>) {
+        compose.awaitInRealTime("the document to show") {
+            compose.onAllNodesWithTagCount(ArticleTestTags.DOCUMENT) > 0
+        }
+        val now = topPage()
+        assertThat(now.first).isEqualTo(expected.first)
+        assertThat(now.second).isWithin(1f).of(expected.second)
+    }
+
+    private fun density(): Float = ApplicationProvider.getApplicationContext<android.content.Context>()
+        .resources.displayMetrics.density
 
     private fun pageBounds(page: Int) =
         compose.onNodeWithTag("${ArticleTestTags.DOCUMENT_PAGE}:$page").getUnclippedBoundsInRoot()
@@ -299,6 +491,9 @@ class DocumentBodyTest {
     }
 
     private companion object {
+        val PAGE_TAG = Regex("${Regex.escape(ArticleTestTags.DOCUMENT_PAGE)}:(\\d+)")
+        const val FRAME_MS = 16L
+
         /** Half the gap between the pinching fingers, and how far apart they end up (ImageViewerTest). */
         const val SPREAD = 40f
         const val PINCH_FACTOR = 20f

@@ -77,12 +77,13 @@ data class EntryEntity(
      * `ScrollState.value` when scrolling last settled or the screen was left. Reader-owned
      * like the three flags above, so [dev.mkiros.perch.data.db.EntryDao.upsertAll] carries it
      * across a refresh; device- and font-specific, so the profile (U14) does not export it.
-     * For a document row it holds the page number (1-based; 0 is the top).
+     * For a document row it holds a [dev.mkiros.perch.ui.article.document.DocumentPosition],
+     * encoded: `(item + 1) * 10000 + depth`, or a bare page index under 10000 (0.9.0).
      */
     @ColumnInfo(defaultValue = "0")
     val scrollPosition: Int = 0,
     /**
-     * The path of a stored PDF, relative to `filesDir` — `documents/<uuid>.pdf`, or null
+     * The path of a stored PDF, relative to `filesDir/documents` — `<uuid>.pdf`, or null
      * if this entry is not a document. Carried across a refresh (upsertAll) like [scrollPosition].
      * The file is not backed up or shared to a new phone (PLAN-13 §0.2).
      */

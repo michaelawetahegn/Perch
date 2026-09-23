@@ -21,6 +21,8 @@ import java.io.File
 import java.security.MessageDigest
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import java.time.Clock
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * Why a pasted link did not become a saved entry (PLAN-6 §0.4) — every reason
@@ -61,11 +63,20 @@ class SavedLinkRepository(
     private val clock: Clock,
     private val documents: DocumentStore,
     private val rasterizer: PageRasterizer,
+    private val documentOpener: DocumentOpener,
     private val parser: FeedParser = FeedParser(),
-    private val documentOpener: DocumentOpener? = null,
 ) {
 
-    suspend fun saveLink(url: String): Result<Long> {
+    /**
+     * Everything below reads files, renders a page and parses — work that freezes the screen
+     * on Main, whoever called — so it runs on IO whatever the caller's dispatcher.
+     */
+    suspend fun saveLink(url: String): Result<Long> = withContext(Dispatchers.IO) { fetchAndSave(url) }
+
+    suspend fun saveDocument(uri: Uri, displayName: String?): Result<Long> =
+        withContext(Dispatchers.IO) { importDocument(uri, displayName) }
+
+    private suspend fun fetchAndSave(url: String): Result<Long> {
         val normalized = normalizePastedUrl(url)
         val file = documents.newDocument()
 
@@ -77,14 +88,7 @@ class SavedLinkRepository(
             }
         }
 
-        // Check if it's a PDF by sniffing the first 1 KiB
-        val sniff = file.inputStream().use { stream ->
-            ByteArray(minOf(1024, file.length().toInt())).apply { stream.read(this) }
-        }
-        val isPdf = sniff.decodeToString(throwOnInvalidSequence = false).contains("%PDF-")
-            || downloaded.contentType?.startsWith("application/pdf") == true
-
-        if (isPdf) {
+        if (looksLikePdf(file) || downloaded.contentType?.startsWith("application/pdf") == true) {
             return storeDocument(
                 file = file,
                 link = downloaded.finalUrl,
@@ -94,14 +98,14 @@ class SavedLinkRepository(
             )
         }
 
-        // Not a PDF, process as HTML page using the downloaded bytes
-        val bytes = file.readBytes()
-        file.delete()
-
-        // Non-PDF pages still have the 8 MiB cap (SPEC.md §6)
-        if (bytes.size > FeedFetcher.MAX_BODY_BYTES) {
+        // Not a PDF: a page, which keeps the 8 MiB cap (SPEC.md §6) — measured on disk, so a
+        // 40 MiB page is refused without ever being read into memory.
+        if (file.length() > FeedFetcher.MAX_BODY_BYTES) {
+            file.delete()
             return Result.failure(SaveLinkFailure.Unreachable("Feed is too large (over 8 MiB)"))
         }
+        val bytes = file.readBytes()
+        file.delete()
 
         // A pasted feed address is not an error — it is the other feature (§0.4). Checked
         // against the bytes we already have, not through discovery: a blog *post* routinely
@@ -146,11 +150,7 @@ class SavedLinkRepository(
         return Result.success(saved.id)
     }
 
-    suspend fun saveDocument(uri: Uri, displayName: String?): Result<Long> {
-        if (documentOpener == null) {
-            return Result.failure(SaveLinkFailure.Unreachable("Document opener not available"))
-        }
-
+    private suspend fun importDocument(uri: Uri, displayName: String?): Result<Long> {
         val file = documents.newDocument()
         val stream = documentOpener.open(uri)
         if (stream == null) {
@@ -180,11 +180,7 @@ class SavedLinkRepository(
             return Result.failure(SaveLinkFailure.Unreachable("File is too large (over 40 MiB)"))
         }
 
-        // Check if it's a PDF by sniffing the first 1 KiB
-        val sniff = file.inputStream().use { input ->
-            ByteArray(minOf(1024L, copied).toInt()).also { input.read(it) }
-        }.decodeToString(throwOnInvalidSequence = false)
-        if (!sniff.contains("%PDF-")) {
+        if (!looksLikePdf(file)) {
             file.delete()
             return Result.failure(SaveLinkFailure.NotDocument())
         }
@@ -207,14 +203,17 @@ class SavedLinkRepository(
         guid: String,
         nameHint: String?,
     ): Result<Long> {
-        // Verify the file is a readable PDF
-        val source = rasterizer.open(file)
-        if (source == null || source.pageCount == 0) {
-            file.delete()
-            return Result.failure(SaveLinkFailure.Unreachable("$guid is not a readable page."))
-        }
+        // It said `%PDF-`; whether it opens is the renderer's to say. To the reader, one that
+        // does not is a file Perch cannot read, not an address it could not reach.
         val thumbnail = documents.thumbnailFor(file)
-        source.use { writeThumbnail(it, thumbnail) }
+        val drawn = rasterizer.open(file)?.use { source ->
+            if (source.pageCount > 0) writeThumbnail(source, thumbnail)
+            source.pageCount > 0
+        } == true
+        if (!drawn) {
+            file.delete()
+            return Result.failure(SaveLinkFailure.NotDocument())
+        }
 
         val savedFeedId = feedDao.findByUrl(FeedEntity.SAVED_LINKS_FEED_URL)?.id
             ?: error("The saved-links feed is missing; every database is seeded with it (Y02).")
@@ -269,6 +268,13 @@ class SavedLinkRepository(
         into.outputStream().use { square.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
 
+    /** A PDF says `%PDF-` within its first kilobyte; readers tolerate a little junk before it. */
+    private fun looksLikePdf(file: File): Boolean {
+        val head = ByteArray(minOf(PDF_SNIFF_BYTES.toLong(), file.length()).toInt())
+        file.inputStream().use { it.read(head) }
+        return head.decodeToString(throwOnInvalidSequence = false).contains("%PDF-")
+    }
+
     private fun extractFilename(contentDisposition: String?): String? {
         if (contentDisposition == null) return null
         // Extract filename from Content-Disposition header
@@ -285,6 +291,9 @@ class SavedLinkRepository(
  */
 private fun titleFromFileName(name: String): String? =
     name.replace(Regex("\\.[A-Za-z][A-Za-z0-9]{0,4}$"), "").replace('_', ' ').trim().ifBlank { null }
+
+/** How much of a file's head is read to decide whether it is a PDF. */
+private const val PDF_SNIFF_BYTES = 1024
 
 /** A document row's thumbnail edge, in pixels (PLAN-13 §0.4). */
 private const val THUMBNAIL_PX = 256

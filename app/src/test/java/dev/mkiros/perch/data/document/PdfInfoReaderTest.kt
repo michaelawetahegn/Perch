@@ -210,6 +210,46 @@ class PdfInfoReaderTest {
         assertThat(info.title).isEqualTo("Digital Identity Guidelines")
     }
 
+    /** A 40 MiB file is not read into memory whole (twice, as bytes and as text) for its title. */
+    @Test
+    fun `a file larger than two windows is read at its ends, where its trailer and Info are`() {
+        val file = padded(head = "", tail = "1 0 obj\n<< /Title (At the end) >>\nendobj\ntrailer\n<< /Info 1 0 R >>\n%%EOF\n")
+
+        assertThat(PdfInfoReader.read(file, window = WINDOW).title).isEqualTo("At the end")
+    }
+
+    @Test
+    fun `metadata in the middle of a file larger than two windows is never read`() {
+        val file = padded(head = "", middle = "1 0 obj\n<< /Title (In the middle) >>\nendobj\n", tail = "trailer\n<< /Info 1 0 R >>\n%%EOF\n")
+
+        assertThat(PdfInfoReader.read(file, window = WINDOW).title).isNull()
+        assertThat(PdfInfoReader.read(file, window = file.length().toInt()).title).isEqualTo("In the middle")
+    }
+
+    /** The head window ends inside the Info object; its `endobj` is not the tail's next one. */
+    @Test
+    fun `an object cut off at the end of the head window is not read on into the tail`() {
+        val head = "%PDF-1.4\n%" + "x".repeat(WINDOW - 40) + "\n5 0 obj\n<< /Author (" + "y".repeat(100) + ") >>\nendobj\n"
+        val padding = "%" + "x".repeat(WINDOW * 2) + "\n"
+        val tail = "7 0 obj\n<< /Title (Unrelated) /CreationDate (D:20200101000000Z) >>\nendobj\n" +
+            "trailer\n<< /Info 5 0 R >>\n%%EOF\n"
+        val dir = kotlin.io.path.createTempDirectory("pdfinfo").toFile().apply { deleteOnExit() }
+        val file = java.io.File(dir, "cut.pdf").apply {
+            deleteOnExit()
+            writeBytes((head + padding + tail).toByteArray(Charsets.ISO_8859_1))
+        }
+
+        assertThat(PdfInfoReader.read(file, window = WINDOW)).isEqualTo(PdfInfo(null, null))
+    }
+
+    /** `%PDF-`, [head], then comment padding to well past two [WINDOW]s around [middle], then [tail]. */
+    private fun padded(head: String, tail: String, middle: String = ""): java.io.File {
+        val padding = "%" + "x".repeat(WINDOW * 2) + "\n"
+        val text = "%PDF-1.4\n$head$padding$middle$padding$tail"
+        val dir = kotlin.io.path.createTempDirectory("pdfinfo").toFile().apply { deleteOnExit() }
+        return java.io.File(dir, "padded.pdf").apply { deleteOnExit(); writeBytes(text.toByteArray(Charsets.ISO_8859_1)) }
+    }
+
     /** A minimal plain-object PDF: the Info dictionary as object 1, an optional XMP stream as object 2. */
     private fun pdf(info: String, xmp: String? = null, name: String = "synthetic"): java.io.File {
         val body = StringBuilder("%PDF-1.4\n1 0 obj\n$info\nendobj\n")
@@ -220,5 +260,9 @@ class PdfInfoReaderTest {
         body.append("trailer\n<< /Info 1 0 R >>\n%%EOF\n")
         val dir = kotlin.io.path.createTempDirectory("pdfinfo").toFile().apply { deleteOnExit() }
         return java.io.File(dir, "$name.pdf").apply { deleteOnExit(); writeBytes(body.toString().toByteArray(Charsets.ISO_8859_1)) }
+    }
+
+    private companion object {
+        const val WINDOW = 1024
     }
 }

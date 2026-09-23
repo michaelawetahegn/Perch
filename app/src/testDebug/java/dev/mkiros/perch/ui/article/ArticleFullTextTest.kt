@@ -170,6 +170,8 @@ class ArticleFullTextTest {
             articleText = ArticleTextRepository(perch.database.entryDao(), fetcher, clock),
             entryId = entryId,
             zone = ZoneOffset.UTC,
+            rasterizer = perch.container.rasterizer,
+            documents = perch.container.documents,
         )
         compose.setContent {
             PerchTheme(dynamicColor = false) {

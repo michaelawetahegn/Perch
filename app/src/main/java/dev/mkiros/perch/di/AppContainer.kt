@@ -82,10 +82,13 @@ class AppContainer(
     val documents: DocumentStore,
     /** Renders document pages to bitmaps (PLAN-13 G03). */
     val rasterizer: PageRasterizer = PdfRendererRasterizer(),
-    /** Shares and document imports offered to Perch (PLAN-13 §0.8). */
-    val intake: MutableStateFlow<Incoming?> = MutableStateFlow(null),
-    /** Opens content URIs for document imports (PLAN-13 §0.8). Wired in [create]. */
-    val documentOpener: DocumentOpener? = null,
+    /** Shares and document imports offered to Perch (PLAN-13 §0.8), oldest first. */
+    val intake: MutableStateFlow<List<Incoming>> = MutableStateFlow(emptyList()),
+    /**
+     * Opens content URIs for document imports (PLAN-13 §0.8). [create] wires the content
+     * resolver; the default opens nothing, for the same reason [connectivity] defaults.
+     */
+    val documentOpener: DocumentOpener = DocumentOpener { null },
 ) : Closeable {
 
     /**

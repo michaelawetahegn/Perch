@@ -207,7 +207,7 @@ class SaveLinkSheetTest {
     @Test
     fun `a link shared to Perch lands on To-Read with the confirmation`() {
         server.enqueue(article("A Shared Article"))
-        perch.container.intake.value = Incoming.Link(server.url("/shared").toString())
+        perch.container.intake.value = listOf(Incoming.Link(server.url("/shared").toString()))
 
         compose.setContent {
             PerchTheme(dynamicColor = false) {
@@ -224,7 +224,7 @@ class SaveLinkSheetTest {
         }
         val saved = runBlocking { perch.database.entryDao().countAll() }
         assertThat(saved).isEqualTo(1)
-        assertThat(perch.container.intake.value).isNull()
+        assertThat(perch.container.intake.value).isEmpty()
     }
 
     // ---- harness ---------------------------------------------------------------

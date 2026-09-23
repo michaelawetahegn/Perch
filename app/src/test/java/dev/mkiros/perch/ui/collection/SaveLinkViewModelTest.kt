@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -66,7 +67,7 @@ class SaveLinkViewModelTest {
     private lateinit var viewModel: SaveLinkViewModel
 
     /** What `MainActivity` offers when something is shared to Perch (PLAN-13 §0.8). */
-    private val intake = MutableStateFlow<Incoming?>(null)
+    private val intake = MutableStateFlow<List<Incoming>>(emptyList())
 
     /** The content resolver, as a map. */
     private val shared = mutableMapOf<Uri, File>()
@@ -81,7 +82,7 @@ class SaveLinkViewModelTest {
         server = MockWebServer()
         server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse =
-                if (request.path == READABLE_PATH) {
+                if (request.path!!.substringBefore('?') == READABLE_PATH) {
                     // A page that saves, so a test can reach what happens *after* the fetch.
                     MockResponse()
                         .setHeader("Content-Type", "text/html")
@@ -194,7 +195,7 @@ class SaveLinkViewModelTest {
     fun `an incoming link opens the sheet and submits it`() {
         val url = server.url(READABLE_PATH).toString()
 
-        intake.value = Incoming.Link(url)
+        intake.value = listOf(Incoming.Link(url))
 
         awaitState { it.savedEntryId != null }
         assertThat(viewModel.state.value.isOpen).isTrue()
@@ -208,7 +209,7 @@ class SaveLinkViewModelTest {
         val uri = Uri.parse("content://test/letter-margins.pdf")
         shared[uri] = DocumentFixtures.manifest().first { it.slug == "letter-margins" }.file
 
-        intake.value = Incoming.Document(uri, "letter-margins.pdf")
+        intake.value = listOf(Incoming.Document(uri, "letter-margins.pdf"))
 
         awaitState { it.savedEntryId != null }
         assertThat(viewModel.state.value.isOpen).isTrue()
@@ -219,10 +220,62 @@ class SaveLinkViewModelTest {
 
     @Test
     fun `the intake is cleared once taken`() {
-        intake.value = Incoming.Link(server.url(READABLE_PATH).toString())
+        intake.value = listOf(Incoming.Link(server.url(READABLE_PATH).toString()))
 
         awaitState { it.savedEntryId != null }
-        assertThat(intake.value).isNull()
+        assertThat(intake.value).isEmpty()
+    }
+
+    /**
+     * A second share while the first is still saving waits its turn; it is not dropped. Nor
+     * does it wipe the first one's failure: it waits until the reader has read and dismissed it.
+     */
+    @Test
+    fun `a share that arrives mid-save waits until the failure is dismissed, then is taken`() {
+        viewModel.onUrlChange(server.url("/post").toString())
+        viewModel.submit()
+        assertThat(viewModel.state.value.isBusy).isTrue()
+
+        val second = server.url(READABLE_PATH).toString()
+        intake.update { it + Incoming.Link(second) }
+        assertThat(intake.value).containsExactly(Incoming.Link(second))
+
+        gate.countDown()
+        awaitState { it.error != null }
+        assertThat(viewModel.state.value.isBusy).isFalse()
+        assertThat(intake.value).containsExactly(Incoming.Link(second))
+
+        assertThat(viewModel.onDismissRequest()).isTrue()
+        awaitState { it.savedEntryId != null }
+        val row = runBlocking { database.entryDao().findById(viewModel.state.value.savedEntryId!!) }!!
+        assertThat(row.link).isEqualTo(second)
+        assertThat(intake.value).isEmpty()
+    }
+
+    @Test
+    fun `two shares that arrive during one save are both taken, in the order they came`() {
+        viewModel.onUrlChange(server.url("/post").toString())
+        viewModel.submit()
+
+        val second = server.url("$READABLE_PATH?n=2").toString()
+        val third = server.url("$READABLE_PATH?n=3").toString()
+        intake.update { it + Incoming.Link(second) }
+        intake.update { it + Incoming.Link(third) }
+
+        gate.countDown()
+        awaitState { it.error != null }
+        viewModel.onDismissRequest()
+
+        awaitState { it.savedEntryId != null }
+        val first = runBlocking { database.entryDao().findById(viewModel.state.value.savedEntryId!!) }!!
+        assertThat(first.link).isEqualTo(second)
+        // What the To-Read screen does once it has announced a save.
+        viewModel.reset()
+
+        awaitState { it.savedEntryId != null }
+        val next = runBlocking { database.entryDao().findById(viewModel.state.value.savedEntryId!!) }!!
+        assertThat(next.link).isEqualTo(third)
+        assertThat(intake.value).isEmpty()
     }
 
     @Test

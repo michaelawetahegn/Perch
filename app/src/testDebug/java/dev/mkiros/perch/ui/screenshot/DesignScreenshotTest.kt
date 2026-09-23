@@ -517,6 +517,8 @@ class DesignScreenshotTest {
             articleText = ArticleTextRepository(perch.container.database.entryDao(), { null }, clock),
             entryId = entryId,
             zone = ZoneOffset.UTC,
+            rasterizer = perch.container.rasterizer,
+            documents = perch.container.documents,
         )
         compose.setContent {
             PerchTheme(mode = ThemeMode.Light, dynamicColor = false) {

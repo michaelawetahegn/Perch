@@ -46,8 +46,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,6 +60,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.mkiros.perch.R
 import dev.mkiros.perch.data.parse.ArticleBlock
@@ -298,13 +303,49 @@ private fun ToggleAction(
 }
 
 /**
+ * Writes where the reader is — never per frame — when a scroll settles (the `true → false`
+ * edge of [isScrolling], which a fling holds until it stops), when the screen pauses, and as
+ * it leaves. [position] is null while there is nothing yet worth writing.
+ *
+ * Back pops the article's entry, which pauses at once while the exit transition keeps the
+ * screen drawn — and a fling still running keeps scrolling under it. So the pause's write is
+ * the one that counts: once paused, and until the screen resumes, neither a settle nor the
+ * leaving write replaces it with wherever the fling ran on to, a place the reader never saw.
+ * Nothing else holds a write back: a screen that never reached RESUMED — navigation keeps an
+ * entry at STARTED while its enter transition runs — still saves where it was as it leaves.
+ */
+@Composable
+internal fun SaveReadingPosition(isScrolling: () -> Boolean, position: () -> Int?, save: (Int) -> Unit) {
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val current by rememberUpdatedState(position)
+    val write by rememberUpdatedState(save)
+    val paused = remember { booleanArrayOf(false) }
+    fun writeUnlessPaused() {
+        if (!paused[0]) current()?.let(write)
+    }
+    LaunchedEffect(lifecycle) {
+        snapshotFlow(isScrolling)
+            .filter { !it }
+            .drop(1)
+            .collect { writeUnlessPaused() }
+    }
+    LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
+        current()?.let(write)
+        paused[0] = true
+    }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { paused[0] = false }
+    DisposableEffect(lifecycle) {
+        onDispose { writeUnlessPaused() }
+    }
+}
+
+/**
  * The body, opened where the reader last stopped (E01, #65).
  *
  * The position is pixels, seeded straight into the scroll state, so the restore happens at
  * first layout with no effect and no wait; it is clamped to the body's height, so a page
  * whose images are still arriving may land a little short — accepted (PLAN-11 §0.2). It is
- * written back twice and never per frame: when a scroll settles (the `true → false` edge of
- * `isScrollInProgress`, which a fling holds until it stops) and as the screen leaves.
+ * written back by [SaveReadingPosition].
  */
 @Composable
 private fun Article(
@@ -343,16 +384,15 @@ private fun Article(
             )
         }
     } else {
-        // Regular text article
-        val scroll = rememberScrollState(initial = state.scrollPosition)
-        LaunchedEffect(scroll) {
-            snapshotFlow { scroll.isScrollInProgress }
-                .filter { !it }
-                .drop(1)
-                .collect { onScrollSettled(scroll.value) }
-        }
-        DisposableEffect(Unit) {
-            onDispose { onScrollSettled(scroll.value) }
+        // Regular text article — or a gone document's web copy, whose row keeps the document's
+        // position (SPEC.md §8): pixels are neither read from it nor written into it.
+        val scroll = rememberScrollState(initial = if (state.documentGone) 0 else state.scrollPosition)
+        if (!state.documentGone) {
+            SaveReadingPosition(
+                isScrolling = { scroll.isScrollInProgress },
+                position = { scroll.value },
+                save = onScrollSettled,
+            )
         }
         SelectionContainer {
             Column(

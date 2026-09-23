@@ -12,6 +12,8 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import okio.Buffer
+import okio.buffer
+import okio.sink
 
 /** What a single conditional GET of a feed can come back as. */
 sealed interface FetchResult {
@@ -139,21 +141,27 @@ class FeedFetcher(
             return DownloadResult.Failure(tooLargeDocument())
         }
 
-        val buffer = Buffer()
-        while (buffer.size <= maxDocumentBytes) {
-            if (body.source().read(buffer, READ_CHUNK) == -1L) break
+        // Straight to the file, a chunk at a time: a document is never held in memory whole,
+        // and a body that runs past the cap is refused as soon as it does.
+        var written = 0L
+        into.sink().buffer().use { file ->
+            while (written <= maxDocumentBytes) {
+                val read = body.source().read(file.buffer, READ_CHUNK)
+                if (read == -1L) break
+                written += read
+                file.emitCompleteSegments()
+            }
         }
-        if (buffer.size > maxDocumentBytes) {
+        if (written > maxDocumentBytes) {
             into.delete()
             return DownloadResult.Failure(tooLargeDocument())
         }
 
-        into.outputStream().use { buffer.writeTo(it) }
         return DownloadResult.Success(
             finalUrl = response.request.url.toString(),
             contentType = response.header("Content-Type"),
             contentDisposition = response.header("Content-Disposition"),
-            bytes = buffer.size,
+            bytes = written,
         )
     }
 

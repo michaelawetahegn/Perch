@@ -1978,6 +1978,8 @@ class LiveAcceptanceTest {
             articleText = perch.container.articleText,
             entryId = sample.entryId,
             zone = ZoneOffset.UTC,
+            rasterizer = perch.container.rasterizer,
+            documents = perch.container.documents,
         )
         scene.value = Scene.Article(name, mode, viewModel)
         compose.awaitInRealTime("“${sample.title}” to load") {
