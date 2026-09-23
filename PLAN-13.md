@@ -55,8 +55,10 @@ phone — a restored row whose file is missing is what the sweep is for. Say bot
 and `EntryListItem` (`EntryListItem.kt:31-46`) gains `val isDocument: Boolean = false` — with a default,
 unlike `publishedIsEstimated`, because a row that forgets to say it is a document merely loses its label.
 
-**The page you stopped on** lives in the existing `scrollPosition` column (E01): **for a document row it
-holds the page number** (1-based; 0 is the top). No second column — the two meanings never coexist on
+**The place you stopped** lives in the existing `scrollPosition` column (E01): **for a document row it
+holds `(item + 1) × 10000 + depth`** — the first visible list item (0 the header, N page N) and how far
+the screen's top sits into it, in ten-thousandths of its height; a value under 10000 is 0.9.0's bare
+page index and opens at that page's top. No second column — the two meanings never coexist on
 one row, `ArticleViewModel.saveScrollPosition` (`ArticleViewModel.kt:198-202`, F06's dedupe included)
 needs no change, and the profile already declines to export it. State it in `EntryEntity`'s KDoc and SPEC.md §8.
 
@@ -269,10 +271,11 @@ the list), and `pointerInput { detectTapGestures(onDoubleTap = …) }`. Each pag
 custom vertical handling. When a pinch ends (`TransformableState`'s gesture end, the way `ImageViewer.kt:135-142`
 uses `onEnd`), the render bucket is re-chosen (§0.5).
 
-**The page you stopped on.** On scroll settle (`isScrollInProgress` `true → false`, the E01 shape at
-`ArticleScreen.kt:310-317`) and on leave, `onScrollSettled(pageUnderCentre ?: 0)`; the list opens at
-`rememberLazyListState(initialFirstVisibleItemIndex = state.scrollPosition)` — item index *is* page number
-because item 0 is the header.
+**The place you stopped.** `DocumentPosition` (`PagePosition.kt`): the first visible item plus its depth,
+encoded as above. Written on pause, on scroll settle (`isScrollInProgress` `true → false`) and on dispose —
+settle and dispose are skipped once paused, so a fling still running under the back animation cannot
+overwrite where the reader stopped. The list opens at the stored item and, once that item is laid out,
+scrolls into it by its depth; item index *is* page number because item 0 is the header.
 
 **The ViewModel.** `ArticleUiState.Loaded` (`ArticleViewModel.kt:66-79`) gains `val document: DocumentUi? = null`
 (`DocumentUi(file: File, pageCount: Int, aspects: List<Float>, sizeBytes: Long)` — aspects for every page,

@@ -420,8 +420,9 @@ pasted URL already parses as a feed, skip discovery entirely.
 - Three independent reader-owned flags (PLAN-2 §0): `isRead`, `isSaved` (*Read later*),
   `isStarred` (*Liked*). Clearing one nulls its timestamp; none of them implies another.
 - **Where the reader stopped** (`entries.scrollPosition`, E01) is the body's scroll offset in pixels
-  for an article and, for a stored document, the **page number** (1-based; 0 is the top) — the
-  two meanings never coexist on one row (PLAN-13 §0.2).
+  for an article and, for a stored document, `(item + 1) × 10000 + depth` — the first visible item
+  and how far into it the screen's top sits, in ten-thousandths of its height (under 10000: a 0.9.0
+  page index, opened at that page's top) — the two meanings never coexist on one row (PLAN-13 §0.2).
 
 ## 8a. Search (v0.6/PLAN-9 §0.8, #28)
 

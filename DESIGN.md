@@ -428,6 +428,9 @@ this shape from mocks on 2026-09-21; `DocumentBody.kt` is its one renderer.
   names the page under the viewport's vertical centre, appears only when that page
   changes after the first composition — never on open — and fades (150 ms, §6) 1.2 s
   after the last change.
+- **It reopens exactly where it was left**: the first visible item and how far into it the
+  screen's top sat, saved on pause, on settle and on leave — not the page under the centre,
+  which reopened a reader at the top of a page they were halfway down.
 - **Two zooms, one axis.** Pinch scales 1×–4× about the fingers; while zoomed a
   horizontal drag pans and a vertical one still scrolls the list. **Double-tap fits the
   body's text column to the width** — the ink bounds of pages 2–4, padded 2%, so the
