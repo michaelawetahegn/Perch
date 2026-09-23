@@ -46,6 +46,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberUpdatedState
@@ -308,27 +309,33 @@ private fun ToggleAction(
  *
  * Back pops the article's entry, which pauses at once while the exit transition keeps the
  * screen drawn — and a fling still running keeps scrolling under it. So the pause's write is
- * the one that counts: once paused, neither a settle nor the leaving write replaces it with
- * wherever the fling ran on to, a place the reader never saw. Every way off this screen,
- * back, home and a killed process alike, passes through a pause first.
+ * the one that counts: once paused, and until the screen resumes, neither a settle nor the
+ * leaving write replaces it with wherever the fling ran on to, a place the reader never saw.
+ * Nothing else holds a write back: a screen that never reached RESUMED — navigation keeps an
+ * entry at STARTED while its enter transition runs — still saves where it was as it leaves.
  */
 @Composable
 internal fun SaveReadingPosition(isScrolling: () -> Boolean, position: () -> Int?, save: (Int) -> Unit) {
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val current by rememberUpdatedState(position)
     val write by rememberUpdatedState(save)
-    fun writeIfResumed() {
-        if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) current()?.let(write)
+    val paused = remember { booleanArrayOf(false) }
+    fun writeUnlessPaused() {
+        if (!paused[0]) current()?.let(write)
     }
     LaunchedEffect(lifecycle) {
         snapshotFlow(isScrolling)
             .filter { !it }
             .drop(1)
-            .collect { writeIfResumed() }
+            .collect { writeUnlessPaused() }
     }
-    LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) { current()?.let(write) }
+    LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
+        current()?.let(write)
+        paused[0] = true
+    }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { paused[0] = false }
     DisposableEffect(lifecycle) {
-        onDispose { writeIfResumed() }
+        onDispose { writeUnlessPaused() }
     }
 }
 
@@ -377,13 +384,16 @@ private fun Article(
             )
         }
     } else {
-        // Regular text article
-        val scroll = rememberScrollState(initial = state.scrollPosition)
-        SaveReadingPosition(
-            isScrolling = { scroll.isScrollInProgress },
-            position = { scroll.value },
-            save = onScrollSettled,
-        )
+        // Regular text article — or a gone document's web copy, whose row keeps the document's
+        // position (SPEC.md §8): pixels are neither read from it nor written into it.
+        val scroll = rememberScrollState(initial = if (state.documentGone) 0 else state.scrollPosition)
+        if (!state.documentGone) {
+            SaveReadingPosition(
+                isScrolling = { scroll.isScrollInProgress },
+                position = { scroll.value },
+                save = onScrollSettled,
+            )
+        }
         SelectionContainer {
             Column(
                 modifier = Modifier

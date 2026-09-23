@@ -279,6 +279,35 @@ class SavedLinkRepositoryTest {
         assertThat(versioned.title).isEqualTo("1706.03762v7")
     }
 
+    /** A page's pixels read as a document position would open the PDF at some far page. */
+    @Test
+    fun `a link saved as a page and saved again as a PDF forgets the page's scroll offset`() = runTest {
+        server.enqueue(article())
+        server.enqueue(pdf("letter-margins"))
+        val url = server.url("/paper").toString()
+
+        val id = repo.saveLink(url).getOrThrow()
+        entries.setScrollPosition(id = id, scrollPosition = 48_213)
+        val again = entries.findById(repo.saveLink(url).getOrThrow())!!
+
+        assertThat(again.id).isEqualTo(id)
+        assertThat(again.documentPath).isNotNull()
+        assertThat(again.scrollPosition).isEqualTo(0)
+    }
+
+    @Test
+    fun `a PDF saved again keeps the place the reader left it at`() = runTest {
+        server.enqueue(pdf("letter-margins"))
+        server.enqueue(pdf("letter-margins"))
+        val url = server.url("/letter.pdf").toString()
+
+        val id = repo.saveLink(url).getOrThrow()
+        entries.setScrollPosition(id = id, scrollPosition = 30_005)
+        val again = entries.findById(repo.saveLink(url).getOrThrow())!!
+
+        assertThat(again.scrollPosition).isEqualTo(30_005)
+    }
+
     @Test
     fun `pasting the same PDF twice keeps one stored file, not two`() = runTest {
         server.enqueue(pdf("letter-margins"))

@@ -130,6 +130,9 @@ What is left, none of it a session on its own:
   full-text fetch runs extraction over PDF bytes (it finds nothing and changes nothing) and
   *Load full article* is offered. Marking such a row needs a flag `upsertAll`'s merge carries —
   it resets `fullTextAt` — so it waits for a schema change or a decision to drop the row instead.
+- **A document is opened twice to be shown** (v0.9.0 review). `ArticleViewModel.loaded()` opens
+  the PDF and every page in turn only to read aspect ratios, then `DocumentBody` opens it again
+  to draw; one source handed from the first to the second would halve the work on a long paper.
 - **`loop.sh`'s nightly `"$DEV" reboot` has no timeout** (`loop.sh:137`, `device.sh:154`'s
   `wait-for-device`), so an `offline` emulator hangs a run before its first session and the
   stall guard never fires. `boot_emulator` already wraps its call in `timeout`; this one should too.

@@ -166,6 +166,40 @@ class DocumentBodyTest {
         assertThat(stored.offsetIn(1_000)).isEqualTo(0)
     }
 
+    /** Navigation holds an entry at STARTED while its enter transition runs; back can come first. */
+    @Test
+    fun `leaving a screen that never resumed still writes where it was`() {
+        val id = seedDocument("ssrn-6191618")
+        showArticle(id, reach = Lifecycle.State.STARTED)
+
+        compose.onNodeWithTag(ArticleTestTags.DOCUMENT).performScrollToIndex(2)
+        leaveArticle()
+
+        val entry = runBlocking { perch.database.entryDao().findById(id) }!!
+        assertThat(DocumentPosition.decode(entry.scrollPosition).item).isEqualTo(2)
+    }
+
+    /** SPEC §8: a document's position and a page's pixels never share a row. */
+    @Test
+    fun `a gone document shown through its link leaves the document's place alone`() {
+        val feed = perch.seedFeed(title = "Saved")
+        val id = perch.seedEntry(
+            feed,
+            title = "A vanished paper",
+            link = "https://example.com/paper.pdf",
+            contentHtml = null,
+            documentPath = "documents/never-stored.pdf",
+        )
+        val place = DocumentPosition(item = 3, depth = 5).encode()
+        runBlocking { perch.database.entryDao().setScrollPosition(id = id, scrollPosition = place) }
+        showArticle(id)
+
+        leaveArticle()
+
+        val entry = runBlocking { perch.database.entryDao().findById(id) }!!
+        assertThat(entry.scrollPosition).isEqualTo(place)
+    }
+
     @Test
     fun `a document reopens at the exact offset it was left at, across two pages`() {
         val id = seedDocument("ssrn-6191618")
@@ -357,7 +391,7 @@ class DocumentBodyTest {
         )
     }
 
-    private fun showArticle(entryId: Long) {
+    private fun showArticle(entryId: Long, reach: Lifecycle.State = Lifecycle.State.RESUMED) {
         val viewModel = ArticleViewModel(
             entries = perch.container.entries,
             feeds = perch.container.feeds,
@@ -379,7 +413,7 @@ class DocumentBodyTest {
                 }
             }
         }
-        compose.runOnUiThread { owner.registry.currentState = Lifecycle.State.RESUMED }
+        compose.runOnUiThread { owner.registry.currentState = reach }
         visit.value = viewModel
         compose.awaitInRealTime("the article to load") { viewModel.state.value !is ArticleUiState.Loading }
         compose.waitForIdle()

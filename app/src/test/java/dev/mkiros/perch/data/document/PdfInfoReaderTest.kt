@@ -226,6 +226,22 @@ class PdfInfoReaderTest {
         assertThat(PdfInfoReader.read(file, window = file.length().toInt()).title).isEqualTo("In the middle")
     }
 
+    /** The head window ends inside the Info object; its `endobj` is not the tail's next one. */
+    @Test
+    fun `an object cut off at the end of the head window is not read on into the tail`() {
+        val head = "%PDF-1.4\n%" + "x".repeat(WINDOW - 40) + "\n5 0 obj\n<< /Author (" + "y".repeat(100) + ") >>\nendobj\n"
+        val padding = "%" + "x".repeat(WINDOW * 2) + "\n"
+        val tail = "7 0 obj\n<< /Title (Unrelated) /CreationDate (D:20200101000000Z) >>\nendobj\n" +
+            "trailer\n<< /Info 5 0 R >>\n%%EOF\n"
+        val dir = kotlin.io.path.createTempDirectory("pdfinfo").toFile().apply { deleteOnExit() }
+        val file = java.io.File(dir, "cut.pdf").apply {
+            deleteOnExit()
+            writeBytes((head + padding + tail).toByteArray(Charsets.ISO_8859_1))
+        }
+
+        assertThat(PdfInfoReader.read(file, window = WINDOW)).isEqualTo(PdfInfo(null, null))
+    }
+
     /** `%PDF-`, [head], then comment padding to well past two [WINDOW]s around [middle], then [tail]. */
     private fun padded(head: String, tail: String, middle: String = ""): java.io.File {
         val padding = "%" + "x".repeat(WINDOW * 2) + "\n"

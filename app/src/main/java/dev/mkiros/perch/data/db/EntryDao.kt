@@ -603,7 +603,14 @@ abstract class EntryDao {
                     savedAt = existing.savedAt,
                     isStarred = existing.isStarred,
                     starredAt = existing.starredAt,
-                    scrollPosition = existing.scrollPosition,
+                    // A page's pixels are no document position (SPEC.md §8): a link saved as a
+                    // page and again as a PDF starts the document at its top. The other way
+                    // round the row stays a document, since its documentPath is carried.
+                    scrollPosition = if (existing.documentPath == null && entry.documentPath != null) {
+                        entry.scrollPosition
+                    } else {
+                        existing.scrollPosition
+                    },
                     documentPath = entry.documentPath ?: existing.documentPath,
                     contentHtml = if (keepExtracted) existing.contentHtml else entry.contentHtml,
                     fullTextAt = if (keepExtracted) existing.fullTextAt else null,

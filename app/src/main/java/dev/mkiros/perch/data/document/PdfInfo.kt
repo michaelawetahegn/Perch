@@ -8,12 +8,16 @@ object PdfInfoReader {
     /**
      * [window] bounds the read: a file up to twice its size is read whole, a larger one only
      * at its head and its tail — where a trailer, its `/Info` and the metadata a producer writes
-     * sit in practice — so a 40 MiB document costs a few MiB of memory, not twice its size.
-     * Metadata buried in the middle of a large file is lost to the file-name rung, not a crash.
+     * sit in practice. Either way at most `2 × window` bytes are held, once as bytes and once as
+     * a string of as many characters: 2 MiB and 2M characters for a 40 MiB document, not 40 of
+     * each. Metadata buried in the middle of a large file is lost to the file-name rung, not a
+     * crash, and an object cut off at the end of the head is never read on into the tail.
      */
     fun read(file: java.io.File, window: Int = WINDOW_BYTES): PdfInfo {
         return try {
             val bytes = ends(file, window)
+            // Where the head window ends in [text], if the file was read at its ends.
+            val join = if (bytes.size < file.length()) window else -1
             if (bytes.size < 5) return PdfInfo(null, null)
 
             val text = String(bytes, Charsets.ISO_8859_1)
@@ -22,11 +26,11 @@ object PdfInfoReader {
 
             val infoNum = findInfoObjectNumber(text)
             val title = if (infoNum >= 0) {
-                extractTitleFromObject(text, infoNum)?.let { cleanTitle(it, file.nameWithoutExtension) }
+                extractTitleFromObject(text, infoNum, join)?.let { cleanTitle(it, file.nameWithoutExtension) }
             } else null
 
             val date = if (infoNum >= 0) {
-                extractDateFromObject(text, infoNum)
+                extractDateFromObject(text, infoNum, join)
             } else null
 
             val finalTitle = title ?: extractFromXmp(text, file.nameWithoutExtension)
@@ -50,7 +54,7 @@ object PdfInfoReader {
         }
     }
 
-        private fun findInfoObjectNumber(text: String): Int {
+    private fun findInfoObjectNumber(text: String): Int {
         // Find the last /Info N 0 R reference (in trailer or xref)
         val lastInfoMatch = text.lastIndexOf("/Info")
         if (lastInfoMatch < 0) return -1
@@ -66,8 +70,8 @@ object PdfInfoReader {
         return text.substring(numStart, idx).toIntOrNull() ?: -1
     }
 
-    private fun extractTitleFromObject(text: String, objNum: Int): String? {
-        val objContent = getObjectContent(text, objNum) ?: return null
+    private fun extractTitleFromObject(text: String, objNum: Int, join: Int): String? {
+        val objContent = getObjectContent(text, objNum, join) ?: return null
 
         // Look for /Title in the dictionary
         val titleIdx = objContent.indexOf("/Title")
@@ -87,14 +91,14 @@ object PdfInfoReader {
             objContent[idx].isDigit() -> {
                 // Indirect reference like "12 0 R"
                 val refNum = extractRefNumber(objContent, idx)
-                if (refNum >= 0) extractTitleFromObject(text, refNum) else null
+                if (refNum >= 0) extractTitleFromObject(text, refNum, join) else null
             }
             else -> null
         }
     }
 
-    private fun extractDateFromObject(text: String, objNum: Int): Instant? {
-        val objContent = getObjectContent(text, objNum) ?: return null
+    private fun extractDateFromObject(text: String, objNum: Int, join: Int): Instant? {
+        val objContent = getObjectContent(text, objNum, join) ?: return null
         val dateIdx = objContent.indexOf("/CreationDate")
         if (dateIdx < 0) return null
 
@@ -111,21 +115,27 @@ object PdfInfoReader {
         return if (dateStr != null) parsePdfDate(dateStr) else null
     }
 
-    private fun getObjectContent(text: String, objNum: Int): String? {
-        val objStart = findObjectStart(text, objNum)
-        if (objStart < 0) return findInObjectStreams(text, objNum)
+    /** The first whole `N 0 obj … endobj`: one that runs across [join] is two halves of nothing. */
+    private fun getObjectContent(text: String, objNum: Int, join: Int): String? {
+        val starts = findObjectStarts(text, objNum)
+        if (starts.none()) return findInObjectStreams(text, objNum, join)
 
-        val endObjIdx = text.indexOf("endobj", objStart)
-        if (endObjIdx < 0) return null
-
-        return text.substring(objStart, endObjIdx)
+        for (objStart in starts) {
+            val endObjIdx = text.indexOf("endobj", objStart)
+            if (endObjIdx < 0) return null
+            if (!spans(objStart, endObjIdx, join)) return text.substring(objStart, endObjIdx)
+        }
+        return null
     }
+
+    /** Whether `from..to` runs across the head/tail [join] (-1: the file was read whole). */
+    private fun spans(from: Int, to: Int, join: Int): Boolean = from < join && to > join
 
     /**
      * ISO 32000-1 §7.5.7: a `/Type /ObjStm` stream holds `/N` objects; its inflated bytes open
      * with `N` pairs of `objnum offset`, offsets counted from `/First`.
      */
-    private fun findInObjectStreams(text: String, objNum: Int): String? {
+    private fun findInObjectStreams(text: String, objNum: Int, join: Int): String? {
         for (match in Regex("/Type\\s*/ObjStm\\b").findAll(text)) {
             val dictStart = text.lastIndexOf("obj", match.range.first)
             val streamKeyword = text.indexOf("stream", match.range.last)
@@ -138,6 +148,7 @@ object PdfInfoReader {
             if (dataStart < text.length && text[dataStart] == '\r') dataStart++
             if (dataStart < text.length && text[dataStart] == '\n') dataStart++
             val dataEnd = text.indexOf("endstream", dataStart).takeIf { it >= 0 } ?: continue
+            if (spans(dataStart, dataEnd, join)) continue
             val body = inflate(text.substring(dataStart, dataEnd).toByteArray(Charsets.ISO_8859_1)) ?: continue
             if (first > body.length) continue
 
@@ -173,17 +184,18 @@ object PdfInfoReader {
         }
     }
 
-    private fun findObjectStart(text: String, objNum: Int): Int {
+    /** Where each "N 0 obj" line ends, in file order. */
+    private fun findObjectStarts(text: String, objNum: Int): Sequence<Int> {
         // Look for "N 0 obj" with word boundaries
         val pattern = Regex("(?:^|\\s)$objNum\\s+0\\s+obj", RegexOption.MULTILINE)
-        val match = pattern.find(text) ?: return -1
-
-        var pos = match.range.last + 1
-        // Skip to the end of the line
-        while (pos < text.length && text[pos] != '\n' && text[pos] != '\r') pos++
-        if (pos < text.length && text[pos] == '\r') pos++
-        if (pos < text.length && text[pos] == '\n') pos++
-        return pos
+        return pattern.findAll(text).map { match ->
+            var pos = match.range.last + 1
+            // Skip to the end of the line
+            while (pos < text.length && text[pos] != '\n' && text[pos] != '\r') pos++
+            if (pos < text.length && text[pos] == '\r') pos++
+            if (pos < text.length && text[pos] == '\n') pos++
+            pos
+        }
     }
 
     private fun extractRefNumber(text: String, startIdx: Int): Int {
@@ -360,6 +372,6 @@ object PdfInfoReader {
         return title.takeUnless { rejected }
     }
 
-    /** 4 MiB at each end: every fixture, and most papers, are read whole. */
-    private const val WINDOW_BYTES = 4 * 1024 * 1024
+    /** 1 MiB at each end: every fixture, and most papers, are read whole. */
+    private const val WINDOW_BYTES = 1024 * 1024
 }
