@@ -84,8 +84,11 @@ class AppContainer(
     val rasterizer: PageRasterizer = PdfRendererRasterizer(),
     /** Shares and document imports offered to Perch (PLAN-13 §0.8). */
     val intake: MutableStateFlow<Incoming?> = MutableStateFlow(null),
-    /** Opens content URIs for document imports (PLAN-13 §0.8). Wired in [create]. */
-    val documentOpener: DocumentOpener? = null,
+    /**
+     * Opens content URIs for document imports (PLAN-13 §0.8). [create] wires the content
+     * resolver; the default opens nothing, for the same reason [connectivity] defaults.
+     */
+    val documentOpener: DocumentOpener = DocumentOpener { null },
 ) : Closeable {
 
     /**

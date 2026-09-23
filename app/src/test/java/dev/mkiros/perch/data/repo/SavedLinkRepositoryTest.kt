@@ -2,6 +2,7 @@ package dev.mkiros.perch.data.repo
 
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import dev.mkiros.perch.data.db.EntryDao
@@ -10,6 +11,8 @@ import dev.mkiros.perch.data.db.PerchDatabase
 import dev.mkiros.perch.data.db.entity.FeedEntity
 import dev.mkiros.perch.data.document.DocumentFixtures
 import dev.mkiros.perch.data.document.DocumentStore
+import dev.mkiros.perch.data.document.PageRasterizer
+import dev.mkiros.perch.data.document.PageSource
 import dev.mkiros.perch.data.net.FeedFetcher
 import dev.mkiros.perch.support.FixtureRasterizer
 import java.io.File
@@ -63,18 +66,20 @@ class SavedLinkRepositoryTest {
         server = MockWebServer()
         server.start()
         documents = DocumentStore(File(tmpDir.root, "documents"))
-        repo = SavedLinkRepository(
-            feedDao = feeds,
-            entryDao = entries,
-            fetcher = FeedFetcher(
-                OkHttpClient.Builder().readTimeout(500, TimeUnit.MILLISECONDS).build(),
-            ),
-            clock = Clock.fixed(Instant.ofEpochMilli(now), ZoneOffset.UTC),
-            documents = documents,
-            rasterizer = FixtureRasterizer(),
-            documentOpener = DocumentOpener { uri -> shared[uri]?.invoke() },
-        )
+        repo = newRepo()
     }
+
+    private fun newRepo(rasterizer: PageRasterizer = FixtureRasterizer()) = SavedLinkRepository(
+        feedDao = feeds,
+        entryDao = entries,
+        fetcher = FeedFetcher(
+            OkHttpClient.Builder().readTimeout(500, TimeUnit.MILLISECONDS).build(),
+        ),
+        clock = Clock.fixed(Instant.ofEpochMilli(now), ZoneOffset.UTC),
+        documents = documents,
+        rasterizer = rasterizer,
+        documentOpener = DocumentOpener { uri -> shared[uri]?.invoke() },
+    )
 
     @After
     fun tearDown() {
@@ -364,6 +369,81 @@ class SavedLinkRepositoryTest {
         assertThat(result.exceptionOrNull()!!.message).contains("40 MiB")
         assertThat(read).isAtMost(cap + 64 * 1024)
         assertThat(documentFiles()).isEmpty()
+    }
+
+    /**
+     * A share is copied (up to 40 MiB), opened, drawn and read for its metadata; on the main
+     * thread that is a frozen screen, however the caller dispatched it.
+     */
+    @Test
+    fun `a shared file is copied, drawn and read off the main thread`() = runTest {
+        val threads = mutableListOf<Boolean>()
+        val file = fixture("letter-margins").file
+        val uri = Uri.parse("content://test/letter.pdf")
+        shared[uri] = { threads += isMainThread(); file.inputStream() }
+        val recording = newRepo(rasterizer = recordingThreads(threads))
+
+        assertThat(isMainThread()).isTrue()
+        recording.saveDocument(uri, "letter.pdf").getOrThrow()
+
+        assertThat(threads).isNotEmpty()
+        assertThat(threads).doesNotContain(true)
+    }
+
+    @Test
+    fun `a pasted PDF is drawn off the main thread`() = runTest {
+        val threads = mutableListOf<Boolean>()
+        server.enqueue(pdf("letter-margins"))
+        val recording = newRepo(rasterizer = recordingThreads(threads))
+
+        assertThat(isMainThread()).isTrue()
+        recording.saveLink(server.url("/letter.pdf").toString()).getOrThrow()
+
+        assertThat(threads).isNotEmpty()
+        assertThat(threads).doesNotContain(true)
+    }
+
+    /** It says `%PDF-` and still will not open: to the reader that is a file Perch cannot read. */
+    @Test
+    fun `a shared file that claims to be a PDF but will not open fails as NotDocument`() = runTest {
+        val broken = tmpDir.newFile("broken.pdf").apply { writeText("%PDF-1.7\nnothing else\n") }
+
+        val result = repo.saveDocument(share(broken, "broken.pdf"), "broken.pdf")
+
+        assertThat(result.exceptionOrNull()).isInstanceOf(SaveLinkFailure.NotDocument::class.java)
+        assertThat(entries.countAll()).isEqualTo(0)
+        assertThat(documentFiles()).isEmpty()
+    }
+
+    @Test
+    fun `a document with no pages is refused and its renderer released`() = runTest {
+        var closed = false
+        val empty = object : PageRasterizer {
+            override fun open(file: File): PageSource = object : PageSource {
+                override val pageCount = 0
+                override fun size(index: Int) = error("no pages")
+                override fun render(index: Int, widthPx: Int) = error("no pages")
+                override fun close() { closed = true }
+            }
+        }
+
+        val result = newRepo(rasterizer = empty)
+            .saveDocument(share(fixture("letter-margins").file, "letter.pdf"), "letter.pdf")
+
+        assertThat(result.exceptionOrNull()).isInstanceOf(SaveLinkFailure.NotDocument::class.java)
+        assertThat(closed).isTrue()
+        assertThat(documentFiles()).isEmpty()
+    }
+
+    private fun isMainThread() = Looper.getMainLooper().isCurrentThread
+
+    /** The fixtures, noting for every open whether it happened on the main thread. */
+    private fun recordingThreads(into: MutableList<Boolean>) = object : PageRasterizer {
+        private val fixtures = FixtureRasterizer()
+        override fun open(file: File): PageSource? {
+            into += isMainThread()
+            return fixtures.open(file)
+        }
     }
 
     private fun fixture(slug: String) = DocumentFixtures.manifest().first { it.slug == slug }

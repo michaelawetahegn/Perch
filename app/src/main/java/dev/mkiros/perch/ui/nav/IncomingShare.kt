@@ -12,12 +12,16 @@ import dev.mkiros.perch.model.Incoming
  * Pure over the intent: no context needed. [displayName] is the URI's last
  * segment; the caller with a context replaces it with [displayNameOf].
  *
+ * @param restored the activity is being recreated from saved state, as a rotation does.
  * @return [Incoming.Link] if the intent is a SEND + text/plain with a URL,
  *   [Incoming.Document] if it is a SEND with EXTRA_STREAM or a VIEW with a PDF URI,
- *   null otherwise (MAIN launch, or no extractable value).
+ *   null otherwise (MAIN launch, a share already taken, or no extractable value).
  */
-fun incomingFrom(intent: Intent?): Incoming? {
+fun incomingFrom(intent: Intent?, restored: Boolean = false): Incoming? {
     if (intent == null) return null
+    // A share is taken once. A rotation recreates the activity from saved state with the
+    // intent that started it, and Recents reopens it with the intent as it was sent.
+    if (restored || intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY != 0) return null
 
     val action = intent.action
     val type = intent.type

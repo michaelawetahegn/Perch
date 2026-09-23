@@ -190,7 +190,7 @@ class DocumentScreenshotTest {
     /** The reader's own sample (#72), opened from To-Read the way a pasted PDF lands. */
     private fun showReader(mode: ThemeMode) {
         val fixture = DocumentFixtures.manifest().first { it.slug == "ssrn-6191618" }
-        val stored = perch.newDocument()
+        val stored = perch.container.documents.newDocument()
         fixture.file.copyTo(stored, overwrite = true)
         val id = perch.seedEntry(
             runBlocking { perch.database.feedDao().findByUrl(FeedEntity.SAVED_LINKS_FEED_URL)!!.id },

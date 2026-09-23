@@ -5,6 +5,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.mkiros.perch.data.db.entity.EntryEntity
+import dev.mkiros.perch.data.document.DocumentStore
+import dev.mkiros.perch.data.document.PageRasterizer
+import dev.mkiros.perch.data.document.PageSource
 import dev.mkiros.perch.data.extract.FullText
 import dev.mkiros.perch.data.parse.ArticleBlock
 import dev.mkiros.perch.data.parse.ArticleLowering
@@ -14,15 +17,18 @@ import dev.mkiros.perch.data.repo.FeedRepository
 import dev.mkiros.perch.di.AppContainer
 import dev.mkiros.perch.rethrowCancellation
 import dev.mkiros.perch.ui.home.RelativeTime
+import java.io.File
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /** What the article screen has to show. */
 sealed interface ArticleUiState {
@@ -98,8 +104,8 @@ class ArticleViewModel(
     private val articleText: ArticleTextRepository,
     private val entryId: Long,
     private val zone: ZoneId = ZoneId.systemDefault(),
-    private val rasterizer: dev.mkiros.perch.data.document.PageRasterizer? = null,
-    private val documents: dev.mkiros.perch.data.document.DocumentStore? = null,
+    private val rasterizer: PageRasterizer,
+    private val documents: DocumentStore,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<ArticleUiState>(ArticleUiState.Loading)
@@ -170,15 +176,18 @@ class ArticleViewModel(
         }
     }
 
-    private fun loaded(entry: EntryEntity): ArticleUiState.Loaded {
-        if (entry.documentPath != null && rasterizer != null && documents != null) {
-            // Only the shape is read here; the screen opens its own source to draw from.
-            val document = documents.resolve(entry.documentPath)?.let { file ->
-                rasterizer.open(file)?.use { source ->
-                    val aspects = (0 until source.pageCount).map { index ->
-                        source.size(index).let { it.width.toFloat() / it.height }
+    private suspend fun loaded(entry: EntryEntity): ArticleUiState.Loaded {
+        if (entry.documentPath != null) {
+            // Only the shape is read here; the screen opens its own source to draw from. It
+            // opens every page in turn, so it is file work and stays off Main.
+            val document = withContext(Dispatchers.IO) {
+                documents.resolve(entry.documentPath)?.let { file ->
+                    rasterizer.open(file)?.use { source ->
+                        val aspects = (0 until source.pageCount).map { index ->
+                            source.size(index).let { it.width.toFloat() / it.height }
+                        }
+                        DocumentUi(file, source.pageCount, aspects, file.length())
                     }
-                    DocumentUi(file, source.pageCount, aspects, file.length())
                 }
             }
             return ArticleUiState.Loaded(
@@ -214,7 +223,7 @@ class ArticleViewModel(
     }
 
     /** Opens a document's pages for the screen to draw; the screen closes it when it leaves. */
-    fun openPages(file: java.io.File): dev.mkiros.perch.data.document.PageSource? = rasterizer?.open(file)
+    fun openPages(file: File): PageSource? = rasterizer.open(file)
 
     /**
      * Remembers where the reader stopped (E01, #65), so the next open resumes there.

@@ -5,9 +5,15 @@ import java.time.Instant
 data class PdfInfo(val title: String?, val creationDate: Instant?)
 
 object PdfInfoReader {
-    fun read(file: java.io.File): PdfInfo {
+    /**
+     * [window] bounds the read: a file up to twice its size is read whole, a larger one only
+     * at its head and its tail — where a trailer, its `/Info` and the metadata a producer writes
+     * sit in practice — so a 40 MiB document costs a few MiB of memory, not twice its size.
+     * Metadata buried in the middle of a large file is lost to the file-name rung, not a crash.
+     */
+    fun read(file: java.io.File, window: Int = WINDOW_BYTES): PdfInfo {
         return try {
-            val bytes = file.readBytes()
+            val bytes = ends(file, window)
             if (bytes.size < 5) return PdfInfo(null, null)
 
             val text = String(bytes, Charsets.ISO_8859_1)
@@ -30,7 +36,21 @@ object PdfInfoReader {
         }
     }
 
-    private fun findInfoObjectNumber(text: String): Int {
+    /** The whole file, or its first and last [window] bytes with a line break between them. */
+    private fun ends(file: java.io.File, window: Int): ByteArray {
+        val length = file.length()
+        if (length <= 2L * window) return file.readBytes()
+        return java.io.RandomAccessFile(file, "r").use { input ->
+            val out = ByteArray(2 * window + 1)
+            input.readFully(out, 0, window)
+            out[window] = '\n'.code.toByte()
+            input.seek(length - window)
+            input.readFully(out, window + 1, window)
+            out
+        }
+    }
+
+        private fun findInfoObjectNumber(text: String): Int {
         // Find the last /Info N 0 R reference (in trailer or xref)
         val lastInfoMatch = text.lastIndexOf("/Info")
         if (lastInfoMatch < 0) return -1
@@ -339,4 +359,7 @@ object PdfInfoReader {
             lower == fileNameWithoutExtension.lowercase()
         return title.takeUnless { rejected }
     }
+
+    /** 4 MiB at each end: every fixture, and most papers, are read whole. */
+    private const val WINDOW_BYTES = 4 * 1024 * 1024
 }

@@ -38,12 +38,18 @@ class DocumentStore(private val directory: File) {
     /**
      * Delete every file in the directory that no row names, and every file whose row is
      * neither saved nor liked. Return the ids whose row must forget the file.
+     *
+     * A file written in the last [SAVE_GRACE_MS] is left alone: a save writes its file before
+     * its row names it, and a share can cold-start the app into this very sweep. A leftover
+     * from a crash is that old by the next launch, and goes then.
      */
     fun sweep(rows: List<DocumentRow>): List<Long> {
+        val now = System.currentTimeMillis()
         val byPath = rows.associateBy { it.documentPath }
         val toDelete = mutableListOf<Long>()
 
-        val (pdfs, others) = directory.listFiles().orEmpty().partition { it.extension == "pdf" }
+        val settled = directory.listFiles().orEmpty().filter { now - it.lastModified() > SAVE_GRACE_MS }
+        val (pdfs, others) = settled.partition { it.extension == "pdf" }
         pdfs.forEach { file ->
             val path = relativize(file)
             val row = path?.let { byPath[it] }
@@ -57,9 +63,14 @@ class DocumentStore(private val directory: File) {
             }
         }
         // A thumbnail is named by no row: it lives exactly as long as its document.
-        val thumbnails = pdfs.filter { it.exists() }.map { thumbnailFor(it) }.toSet()
+        val thumbnails = directory.listFiles().orEmpty().filter { it.extension == "pdf" }.map(::thumbnailFor).toSet()
         others.filter { it !in thumbnails }.forEach { it.delete() }
 
         return toDelete
+    }
+
+    private companion object {
+        /** Far longer than any save takes: a 40 MiB copy, one page drawn, one row written. */
+        const val SAVE_GRACE_MS = 60 * 60 * 1000L
     }
 }

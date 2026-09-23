@@ -13,6 +13,10 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -65,21 +69,22 @@ class SaveLinkViewModel(
 
     init {
         viewModelScope.launch {
-            intake.collect { incoming ->
-                when (incoming) {
-                    is Incoming.Link -> {
-                        onUrlChange(incoming.url)
-                        open()
-                        submit()
+            // A share that lands while the sheet is saving, or holds a save the screen has not
+            // announced yet, waits in the intake for the sheet to be free — it is not dropped.
+            val free = _state.map { !it.isBusy && it.savedEntryId == null }.distinctUntilChanged()
+            combine(intake, free) { incoming, isFree -> incoming.takeIf { isFree } }
+                .filterNotNull()
+                .collect { incoming ->
+                    intake.value = null
+                    open()
+                    when (incoming) {
+                        is Incoming.Link -> {
+                            onUrlChange(incoming.url)
+                            submit()
+                        }
+                        is Incoming.Document -> submitDocument(incoming.uri, incoming.displayName)
                     }
-                    is Incoming.Document -> {
-                        open()
-                        submitDocument(incoming.uri, incoming.displayName)
-                    }
-                    null -> {}
                 }
-                intake.value = null
-            }
         }
     }
 
@@ -93,45 +98,29 @@ class SaveLinkViewModel(
     }
 
     fun submit() {
-        val current = _state.value
-        if (!current.canSubmit) return
-        _state.update { it.copy(isBusy = true, error = null) }
-        viewModelScope.launch {
-            // D06/#39: saveLink reports every *expected* disappointment as a
-            // SaveLinkFailure value, but it still asserts its own invariants and still
-            // talks to Room, and either can throw. Uncaught, that left viewModelScope and
-            // took the process down; survived, it would leave the sheet spinning on
-            // isBusy = true and refusing every dismissal. A throw becomes the same value
-            // every other failure already is, and the fold below phrases it.
-            val result = try {
-                savedLinks.saveLink(current.url)
-            } catch (e: Exception) {
-                if (e is CancellationException) throw e
-                Result.failure(e)
-            }
-            _state.update { state ->
-                result.fold(
-                    onSuccess = { SaveLinkUiState(isOpen = true, savedEntryId = it) },
-                    onFailure = { failure ->
-                        state.copy(
-                            isBusy = false,
-                            // Anything that is not saveLink's own vocabulary is still a
-                            // link that did not arrive, and reads as one.
-                            error = failure as? SaveLinkFailure
-                                ?: SaveLinkFailure.Unreachable(failure.message.orEmpty()),
-                        )
-                    },
-                )
-            }
-        }
+        val url = _state.value.url
+        if (!_state.value.canSubmit) return
+        save { savedLinks.saveLink(url) }
     }
 
     fun submitDocument(uri: Uri, displayName: String?) {
         if (_state.value.isBusy) return
+        save { savedLinks.saveDocument(uri, displayName) }
+    }
+
+    /**
+     * One save, whichever kind. D06/#39: the repository reports every *expected*
+     * disappointment as a [SaveLinkFailure] value, but it still asserts its own invariants
+     * and still talks to Room, and either can throw. Uncaught, that left viewModelScope and
+     * took the process down; survived, it would leave the sheet spinning on isBusy = true and
+     * refusing every dismissal. A throw becomes the same value every other failure already
+     * is, and the fold below phrases it.
+     */
+    private fun save(block: suspend () -> Result<Long>) {
         _state.update { it.copy(isBusy = true, error = null) }
         viewModelScope.launch {
             val result = try {
-                savedLinks.saveDocument(uri, displayName)
+                block()
             } catch (e: Exception) {
                 if (e is CancellationException) throw e
                 Result.failure(e)
@@ -142,6 +131,8 @@ class SaveLinkViewModel(
                     onFailure = { failure ->
                         state.copy(
                             isBusy = false,
+                            // Anything that is not the repository's own vocabulary is still
+                            // a link that did not arrive, and reads as one.
                             error = failure as? SaveLinkFailure
                                 ?: SaveLinkFailure.Unreachable(failure.message.orEmpty()),
                         )

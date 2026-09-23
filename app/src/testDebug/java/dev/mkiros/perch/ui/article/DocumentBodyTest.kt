@@ -12,6 +12,11 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import dev.mkiros.perch.ui.article.document.DocumentPosition
+import dev.mkiros.perch.ui.article.document.DocumentArticle
+import dev.mkiros.perch.data.document.PageSource
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.SemanticsMatcher
@@ -286,6 +291,47 @@ class DocumentBodyTest {
         assertThat(factor).isWithin(0.01f).of(DocumentZoom.MAX_SCALE)
     }
 
+    /**
+     * The screen can leave while its pages are still being opened. The open finishes anyway
+     * and hands back a renderer holding the file open; nobody is left to close it but this.
+     */
+    @Test
+    fun `pages opened after the screen has gone are closed, not leaked`() {
+        val fixture = DocumentFixtures.manifest().first { it.slug == "letter-margins" }
+        val started = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        val closed = AtomicBoolean(false)
+        val shown = mutableStateOf(true)
+        compose.setContent {
+            if (shown.value) {
+                DocumentArticle(
+                    document = DocumentUi(fixture.file, 3, List(3) { 612f / 792f }, fixture.file.length()),
+                    openPages = { file ->
+                        started.countDown()
+                        release.await(10, TimeUnit.SECONDS)
+                        val source = perch.container.rasterizer.open(file)!!
+                        object : PageSource by source {
+                            override fun close() {
+                                closed.set(true)
+                                source.close()
+                            }
+                        }
+                    },
+                    scrollPosition = 0,
+                    onScrollSettled = {},
+                    header = {},
+                )
+            }
+        }
+        compose.awaitInRealTime("the pages to start opening") { started.count == 0L }
+
+        shown.value = false
+        compose.waitForIdle()
+        release.countDown()
+
+        compose.awaitInRealTime("the late source to be closed") { closed.get() }
+    }
+
     // ---- harness ---------------------------------------------------------------
 
     private val visit = mutableStateOf<ArticleViewModel?>(null)
@@ -299,7 +345,7 @@ class DocumentBodyTest {
 
     private fun seedDocument(slug: String): Long {
         val fixture = DocumentFixtures.manifest().first { it.slug == slug }
-        val stored = perch.newDocument()
+        val stored = perch.container.documents.newDocument()
         fixture.file.copyTo(stored, overwrite = true)
         return perch.seedEntry(
             perch.seedFeed(title = "Saved"),

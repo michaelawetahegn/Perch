@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         val container = (application as PerchApp).container
-        handleIncoming(intent)
+        handleIncoming(intent, restored = savedInstanceState != null)
         setContent {
             // The theme choice is read here, above the nav graph, so that changing it in
             // Settings recolours the whole app in place rather than only the screen that
@@ -38,12 +38,12 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        handleIncoming(intent)
+        handleIncoming(intent, restored = false)
     }
 
-    private fun handleIncoming(intent: Intent?) {
+    private fun handleIncoming(intent: Intent?, restored: Boolean) {
         val container = (application as PerchApp).container
-        val incoming = when (val from = incomingFrom(intent)) {
+        val incoming = when (val from = incomingFrom(intent, restored)) {
             is Incoming.Document -> from.copy(
                 displayName = contentResolver.displayNameOf(from.uri) ?: from.displayName,
             )

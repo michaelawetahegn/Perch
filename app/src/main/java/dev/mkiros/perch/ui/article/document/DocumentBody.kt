@@ -77,6 +77,7 @@ import dev.mkiros.perch.ui.article.SaveReadingPosition
 import dev.mkiros.perch.ui.theme.ArticleType
 import dev.mkiros.perch.ui.theme.Dimens
 import java.io.File
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -115,7 +116,16 @@ fun DocumentArticle(
     var toastVisible by remember { mutableStateOf(false) }
 
     val pages by produceState<PageCache?>(initialValue = null, document.file) {
-        value = withContext(Dispatchers.IO) { openPages(document.file) }?.let(::PageCache)
+        // A screen that leaves mid-open cancels this, and withContext then drops the source
+        // it finished opening — which only this can still close.
+        var opened: PageSource? = null
+        try {
+            withContext(Dispatchers.IO) { opened = openPages(document.file) }
+        } catch (e: CancellationException) {
+            opened?.close()
+            throw e
+        }
+        value = opened?.let(::PageCache)
         awaitDispose { value?.close() }
     }
 

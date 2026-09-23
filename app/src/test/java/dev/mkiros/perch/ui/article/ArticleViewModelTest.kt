@@ -6,6 +6,8 @@ import dev.mkiros.perch.data.parse.ArticleBlock
 import dev.mkiros.perch.data.parse.FetchedPage
 import dev.mkiros.perch.data.db.EntryDao
 import dev.mkiros.perch.data.db.entity.EntryEntity
+import dev.mkiros.perch.data.document.PageRasterizer
+import dev.mkiros.perch.data.document.PageSource
 import dev.mkiros.perch.data.repo.ArticleTextRepository
 import dev.mkiros.perch.data.repo.EntryRepository
 import dev.mkiros.perch.support.LaunchedJobs
@@ -16,6 +18,9 @@ import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.cancel
+import java.util.concurrent.Executors
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.runBlocking
@@ -377,6 +382,39 @@ class ArticleViewModelTest {
         assertThat(entries.scrollWrites).isEqualTo(2)
     }
 
+    /**
+     * Measuring means opening every page in turn — a hundred page opens on a long paper — and
+     * `viewModelScope` is the main thread. Main is a named thread here, because the test's own
+     * Unconfined stand-in resumes on Room's executor and would hide the difference.
+     */
+    @Test
+    fun `a document's pages are measured off the main thread`() {
+        val docPath = copyFixtureTo("mixed-sizes")
+        val id = seedEntry(title = "A PDF", contentHtml = null, documentPath = docPath)
+        val main = Executors.newSingleThreadExecutor { Thread(it, MAIN_THREAD) }
+        Dispatchers.setMain(main.asCoroutineDispatcher())
+        val openedOn = mutableListOf<String>()
+        val recording = object : PageRasterizer {
+            override fun open(file: java.io.File): PageSource? {
+                openedOn += Thread.currentThread().name
+                return perch.container.rasterizer.open(file)
+            }
+        }
+
+        try {
+            val viewModel = newViewModel(id, rasterizer = recording)
+            awaitInRealTime("the article to load") { viewModel.state.value is ArticleUiState.Loaded }
+
+            assertThat(loaded(viewModel).document!!.pageCount).isEqualTo(3)
+            assertThat(openedOn).hasSize(1)
+            // Coroutine debug mode suffixes a thread's name while a coroutine runs on it.
+            assertThat(openedOn.filter { it.startsWith(MAIN_THREAD) }).isEmpty()
+            viewModel.viewModelScope.cancel()
+        } finally {
+            main.shutdown()
+        }
+    }
+
     // ---- harness -------------------------------------------------------------------------
 
     /** Constructed and *loaded* — the `init` read is Room's, so it is waited out here once. */
@@ -403,7 +441,10 @@ class ArticleViewModelTest {
         }
     }
 
-    private fun newViewModel(entryId: Long) = ArticleViewModel(
+    private fun newViewModel(
+        entryId: Long,
+        rasterizer: PageRasterizer = perch.container.rasterizer,
+    ) = ArticleViewModel(
         entries = entries,
         feeds = perch.container.feeds,
         articleText = ArticleTextRepository(
@@ -413,7 +454,7 @@ class ArticleViewModelTest {
         ),
         entryId = entryId,
         zone = ZoneOffset.UTC,
-        rasterizer = perch.container.rasterizer,
+        rasterizer = rasterizer,
         documents = perch.container.documents,
     )
 
@@ -483,6 +524,7 @@ class ArticleViewModelTest {
 
     private companion object {
         const val LINK = "https://example.com/post"
+        const val MAIN_THREAD = "test-main"
         const val BODY_SENTENCE = "This is the article the feed did not ship."
         const val TEASER_SENTENCE = "A one-line teaser."
 

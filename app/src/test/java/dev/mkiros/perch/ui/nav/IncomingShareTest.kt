@@ -74,4 +74,24 @@ class IncomingShareTest {
         val result = incomingFrom(null)
         assertThat(result).isNull()
     }
+
+    /** Reopened from Recents, a share's intent comes back as it was; it was taken the first time. */
+    @Test
+    fun `a share reopened from Recents is nothing`() {
+        val intent = Intent(Intent.ACTION_SEND)
+        intent.type = "text/plain"
+        intent.putExtra(Intent.EXTRA_TEXT, "https://example.com/post/123")
+        intent.addFlags(Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY)
+        assertThat(incomingFrom(intent)).isNull()
+    }
+
+    /** A rotation recreates the activity with the intent that started it; that is not a second share. */
+    @Test
+    fun `a share the activity is restored with is nothing`() {
+        val intent = Intent(Intent.ACTION_SEND)
+        intent.type = "text/plain"
+        intent.putExtra(Intent.EXTRA_TEXT, "https://example.com/post/123")
+        assertThat(incomingFrom(intent, restored = true)).isNull()
+        assertThat(incomingFrom(intent, restored = false)).isEqualTo(Incoming.Link("https://example.com/post/123"))
+    }
 }

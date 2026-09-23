@@ -225,6 +225,24 @@ class SaveLinkViewModelTest {
         assertThat(intake.value).isNull()
     }
 
+    /** A second share while the first is still saving waits its turn; it is not dropped. */
+    @Test
+    fun `a share that arrives mid-save is taken once the save is done`() {
+        viewModel.onUrlChange(server.url("/post").toString())
+        viewModel.submit()
+        assertThat(viewModel.state.value.isBusy).isTrue()
+
+        val second = server.url(READABLE_PATH).toString()
+        intake.value = Incoming.Link(second)
+        assertThat(intake.value).isEqualTo(Incoming.Link(second))
+
+        gate.countDown()
+        awaitState { it.savedEntryId != null }
+        val row = runBlocking { database.entryDao().findById(viewModel.state.value.savedEntryId!!) }!!
+        assertThat(row.link).isEqualTo(second)
+        assertThat(intake.value).isNull()
+    }
+
     @Test
     fun `open and dismiss own the sheet's visibility`() {
         assertThat(viewModel.state.value.isOpen).isFalse()
