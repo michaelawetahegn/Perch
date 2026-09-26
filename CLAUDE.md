@@ -17,7 +17,10 @@ and what each failure mode actually means.
 
 ## If your prompt was "Read CLAUDE.md and continue", you are a loop session
 
-**The active plan is `PLAN-13.md`** — see the section below. Everything in this section applies.
+**v0.9.0 shipped 2026-09-25 and there is no active plan.** `loop.sh` and `scripts/progress.sh`
+still default to `PLAN-13.md` — a stray launch fails loudly on the missing root file rather than
+silently reopening finished work. If a new `PLAN-N.md` exists at the repository root, follow that
+instead of anything below; if none does, this is not a loop session — say so and stop.
 
 `loop.sh` starts every session with exactly that prompt. If it is yours, you are **the
 worker, not the orchestrator**. A `loop.sh` in `pgrep` is **your own driver** — not someone
@@ -36,56 +39,44 @@ is expected to end in a commit and a push; that is the only way progress exists 
 So: go to the cold start below, do the single next unchecked task, verify it, commit, push,
 close its issue, stop.
 
-## The active plan is `PLAN-13.md` — v0.9.0, PDFs on To-Read (#72)
+## No active plan — v0.9.0 shipped 2026-09-25
 
 Finished plans live in `docs/plans/` — v0.1 (T01–T32), v0.2 (U01–U16), v0.3 (V01–V16), v0.4
 (W01–W12), all four of v0.5's slices (X01–X04, Y01–Y05, Z01–Z05, R00–R03), v0.6 (S01–S13), v0.6.1
-(D01–D30), v0.7.0 (E01–E04) and v0.8.0 (F01–F16) are **complete, frozen, and history only**; never
-reopen a box in any of them. F04's box reads `[BLOCKED: …]` on purpose.
+(D01–D30), v0.7.0 (E01–E04), v0.8.0 (F01–F16) and v0.9.0 (G01–G14, PDFs on To-Read, #72) are
+**complete, frozen, and history only**; never reopen a box in any of them. F04's box reads
+`[BLOCKED: …]` on purpose.
 
-**`PLAN-13.md` at the repository root is the active plan** (G01–G14, planned 2026-09-21): a PDF the
-reader pastes, shares or picks is stored whole and read as pages inside the article surface. Its §0
-is authoritative for v0.9.0 and deliberately overrides older text in SPEC.md, DESIGN.md and earlier
-plans; where they conflict, §0 wins and the task updates the older doc in the same commit — do not
-"fix" §0 to match the older text. **There is one issue, #72** — no per-task issues; every task
-comments on #72 with its commit and what was verified, and G14 closes it with the release.
-
-**Three facts a session will otherwise re-derive** (all measured in planning, all in §0):
-`PdfRenderer` cannot run under Robolectric — every JVM test and screenshot goes through the
-`PageRasterizer` seam and the fixture rasterizer over `fixtures/documents/` (`manifest.tsv` is the
-contract; the emulator, only if already up, is the one proof of the real renderer, in G14);
-`FullText.needsExtraction(null, false)` is true, so the article screen's automatic fetch must be
-guarded for a document; SSRN answers 403 to every non-browser client, and Perch does not impersonate
-a browser — SSRN papers arrive by share, never by URL.
-
-**Nothing else is filed.** `TECH_DEBT.md` "## Next plan" holds a handful of small items; none is a
-licence to start. `docs/plans/PLAN-4-v0.4.md` §0, `PLAN-6` §0, `PLAN-7` §0, `PLAN-9` §0, `PLAN-10` §0,
-`PLAN-11` §0 and `PLAN-12` §0 still bind for everything PLAN-13's §0 does not restate — in particular
-**`PLAN-10` §0.2's rule: prefer deleting to adding**, and an improvement that needs a behaviour change
-to justify it goes into `TECH_DEBT.md`, not into the code.
+**Nothing is filed for a next version.** `TECH_DEBT.md` "## Next plan" holds a handful of small
+items; none is a licence to start. `docs/plans/PLAN-4-v0.4.md` §0 through `PLAN-12` §0 (and
+PLAN-13's own §0, once it is archived) still bind for anything a future plan does not restate — in
+particular **`PLAN-10` §0.2's rule: prefer deleting to adding**, and an improvement that needs a
+behaviour change to justify it goes into `TECH_DEBT.md`, not into the code.
 
 **The hard constraint the human set in v0.5 still binds: no site-specific parsing.** The parser must
 stay generalised and extensible; `docs/plans/PLAN-10-v0.6.1.md` §0.2 restates it with the grep gate
-that enforces it, and PLAN-13 §0.3 applies it to a PDF's own metadata (standards, producers, never a
-site). **`gijn.org` blocks every non-browser client** — it must never join `fixtures/feeds.txt`.
+that enforces it. **`gijn.org` blocks every non-browser client** — it must never join
+`fixtures/feeds.txt`. **SSRN answers 403 to every non-browser client** too — Perch does not
+impersonate a browser, so a PDF from either arrives by share, never by pasted URL.
 
-**A plan task that names a GitHub issue is not done until that issue carries a comment** naming the
-commit and how it was verified — read `gh issue view 72 --json body` before starting, and remember
-the plan's §0 outranks the issue body where they disagree. Either way the commit is **pushed**
-(`git push`) so the human can watch from the issue tracker while AFK.
+**Issue #82** ("Many sites missing rss feeds", opened 2026-09-25) is open but **not yet planned** —
+do not start it from a cold session; it needs the human to turn it into a plan first, the same as
+any feature-sized request in `docs/RALPH.md`.
 
-## Cold start (keep it under ~3k tokens)
+## Cold start when a `PLAN-N.md` exists at the repository root
 
-1. Read the active plan (the `PLAN-N.md` at the repository root), `NOTES.md`, and
-   `git log --oneline -15`. Nothing else yet.
+1. Read that plan, `NOTES.md`, and `git log --oneline -15`. Nothing else yet.
 2. Find the **single next unchecked `[ ]` task** in it. That is your entire job this
    session. Read its GitHub issue. **If every box is checked, the plan is finished:
-   say so and stop** — see the active-plan section above.
+   say so and stop.**
 3. Read only the files that task touches. **Never read the whole repo.** Consult
    `SPEC.md` / `DESIGN.md` only for the sections the task needs.
 4. Do the task. Verify. Commit. Push. Close the issue. Stop.
 
 Do not skip ahead, do not do two tasks, do not refactor code the task doesn't touch.
+
+**If no `PLAN-N.md` exists at the repository root, there is nothing to do.** Say so, and stop —
+do not invent work, do not start #82 unprompted, do not "clean up" unrelated files.
 
 ## Rules that are not negotiable
 
