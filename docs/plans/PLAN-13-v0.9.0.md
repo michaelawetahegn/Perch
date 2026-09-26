@@ -801,7 +801,7 @@ tasks take screenshots (G07, G08, G11 and the two live ones) — through `Screen
         is still open.
       - Rung: build
 
-- [ ] **G14b — Release v0.9.0 publicly. The human has given the word. Issue #72.**
+- [x] **G14b — Release v0.9.0 publicly. The human has given the word. Issue #72.**
       The human ran the G14a build on their own phone for four days ("working good so far"), a reviewer
       went over the code, and **PR #81 "v0.9.0: exact PDF reading position + review fixes" is merged**
       (`c13c8d6`, 2026-09-23). They have asked for the latest version to be published. Publish it.
