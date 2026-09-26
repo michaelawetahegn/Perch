@@ -801,18 +801,38 @@ tasks take screenshots (G07, G08, G11 and the two live ones) — through `Screen
         is still open.
       - Rung: build
 
-- [HELD: awaiting the human — they are testing perch-0.9.0.apk on their own phone for a few days, then a reviewer ships it] **G14b — Release v0.9.0 publicly.**
-      **Not for a loop session. Do not start this box because it is the next one.** It goes out only on
-      the human's word, after they have lived with the build G14a produced. A loop that reaches here
-      should report the plan complete and stop; `- [HELD: …]` is not `- [ ]` and `loop.sh` will not take it.
-      Everything is already built, signed and written by G14a. This box is only the publishing:
-      - Tag `v0.9.0`, push the tag, `gh release create v0.9.0` with `docs/RELEASE-NOTES.md`'s notes and
+- [ ] **G14b — Release v0.9.0 publicly. The human has given the word. Issue #72.**
+      The human ran the G14a build on their own phone for four days ("working good so far"), a reviewer
+      went over the code, and **PR #81 "v0.9.0: exact PDF reading position + review fixes" is merged**
+      (`c13c8d6`, 2026-09-23). They have asked for the latest version to be published. Publish it.
+      - **The G14a APK is stale — rebuild.** It is `versionCode 11`; `main` is now **`versionCode 12`**
+        with the review fixes and `55288b9`'s exact reading position. Do not attach the old file.
+      - **Release at `versionCode 12`, `versionName 0.9.0` — do not bump either.** Both are already
+        correct at `app/build.gradle.kts:12-13`. The +1-per-release rule reads oddly here because 11 and
+        12 were both spent on unreleased test builds (11 = G14a's held build, 12 = `7bbd7ce`, the build
+        now on the human's phone). Releasing at 12 makes the published APK the same identity as the one
+        they have been testing, which is the point; 11 is simply skipped. Say so in the commit.
+      - **Verify before publishing, on the file, not the build log** (a missing
+        `~/.perch/signing.properties` silently debug-signs): `./gradlew test assembleRelease` — **not
+        `clean`**; rename Gradle's `app-release.apk` to `perch-0.9.0.apk`; `aapt2 dump badging` reads
+        `versionCode='12' versionName='0.9.0'`; `apksigner verify --print-certs` prints U02's digest
+        `61367c0499de5c49c824f4d7ba7b4e692d33960cc57c0622772227a8b7fce489`. Paste all three.
+      - **The notes are already written**, at `docs/RELEASE-NOTES.md`'s "Written, not yet shipped: v0.9.0"
+        section — publish that markdown block as the release body and **delete the section and its
+        two-line preamble** in the same commit. Two corrections first, both from PR #81: the reader now
+        reopens at the **exact place** you left, not merely the right page (`55288b9`, `41bfa69`) — say
+        so; and check the "Known issues" list against the merged fixes, striking anything #81 fixed.
+        The schema line stays as it is: `app/schemas/` still tops out at `11.json`, so 10 → 11 is right.
+      - Tag `v0.9.0` at `HEAD`, push the tag, `gh release create v0.9.0` with those notes and
         `perch-0.9.0.apk` attached. Close **#72** naming the release.
-      - File any network gate G14a reported failing as its own issue.
+      - **Do not touch #82** ("Many sites missing rss feeds", opened 2026-09-25). It is the next plan's
+        work, not this release's.
       - Then the turnover edits so the next session is not a loop session: CLAUDE.md's active-plan section
         says v0.9.0 shipped and there is no active plan; `loop.sh:19` and `scripts/progress.sh:11` keep
-        naming `PLAN-13.md` (a stray launch fails loudly on the missing root file, as before). **Do not
-        move this file** — the watching session archives it into `docs/plans/` afterwards.
-      - Done: `gh release view v0.9.0 --json assets` lists the APK; `git status` clean and pushed;
-        `gh issue list --state open` does not list #72.
+        naming `PLAN-13.md` (a stray launch fails loudly on the missing root file, as before). NOTES.md
+        under 100 lines, carrying the released APK path. **Do not move this file** — the watching session
+        archives it into `docs/plans/` afterwards.
+      - Done: `gh release view v0.9.0 --json assets` lists `perch-0.9.0.apk`; `aapt2 dump badging` and
+        `apksigner verify --print-certs` outputs pasted in the commit; `git status` clean and pushed;
+        `gh issue list --state open` does not list #72 (and still lists #82).
       - Rung: build
