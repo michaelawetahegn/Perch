@@ -159,8 +159,23 @@ object ArticleLowering {
      * that mix a `th` label with `td` values. A first row of nothing but `td` is a body
      * row even when it reads like a header (the Word/Excel exports ZDI publishes), because
      * promoting it would be guessing at markup that already said what it meant.
+     *
+     * A table used for **layout** is not a grid at all (H01, #83), and lowers as flow: its
+     * own rows in order, each cell through [lowerFlow], so a `<br><br>` in a cell is still a
+     * paragraph break and a table nested in a cell meets this same rule again. Pages written
+     * before CSS put the whole article in one cell, and collapsing that cell to one span
+     * flattened an essay into a single line of a grid. A table is layout when it
+     * - has a `<table>` nested inside it: nesting is how a page is laid out, not how data is
+     *   written — the signal `ArticleExtractor.carriesContentTable` already uses; or
+     * - is one row of one cell: a single box around content, with no rows or columns to
+     *   relate. A one-row table of *several* cells stays a grid; it still reads across.
      */
     private fun table(el: Element): List<ArticleBlock> {
+        val own = el.ownRows()
+        val layout = el.select("table").size > 1 ||
+            (own.size == 1 && own.single().cells().size == 1)
+        if (layout) return own.flatMap { tr -> tr.cells().flatMap(::lowerFlow) }
+
         val trs = el.select("tr")
         if (trs.isEmpty()) return emptyList()
 
@@ -201,6 +216,23 @@ object ArticleLowering {
         val body = if (hasHeader) rows.drop(1) else rows
         return listOf(ArticleBlock.Table(header, body))
     }
+
+    /**
+     * This table's rows and not a nested table's: `tr` children of the table and of its
+     * direct `thead`/`tbody`/`tfoot` (Jsoup always inserts a `tbody`). `select("tr")` would
+     * find the nested rows too, and a layout table would lower its inner table twice.
+     */
+    private fun Element.ownRows(): List<Element> =
+        children().flatMap { child ->
+            when (child.lowerTag()) {
+                "tr" -> listOf(child)
+                "thead", "tbody", "tfoot" -> child.childElements("tr")
+                else -> emptyList()
+            }
+        }
+
+    private fun Element.cells(): List<Element> =
+        children().filter { it.lowerTag() == "td" || it.lowerTag() == "th" }
 
     /** A `colspan`/`rowspan`, clamped: the attribute is publisher input, not a promise. */
     private fun Element.span(name: String): Int =

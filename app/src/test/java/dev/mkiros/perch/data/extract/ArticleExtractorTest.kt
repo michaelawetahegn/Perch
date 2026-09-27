@@ -152,6 +152,25 @@ class ArticleExtractorTest {
         assertThat(lowered).isEqualTo(written)
     }
 
+    /**
+     * H01/#83: Paul Graham's pages are laid out with `<table>` — the essay sits in one cell of
+     * a nested one-cell table, its paragraphs split by `<br><br>`. Lowered as data, the whole
+     * essay became one flattened cell of a one-row grid; lowered as layout it is paragraphs.
+     */
+    @Test
+    fun `a page laid out in tables lowers to its paragraphs, not a grid`() {
+        val fixture = ArticleFixtures.paulgraham
+        val extracted = requireNotNull(ArticleExtractor.extract(fixture.html(), fixture.url))
+        val blocks = flatten(ArticleLowering.toBlocks(HtmlSanitizer.sanitize(extracted, fixture.url)))
+        val paragraphs = blocks.filterIsInstance<ArticleBlock.Paragraph>().map { it.text.text }
+
+        assertThat(blocks.filterIsInstance<ArticleBlock.Table>()).isEmpty()
+        assertThat(paragraphs.size).isAtLeast(20)
+        assertThat(paragraphs.count { fixture.mid in it }).isEqualTo(1)
+        assertThat(paragraphs.count { fixture.last in it }).isEqualTo(1)
+        assertThat(paragraphs.single { fixture.mid in it }).doesNotContain(fixture.last)
+    }
+
     @Test
     fun `a page with no article on it extracts nothing rather than its navigation`() {
         val html = """

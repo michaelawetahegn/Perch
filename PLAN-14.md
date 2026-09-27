@@ -117,7 +117,7 @@ most). The review box (H04) is second from last, as CLAUDE.md requires.
 
 ## The tasks
 
-- [ ] **H01 — A table used for layout lowers as paragraphs; the PG essay reads as an essay. TDD. Issue #83.**
+- [x] **H01 — A table used for layout lowers as paragraphs; the PG essay reads as an essay. TDD. Issue #83.**
       `gh issue view 83` first. §0.2 is the diagnosis, §0.3 the rule, §0.6 the traps; read them before the code.
       RED first, in `ArticleLoweringTest` (beside `:201`) with hand-written HTML, three tests: (a) a
       one-row table whose one cell holds `para one<br><br>para two` lowers to **two `Paragraph`s and no

@@ -1,6 +1,7 @@
 # NOTES.md
 
 ## Log
+- 2026-09-27 — **H01/#83: PLAN-14 §0.3's rule 2 was narrowed to "one row of *one cell*"** — as written ("exactly one row") it turns `ArticleLoweringTest > a headerless table puts every row in the body` (a 1×2 table, §0.5's must-not-move list) into flow. PG's essay and trailer tables are 1×1, so the fix is unchanged; H04 should confirm SPEC §5/DESIGN §8 say "one cell".
 - 2026-09-21 — **PLAN-13 run 1 stopped after G10; G02 (done)/G07/G09 re-opened as eight smaller boxes.** All three blocks were avoidable: each task's own §0 section already specified the algorithm, and the sessions improvised. The re-opened boxes carry the anchors below. Do not re-derive them.
 - 2026-09-21 — **G12: §0.4 step 4 (the page-one thumbnail) had never been built**, and `DocumentStore.sweep` deleted every thumbnail (no row names a `-1.png`); both fixed in G12 with `DocumentStoreTest` — the sweep had no test at all before it. G13 found both of the other unbuilt §0.4 rungs the same way — step 2's file-name title from `Content-Disposition` or the URL's last segment, and step 5's delete-the-previous-file — and built them with tests. **Read a task's §0 steps against the code, not against the tests.**
 - 2026-09-21 — **G09b: the share path never reached the sheet before G09b.** G09a proved each layer alone, but `PerchNavHost` never collected `container.intake`, so To-Read (the owner of `SaveLinkViewModel`) was never brought up. Only a whole-shell test (`SaveLinkSheetTest > a link shared to Perch…`) shows that; a per-layer green is not "the feature works".

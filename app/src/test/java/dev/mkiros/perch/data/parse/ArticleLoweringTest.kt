@@ -198,6 +198,45 @@ class ArticleLoweringTest {
     }
 
     @Test
+    fun `a one-row table holding prose lowers as its paragraphs, not a grid`() {
+        val blocks = lower("<table><tr><td>para one<br><br>para two</td></tr></table>")
+
+        assertThat(blocks.filterIsInstance<ArticleBlock.Table>()).isEmpty()
+        assertThat(blocks.map { (it as ArticleBlock.Paragraph).text.text })
+            .containsExactly("para one", "para two").inOrder()
+    }
+
+    @Test
+    fun `a table with a table inside it lowers the inner cells' words exactly once`() {
+        val blocks = lower(
+            """<table><tr><td>nav</td><td>
+                 <table><tr><td>inner one<br><br>inner two</td></tr></table>
+                 <table><tr><td>inner three</td></tr></table>
+               </td></tr></table>""",
+        )
+        val text = blocks.joinToString(" ") { block ->
+            when (block) {
+                is ArticleBlock.Paragraph -> block.text.text
+                is ArticleBlock.Table -> (block.header + block.rows.flatten()).joinToString(" ") { it.text }
+                else -> ""
+            }
+        }
+
+        assertThat(blocks.filterIsInstance<ArticleBlock.Table>()).isEmpty()
+        assertThat(Regex("inner").findAll(text).count()).isEqualTo(3)
+        assertThat(text).isEqualTo("nav inner one inner two inner three")
+    }
+
+    @Test
+    fun `a two-by-two table with nothing nested inside it is still a table`() {
+        val table = lower("<table><tr><td>a</td><td>b</td></tr><tr><td>c</td><td>d</td></tr></table>")
+            .single() as ArticleBlock.Table
+
+        assertThat(table.rows.map { row -> row.map { it.text } })
+            .containsExactly(listOf("a", "b"), listOf("c", "d")).inOrder()
+    }
+
+    @Test
     fun `a table splits its header row from its body rows`() {
         val table = lower(
             """<table><thead><tr><th>Year</th><th>Bird</th></tr></thead>

@@ -197,6 +197,21 @@ object ArticleFixtures {
     )
 
     /**
+     * Paul Graham's "Making Startups Powerful" (H01, #83): hand-written HTML from before CSS,
+     * *laid out* with `<table>` — an outer nav | spacer | content row, a nested one-cell table
+     * holding the essay, paragraphs split by `<br><br>`. Extraction was always right here; the
+     * page pins lowering, which used to render the whole essay as one cell of a grid.
+     */
+    val paulgraham: ArticleFixture = ArticleFixture(
+        slug = "paulgraham-powerful",
+        url = "https://paulgraham.com/powerful.html",
+        cms = "hand-written HTML, table layout",
+        mid = "It's always good when money flows through you.",
+        last = "for reminding me about token flow",
+        excludes = emptyList(),
+    )
+
+    /**
      * Seven more excerpt-only sources, chosen for CMS spread rather than for difficulty.
      * The last of them arrived the other way round: the Hugging Face blog was harvested by
      * W06 because it *failed*, and W07's two-pass rule is what let it join the contract.
@@ -264,6 +279,7 @@ object ArticleFixtures {
         squarespaceTable,
         bellingcat,
         gijn,
+        paulgraham,
     )
 
     /**
