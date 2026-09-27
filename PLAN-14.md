@@ -132,7 +132,7 @@ most). The review box (H04) is second from last, as CLAUDE.md requires.
       - Done: the RED output line in the commit; `./gradlew :app:testDebugUnitTest --tests '*ArticleLowering*' --tests '*ArticleExtractor*' --tests '*TableCorpus*'` green; `./gradlew test` green and above 2292; §0.3's grep-gate counts before/after pasted; #83 commented with the commit; pushed.
       - Rung: unit
 
-- [ ] **H02 — Image-map navigation and the home-link logo do not survive extraction. TDD. Issue #83.**
+- [x] **H02 — Image-map navigation and the home-link logo do not survive extraction. TDD. Issue #83.**
       §0.4 is the whole decision. RED first in `ArticleExtractorTest`: (a) hand-written page, article
       prose plus `<img usemap="#m" src="/nav.gif"><map name="m"><area href="/a"></map>` → the extracted
       HTML has no `nav.gif`; (b) hand-written page with `<a href="index.html"><img src="/logo.gif"></a>`

@@ -133,6 +133,11 @@ What is left, none of it a session on its own:
 - **A document is opened twice to be shown** (v0.9.0 review). `ArticleViewModel.loaded()` opens
   the PDF and every page in turn only to read aspect ratios, then `DocumentBody` opens it again
   to draw; one source handed from the first to the second would halve the work on a long paper.
+- **`ArticleExtractor.absolutise` is a no-op on an assembled article** (H02, 2026-09-27).
+  `assemble` wraps clones in a fresh `Element("div")` that carries no base URI, so `abs:src` and
+  `abs:href` come back blank and relative URLs leave `extract` relative (seen: `/logo.gif`). Harmless
+  today because every caller sanitizes with the page URL, and the test re-parses against it too;
+  fixing it means handing `baseUrl` to `absolutise` the way H02 handed it to `clean`.
 - **`loop.sh`'s nightly `"$DEV" reboot` has no timeout** (`loop.sh:137`, `device.sh:154`'s
   `wait-for-device`), so an `offline` emulator hangs a run before its first session and the
   stall guard never fires. `boot_emulator` already wraps its call in `timeout`; this one should too.

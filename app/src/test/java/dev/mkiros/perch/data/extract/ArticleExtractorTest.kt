@@ -171,6 +171,59 @@ class ArticleExtractorTest {
         assertThat(paragraphs.single { fixture.mid in it }).doesNotContain(fixture.last)
     }
 
+    /** H02/#83: an image map is a navigation widget — its links live in `<area>`, not in the picture. */
+    @Test
+    fun `an image-map navigation picture does not survive extraction`() {
+        val html = """
+            <html><body><article>
+              <img usemap="#m" src="/nav.gif"><map name="m"><area href="/a"></map>
+              <p>${"Long enough to score. ".repeat(20)}</p>
+            </article></body></html>
+        """.trimIndent()
+
+        val extracted = requireNotNull(ArticleExtractor.extract(html, "https://example.com/posts/one.html"))
+
+        assertThat(extracted).doesNotContain("nav.gif")
+    }
+
+    /**
+     * H02/#83: a picture whose only job is linking to the site's home page is the logo. The
+     * href is relative so resolution is what is tested: `../index.html` from `/posts/` is the
+     * root, where a bare `index.html` would be `/posts/index.html`, a section and not home.
+     */
+    @Test
+    fun `a picture that only links home is the site logo, while a linked figure stays`() {
+        val html = """
+            <html><body><article>
+              <a href="../index.html"><img src="/logo.gif"></a>
+              <p>${"Long enough to score. ".repeat(20)}</p>
+              <p><a href="/posts/two.html"><img src="/figure.png"></a></p>
+            </article></body></html>
+        """.trimIndent()
+
+        val extracted = requireNotNull(ArticleExtractor.extract(html, "https://example.com/posts/one.html"))
+
+        assertThat(extracted).doesNotContain("logo.gif")
+        assertThat(extracted).contains("figure.png")
+    }
+
+    /**
+     * H02/#83: of PG's four pictures only the author's own title GIF is the article's. The
+     * 1×26 spacer is the sanitizer's to drop, so pixels are left out as it would; [images]
+     * is not used because its icon ceiling would also drop the 18-pixel-high title.
+     */
+    @Test
+    fun `a table-laid page keeps its title picture and loses its navigation and logo`() {
+        val fixture = ArticleFixtures.paulgraham
+        val extracted = requireNotNull(ArticleExtractor.extract(fixture.html(), fixture.url))
+        val pictures = Jsoup.parse(extracted, fixture.url).select("img")
+            .filterNot { HtmlSanitizer.isTrackingPixel(it) }
+            .map { it.attr("abs:src") }
+
+        assertThat(pictures)
+            .containsExactly("https://s.turbifycdn.com/aah/paulgraham/making-startups-powerful-1.gif")
+    }
+
     @Test
     fun `a page with no article on it extracts nothing rather than its navigation`() {
         val html = """

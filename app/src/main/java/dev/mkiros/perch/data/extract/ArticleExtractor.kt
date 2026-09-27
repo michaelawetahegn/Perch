@@ -85,7 +85,7 @@ object ArticleExtractor {
             if (top.value < MIN_CANDIDATE_SCORE) return null
 
             val article = assemble(top.key.unwrapped(), top.value, scores)
-            clean(article)
+            clean(article, baseUrl)
             absolutise(article)
             article.html().takeIf { article.text().length >= MIN_PROSE_CHARS }
         }.getOrNull()
@@ -123,6 +123,9 @@ object ArticleExtractor {
         // and the share row, and the title is already on the article screen.
         doc.select(LANDMARKS).remove()
         doc.select("[aria-hidden=true], [hidden]").remove()
+        // An image map is a navigation widget by definition (H02/#83): its links live in
+        // `<area>`, not in the picture, so the picture is never the article's.
+        doc.select("img[usemap], map").remove()
 
         // Readability's unlikely-candidate pass, in its original conservative form: a
         // container is only dropped when its name says chrome *and* says nothing that
@@ -299,8 +302,9 @@ object ArticleExtractor {
      * markup is often anonymous — an unnamed `<ul>` of nine links and eleven words is a
      * navigation block whatever it calls itself.
      */
-    private fun clean(article: Element) {
+    private fun clean(article: Element, baseUrl: String?) {
         article.select(LANDMARKS).remove()
+        article.select("a[href]").filter { it.isHomeLogo(baseUrl) }.forEach { it.remove() }
         article.select("div, section, ul, ol, table, aside, form, dl")
             .filter { it.namesChrome() }
             .forEach { it.remove() }
@@ -315,6 +319,20 @@ object ArticleExtractor {
         article.select("div, section, span, p, li").reversed().forEach { element ->
             if (element.text().isBlank() && element.select("img").isEmpty()) element.remove()
         }
+    }
+
+    /**
+     * A link that is only pictures and goes to its own site's front page is the site logo
+     * (H02/#83), never an article's figure — a figure links onward, to itself or a post.
+     * Resolved against [baseUrl], so a relative `index.html` counts — not against the
+     * element's own base, which [assemble]'s fresh wrapper does not carry.
+     */
+    private fun Element.isHomeLogo(baseUrl: String?): Boolean {
+        if (text().isNotBlank() || select("img").isEmpty()) return false
+        val page = runCatching { java.net.URI(baseUrl.orEmpty()) }.getOrNull() ?: return false
+        val target = runCatching { page.resolve(attr("href").trim()) }.getOrNull() ?: return false
+        return target.host != null && target.host.equals(page.host, ignoreCase = true) &&
+            target.rawQuery == null && HOME_PATH.matches(target.rawPath.orEmpty())
     }
 
     /**
@@ -378,6 +396,9 @@ object ArticleExtractor {
     private const val MIN_TABLE_ROWS = 3
     private const val MIN_TABLE_COLUMNS = 2
     private const val LINKY = 0.5
+
+    /** The paths a site's front page answers on. */
+    private val HOME_PATH = Regex("/?|/(?:index\\.(?:html?|php)|default\\.html?)", RegexOption.IGNORE_CASE)
     private const val CHROME_TEXT_CEILING = 200
 
     /** A page that yields less than this is a page we failed to read, not a short article. */
