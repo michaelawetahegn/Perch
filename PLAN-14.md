@@ -176,7 +176,7 @@ most). The review box (H04) is second from last, as CLAUDE.md requires.
       - Done: the five answered in the commit message, each with the command that settled it; `./gradlew test` green; pushed.
       - Rung: unit
 
-- [ ] **H05 — Release v0.10.0 publicly. The human has asked for it. Issue #83.**
+- [x] **H05 — Release v0.10.0 publicly. The human has asked for it. Issue #83.**
       The human asked on 2026-09-27 for this fix to be published under a new MINOR version (§0.1).
       **Not held**: build, verify, publish.
       - Bump `perchVersionCode` 12 → **13**, `perchVersionName` `0.9.0` → **`0.10.0`** at

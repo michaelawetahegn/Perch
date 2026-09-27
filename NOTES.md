@@ -78,10 +78,10 @@
   **SPEC.md §4/§8a**. What is only here: **`MIGRATION_6_7`'s `CREATE VIRTUAL TABLE` must be
   byte-for-byte what `7.json` exports** or Room fails validation on the *next* open, not on the
   migration — a test that only runs the migration will not catch it.
-- 2026-09-25 — **v0.9.0 released** (G14b; `versionCode` 12, `versionName` 0.9.0, DB 10 → 11 via
-  `MIGRATION_10_11`); test floor **2292** (1327 debug + 965 release; **2309** = 1337 + 972 at H03). APK
-  `app/build/outputs/apk/release/perch-0.9.0.apk` (gitignored — rebuild with `assembleRelease` +
-  rename if it is gone). #72 closed; PLAN-13 archived in `docs/plans/`.
+- 2026-09-27 — **v0.10.0 released** (H05; `versionCode` 13, `versionName` 0.10.0, DB stays 11); test floor
+  **2309** (1337 debug + 972 release). APK `app/build/outputs/apk/release/perch-0.10.0.apk` (gitignored —
+  rebuild with `assembleRelease` + rename if it is gone). #83 closed. Live gate 5 misses the same 7 short
+  posts every run (hexacorn, gwern's newsletters, one simonwillison photo post) at ~87% of a 90% bar: content, not Perch.
   `adb shell input text` drops everything past ~15 characters — type a URL in short chunks, submit
   with `input keyevent 66`; never tap a button at its dump bounds while the IME is up (uiautomator
   does not dump it) — `keyevent 111` hides it.

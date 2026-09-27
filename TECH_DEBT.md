@@ -105,6 +105,12 @@ under `data/`, no `FeedEntity(`/`EntryEntity(` literal outside `support/Entities
 `MIN_COLOURS`, one `STOP_TIMEOUT_MS`, one back arrow, no test deleted, ignored or loosened.
 What is left, none of it a session on its own:
 
+- **A table inside a `<figure>` that also holds an `<img>` lowers as images only** (H05 live gate
+  6b, 2026-09-27). `ArticleLowering.figure` returns just the figure's images when it has any, so a
+  WordPress `<figure class="wp-block-table">` whose cells carry ✅/❌ emoji `<img>`s loses the whole
+  table (Check Point's "PuzzleMask" post: 64 written cells in the markup, 35 in the blocks). There
+  since before v0.9.0; named in v0.10.0's Known issues. A figure should lower its images only when
+  it holds no table.
 - **`PerchApp.onTerminate` can deadlock against the startup document sweep** (G07c, 2026-09-21,
   one hang in a full suite). Cancelling `startupScope` does not stop a Room query already on
   Room's executor, so `database.close()` races the open it triggered. The likely fix is to join
