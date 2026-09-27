@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.DisableSelection
@@ -44,6 +45,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
 import dev.mkiros.perch.R
@@ -277,6 +279,7 @@ private fun ImageBlock(
             contentScale = ContentScale.FillWidth,
             onState = { state = it },
             modifier = Modifier
+                .then(naturalWidth(state))
                 .fillMaxWidth()
                 // Space is reserved before the bytes arrive so the paragraph below does
                 // not jump; once the real ratio is known the image sizes itself.
@@ -307,6 +310,21 @@ private fun ImageBlock(
                 modifier = Modifier.padding(top = Dimens.captionGap),
             )
         }
+    }
+}
+
+/**
+ * Caps a loaded figure at its own width, read the way a browser reads it — one image pixel
+ * to one dp — so a 220px title GIF sits at 220dp instead of being blown up across the
+ * column and blurred (#83). Wider images still fill the column. Coil decodes `INEXACT` for
+ * any scale but `None`, so it never upscales and the painter's width is the image's own.
+ */
+private fun naturalWidth(state: AsyncImagePainter.State): Modifier {
+    val width = (state as? AsyncImagePainter.State.Success)?.painter?.intrinsicSize?.width
+    return if (width == null || !width.isFinite() || width <= 0f) {
+        Modifier
+    } else {
+        Modifier.widthIn(max = width.dp)
     }
 }
 

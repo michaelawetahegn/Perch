@@ -147,7 +147,7 @@ most). The review box (H04) is second from last, as CLAUDE.md requires.
       - Done: RED line in the commit; the before/after image counts pasted; `./gradlew test` green; #83 commented; pushed.
       - Rung: unit
 
-- [ ] **H03 — The PG essay renders as an article, looked at in both themes. Screenshot. Issue #83.**
+- [x] **H03 — The PG essay renders as an article, looked at in both themes. Screenshot. Issue #83.**
       Add `LayoutTableScreenshotTest` in `app/src/testDebug/.../ui/screenshot/`, a copy of
       `TableScreenshotTest`'s shape (`TableScreenshotTest.kt:52`, `:58`: fixture → sanitize → `ArticleBody`)
       but fed by extract → sanitize over `paulgraham-powerful`. It writes `layout-table-essay-light` and

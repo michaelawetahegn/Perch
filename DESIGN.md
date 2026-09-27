@@ -365,7 +365,9 @@ mono one — see §3.
   selecting the block yields runnable code with no numbers to strip. One `Text` holds
   every number, which is what keeps the code's left edge still at 9→10 and 99→100.
 - **Images**: full text-column width, 4dp corners (editorial, not app-y), intrinsic
-  aspect ratio reserved *before* load so nothing reflows. `figcaption` → Caption style
+  aspect ratio reserved *before* load so nothing reflows. An image narrower than the column
+  keeps its own width, one pixel to one dp as a browser draws it, rather than being blown up
+  and blurred (a 220px title GIF, #83). `figcaption` → Caption style
   directly beneath, 8dp gap — and any image described through `aria-describedby` or a
   `caption`/`credit`/`cutline`-classed sibling, which the sanitizer rewrites into that same
   `figure` before anything renders (PLAN-12 F05). A failed load collapses to nothing — never a broken glyph,

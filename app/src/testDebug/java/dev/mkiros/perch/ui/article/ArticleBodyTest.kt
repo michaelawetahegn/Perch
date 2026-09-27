@@ -4,13 +4,18 @@ import android.content.Context
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertWidthIsEqualTo
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.width
 import androidx.test.core.app.ApplicationProvider
 import coil.Coil
 import com.google.common.truth.Truth.assertThat
@@ -48,9 +53,13 @@ class ArticleBodyTest {
     @Before
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        // Exactly one URL becomes a real drawable; everything else falls through and errors.
+        // Two URLs become real drawables; everything else falls through and errors.
         stubImages(context) { url ->
-            if (url == IMAGE_URL) StubImage(IMAGE_WIDTH, IMAGE_HEIGHT) else null
+            when (url) {
+                IMAGE_URL -> StubImage(IMAGE_WIDTH, IMAGE_HEIGHT)
+                WIDE_IMAGE_URL -> StubImage(WIDE_IMAGE_WIDTH, IMAGE_HEIGHT)
+                else -> null
+            }
         }
     }
 
@@ -99,6 +108,21 @@ class ArticleBodyTest {
 
         compose.onNodeWithContentDescription("A phase diagram").assertIsDisplayed()
         compose.onNodeWithText("Figure 1: the two stable states.").assertIsDisplayed()
+    }
+
+    @Test
+    fun `an image narrower than the column keeps its own width instead of being blown up`() {
+        show(ArticleBlock.Image(url = IMAGE_URL, alt = "A title set as a GIF", caption = null))
+
+        compose.onNodeWithTag(ArticleTestTags.IMAGE).assertWidthIsEqualTo(IMAGE_WIDTH.dp)
+    }
+
+    @Test
+    fun `an image wider than the column fills the column and no more`() {
+        show(ArticleBlock.Image(url = WIDE_IMAGE_URL, alt = "A wide schematic", caption = null))
+
+        val column = compose.onRoot().getUnclippedBoundsInRoot().width
+        compose.onNodeWithTag(ArticleTestTags.IMAGE).assertWidthIsEqualTo(column)
     }
 
     @Test
@@ -251,6 +275,8 @@ class ArticleBodyTest {
         const val IMAGE_URL = "https://example.com/figure.png"
         const val IMAGE_WIDTH = 160
         const val IMAGE_HEIGHT = 90
+        const val WIDE_IMAGE_URL = "https://example.com/schematic.png"
+        const val WIDE_IMAGE_WIDTH = 2000
         const val ARTICLE_URL = "https://example.com/post"
     }
 }
