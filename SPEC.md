@@ -359,6 +359,11 @@ source is discarded entirely** — colours, sizes, fonts and alignment do not
 survive lowering (DESIGN.md §8). Nesting collapses: a block inside a `<p>` ends
 the paragraph rather than nesting.
 
+A `<table>` is a grid only when it is data. A table used for **layout** (v0.10.0, #83) —
+one with a `<table>` nested inside it, or one row of one cell — lowers as flow: its own
+rows in order, each cell as ordinary blocks, so an essay written into a table cell before
+CSS reads as paragraphs, not as one flattened cell. Every other table becomes `Table`.
+
 The lowering is total: every sanitized document produces a block list, and any
 element the mapper does not recognise becomes `Unsupported`, never a silent drop.
 `toBlocks` never throws. Chrome removed during lowering: share/subscribe widgets,

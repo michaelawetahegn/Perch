@@ -159,7 +159,7 @@ most). The review box (H04) is second from last, as CLAUDE.md requires.
       - Done: both PNG paths and the critique in the commit; `./gradlew test` green; #83 commented; pushed.
       - Rung: screenshot
 
-- [ ] **H04 — The review pass. The whole of v0.10.0, read at once.**
+- [x] **H04 — The review pass. The whole of v0.10.0, read at once.**
       Read `git diff v0.9.0..HEAD`, **the whole of it**, and answer in the commit message (and in NOTES.md
       where it outlives the plan):
       1. Does any doc still describe v0.9.0 or describe tables wrongly? README.md; SPEC.md §1 (version) and

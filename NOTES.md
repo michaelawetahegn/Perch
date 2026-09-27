@@ -1,9 +1,7 @@
 # NOTES.md
 
 ## Log
-- 2026-09-27 — **H01/#83: PLAN-14 §0.3's rule 2 was narrowed to "one row of *one cell*"** — as written ("exactly one row") it turns `ArticleLoweringTest > a headerless table puts every row in the body` (a 1×2 table, §0.5's must-not-move list) into flow. PG's essay and trailer tables are 1×1, so the fix is unchanged; H04 should confirm SPEC §5/DESIGN §8 say "one cell".
-- 2026-09-27 — **H02/#83: PLAN-14 test (b)'s logo href is `../index.html`, not `index.html`** — at `/posts/one.html` a bare `index.html` resolves to `/posts/index.html`, which §0.4's own rule (resolve, then *root* path) rightly keeps. Rule unchanged; PG's page sits at the root, so its `index.html` is home.
-- 2026-09-27 — **H03/#83: `ImageBlock` now caps a figure at its own width (1 image px = 1 dp)** — the 220px title GIF filled the column at ~3.4×. DESIGN §8's image line says so; H04 should check no other screenshot relied on small images filling the width. Residual: PG's title GIF is a white slab in dark theme — the source's pixels, and §8 never inverts a figure.
+- 2026-09-27 — **PLAN-14 (v0.10.0, #83) as built differs from its §0 twice, on purpose.** A layout table is one with a nested `<table>` or **one row of one cell** (§0.3 said "one row": that turned `ArticleLoweringTest > a headerless table…`, a 1×2, into flow); SPEC §5/DESIGN §8 say "one cell" since H04. The home-logo test uses `../index.html` (a bare one at `/posts/` is `/posts/index.html`, not home). H03: `ImageBlock` caps a figure at its own width, 1 px = 1 dp; no other screenshot draws a figure narrower than the column (the 320px `SLAB`s are list thumbnails, not `ImageBlock`). Residual: PG's title GIF is a white slab in dark theme — the source's pixels.
 - 2026-09-21 — **G12: §0.4 step 4 (the page-one thumbnail) had never been built**, and `DocumentStore.sweep` deleted every thumbnail (no row names a `-1.png`); both fixed in G12 with `DocumentStoreTest` — the sweep had no test at all before it. G13 found both of the other unbuilt §0.4 rungs the same way — step 2's file-name title from `Content-Disposition` or the URL's last segment, and step 5's delete-the-previous-file — and built them with tests. **Read a task's §0 steps against the code, not against the tests.**
 - 2026-09-21 — **G09b: the share path never reached the sheet before G09b.** G09a proved each layer alone, but `PerchNavHost` never collected `container.intake`, so To-Read (the owner of `SaveLinkViewModel`) was never brought up. Only a whole-shell test (`SaveLinkSheetTest > a link shared to Perch…`) shows that; a per-layer green is not "the feature works".
 - 2026-09-21 — **G07c: `./gradlew test` can hang forever, not fail** (seen in G07c and again in G11, debug variant, early in the run; a re-run passed both times). `PerchApp.onCreate`'s startup `sweepDocuments()` (G01) opens Room on `arch_disk_io` while `onTerminate` → `AppContainer.close()` → `RoomDatabase.close()` runs on the Robolectric main thread; `startupScope.cancel()` does not stop Room's own executor, and the two deadlock inside Room (`InvalidationTracker.syncTriggers` vs `FrameworkSQLiteOpenHelper.close`). Diagnose with `jstack` on the `Gradle Test Executor` pid; kill it and re-run. Filed in `TECH_DEBT.md` "## Next plan". Wrap long runs in `timeout 45m`.
@@ -81,9 +79,9 @@
   byte-for-byte what `7.json` exports** or Room fails validation on the *next* open, not on the
   migration — a test that only runs the migration will not catch it.
 - 2026-09-25 — **v0.9.0 released** (G14b; `versionCode` 12, `versionName` 0.9.0, DB 10 → 11 via
-  `MIGRATION_10_11`); test floor **2292** (1327 debug + 965 release). APK
+  `MIGRATION_10_11`); test floor **2292** (1327 debug + 965 release; **2309** = 1337 + 972 at H03). APK
   `app/build/outputs/apk/release/perch-0.9.0.apk` (gitignored — rebuild with `assembleRelease` +
-  rename if it is gone). #72 closed. No active plan; `PLAN-13.md` awaits archiving into `docs/plans/`.
+  rename if it is gone). #72 closed; PLAN-13 archived in `docs/plans/`.
   `adb shell input text` drops everything past ~15 characters — type a URL in short chunks, submit
   with `input keyevent 66`; never tap a button at its dump bounds while the IME is up (uiautomator
   does not dump it) — `keyevent 111` hides it.

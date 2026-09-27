@@ -364,7 +364,7 @@ mono one — see §3.
   the numbers; and it is **its own composable inside a `DisableSelection`**, so
   selecting the block yields runnable code with no numbers to strip. One `Text` holds
   every number, which is what keeps the code's left edge still at 9→10 and 99→100.
-- **Images**: full text-column width, 4dp corners (editorial, not app-y), intrinsic
+- **Images**: the text column's width at most, 4dp corners (editorial, not app-y), intrinsic
   aspect ratio reserved *before* load so nothing reflows. An image narrower than the column
   keeps its own width, one pixel to one dp as a browser draws it, rather than being blown up
   and blurred (a 220px title GIF, #83). `figcaption` → Caption style
@@ -403,6 +403,9 @@ mono one — see §3.
   `fillMaxWidth`, which inside a scroll measures to zero. A column whose every written
   cell is a number is **right-aligned**, header included; one `N/A` and it reads left
   again. Tables from feeds are rare and usually broken; never let one widen the page.
+  A table used for *layout* — one with a table nested in it, or one row of one cell — is
+  never drawn as a table at all: lowering turns it into the paragraphs it holds (SPEC.md §5,
+  #83), so none of this applies to it.
 - **Links**: `onSurface` with a 1dp `primary`-at-0.5 underline offset 3dp — an editorial
   underline, not a blue hyperlink. Custom Tab on tap.
 - **Anything unmapped** (iframes, embeds, video): a single tasteful inline card —

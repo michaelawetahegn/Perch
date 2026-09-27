@@ -396,10 +396,10 @@ object ArticleExtractor {
     private const val MIN_TABLE_ROWS = 3
     private const val MIN_TABLE_COLUMNS = 2
     private const val LINKY = 0.5
+    private const val CHROME_TEXT_CEILING = 200
 
     /** The paths a site's front page answers on. */
     private val HOME_PATH = Regex("/?|/(?:index\\.(?:html?|php)|default\\.html?)", RegexOption.IGNORE_CASE)
-    private const val CHROME_TEXT_CEILING = 200
 
     /** A page that yields less than this is a page we failed to read, not a short article. */
     const val MIN_PROSE_CHARS = 200
