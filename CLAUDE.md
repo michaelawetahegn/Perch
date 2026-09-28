@@ -18,8 +18,8 @@ and what each failure mode actually means.
 ## If your prompt was "Read CLAUDE.md and continue", you are a loop session
 
 **v0.10.0 shipped 2026-09-27 and there is no active plan.** `loop.sh` and `scripts/progress.sh`
-still default to `PLAN-14.md` — once it is archived, a stray launch fails loudly on the missing
-root file; until then every box in it is checked, so a stray session says so and stops. If a new `PLAN-N.md` exists at the repository root, follow that
+still default to `PLAN-14.md` — a stray launch fails loudly on the missing
+root file rather than silently reopening finished work. If a new `PLAN-N.md` exists at the repository root, follow that
 instead of anything below; if none does, this is not a loop session — say so and stop.
 
 `loop.sh` starts every session with exactly that prompt. If it is yours, you are **the

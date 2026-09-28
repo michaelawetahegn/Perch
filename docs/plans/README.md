@@ -10,7 +10,7 @@ Finished plans live here. The **active** plan stays at the repository root, beca
 
 **v0.5 was four sequential plans rather than one**, run as four separate loops in order —
 `PLAN-5` → `PLAN-6` → `PLAN-7` → `PLAN-8`, with only the release slice bumping the version.
-v0.6 is back to one plan, `PLAN-9`; v0.6.1 is the tech-debt pass, `PLAN-10`; v0.7.0 is `PLAN-11`; v0.8.0 is `PLAN-12`; v0.9.0 is `PLAN-13`. v0.10.0 is `PLAN-14`, active at the repository root until it ships. Two loops must never run at once: they would fight over
+v0.6 is back to one plan, `PLAN-9`; v0.6.1 is the tech-debt pass, `PLAN-10`; v0.7.0 is `PLAN-11`; v0.8.0 is `PLAN-12`; v0.9.0 is `PLAN-13`. v0.10.0 is `PLAN-14`. There is no active plan; the next one is `PLAN-15`. Two loops must never run at once: they would fight over
 commits (`RALPH.md` §4).
 
 | Plan | Version | Tasks | What it was |
@@ -28,7 +28,7 @@ commits (`RALPH.md` §4).
 | [`PLAN-11-v0.7.0.md`](PLAN-11-v0.7.0.md) | v0.7.0 | E01–E04 | Two reader requests: an article reopens where you stopped reading (#65), and ticked sources move to a folder together (#66). |
 | [`PLAN-12-v0.8.0.md`](PLAN-12-v0.8.0.md) | v0.8.0 | F01–F16 | The reader's four reports — no duplicate rows after a backfill (#69), Bellingcat's images and banners (#70), captions as captions (#67), an archive you keep scrolling into (#68) — plus the tech-debt five (#60–#64) and the v0.7.0 review finding (#71). |
 | [`PLAN-13-v0.9.0.md`](PLAN-13-v0.9.0.md) | v0.9.0 | G01–G14 | PDFs on To-Read (#72): a PDF the reader pastes, shares or picks is stored whole and read as pages inside the article surface — its own title and date read out of the file, pinch and double-tap zoom, and the exact place you stopped remembered. G02/G07/G09 were re-split after the first run blocked on them; G14 was split into a held build (G14a) and the public release (G14b). |
-| [`PLAN-14.md`](../../PLAN-14.md) (active) | v0.10.0 | H01–H05 | #83: a page laid out in `<table>`s (Paul Graham's essays) lowers as paragraphs instead of one squashed grid; image-map navigation and the home-link logo are dropped as chrome. MINOR at the human's request. |
+| [`PLAN-14-v0.10.0.md`](PLAN-14-v0.10.0.md) | v0.10.0 | H01–H05 | #83: a page laid out in `<table>`s (Paul Graham's essays) lowers as paragraphs instead of one squashed grid; image-map navigation and the home-link logo are dropped as chrome. MINOR at the human's request; H03 also stopped upscaling images narrower than the column. |
 
 [`bootstrap-prompt.md`](bootstrap-prompt.md) is the original prompt that produced
 `SPEC.md`, `DESIGN.md`, `PLAN-1` and `loop.sh` in a single session, before any code
