@@ -530,6 +530,15 @@ It is not a destination and opens no article: success is the *Saved "…"* snack
 stays in the sheet with its reason. Shares that arrive meanwhile queue in arrival order and are
 taken one at a time, each only once the sheet is free — never over a failure not yet dismissed.
 
+**Report (#86, PLAN-15 §0.6).** The article's ⋮ menu carries **Report** whenever the entry
+has a link. Its sheet (not a destination) asks what is wrong and takes an optional note, then
+opens `github.com/michaelawetahegn/Perch/issues/new` in a Custom Tab, prefilled by the pure
+`renderReportUrl`: `template=render-report.md` (whose front matter applies the `render`
+label), a `Render: <host> — <problem>` title, and a body naming the link, the source (a saved
+link's reads **To-Read**, a missing feed row reads **unknown**), the problem, the note and the
+app version. The issue is filed by whoever is signed in to GitHub in the browser. Perch holds no
+token and makes no network call of its own.
+
 ## 11. Definition of done (project level)
 
 1. `./gradlew test assembleDebug` green from a clean checkout.

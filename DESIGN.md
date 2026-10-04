@@ -275,6 +275,13 @@ Material 3 type scale, one deviation: article body gets a real reading measure.
   reader photographed. This mirrors the entry row's own shape, where META sits above DATE.
   Source and byline stay **two** semantics nodes: merging them into one `AnnotatedString`
   is tempting and would cost the source's touch-target bounds and its navigation click.
+  **Report (#86)** is the ⋮ menu's last item, after *Copy link*, and is shown only when the
+  article has a link. It opens a sheet in the house shape (`titleLarge` title, one primary
+  button at full width): five single-choice rows (*Text missing or cut off* · *Images broken*
+  · *Code or tables wrong* · *Layout off* · *Something else*), nothing chosen up front, an
+  optional note capped at 500 characters, and **Open GitHub**, enabled once a row is chosen.
+  The sheet opens fully expanded (`skipPartiallyExpanded`), because half-open would hide the
+  button below the fold. Pressing the button closes the sheet and opens the prefilled issue in a Custom Tab.
 - **Add source sheet:** one text field (paste URL), one primary button. While resolving,
   the button becomes a spinner and the sheet shows the discovered feed title + entry
   count as confirmation *before* committing. Discovery failure renders inline under the

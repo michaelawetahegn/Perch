@@ -10,6 +10,9 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -17,6 +20,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeUp
 import androidx.test.core.app.ApplicationProvider
@@ -283,6 +287,93 @@ class ArticleScreenTest {
         tap(ArticleTestTags.COPY_LINK)
 
         assertThat(clipboardText()).isEqualTo("https://nullprogram.com/blog/2026/08/03/")
+    }
+
+    // ---- J08 (issue #86): Report opens GitHub prefilled ------------------------------
+
+    @Test
+    fun `report in the menu opens a sheet of five problems with nothing chosen yet`() {
+        val feedId = perch.seedFeed(title = "Null Program")
+        val entryId = perch.seedEntry(
+            feedId = feedId,
+            title = "An Async Runtime in C",
+            link = "https://nullprogram.com/blog/2026/08/03/",
+        )
+
+        showArticle(entryId)
+        tap(ArticleTestTags.OVERFLOW)
+        tap(ArticleTestTags.REPORT)
+
+        compose.onNodeWithTag(ArticleTestTags.REPORT_SHEET).assertExists()
+        RenderProblem.entries.forEach {
+            compose.onNodeWithTag(ArticleTestTags.reportProblem(it)).assertIsNotSelected()
+        }
+        compose.onNodeWithText("Code or tables wrong").assertExists()
+        compose.onNodeWithTag(ArticleTestTags.REPORT_SUBMIT).assertIsNotEnabled()
+    }
+
+    @Test
+    fun `a chosen problem and a note open GitHub's new-issue page carrying both`() {
+        val feedId = perch.seedFeed(title = "Null Program")
+        val entryId = perch.seedEntry(
+            feedId = feedId,
+            title = "An Async Runtime in C",
+            link = "https://nullprogram.com/blog/2026/08/03/",
+        )
+
+        showArticle(entryId)
+        tap(ArticleTestTags.OVERFLOW)
+        tap(ArticleTestTags.REPORT)
+        tap(ArticleTestTags.reportProblem(RenderProblem.CodeOrTables))
+        compose.onNodeWithTag(ArticleTestTags.REPORT_NOTE).performTextInput("the gutter is doubled")
+        compose.onNodeWithTag(ArticleTestTags.REPORT_SUBMIT).assertIsEnabled()
+        tap(ArticleTestTags.REPORT_SUBMIT)
+
+        val intent = shadowOf(compose.activity).nextStartedActivity
+        assertThat(intent.action).isEqualTo(Intent.ACTION_VIEW)
+        assertThat(intent.data!!.host).isEqualTo("github.com")
+        assertThat(intent.data!!.getQueryParameter("template")).isEqualTo("render-report.md")
+        val body = intent.data!!.getQueryParameter("body")!!
+        assertThat(body).contains("https://nullprogram.com/blog/2026/08/03/")
+        assertThat(body).contains("Null Program")
+        assertThat(body).contains("Code or tables wrong")
+        assertThat(body).contains("the gutter is doubled")
+        compose.onNodeWithTag(ArticleTestTags.REPORT_SHEET).assertDoesNotExist()
+    }
+
+    @Test
+    fun `a report on a to-read link names To-Read as its source`() {
+        val feedId = perch.seedFeed(
+            title = "Saved links",
+            feedUrl = "perch:saved-links-test",
+            isSynthetic = true,
+        )
+        val entryId = perch.seedEntry(
+            feedId = feedId,
+            title = "Learning LLVM",
+            link = "https://sh4dy.com/2024/06/29/learning_llvm_01/",
+        )
+
+        showArticle(entryId)
+        tap(ArticleTestTags.OVERFLOW)
+        tap(ArticleTestTags.REPORT)
+        tap(ArticleTestTags.reportProblem(RenderProblem.Layout))
+        tap(ArticleTestTags.REPORT_SUBMIT)
+
+        val body = shadowOf(compose.activity).nextStartedActivity.data!!.getQueryParameter("body")!!
+        assertThat(body).contains("**Source:** To-Read")
+    }
+
+    @Test
+    fun `an entry with no link has nothing to report`() {
+        val feedId = perch.seedFeed(title = "Null Program")
+        val entryId = perch.seedEntry(feedId = feedId, title = "An Async Runtime in C", link = null)
+
+        showArticle(entryId)
+        tap(ArticleTestTags.OVERFLOW)
+
+        compose.onNodeWithTag(ArticleTestTags.COPY_LINK).assertExists()
+        compose.onNodeWithTag(ArticleTestTags.REPORT).assertDoesNotExist()
     }
 
     @Test

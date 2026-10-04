@@ -64,6 +64,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.mkiros.perch.BuildConfig
 import dev.mkiros.perch.R
 import dev.mkiros.perch.data.parse.ArticleBlock
 import dev.mkiros.perch.data.document.PageSource
@@ -230,10 +231,14 @@ fun ArticleScreen(
  * *Copy link* is the one share affordance Perch owns rather than delegates, so it lives
  * here rather than in the top bar: the button beside it opens the system's chooser, which
  * is where a reader who wants to send the article anywhere else is already going.
+ *
+ * *Report* (#86) opens [RenderReportSheet], then GitHub's new-issue page prefilled by
+ * [renderReportUrl]. The reader files it under their own account, and Perch makes no call itself.
  */
 @Composable
 private fun Overflow(state: ArticleUiState.Loaded, onLoadFullArticle: () -> Unit) {
     var open by rememberSaveable { mutableStateOf(false) }
+    var reporting by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
 
     Box {
@@ -269,7 +274,35 @@ private fun Overflow(state: ArticleUiState.Loaded, onLoadFullArticle: () -> Unit
                 },
                 modifier = Modifier.testTag(ArticleTestTags.COPY_LINK),
             )
+            // #86: with no link there is no page to point a report at.
+            if (state.link != null) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.article_report)) },
+                    onClick = {
+                        open = false
+                        reporting = true
+                    },
+                    modifier = Modifier.testTag(ArticleTestTags.REPORT),
+                )
+            }
         }
+    }
+
+    val link = state.link
+    if (reporting && link != null) {
+        RenderReportSheet(
+            onOpen = { problem, note ->
+                val url = renderReportUrl(
+                    link = link,
+                    source = state.reportSource,
+                    problem = context.getString(problem.label),
+                    note = note,
+                    version = BuildConfig.VERSION_NAME,
+                )
+                openInBrowser(context, url)
+            },
+            onDismiss = { reporting = false },
+        )
     }
 }
 
@@ -560,6 +593,13 @@ object ArticleTestTags {
     const val OVERFLOW = "article:overflow"
     const val SHARE = "article:share"
     const val COPY_LINK = "article:copy-link"
+    const val REPORT = "article:report"
+    const val REPORT_SHEET = "article:report-sheet"
+    const val REPORT_NOTE = "article:report-note"
+    const val REPORT_SUBMIT = "article:report-submit"
+
+    /** One of the Report sheet's five rows (#86). */
+    fun reportProblem(problem: RenderProblem) = "article:report-problem:${problem.name}"
     const val LOAD_FULL_TEXT = "article:load-full-text"
     const val FULL_TEXT_PROGRESS = "article:full-text-progress"
     const val CODE = "article:code"

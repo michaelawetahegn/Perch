@@ -71,6 +71,8 @@ sealed interface ArticleUiState {
      *   [dev.mkiros.perch.ui.article.document.DocumentPosition], encoded.
      * @param document a stored PDF loaded with its page count and aspect ratios; null for articles.
      * @param documentGone true when a document row lost its file between sessions.
+     * @param reportSource the source as a report names it (#86): the feed's own name, or
+     *   **To-Read** for a link the reader saved; null when the feed row has gone.
      */
     data class Loaded(
         val title: String,
@@ -87,6 +89,7 @@ sealed interface ArticleUiState {
         val scrollPosition: Int = 0,
         val document: DocumentUi? = null,
         val documentGone: Boolean = false,
+        val reportSource: String? = null,
     ) : ArticleUiState
 }
 
@@ -123,6 +126,7 @@ class ArticleViewModel(
             source = sourceName?.let {
                 ArticleUiState.SourceLink(entry.feedId, it.uppercase(Locale.getDefault()))
             }
+            reportSource = if (feed?.isSynthetic == true) TO_READ_SOURCE else sourceName
             byline = byline(
                 source = sourceName,
                 author = entry.author,
@@ -194,6 +198,7 @@ class ArticleViewModel(
                 title = entry.title,
                 standfirst = null,
                 source = source,
+            reportSource = reportSource,
                 byline = byline,
                 blocks = emptyList(),
                 summary = null,
@@ -210,6 +215,7 @@ class ArticleViewModel(
             title = entry.title,
             standfirst = standfirst(entry.summary, blocks),
             source = source,
+            reportSource = reportSource,
             byline = byline,
             blocks = blocks,
             summary = entry.summary?.takeIf { it.isNotBlank() },
@@ -255,6 +261,7 @@ class ArticleViewModel(
     /** Computed once from the feed and the entry; re-lowering a body does not change them. */
     private var source: ArticleUiState.SourceLink? = null
     private var byline: String = ""
+    private var reportSource: String? = null
 
     /**
      * The top bar's *Read later* toggle (U09).
@@ -372,6 +379,9 @@ class ArticleViewModel(
         /** Also drawn between the source segment and the rest (V08). */
         internal const val SEPARATOR = " · "
         private const val ELLIPSIS = "…"
+
+        /** What a report calls the synthetic feed: the tab's name, not the row's "Saved links". */
+        private const val TO_READ_SOURCE = "To-Read"
         private val WHITESPACE = Regex("""\s+""")
 
         private val DATE = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.getDefault())

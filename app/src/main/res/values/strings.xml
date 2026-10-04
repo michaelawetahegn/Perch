@@ -251,6 +251,10 @@
     <string name="report_problem_code">Code or tables wrong</string>
     <string name="report_problem_layout">Layout off</string>
     <string name="report_problem_other">Something else</string>
+    <string name="article_report">Report</string>
+    <string name="report_title">Report a rendering problem</string>
+    <string name="report_note_label">Note (optional)</string>
+    <string name="report_submit">Open GitHub</string>
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>

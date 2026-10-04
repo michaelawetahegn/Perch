@@ -287,7 +287,7 @@ Slice the 9000-px PNG into 1800-px strips with PIL before reading it, because on
       - Done: RED line; `--tests '*RenderReport*'` green; full suite green ≥2309; #86 commented; pushed.
       - Rung: unit
 
-- [ ] **J08 — Report sits in the article's ⋮ menu and opens GitHub prefilled. TDD + screenshot. Issue #86.**
+- [x] **J08 — Report sits in the article's ⋮ menu and opens GitHub prefilled. TDD + screenshot. Issue #86.**
       §0.6 "Where" and "The sheet"; §0.9's sheet and intent traps. RED first in `ArticleScreenTest`
       (`app/src/testDebug/…/ui/article/`): (a) a feed article's ⋮ menu has **Report**, which opens the
       sheet with five rows and **Open GitHub** disabled; (b) choosing **Code or tables wrong**, typing a
