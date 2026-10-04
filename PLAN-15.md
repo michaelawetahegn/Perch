@@ -264,7 +264,7 @@ Slice the 9000-px PNG into 1800-px strips with PIL before reading it, because on
       - Done: four PNG paths and the critique in the commit; full suite green ≥2309; #85 and #87 commented with the critique; pushed.
       - Rung: screenshot
 
-- [ ] **J06 — Reports arrive labelled `render`, whoever files them. Issue #86.**
+- [x] **J06 — Reports arrive labelled `render`, whoever files them. Issue #86.**
       `gh issue view 86 --json title,body,comments` (the human's comment is the spec); §0.6. Create the label:
       `gh api repos/michaelawetahegn/Perch/labels -f name=render -f color=d93f0b -f description="An article that does not render as its page does"`.
       Add `.github/ISSUE_TEMPLATE/render-report.md` with front matter `name: Rendering problem`, `about:`
