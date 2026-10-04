@@ -97,6 +97,10 @@ Format: one bullet per item, the anchor, why it was left, what doing it would ch
 
 ## Next plan
 
+- **A page's hero image is never drawn (PLAN-15 §0.2, 2026-10-04).** IEEE Spectrum's lead photo and
+  its caption sit outside the article body; Perch draws no hero for any site. A feature, not a fix:
+  the human chose to leave it out of v0.11.0. Needs a design pass before a plan.
+
 **PLAN-12 (v0.8.0, 2026-09-14) took everything D27 filed:** #60–#64 are F10–F14, E03's
 scroll-write finding was filed as **#71** and closed by F06, and the two smaller items recorded
 beside them — the back arrow drawn twice, `STOP_TIMEOUT_MS` declared three times — went with

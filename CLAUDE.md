@@ -17,10 +17,8 @@ and what each failure mode actually means.
 
 ## If your prompt was "Read CLAUDE.md and continue", you are a loop session
 
-**v0.10.0 shipped 2026-09-27 and there is no active plan.** `loop.sh` and `scripts/progress.sh`
-still default to `PLAN-14.md` — a stray launch fails loudly on the missing
-root file rather than silently reopening finished work. If a new `PLAN-N.md` exists at the repository root, follow that
-instead of anything below; if none does, this is not a loop session — say so and stop.
+**The active plan is `PLAN-15.md` (v0.11.0: #85, #86, #87), launched 2026-10-04.** `loop.sh` and
+`scripts/progress.sh` default to it. Follow it.
 
 `loop.sh` starts every session with exactly that prompt. If it is yours, you are **the
 worker, not the orchestrator**. A `loop.sh` in `pgrep` is **your own driver** — not someone
@@ -39,7 +37,7 @@ is expected to end in a commit and a push; that is the only way progress exists 
 So: go to the cold start below, do the single next unchecked task, verify it, commit, push,
 close its issue, stop.
 
-## No active plan — v0.10.0 shipped 2026-09-27
+## Last shipped: v0.10.0, 2026-09-27 — PLAN-15 (v0.11.0) is active at the root
 
 Finished plans live in `docs/plans/` — v0.1 (T01–T32), v0.2 (U01–U16), v0.3 (V01–V16), v0.4
 (W01–W12), all four of v0.5's slices (X01–X04, Y01–Y05, Z01–Z05, R00–R03), v0.6 (S01–S13), v0.6.1
@@ -47,7 +45,7 @@ Finished plans live in `docs/plans/` — v0.1 (T01–T32), v0.2 (U01–U16), v0.
 (H01–H05, layout tables read as articles, #83) are **complete, frozen, and history only**; never
 reopen a box in any of them. F04's box reads `[BLOCKED: …]` on purpose.
 
-**Nothing is filed for a next version.** `TECH_DEBT.md` "## Next plan" holds a handful of small
+**PLAN-15 is the only filed work.** `TECH_DEBT.md` "## Next plan" holds a handful of small
 items; none is a licence to start. `docs/plans/PLAN-4-v0.4.md` §0 through `PLAN-14` §0 still bind for
 anything a future plan does not restate — in particular **`PLAN-10` §0.2's rule: prefer deleting to
 adding**, and an improvement that needs a behaviour change to justify it goes into `TECH_DEBT.md`,

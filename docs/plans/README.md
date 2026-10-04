@@ -10,7 +10,7 @@ Finished plans live here. The **active** plan stays at the repository root, beca
 
 **v0.5 was four sequential plans rather than one**, run as four separate loops in order —
 `PLAN-5` → `PLAN-6` → `PLAN-7` → `PLAN-8`, with only the release slice bumping the version.
-v0.6 is back to one plan, `PLAN-9`; v0.6.1 is the tech-debt pass, `PLAN-10`; v0.7.0 is `PLAN-11`; v0.8.0 is `PLAN-12`; v0.9.0 is `PLAN-13`. v0.10.0 is `PLAN-14`. There is no active plan; the next one is `PLAN-15`. Two loops must never run at once: they would fight over
+v0.6 is back to one plan, `PLAN-9`; v0.6.1 is the tech-debt pass, `PLAN-10`; v0.7.0 is `PLAN-11`; v0.8.0 is `PLAN-12`; v0.9.0 is `PLAN-13`. v0.10.0 is `PLAN-14`. v0.11.0 is `PLAN-15`, **active** at the repository root until its release archives it here. Two loops must never run at once: they would fight over
 commits (`RALPH.md` §4).
 
 | Plan | Version | Tasks | What it was |
