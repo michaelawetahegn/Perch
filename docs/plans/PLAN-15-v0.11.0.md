@@ -194,7 +194,7 @@ Slice the 9000-px PNG into 1800-px strips with PIL before reading it, because on
 
 ## The tasks
 
-- [BLOCKED: code + tests committed and green targeted (141) and debug full (1341, 1 known flake); release `./gradlew test` hangs 2/2 in the PerchApp.onTerminate Room deadlock (TECH_DEBT) — NOTES 2026-10-04] **J01 — A photo hidden behind any `data-…src` attribute is kept. TDD. Issue #85.**
+- [x] *(was BLOCKED on the full suite only; verified after the loop, 2026-10-04: `timeout 45m ./gradlew test --continue` exit 0, Debug 1371 / 0 failures, Release 999 / 0 failures)* **J01 — A photo hidden behind any `data-…src` attribute is kept. TDD. Issue #85.**
       `gh issue view 85 --json title,body,comments` first; §0.2 (IEEE 1) is the diagnosis, §0.3 the rule.
       RED first, in `HtmlSanitizerTest`, with hand-written HTML: (a) `<img src="data:image/svg+xml,…"
       data-runner-src="https://example.com/a.jpg">` sanitizes to an `img` whose `src` is that URL; (b) the
@@ -207,7 +207,7 @@ Slice the 9000-px PNG into 1800-px strips with PIL before reading it, because on
       - Done: the RED line in the commit; `./gradlew :app:testDebugUnitTest --tests '*HtmlSanitizer*' --tests '*ArticleExtractor*' --tests '*Corpus*'` green; `timeout 45m ./gradlew test --continue` green, ≥2309; §0.7 counts pasted; #85 commented; pushed.
       - Rung: unit
 
-- [BLOCKED: code + RED/GREEN tests committed, targeted 145 green; full suite now finishes (onTerminate deadlock fixed) but debug fails 2/2 on PerchNavHostTest's order-dependent UncaughtExceptionsBeforeTest (ArticleViewModel on a closed pool) — NOTES/TECH_DEBT 2026-10-04] **J02 — A photo's caption and credit read as one caption under it. TDD. Issue #85.**
+- [x] *(was BLOCKED on the full suite only; verified after the loop, 2026-10-04: `timeout 45m ./gradlew test --continue` exit 0, Debug 1371 / 0 failures, Release 999 / 0 failures)* **J02 — A photo's caption and credit read as one caption under it. TDD. Issue #85.**
       §0.2 (IEEE 2) and §0.4. RED first in `HtmlSanitizerTest` (beside the F05 caption tests; grep
       `aria-describedby`): (a) `<p><img src="https://example.com/a.jpg"><small class="media-caption">Cap.</small><small class="photo-credit">Who</small></p>`
       gives a `figure` whose `figcaption` text is exactly `Cap. — Who`, with no stray `small` left; (b) a
