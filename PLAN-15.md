@@ -248,7 +248,7 @@ Slice the 9000-px PNG into 1800-px strips with PIL before reading it, because on
       - Done: RED line; narrow then full suite green ≥2309; #87 commented; pushed.
       - Rung: unit
 
-- [ ] **J05 — Both pages, drawn by Perch, match their sites. Screenshot. Issues #85 #87.**
+- [x] **J05 — Both pages, drawn by Perch, match their sites. Screenshot. Issues #85 #87.**
       Add `ReportedPagesScreenshotTest` in `app/src/testDebug/.../ui/screenshot/`, copying
       `LayoutTableScreenshotTest`'s shape (extract → sanitize → lower → `ArticleBody`, `w411dp-h891dp-xhdpi`),
       with every image stubbed as an 800×450 grey slab. It writes, in light and dark:
