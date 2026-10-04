@@ -245,6 +245,12 @@
     <string name="image_viewer_close">Close image</string>
     <string name="image_viewer_open">Open image full screen</string>
     <string name="article_embed">Embedded content · open on the web</string>
+    <!-- J07/#86: the Report sheet's five problems, also the title's last words on GitHub. -->
+    <string name="report_problem_text">Text missing or cut off</string>
+    <string name="report_problem_images">Images broken</string>
+    <string name="report_problem_code">Code or tables wrong</string>
+    <string name="report_problem_layout">Layout off</string>
+    <string name="report_problem_other">Something else</string>
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>

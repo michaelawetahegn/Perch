@@ -274,7 +274,7 @@ Slice the 9000-px PNG into 1800-px strips with PIL before reading it, because on
       - Done: `gh api repos/michaelawetahegn/Perch/labels/render --jq .name` prints `render`; the file committed and pushed; #86 commented.
       - Rung: build
 
-- [ ] **J07 — The report link is built, encoded and capped in one pure function. TDD. Issue #86.**
+- [x] **J07 — The report link is built, encoded and capped in one pure function. TDD. Issue #86.**
       §0.6 "The builder is pure". RED first in a new `app/src/test/.../ui/article/RenderReportTest.kt` (Robolectric,
       since `Uri` needs it): (a) the URL's host/path is `github.com/michaelawetahegn/Perch/issues/new` and
       `template=render-report.md`; (b) `title` is `Render: spectrum.ieee.org — Images broken` for
