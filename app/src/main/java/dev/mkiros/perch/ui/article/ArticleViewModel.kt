@@ -198,7 +198,7 @@ class ArticleViewModel(
                 title = entry.title,
                 standfirst = null,
                 source = source,
-            reportSource = reportSource,
+                reportSource = reportSource,
                 byline = byline,
                 blocks = emptyList(),
                 summary = null,

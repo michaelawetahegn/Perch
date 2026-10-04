@@ -192,7 +192,7 @@ time —
   replaced, which is in a different commit;
 - a claim in `SPEC.md` or `CLAUDE.md` that the plan quietly stopped being true.
 
-There is **no CI in this repo** — `.github/` does not exist and every gate is local, run by
+There is **no CI in this repo** — `.github/` holds only an issue template and every gate is local, run by
 whichever session happened to touch that file. That is precisely why the review is the only
 thing that ever reads a whole version's diff, and why skipping it means nothing does.
 

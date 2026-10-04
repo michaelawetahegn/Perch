@@ -305,7 +305,7 @@ Slice the 9000-px PNG into 1800-px strips with PIL before reading it, because on
       - Done: RED line; `--tests '*ArticleScreen*' --tests '*RenderReport*'` green; both PNGs and the critique in the commit; full suite green ≥2309; #86 commented; pushed.
       - Rung: screenshot
 
-- [ ] **J09 — The review pass. The whole of v0.11.0, read at once.**
+- [x] **J09 — The review pass. The whole of v0.11.0, read at once.**
       Read `git diff v0.10.0..HEAD`, **the whole of it**, and answer in the commit message (and in NOTES.md
       where it outlives the plan):
       1. Does any doc still describe v0.10.0, or describe lazy images, captions, code tables or the ⋮ menu

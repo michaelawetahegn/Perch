@@ -54,7 +54,9 @@ only a headline is findable in full once you have opened it.
 real rules, pinch-zoom images, and code blocks that scroll horizontally, syntax-highlighted in a
 dozen languages behind a pinned line-number gutter that never lands in what you copy. An article
 reopens where you stopped, whether you went back or closed the app. Feed HTML is sanitized
-against an allowlist on the way *into* the database.
+against an allowlist on the way *into* the database. When a page still reads wrong, **Report** in the
+article's ⋮ menu opens a prefilled GitHub issue in your browser, filed under your own sign-in;
+Perch itself sends nothing.
 
 **Full text.** When a feed ships a headline and a link, Perch fetches the page and runs a
 Readability-style extraction over it, through the same sanitizer as everything else — on open,

@@ -329,9 +329,13 @@ figure figcaption hr table thead tbody tr th td sub sup` + `a[href]` `img[src|al
 Everything else stripped. Relative URLs resolved against the entry link. No scripts,
 no iframes, no styles, no tracking pixels (`img` ≤ 1px dropped). Three rules run before the
 allowlist, while the attributes they read still exist (v0.8.0, #70/#67): a lazy-loaded
-`data-src`/`srcset` is promoted into `src`; a block whose class names a promotion, holds a
-link or button and carries under 400 characters is dropped; an image's `aria-describedby`
-target, or the one caption-classed sibling after it, becomes its `<figcaption>`.
+`data-src`/`srcset` is promoted into `src` — and an image with no usable `src` takes its first
+`data-…src` attribute, whatever loader named it (`data-runner-src`; never `data-srcset`; v0.11.0,
+#85); a block whose class names a promotion, holds a link or button and carries under 400
+characters is dropped; an image's `aria-describedby` target, or the one caption-classed
+sibling after it — or one caption and one `credit`-classed sibling, joined `caption — credit`
+(#85) — becomes its `<figcaption>`. A `pre` with no `language-*` class takes its language from
+an unprefixed `highlight <lang>` wrapper when `<lang>` is a language Perch knows (#87).
 
 **`ArticleBlock` — the canonical block model.** Forty-two sources ship forty-two
 HTML dialects. Sanitized HTML is *not* the rendering input; it is lowered one more
@@ -362,7 +366,10 @@ the paragraph rather than nesting.
 A `<table>` is a grid only when it is data. A table used for **layout** (v0.10.0, #83) —
 one with a `<table>` nested inside it, or one row of one cell — lowers as flow: its own
 rows in order, each cell as ordinary blocks, so an essay written into a table cell before
-CSS reads as paragraphs, not as one flattened cell. Every other table becomes `Table`.
+CSS reads as paragraphs, not as one flattened cell. A one-row table of a **line-number
+gutter** (digits-only cells) beside exactly one cell holding a `<pre>` is a numbered code
+listing (Hexo, Pygments `linenos=table`, Rouge; v0.11.0, #87) and lowers to that `<pre>`'s
+`Code` alone, the source's gutter dropped. Every other table becomes `Table`.
 
 The lowering is total: every sanitized document produces a block list, and any
 element the mapper does not recognise becomes `Unsupported`, never a silent drop.

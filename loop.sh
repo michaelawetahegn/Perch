@@ -14,7 +14,7 @@ cd "$(dirname "$0")"
 # ── knobs ────────────────────────────────────────────────────────────────────
 # The active plan. v0.1 (T01–T32) and v0.2 (U01–U16) are complete and archived in
 # docs/plans/. v0.5 shipped as four slices (PLAN-5/6/7/8) and v0.6 as PLAN-9, all archived;
-# PLAN-10 through PLAN-13 (v0.6.1–v0.9.0) are archived too. PLAN-14 (v0.10.0) is active; once it
+# PLAN-10 through PLAN-14 (v0.6.1–v0.10.0) are archived too. PLAN-15 (v0.11.0) is active; once it
 # ships and is archived the default below still names it, so a stray launch fails loudly.
 PLAN=${PLAN:-PLAN-15.md}
 PROMPT="Read CLAUDE.md and continue"

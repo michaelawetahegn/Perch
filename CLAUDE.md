@@ -116,8 +116,8 @@ do not invent work, do not start #82 unprompted, do not "clean up" unrelated fil
   of `git diff <last-tag>..HEAD` before live acceptance and release. A plan without one is
   incomplete; add it rather than starting the release. It catches what a per-task session
   structurally cannot see, because each session only opens its own task's files: a doc still
-  describing the previous version, an orphaned helper, a weakened test. There is no CI here,
-  so nothing else ever reads a whole version's diff. Shape and rationale: `docs/RALPH.md` §6.
+  describing the previous version, an orphaned helper, a weakened test. There is no CI here
+  (`.github/` holds only an issue template), so nothing else ever reads a whole version's diff. Shape and rationale: `docs/RALPH.md` §6.
 - **No new dependencies** beyond SPEC.md §2 without a one-line justification in NOTES.md.
 - Never re-derive a decision already in SPEC.md or DESIGN.md. If in doubt between
   exploring and executing: **execute the plan.**
