@@ -221,7 +221,7 @@ Slice the 9000-px PNG into 1800-px strips with PIL before reading it, because on
       - Done: RED line in the commit; narrow tests then `timeout 45m ./gradlew test --continue` green, ≥2309; #85 commented; pushed.
       - Rung: unit
 
-- [ ] **J03 — A line-numbered code table lowers to one code block, gutter dropped, lines intact. TDD. Issue #87.**
+- [x] **J03 — A line-numbered code table lowers to one code block, gutter dropped, lines intact. TDD. Issue #87.**
       `gh issue view 87 --json title,body,comments`; §0.2 (sh4dy) and §0.5 J03, **including its `<br>` trap**.
       RED first in `ArticleLoweringTest` (beside H01's table tests; grep `one row of one cell`): (a) a
       one-row table, `<td><pre>1<br>2</pre></td><td><pre>a = 1<br>b = 2</pre></td>`, lowers to exactly

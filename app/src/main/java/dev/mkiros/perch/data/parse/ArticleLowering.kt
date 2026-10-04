@@ -169,9 +169,15 @@ object ArticleLowering {
      *   written — the signal `ArticleExtractor.carriesContentTable` already uses; or
      * - is one row of one cell: a single box around content, with no rows or columns to
      *   relate. A one-row table of *several* cells stays a grid; it still reads across.
+     *
+     * A table that is one row of a **line-number gutter** — cells holding only digits — beside
+     * exactly one cell with a `<pre>` is a code block (J03, #87), and lowers as that `<pre>`
+     * alone. Hexo, Pygments' `linenos=table` and Rouge all write a numbered listing this way.
+     * It is judged by shape: the sanitizer has already stripped the cells' classes.
      */
     private fun table(el: Element): List<ArticleBlock> {
         val own = el.ownRows()
+        own.singleOrNull()?.numberedListing()?.let { return code(it) }
         val layout = el.select("table").size > 1 ||
             (own.size == 1 && own.single().cells().size == 1)
         if (layout) return own.flatMap { tr -> tr.cells().flatMap(::lowerFlow) }
@@ -230,6 +236,14 @@ object ArticleLowering {
                 else -> emptyList()
             }
         }
+
+    /** The `<pre>` of a row that is a line-number gutter beside one code cell, or null. */
+    private fun Element.numberedListing(): Element? {
+        val (gutter, code) = cells().partition { cell ->
+            cell.wholeText().let { text -> text.isNotBlank() && text.all { it.isDigit() || it.isWhitespace() } }
+        }
+        return if (gutter.isEmpty()) null else code.singleOrNull()?.selectFirst("pre")
+    }
 
     private fun Element.cells(): List<Element> =
         children().filter { it.lowerTag() == "td" || it.lowerTag() == "th" }

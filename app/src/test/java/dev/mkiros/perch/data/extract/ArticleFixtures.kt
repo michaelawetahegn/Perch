@@ -226,6 +226,20 @@ object ArticleFixtures {
     )
 
     /**
+     * sh4dy's "Learning LLVM (Part-1)" (J03, #87): a Hexo post whose six code blocks are each a
+     * one-row table, a line-number gutter cell beside a `<pre>` written one `<span class="line">`
+     * and one `<br>` per line.
+     */
+    val sh4dyLlvm: ArticleFixture = ArticleFixture(
+        slug = "sh4dy-learning-llvm-01",
+        url = "https://sh4dy.com/2024/06/29/learning_llvm_01/",
+        cms = "Hexo",
+        mid = "LLVM serves as the backend for major programming languages such as Rust and Swift",
+        last = "including anti-reverse engineering and code obfuscation",
+        excludes = emptyList(),
+    )
+
+    /**
      * Seven more excerpt-only sources, chosen for CMS spread rather than for difficulty.
      * The last of them arrived the other way round: the Hugging Face blog was harvested by
      * W06 because it *failed*, and W07's two-pass rule is what let it join the contract.
@@ -295,6 +309,7 @@ object ArticleFixtures {
         gijn,
         paulgraham,
         ieeeSpectrum,
+        sh4dyLlvm,
     )
 
     /**

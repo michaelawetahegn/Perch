@@ -131,9 +131,10 @@ object ArticleExtractor {
         // container is only dropped when its name says chrome *and* says nothing that
         // sounds like an article. `class="post-comments"` goes; `class="content"` stays.
         // On the second reading there are no names left to ask, so this drops nothing —
-        // see [read].
+        // see [read]. Nothing inside a `<pre>` is asked: a highlighter's token spans are
+        // called `meta` and `comment` for the syntax they colour (J03, #87).
         doc.body().select("div, section, ul, ol, aside, span, table")
-            .filter { it.namesChrome() }
+            .filter { it.closest("pre") == null && it.namesChrome() }
             .forEach { it.remove() }
     }
 

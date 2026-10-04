@@ -207,6 +207,38 @@ class ArticleExtractorTest {
         assertThat(paragraphs.filter { "National Museum of American History/Smithsonian" in it }).isEmpty()
     }
 
+    /**
+     * J03/#87: every code block on a Hexo post is a one-row table, line numbers in one cell and
+     * the program in the other. They used to lower as a two-cell grid, each program on one line.
+     */
+    @Test
+    fun `a Hexo post's code blocks read as code`() {
+        val fixture = ArticleFixtures.sh4dyLlvm
+        val extracted = requireNotNull(ArticleExtractor.extract(fixture.html(), fixture.url))
+        val blocks = flatten(ArticleLowering.toBlocks(HtmlSanitizer.sanitize(extracted, fixture.url)))
+        val code = blocks.filterIsInstance<ArticleBlock.Code>()
+
+        assertThat(blocks.filterIsInstance<ArticleBlock.Table>()).isEmpty()
+        assertThat(code).hasSize(6)
+        assertThat(code.first().text)
+            .isEqualTo("#!/bin/bash\nwget https://apt.llvm.org/llvm.sh\nchmod +x llvm.sh\n./llvm.sh 16")
+        assertThat(code.maxOf { it.text.lines().size }).isEqualTo(44)
+    }
+
+    /** J03/#87: a highlighter names its token spans `meta`, `comment`, `tag` — syntax, not chrome. */
+    @Test
+    fun `a highlighted code token named like chrome is kept`() {
+        val prose = "A paragraph long enough to be the article, with commas, clauses, and words. ".repeat(6)
+        val html = """
+            <html><body><article><p>$prose</p>
+              <pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="comment">// a note</span></pre>
+            <p>$prose</p></article></body></html>
+        """.trimIndent()
+        val extracted = requireNotNull(ArticleExtractor.extract(html, "https://example.com/p"))
+
+        assertThat(Jsoup.parse(extracted).selectFirst("pre")!!.wholeText()).isEqualTo("#!/bin/bash\n// a note")
+    }
+
     /** H02/#83: an image map is a navigation widget — its links live in `<area>`, not in the picture. */
     @Test
     fun `an image-map navigation picture does not survive extraction`() {

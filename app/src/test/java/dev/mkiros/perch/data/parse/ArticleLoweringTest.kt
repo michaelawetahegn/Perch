@@ -110,6 +110,13 @@ class ArticleLoweringTest {
         assertThat(code.text).isEqualTo("fun main() {\n    println(\"hi & bye\")\n}")
     }
 
+    @Test
+    fun `a line break inside a pre block is a new line of code`() {
+        val code = lower("<pre>x<br>y</pre>").single() as ArticleBlock.Code
+
+        assertThat(code.text).isEqualTo("x\ny")
+    }
+
     // --- Images ----------------------------------------------------------------------
 
     @Test
@@ -204,6 +211,40 @@ class ArticleLoweringTest {
         assertThat(blocks.filterIsInstance<ArticleBlock.Table>()).isEmpty()
         assertThat(blocks.map { (it as ArticleBlock.Paragraph).text.text })
             .containsExactly("para one", "para two").inOrder()
+    }
+
+    /** J03/#87: Hexo, Pygments' `linenos=table` and Rouge all put a gutter cell beside the code. */
+    @Test
+    fun `a one-row table of a line-number gutter beside a pre lowers to the code alone`() {
+        val blocks = lower("<table><tr><td><pre>1<br>2</pre></td><td><pre>a = 1<br>b = 2</pre></td></tr></table>")
+
+        assertThat(blocks).containsExactly(ArticleBlock.Code("a = 1\nb = 2", null))
+    }
+
+    @Test
+    fun `a gutter table written as one span per line still keeps every line`() {
+        val blocks = lower(
+            "<table><tr><td class=\"gutter\"><pre><span class=\"line\">1</span><br><span class=\"line\">2</span><br></pre></td>" +
+                "<td class=\"code\"><pre><span class=\"line\">a = 1</span><br><span class=\"line\">b = 2</span><br></pre></td></tr></table>",
+        )
+
+        assertThat(blocks).containsExactly(ArticleBlock.Code("a = 1\nb = 2", null))
+    }
+
+    @Test
+    fun `a one-row table of a number beside plain text is still a table`() {
+        val blocks = lower("<table><tr><td>1</td><td>one</td></tr></table>")
+
+        assertThat(blocks.single()).isInstanceOf(ArticleBlock.Table::class.java)
+    }
+
+    @Test
+    fun `a two-row table with a pre in a cell is still a table`() {
+        val blocks = lower(
+            "<table><tr><td>1</td><td><pre>a</pre></td></tr><tr><td>2</td><td><pre>b</pre></td></tr></table>",
+        )
+
+        assertThat(blocks.single()).isInstanceOf(ArticleBlock.Table::class.java)
     }
 
     @Test
