@@ -186,6 +186,27 @@ class ArticleExtractorTest {
         assertThat(images.first().url).endsWith("background.jpg?id=67857167&width=980")
     }
 
+    /**
+     * J02/#85: each IEEE photo is followed by a caption-classed `small` and a credit-classed
+     * one. They used to fall through as a loose paragraph, run together with no space.
+     */
+    @Test
+    fun `a photo's caption and credit read as one caption under it`() {
+        val fixture = ArticleFixtures.ieeeSpectrum
+        val extracted = requireNotNull(ArticleExtractor.extract(fixture.html(), fixture.url))
+        val blocks = flatten(ArticleLowering.toBlocks(HtmlSanitizer.sanitize(extracted, fixture.url)))
+        val images = blocks.filterIsInstance<ArticleBlock.Image>()
+        val paragraphs = blocks.filterIsInstance<ArticleBlock.Paragraph>().map { it.text.text }
+
+        assertThat(images).hasSize(3)
+        assertThat(images.map { it.caption?.text }).doesNotContain(null)
+        assertThat(images.first().caption!!.text.trim()).isEqualTo(
+            "Michael Bloomberg believed Wall Street would pay a premium for access to specialized financial data. — Karjean Levine/Getty Images",
+        )
+        assertThat(paragraphs.filter { "Getty Images" in it }).isEmpty()
+        assertThat(paragraphs.filter { "National Museum of American History/Smithsonian" in it }).isEmpty()
+    }
+
     /** H02/#83: an image map is a navigation widget — its links live in `<area>`, not in the picture. */
     @Test
     fun `an image-map navigation picture does not survive extraction`() {

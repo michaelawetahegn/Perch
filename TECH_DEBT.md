@@ -115,11 +115,11 @@ What is left, none of it a session on its own:
   table (Check Point's "PuzzleMask" post: 64 written cells in the markup, 35 in the blocks). There
   since before v0.9.0; named in v0.10.0's Known issues. A figure should lower its images only when
   it holds no table.
-- **`PerchApp.onTerminate` can deadlock against the startup document sweep** (G07c, 2026-09-21,
-  one hang in a full suite). Cancelling `startupScope` does not stop a Room query already on
-  Room's executor, so `database.close()` races the open it triggered. The likely fix is to join
-  the startup job, bounded, before `container.close()` — a test-only boundary on a device
-  (`onTerminate` never runs there), so it waits for a session that can reproduce it. NOTES.md has the stack.
+- **An `ArticleViewModel` load outlives its test's database** (seen J02, 2026-10-04, debug variant,
+  2 of 2 full runs, once `onTerminate`'s deadlock was fixed and the suite could finish). Some test leaves
+  an article opening; its `viewModelScope` (already cancelled) hits `FeedDao.find` on a closed pool, and
+  `PerchNavHostTest > the bottom bar…` gets `UncaughtExceptionsBeforeTest`. It passes alone. The culprit
+  class was not pinned: forks run in parallel. Same family as E01's `leaveArticle` note in NOTES.md.
 - **An inverted-page setting for documents in dark mode** (PLAN-13 §0.6, G11). Pages stay
   white on purpose — the document as published, as every phone PDF reader shows it — and
   DESIGN.md §8 "Documents" says why. A reader who wants dark pages is a behaviour change,

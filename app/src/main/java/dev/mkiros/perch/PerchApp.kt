@@ -9,9 +9,12 @@ import dev.mkiros.perch.work.WorkScheduler
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeoutOrNull
 
 /**
  * Holds the process-wide object graph and starts background refresh.
@@ -46,13 +49,15 @@ class PerchApp : Application(), Configuration.Provider {
             .setWorkerFactory(PerchWorkerFactory(feeds = { container.feeds }, backfill = { container.backfill }))
             .build()
 
+    private var startupWork: Job? = null
+
     override fun onCreate() {
         super.onCreate()
         // KEEP, so a reader who chose a different interval keeps it across launches — and
         // seeded from the persisted choice rather than from the default, because "Manual"
         // schedules nothing at all: enqueueing the default here would quietly put a
         // reader who turned background refresh off back on it at the next cold launch.
-        startupScope.launch {
+        startupWork = startupScope.launch {
             WorkScheduler.ensureScheduled(this@PerchApp, container.settings.current().refreshInterval)
             container.entries.sweepDocuments()
         }
@@ -62,8 +67,14 @@ class PerchApp : Application(), Configuration.Provider {
      * Android never calls this on a device — a real process is killed, not retired. It is
      * called by Robolectric's `tearDownApplication` at the end of every test, which is
      * exactly the boundary issue #1's leaked startup work used to cross.
+     *
+     * The startup work is waited for, not just cancelled, before Room is closed: cancelling
+     * the coroutine does not stop Room's own executor, and a sweep still opening the
+     * database there deadlocks against `close()` on this thread, hanging `./gradlew test`
+     * (NOTES 2026-09-21). The wait is bounded so a wedged sweep cannot hang it instead.
      */
     override fun onTerminate() {
+        startupWork?.let { work -> runBlocking { withTimeoutOrNull(STARTUP_DRAIN_MS) { work.join() } } }
         startupScope.cancel()
         if (containerDelegate.isInitialized()) container.close()
         super.onTerminate()
@@ -71,5 +82,6 @@ class PerchApp : Application(), Configuration.Provider {
 
     private companion object {
         const val TAG = "PerchApp"
+        const val STARTUP_DRAIN_MS = 5_000L
     }
 }

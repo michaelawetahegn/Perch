@@ -137,20 +137,26 @@ object HtmlSanitizer {
      * text is under that picture": WAI-ARIA's `aria-describedby`, which WordPress's legacy
      * `[caption]` shortcode emits, and — with no ARIA — a container holding exactly this
      * one image and, after it, exactly one `p`/`span`/`small`/`div` whose class names it a
-     * caption ([CAPTION_CLASS]). **Nothing looser**: `style` is gone before anything reads
+     * caption ([CAPTION_CLASS]). The one widening (J02, #85): one caption and one credit
+     * ([CREDIT_CLASS]) after it read as one caption, the credit after an em dash, because a
+     * publisher often sets the two as siblings and the credit is attribution it requires.
+     * **Nothing looser**: `style` is gone before anything reads
      * the result, so "a different font and colour under an image" cannot be seen, and an
      * emphasised paragraph after a lead image is as often a pull-quote or an editor's note.
      * An image already inside a `<figure>` is the publisher's own figure and is left alone.
      */
     private fun captionFromDescription(img: Element) {
         if (img.parents().any { it.tagName() == "figure" }) return
-        val caption = describedBy(img) ?: captionSibling(img) ?: return
+        val captions = describedBy(img)?.let { listOf(it) } ?: captionSibling(img) ?: return
         // Wrapped in place rather than built and swapped in: a wrapper made from nothing
         // carries an empty base URI, and the image under it would lose its relative `src`.
         val figure = img.wrap("<figure></figure>").parent() ?: return
         val figcaption = figure.appendElement("figcaption")
-        caption.childNodes().toList().forEach { figcaption.appendChild(it) }
-        caption.remove()
+        captions.forEachIndexed { i, caption ->
+            if (i > 0) figcaption.appendText(" — ")
+            caption.childNodes().toList().forEach { figcaption.appendChild(it) }
+            caption.remove()
+        }
     }
 
     /**
@@ -163,11 +169,12 @@ object HtmlSanitizer {
         ?.takeIf { it !== img && !img.parents().contains(it) && it.selectFirst("img") == null && it.text().isNotBlank() }
 
     /**
-     * The one caption-classed element after [img] in its container, or null. The container
+     * The one caption-classed element after [img] in its container — or one caption and one
+     * credit, caption first — or null. The container
      * is the nearest ancestor holding more than the image alone — a CMS that links a figure
      * to its full-size file wraps it as `<a><img></a>` first — reached within [ANCESTOR_REACH].
      */
-    private fun captionSibling(img: Element): Element? {
+    private fun captionSibling(img: Element): List<Element>? {
         var container = img.parent() ?: return null
         var climbed = 0
         while (container.children().size == 1 && container.tagName() != "body" && climbed < ANCESTOR_REACH) {
@@ -180,7 +187,10 @@ object HtmlSanitizer {
         val candidates = siblings.drop(holdingImage + 1).filter {
             it.tagName() in CAPTION_TAGS && CAPTION_CLASS.containsMatchIn(it.className())
         }
-        return candidates.singleOrNull()?.takeIf { it.text().isNotBlank() }
+        val (credits, captions) = candidates.partition { CREDIT_CLASS.containsMatchIn(it.className()) }
+        val chosen = candidates.singleOrNull()?.let { listOf(it) }
+            ?: listOfNotNull(captions.singleOrNull(), credits.singleOrNull()).takeIf { it.size == 2 }
+        return chosen?.takeIf { it.all { c -> c.text().isNotBlank() } }
     }
 
     /**
@@ -257,6 +267,7 @@ object HtmlSanitizer {
 
     /** The class tokens that name a caption sitting beside its image, whole tokens only (F05). */
     private val CAPTION_CLASS = Regex("\\b(?:caption|credit|cutline)\\b", RegexOption.IGNORE_CASE)
+    private val CREDIT_CLASS = Regex("\\bcredit\\b", RegexOption.IGNORE_CASE)
     private val CAPTION_TAGS = setOf("p", "span", "small", "div")
 
     /** Where a lazy-loading CMS puts the real picture, in the order the corpus meets them. */

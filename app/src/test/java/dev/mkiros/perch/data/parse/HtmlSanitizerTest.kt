@@ -386,6 +386,44 @@ class HtmlSanitizerTest {
     }
 
     /**
+     * A publisher often sets the caption and the photo credit as two siblings (#85). One of
+     * each is still unambiguous: both go under the picture, the credit after an em dash.
+     */
+    @Test
+    fun `a caption and a credit after an image read as one caption`() {
+        val out = sanitize(
+            """
+            <p><img src="https://example.com/a.jpg"><small class="media-caption">Cap.</small><small class="photo-credit">Who</small></p>
+            <p>The tide was out.</p>
+            """.trimIndent(),
+        )!!
+
+        val doc = Jsoup.parse(out)
+        val figure = doc.selectFirst("figure")!!
+        assertThat(figure.select("img[src=https://example.com/a.jpg]")).hasSize(1)
+        assertThat(figure.selectFirst("figcaption")!!.text()).isEqualTo("Cap. — Who")
+        assertThat(doc.select("small")).isEmpty()
+        assertThat(doc.select("p").eachText()).containsExactly("The tide was out.")
+    }
+
+    @Test
+    fun `a lone credit after an image is still its caption`() {
+        val out = sanitize("""<p><img src="https://example.com/a.jpg"><small class="photo-credit">Who</small></p>""")!!
+
+        assertThat(Jsoup.parse(out).selectFirst("figure figcaption")!!.text()).isEqualTo("Who")
+    }
+
+    /** Two captions under one picture is ambiguous; which one is it? No figure, as before. */
+    @Test
+    fun `two captions and no credit after an image make no figure`() {
+        val out = sanitize(
+            """<p><img src="https://example.com/a.jpg"><small class="caption">One.</small><small class="caption">Two.</small></p>""",
+        )!!
+
+        assertThat(Jsoup.parse(out).select("figure")).isEmpty()
+    }
+
+    /**
      * Nothing looser: "a different font and colour under an image" cannot be seen once `style`
      * is gone, and an emphasised paragraph after a lead image is as often a pull-quote or an
      * editor's note as a caption. Without ARIA or a caption-classed sibling it stays prose.
