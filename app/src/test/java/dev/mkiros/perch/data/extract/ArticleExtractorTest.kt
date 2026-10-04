@@ -225,6 +225,17 @@ class ArticleExtractorTest {
         assertThat(code.maxOf { it.text.lines().size }).isEqualTo(44)
     }
 
+    /** J04/#87: each block's `<figure class="highlight …">` names its language, in document order. */
+    @Test
+    fun `a Hexo post's code blocks carry their declared languages`() {
+        val fixture = ArticleFixtures.sh4dyLlvm
+        val extracted = requireNotNull(ArticleExtractor.extract(fixture.html(), fixture.url))
+        val blocks = flatten(ArticleLowering.toBlocks(HtmlSanitizer.sanitize(extracted, fixture.url)))
+
+        assertThat(blocks.filterIsInstance<ArticleBlock.Code>().map { it.language })
+            .containsExactly("bash", "bash", "cpp", "bash", "c", "bash").inOrder()
+    }
+
     /** J03/#87: a highlighter names its token spans `meta`, `comment`, `tag` — syntax, not chrome. */
     @Test
     fun `a highlighted code token named like chrome is kept`() {

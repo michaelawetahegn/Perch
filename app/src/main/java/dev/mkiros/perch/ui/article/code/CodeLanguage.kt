@@ -1,5 +1,7 @@
 package dev.mkiros.perch.ui.article.code
 
+import dev.mkiros.perch.data.parse.CodeLanguageNames
+
 /**
  * The languages [CodeHighlighter] can colour, plus [Plain] — which is not a failure but a
  * destination: a block whose language we do not know renders in the mono face with no
@@ -43,43 +45,20 @@ enum class CodeLanguage {
         }
 
         private val ALIASES: Map<String, CodeLanguage> = buildMap {
-            putAll("kotlin", "kt", "kts", to = Kotlin)
-            putAll("java", "jsp", to = Java)
-            putAll(
-                "c", "h", "cpp", "c++", "cc", "cxx", "hpp", "hxx", "cs", "objc",
-                "objectivec", "csharp", "arduino",
-                to = C,
-            )
-            putAll("python", "py", "python3", "python2", "ipython", to = Python)
-            putAll(
-                "javascript", "js", "jsx", "mjs", "cjs", "node", "typescript", "ts",
-                "tsx", "json5",
-                to = JavaScript,
-            )
-            putAll("rust", "rs", to = Rust)
-            putAll("go", "golang", to = Go)
-            putAll(
-                "shell", "sh", "bash", "zsh", "ksh", "fish", "console", "shell-session",
-                "shellsession", "terminal", "command", "cmd",
-                to = Shell,
-            )
-            putAll(
-                "xml", "html", "htm", "xhtml", "svg", "markup", "vue", "jsx-html", "rss",
-                "atom", "plist",
-                to = Markup,
-            )
-            putAll("json", "jsonc", "geojson", to = Json)
-            putAll(
-                "sql", "mysql", "postgres", "postgresql", "psql", "sqlite", "plsql",
-                "tsql",
-                to = Sql,
-            )
+            putAll(CodeLanguageNames.KOTLIN, Kotlin)
+            putAll(CodeLanguageNames.JAVA, Java)
+            putAll(CodeLanguageNames.C, C)
+            putAll(CodeLanguageNames.PYTHON, Python)
+            putAll(CodeLanguageNames.JAVASCRIPT, JavaScript)
+            putAll(CodeLanguageNames.RUST, Rust)
+            putAll(CodeLanguageNames.GO, Go)
+            putAll(CodeLanguageNames.SHELL, Shell)
+            putAll(CodeLanguageNames.MARKUP, Markup)
+            putAll(CodeLanguageNames.JSON, Json)
+            putAll(CodeLanguageNames.SQL, Sql)
         }
 
-        private fun MutableMap<String, CodeLanguage>.putAll(
-            vararg ids: String,
-            to: CodeLanguage,
-        ) {
+        private fun MutableMap<String, CodeLanguage>.putAll(ids: List<String>, to: CodeLanguage) {
             ids.forEach { put(it, to) }
         }
 

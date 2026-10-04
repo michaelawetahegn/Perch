@@ -41,6 +41,34 @@ class CodeLanguageClassTest {
         assertThat(lowerOne(html).language).isEqualTo("c")
     }
 
+    /**
+     * J04/#87: Hexo and Pygments write `<figure class="highlight cpp">` around a line-number
+     * table, five levels above the `pre` and with no `language-` prefix.
+     */
+    @Test
+    fun `a highlight wrapper around a line-numbered table names the language`() {
+        val out = HtmlSanitizer.sanitize(
+            """<figure class="highlight cpp"><table><tr><td><pre>1</pre></td><td><pre>int x;</pre></td></tr></table></figure>""",
+            null,
+        )!!
+
+        assertThat(out).contains("""<pre class="language-cpp">int x;</pre>""")
+    }
+
+    @Test
+    fun `a highlight wrapper naming no known language leaves the block unclaimed`() {
+        val html = """<figure class="highlight plaintext-unknown"><table><tr><td><pre>1</pre></td>""" +
+            """<td><pre>x</pre></td></tr></table></figure>"""
+
+        assertThat(lowerOne(html).language).isNull()
+    }
+
+    @Test
+    fun `a highlight wrapper directly around a pre names the language`() {
+        assertThat(lowerOne("""<figure class="highlight cpp"><pre>int x;</pre></figure>""").language)
+            .isEqualTo("cpp")
+    }
+
     @Test
     fun `a block with no claim anywhere carries none`() {
         assertThat(lowerOne("<pre><code>hello</code></pre>").language).isNull()

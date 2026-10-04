@@ -235,7 +235,7 @@ Slice the 9000-px PNG into 1800-px strips with PIL before reading it, because on
       - Done: RED line in the commit; `--tests '*ArticleLowering*' --tests '*ArticleExtractor*' --tests '*TableCorpus*'` green; full suite green ≥2309; §0.7 counts pasted; #87 commented; pushed.
       - Rung: unit
 
-- [ ] **J04 — Hexo's `highlight <lang>` names the code block's language. TDD. Issue #87.**
+- [x] **J04 — Hexo's `highlight <lang>` names the code block's language. TDD. Issue #87.**
       §0.5 J04. RED first in `HtmlSanitizerTest` (grep `highlighter-rouge` for the neighbouring tests):
       (a) `<figure class="highlight cpp"><table><tr><td><pre>1</pre></td><td><pre>int x;</pre></td></tr></table></figure>`
       sanitizes to a code `pre` with `class="language-cpp"`; (b) `highlight plaintext-unknown` stays

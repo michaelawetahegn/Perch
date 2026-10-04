@@ -95,17 +95,35 @@ object HtmlSanitizer {
      * levels above the `<pre>` — which is what nullprogram.com ships, and what U11's
      * screenshots are of. So look down first, then up, and stop before the search reaches
      * far enough to inherit an unrelated ancestor's class.
+     *
+     * Last rung (J04): some generators and Pygments write the claim unprefixed, as
+     * `<figure class="highlight cpp">`, and around a line-number table that puts it five
+     * levels up. So a `highlight <token>` pair counts, on the same reach plus the table's own
+     * parent, but only when `<token>` is a language [CodeLanguageNames] knows.
      */
     private fun Element.normalizeLanguage() {
+        val ancestors = parents().take(ANCESTOR_REACH)
         val found = languageToken()
             ?: selectFirst("code")?.languageToken()
-            ?: parents().take(ANCESTOR_REACH).firstNotNullOfOrNull { it.languageToken() }
+            ?: ancestors.firstNotNullOfOrNull { it.languageToken() }
+            ?: (listOf(this) + ancestors + listOfNotNull(tableWrapper()))
+                .firstNotNullOfOrNull { it.highlightToken() }
         if (found == null) removeAttr("class") else attr("class", LANGUAGE_PREFIX + found)
     }
 
     private fun Element.languageToken(): String? = classNames()
         .firstNotNullOfOrNull { LANGUAGE_CLASS.matchEntire(it)?.groupValues?.get(1) }
         ?.lowercase()
+
+    /** The element around the table this `pre` sits in a cell of, if it does. */
+    private fun Element.tableWrapper(): Element? =
+        closest("td, th")?.closest("table")?.parent()
+
+    private fun Element.highlightToken(): String? {
+        val tokens = classNames().map { it.lowercase() }
+        if ("highlight" !in tokens) return null
+        return tokens.firstOrNull { it in CodeLanguageNames.ALL }
+    }
 
     /**
      * A 1×1 image is a read receipt, not content. Publishers ship them from mail and
