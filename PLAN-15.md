@@ -325,7 +325,7 @@ Slice the 9000-px PNG into 1800-px strips with PIL before reading it, because on
       - Done: the five answered in the commit message, each with the command that settled it; `./gradlew test` green; pushed.
       - Rung: unit
 
-- [ ] **J10 — Release v0.11.0 publicly. Issues #85 #86 #87.**
+- [x] **J10 — Release v0.11.0 publicly. Issues #85 #86 #87.**
       - Bump `perchVersionCode` 13 → **14**, `perchVersionName` `0.10.0` → **`0.11.0`** at
         `app/build.gradle.kts:12-13`, the one place they live.
       - **Live acceptance first, bounded:** `./gradlew :app:testDebugUnitTest -Pperch.live=true --tests '*LiveAcceptance*'`

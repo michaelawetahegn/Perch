@@ -17,8 +17,10 @@ and what each failure mode actually means.
 
 ## If your prompt was "Read CLAUDE.md and continue", you are a loop session
 
-**The active plan is `PLAN-15.md` (v0.11.0: #85, #86, #87), launched 2026-10-04.** `loop.sh` and
-`scripts/progress.sh` default to it. Follow it.
+**There is no active plan.** v0.11.0 (PLAN-15) shipped 2026-10-04. `loop.sh` and
+`scripts/progress.sh` still default to `PLAN-15.md`, so a stray launch fails loudly on the missing
+root file once the watching session archives it. Until a new `PLAN-N.md` exists at the root, a
+loop session has nothing to do: say so and stop.
 
 `loop.sh` starts every session with exactly that prompt. If it is yours, you are **the
 worker, not the orchestrator**. A `loop.sh` in `pgrep` is **your own driver** — not someone
@@ -37,16 +39,17 @@ is expected to end in a commit and a push; that is the only way progress exists 
 So: go to the cold start below, do the single next unchecked task, verify it, commit, push,
 close its issue, stop.
 
-## Last shipped: v0.10.0, 2026-09-27 — PLAN-15 (v0.11.0) is active at the root
+## Last shipped: v0.11.0, 2026-10-04 — no active plan
 
 Finished plans live in `docs/plans/` — v0.1 (T01–T32), v0.2 (U01–U16), v0.3 (V01–V16), v0.4
 (W01–W12), all four of v0.5's slices (X01–X04, Y01–Y05, Z01–Z05, R00–R03), v0.6 (S01–S13), v0.6.1
 (D01–D30), v0.7.0 (E01–E04), v0.8.0 (F01–F16), v0.9.0 (G01–G14, PDFs on To-Read, #72) and v0.10.0
-(H01–H05, layout tables read as articles, #83) are **complete, frozen, and history only**; never
-reopen a box in any of them. F04's box reads `[BLOCKED: …]` on purpose.
+(H01–H05, layout tables read as articles, #83) and v0.11.0 (J01–J10, lazy photos and credits, Hexo
+code tables and Report, #85–#87) are **complete, frozen, and history only**; never
+reopen a box in any of them. F04's box, and J01's and J02's, read `[BLOCKED: …]` on purpose.
 
-**PLAN-15 is the only filed work.** `TECH_DEBT.md` "## Next plan" holds a handful of small
-items; none is a licence to start. `docs/plans/PLAN-4-v0.4.md` §0 through `PLAN-14` §0 still bind for
+**There is no filed work.** `TECH_DEBT.md` "## Next plan" holds a handful of small
+items; none is a licence to start. `docs/plans/PLAN-4-v0.4.md` §0 through `PLAN-15` §0 still bind for
 anything a future plan does not restate — in particular **`PLAN-10` §0.2's rule: prefer deleting to
 adding**, and an improvement that needs a behaviour change to justify it goes into `TECH_DEBT.md`,
 not into the code.
