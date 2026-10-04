@@ -190,22 +190,28 @@ object HtmlSanitizer {
      * A present lazy attribute wins over `src` outright rather than only when `src` looks
      * like a placeholder: the placeholder is usually a real URL to a spacer GIF, which no
      * rule can tell from a picture. Failing that, an image with no usable `src` — absent,
-     * blank, or a `data:` URI the allowlist would refuse anyway — takes the widest
-     * candidate of its `srcset`. An image with a real `src` and a `srcset` is left alone;
-     * the publisher chose that size.
+     * blank, or a `data:` URI the allowlist would refuse anyway — takes its first
+     * `data-…src` attribute (`data-runner-src`, `data-echo-src`; never `data-srcset`), and
+     * failing that the widest candidate of its `srcset`. That rung is a shape, not a list:
+     * a lazy loader names its attribute after itself, so a list only grows one CMS at a
+     * time (J01, #85). It never overrides a real `src`; only the named attributes may. An
+     * image with a real `src` and a `srcset` is left alone; the publisher chose that size.
      *
      * This is the one copy: `ArticleExtractor.absolutise` calls it for the page path, and
      * [sanitize]'s pre-[Cleaner] pass calls it for the feed path.
      */
     internal fun promoteLazySource(img: Element) {
         val lazy = LAZY_SRC.firstNotNullOfOrNull { img.attr(it).trim().takeIf { url -> url.isNotEmpty() } }
-        val src = img.attr("src").trim()
-        val usable = src.isNotEmpty() && !src.startsWith("data:", ignoreCase = true)
         val promoted = lazy
-            ?: if (usable) return
-            else LAZY_SRCSET.firstNotNullOfOrNull { widestCandidate(img.attr(it)) }
+            ?: if (isUsableSource(img.attr("src"))) return
+            else img.attributes().firstOrNull { it.key.matches(ANY_LAZY_SRC) && isUsableSource(it.value) }
+                ?.value?.trim()
+                ?: LAZY_SRCSET.firstNotNullOfOrNull { widestCandidate(img.attr(it)) }
         promoted?.let { img.attr("src", it) }
     }
+
+    private fun isUsableSource(url: String): Boolean =
+        url.isNotBlank() && !url.trim().startsWith("data:", ignoreCase = true)
 
     /** The URL of the widest (or densest) candidate in a `srcset`, or null if it has none. */
     private fun widestCandidate(srcset: String): String? = srcset.split(",")
@@ -256,6 +262,9 @@ object HtmlSanitizer {
     /** Where a lazy-loading CMS puts the real picture, in the order the corpus meets them. */
     private val LAZY_SRC = listOf("data-src", "data-lazy-src", "data-original")
     private val LAZY_SRCSET = listOf("data-srcset", "srcset")
+
+    /** Any lazy loader's own attribute: `data-` … `src`, so `data-srcset` never matches. */
+    private val ANY_LAZY_SRC = Regex("data-[a-z0-9-]*src", RegexOption.IGNORE_CASE)
     private val WHITESPACE = Regex("\\s+")
 
     private const val DROP_WHOLESALE =

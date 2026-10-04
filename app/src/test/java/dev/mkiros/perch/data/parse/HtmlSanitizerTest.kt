@@ -110,6 +110,51 @@ class HtmlSanitizerTest {
         assertThat(out).doesNotContain("data:")
     }
 
+    /**
+     * J01/#85: a lazy loader names its attribute after itself (`data-runner-src`,
+     * `data-echo-src`), so an image whose `src` is unusable reads any `data-…src`.
+     */
+    @Test
+    fun `an image with a placeholder src takes any data-something-src attribute`() {
+        val out = sanitize(
+            """
+            <p>Text</p>
+            <img src="data:image/svg+xml,%3Csvg%3E%3C/svg%3E" data-runner-src="https://example.com/a.jpg" alt="a">
+            <img data-foo-src="https://example.com/b.jpg" alt="b">
+            """
+        )
+
+        assertThat(out).contains("src=\"https://example.com/a.jpg\"")
+        assertThat(out).contains("src=\"https://example.com/b.jpg\"")
+        assertThat(out).doesNotContain("data:")
+    }
+
+    @Test
+    fun `a real src is never overridden by an unnamed data-something-src attribute`() {
+        val out = sanitize(
+            """
+            <p>Text</p>
+            <img src="https://example.com/real.jpg" data-other-src="https://example.com/x.jpg" alt="r">
+            """
+        )
+
+        assertThat(out).contains("https://example.com/real.jpg")
+        assertThat(out).doesNotContain("x.jpg")
+    }
+
+    @Test
+    fun `a data-srcset is read as a srcset, never as a data-something-src`() {
+        val out = sanitize(
+            """
+            <p>Text</p>
+            <img src="data:image/gif;base64,R0lGOD" data-srcset="https://example.com/s-300.jpg 300w, https://example.com/s-900.jpg 900w" alt="s">
+            """
+        )
+
+        assertThat(out).contains("src=\"https://example.com/s-900.jpg\"")
+        assertThat(out).doesNotContain("s-300.jpg 300w")
+    }
+
     @Test
     fun `an image with only a srcset takes the widest candidate`() {
         val out = sanitize(

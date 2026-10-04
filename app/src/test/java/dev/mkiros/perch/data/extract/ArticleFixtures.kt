@@ -212,6 +212,20 @@ object ArticleFixtures {
     )
 
     /**
+     * IEEE Spectrum's "The Keyboard That Moved Markets" (J01, #85): every in-body photo is a
+     * `data:` placeholder in `src` with the real picture in `data-runner-src`, followed by a
+     * caption `<small>` and a credit `<small>`.
+     */
+    val ieeeSpectrum: ArticleFixture = ArticleFixture(
+        slug = "ieee-spectrum-bloomberg-terminal",
+        url = "https://spectrum.ieee.org/bloomberg-terminal",
+        cms = "RebelMouse",
+        mid = "Five years after its launch, IMS rebranded as Bloomberg LP",
+        last = "An abridged version of this article appears in the October 2026 print issue",
+        excludes = listOf("Saving articles to read later requires an IEEE Spectrum account"),
+    )
+
+    /**
      * Seven more excerpt-only sources, chosen for CMS spread rather than for difficulty.
      * The last of them arrived the other way round: the Hugging Face blog was harvested by
      * W06 because it *failed*, and W07's two-pass rule is what let it join the contract.
@@ -280,6 +294,7 @@ object ArticleFixtures {
         bellingcat,
         gijn,
         paulgraham,
+        ieeeSpectrum,
     )
 
     /**

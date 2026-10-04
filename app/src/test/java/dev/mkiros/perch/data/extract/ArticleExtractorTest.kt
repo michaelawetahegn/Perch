@@ -171,6 +171,21 @@ class ArticleExtractorTest {
         assertThat(paragraphs.single { fixture.mid in it }).doesNotContain(fixture.last)
     }
 
+    /**
+     * J01/#85: IEEE Spectrum's three in-body photos sit behind `data-runner-src`, with a
+     * `data:` placeholder in `src` that the allowlist drops; they used to vanish.
+     */
+    @Test
+    fun `a page whose photos load lazily keeps them`() {
+        val fixture = ArticleFixtures.ieeeSpectrum
+        val extracted = requireNotNull(ArticleExtractor.extract(fixture.html(), fixture.url))
+        val images = flatten(ArticleLowering.toBlocks(HtmlSanitizer.sanitize(extracted, fixture.url)))
+            .filterIsInstance<ArticleBlock.Image>()
+
+        assertThat(images).hasSize(3)
+        assertThat(images.first().url).endsWith("background.jpg?id=67857167&width=980")
+    }
+
     /** H02/#83: an image map is a navigation widget — its links live in `<area>`, not in the picture. */
     @Test
     fun `an image-map navigation picture does not survive extraction`() {

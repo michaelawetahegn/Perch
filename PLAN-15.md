@@ -194,7 +194,7 @@ Slice the 9000-px PNG into 1800-px strips with PIL before reading it, because on
 
 ## The tasks
 
-- [ ] **J01 — A photo hidden behind any `data-…src` attribute is kept. TDD. Issue #85.**
+- [BLOCKED: code + tests committed and green targeted (141) and debug full (1341, 1 known flake); release `./gradlew test` hangs 2/2 in the PerchApp.onTerminate Room deadlock (TECH_DEBT) — NOTES 2026-10-04] **J01 — A photo hidden behind any `data-…src` attribute is kept. TDD. Issue #85.**
       `gh issue view 85 --json title,body,comments` first; §0.2 (IEEE 1) is the diagnosis, §0.3 the rule.
       RED first, in `HtmlSanitizerTest`, with hand-written HTML: (a) `<img src="data:image/svg+xml,…"
       data-runner-src="https://example.com/a.jpg">` sanitizes to an `img` whose `src` is that URL; (b) the
